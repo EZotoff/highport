@@ -143,9 +143,46 @@ Pass via `load_skills=["skill-name"]` in delegations.
 
 | Agent | Purpose |
 |-------|---------|
-| `oracle` | Read-only consultation |
+| `oracle` | Read-only consultation, high-IQ reasoning |
 | `librarian` | Docs, GitHub, external references |
 | `explore` | Codebase grep/search |
+| `momus` | Expert reviewer for plan quality |
+
+---
+
+## Momus Review Loop (High Accuracy Mode)
+
+**Momus** = Greek god of criticism. Reviews plans for quality before execution.
+
+### What It Does
+
+```
+STANDARD:    Prometheus → Plan → Execute
+HIGH ACCURACY: Prometheus → Draft → Momus reviews → Fix → Re-review → ... → Execute
+```
+
+### Review Criteria
+
+| Momus Checks For |
+|------------------|
+| Clarity — Are tasks unambiguous? |
+| Verifiability — Can completion be proven? |
+| Completeness — Are all requirements covered? |
+
+### When to Use
+
+| Use High Accuracy | Skip It |
+|-------------------|---------|
+| Critical/production systems | Quick prototypes |
+| Complex multi-module plans | Simple tasks |
+| Unfamiliar domain | Well-understood work |
+
+### How to Enable
+
+Add to your Prometheus prompt:
+```
+High accuracy mode.
+```
 
 ---
 
