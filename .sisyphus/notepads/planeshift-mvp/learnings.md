@@ -42,3 +42,41 @@ import { DEFAULT_CAMPAIGN_ID } from '@planeshift/shared/constants';
 - Tests in `__tests__/` directories
 - `pnpm test` runs across all packages via Turborepo
 
+## 2026-01-27 Task 1: Yjs Document Structure & Types
+
+### Y.Map Behavior
+- Y.Map instances cannot read/write until attached to a Y.Doc
+- Creating a Y.Map with `new Y.Map()` creates a detached instance
+- Must use `doc.getMap('name')` to get an attached Y.Map or add it to a doc before reading
+
+### Yjs Conversion Pattern (nested Y.Map)
+Nodes/edges stored as nested Y.Map inside parent maps:
+```typescript
+const nodes = doc.getMap('nodes');  // Y.Map<string, Y.Map>
+const edges = doc.getMap('edges');  // Y.Map<string, Y.Map>
+```
+
+Each entity's fields stored in its own Y.Map:
+```typescript
+ymap.set('id', node.id);
+ymap.set('position', { x, y });  // Plain object, not nested Y.Map
+```
+
+### Edge Cleanup Pattern
+When deleting a node, iterate edges and delete connected ones in same transaction:
+```typescript
+doc.transact(() => {
+  nodes.delete(nodeId);
+  edges.forEach((edgeYMap, edgeId) => {
+    if (edgeYMap.get('source_id') === nodeId || edgeYMap.get('target_id') === nodeId) {
+      edgesToDelete.push(edgeId);
+    }
+  });
+  for (const edgeId of edgesToDelete) edges.delete(edgeId);
+});
+```
+
+### Test Structure for Yjs
+- Use `createYDoc()` in beforeEach for fresh doc per test
+- Add entities via helper functions (addNode, addEdge) to attach to doc
+- Read back via yMapToNode/yMapToEdge for roundtrip validation

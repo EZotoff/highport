@@ -1804,7 +1804,7 @@ Phase 4: Foundry Integration
 
 ### Phase 1: Lifepath Graph (Core Engine)
 
-- [ ] 0. Monorepo & Test Infrastructure Setup
+- [x] 0. Monorepo & Test Infrastructure Setup
 
   **What to do**:
   - Initialize pnpm workspace with Turborepo
@@ -2066,7 +2066,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 1. Yjs Document Structure & Types
+- [x] 1. Yjs Document Structure & Types
 
   **What to do**:
   - Define TypeScript interfaces for graph entities in `packages/shared`:
@@ -2417,7 +2417,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 5. Hocuspocus + Fastify Server
+- [x] 5. Hocuspocus + Fastify Server
 
   **What to do**:
   - Initialize two servers in `apps/server`:
