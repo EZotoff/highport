@@ -2218,7 +2218,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 2. React Flow Integration
+- [x] 2. React Flow Integration
 
   **What to do**:
   - Install React Flow in `apps/web`
@@ -2281,7 +2281,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 3. Presence & Awareness
+- [x] 3. Presence & Awareness
 
   **What to do**:
   - Implement Yjs Awareness API for ephemeral presence state
@@ -2323,7 +2323,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 4. Persistence Layer
+- [x] 4. Persistence Layer
 
   **What to do**:
   - Create Neon PostgreSQL database (for production deployment)

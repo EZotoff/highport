@@ -91,7 +91,7 @@ doc.transact(() => {
 ### Yjs <-> React Flow Sync
 - **Yjs -> Flow**: Use `nodesMap.observeDeep()` to detect changes, then update Flow state via `setNodes`.
 - **Flow -> Yjs**: Use `onNodesChange` to capture user interactions (drag, delete) and apply to Yjs via `updateNodePosition` or `deleteNode`.
-- Use `requestAnimationFrame` to throttle updates from Yjs to prevent UI jank.
+- **Throttling**: Use `requestAnimationFrame` to throttle updates from Yjs to prevent UI jank.
 
 ### Custom Node Types
 - Map `GraphNode` types (e.g., `custom:generic`) to React Flow `nodeTypes` key (e.g., `custom`).
@@ -102,3 +102,20 @@ doc.transact(() => {
 - Use `y-indexeddb` with `IndexeddbPersistence`.
 - Persistence is async; initial load might be empty until `synced` event or data is loaded.
 - `onlyRenderVisibleElements={true}` improves performance with large graphs.
+
+## 2026-01-27 Task 3: Presence & Awareness
+
+### Yjs Awareness Patterns
+- Use `y-protocols/awareness` via `provider.awareness`
+- Ephemeral state (cursors, selection) is broadcasted, not persisted to DB
+- **Coordinate System**: Map screen coordinates to flow coordinates (`screenToFlowPosition`) before broadcasting to ensure remote cursors appear correctly regardless of viewport/zoom.
+
+### React Flow Overlay Components
+- **Cursors**: Rendered via `<CursorOverlay>` inside `ReactFlow`. Use `flowToScreenPosition` to map remote cursors (flow coords) back to screen coords for rendering.
+- **Selection**: Rendered via `<SelectionHalos>`. Use `useStore` to access node dimensions and position for highlighting.
+- **User List**: Rendered via `<Panel>` or absolute positioning. Best placed inside `<Panel>` for managed layout.
+
+### Sync Logic
+- `initProvider` (HocuspocusProvider) handles both document sync and awareness.
+- Listen to `provider.awareness.on('change')` to update local React state for cursors/users.
+- Filter out local user from remote users list to avoid self-rendering.

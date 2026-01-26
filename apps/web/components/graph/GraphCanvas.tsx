@@ -17,12 +17,16 @@ import {
   EdgeChange,
   ReactFlowProvider,
   Panel,
+  useReactFlow,
+  OnSelectionChangeParams,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import * as Y from 'yjs';
 import { getYDoc, getNodesMap, getEdgesMap } from '../../lib/ydoc';
 import { addNode, updateNodePosition, deleteNode, yMapToNode, yMapToEdge } from '../../lib/yjs-helpers';
-import { initPersistence } from '../../lib/sync';
+import { initPersistence, initProvider, getProvider } from '../../lib/sync';
+import { initAwareness, updateCursor, updateSelection, PresenceState } from '../../lib/awareness';
+import { CursorOverlay, UserList, SelectionHalos } from './Presence';
 import { generateNodeId } from '@planeshift/shared/utils/id';
 import { GraphNode } from '@planeshift/shared/types/graph';
 import CustomNode from './CustomNode';
@@ -34,11 +38,43 @@ const nodeTypes = {
 function GraphCanvasContent() {
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
+  const { screenToFlowPosition } = useReactFlow();
+  const [remoteUsers, setRemoteUsers] = React.useState<PresenceState[]>([]);
+  const [currentUser, setCurrentUser] = React.useState<PresenceState | null>(null);
 
   useEffect(() => {
     const doc = getYDoc();
     initPersistence(doc);
+    const provider = initProvider(doc);
+    if (!provider.awareness) return;
 
+    const userId = Math.random().toString(36).substring(7);
+    initAwareness(provider.awareness, userId, `User ${userId.slice(0, 4)}`);
+
+    const updateAwarenessState = () => {
+      if (!provider.awareness) return;
+      const states = provider.awareness.getStates();
+      const users: PresenceState[] = [];
+      states.forEach((state: any, clientId: number) => {
+        if (state.userId) {
+           users.push(state as PresenceState);
+        }
+      });
+      setRemoteUsers(users.filter(u => u.userId !== userId));
+      const me = users.find(u => u.userId === userId);
+      if (me) setCurrentUser(me);
+    };
+
+    provider.awareness.on('change', updateAwarenessState);
+    updateAwarenessState();
+
+    return () => {
+      provider.awareness?.off('change', updateAwarenessState);
+    };
+  }, []);
+
+  useEffect(() => {
+    const doc = getYDoc();
     const nodesMap = getNodesMap(doc);
     const edgesMap = getEdgesMap(doc);
 
@@ -109,6 +145,22 @@ function GraphCanvasContent() {
     [setEdges]
   );
 
+  const onMouseMove = useCallback((event: React.MouseEvent) => {
+    const provider = getProvider();
+    if (provider && provider.awareness) {
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      updateCursor(provider.awareness, position);
+    }
+  }, [screenToFlowPosition]);
+
+  const onSelectionChange = useCallback(({ nodes }: OnSelectionChangeParams) => {
+    const provider = getProvider();
+    if (provider && provider.awareness) {
+      const selectedId = nodes.length > 0 ? nodes[0].id : null;
+      updateSelection(provider.awareness, selectedId);
+    }
+  }, []);
+
   const handleAddNode = useCallback(() => {
     const doc = getYDoc();
     const id = generateNodeId();
@@ -128,12 +180,13 @@ function GraphCanvasContent() {
   }, []);
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: '100vw', height: '100vh' }} onMouseMove={onMouseMove}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onSelectionChange={onSelectionChange}
         nodeTypes={nodeTypes}
         fitView
         onlyRenderVisibleElements={true}
@@ -142,13 +195,18 @@ function GraphCanvasContent() {
       >
         <Background />
         <Controls />
+        <CursorOverlay cursors={remoteUsers} />
+        <SelectionHalos users={remoteUsers} />
         <Panel position="top-right">
-          <button
-            onClick={handleAddNode}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow-md"
-          >
-            Add Node
-          </button>
+          <div className="flex gap-4 items-center">
+            <UserList users={[...(currentUser ? [currentUser] : []), ...remoteUsers]} currentUserId={currentUser?.userId || ''} />
+            <button
+              onClick={handleAddNode}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow-md font-medium text-sm transition-colors"
+            >
+              Add Node
+            </button>
+          </div>
         </Panel>
       </ReactFlow>
     </div>
