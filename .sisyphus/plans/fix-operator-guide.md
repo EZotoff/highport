@@ -19,16 +19,16 @@ Add a dedicated "Invoking Prometheus" section to the operator guide.
 - Updated `MEATBAGS.md` with Prometheus invocation instructions
 
 ### Definition of Done
-- [ ] Guide includes "Invoking Prometheus" section before "Workflow: Complex Projects"
-- [ ] Section explains no loop command is needed
-- [ ] Section describes interview-first behavior
-- [ ] Prompt template is user-friendly (not prescriptive)
+- [x] Guide includes "Invoking Prometheus" section before "Workflow: Complex Projects"
+- [x] Section explains no loop command is needed
+- [x] Section describes interview-first behavior
+- [x] Prompt template is user-friendly (not prescriptive)
 
 ---
 
 ## TODOs
 
-- [ ] 1. Add "Invoking Prometheus" section to MEATBAGS.md
+- [x] 1. Add "Invoking Prometheus" section to MEATBAGS.md
 
   **What to do**:
   Insert the following section BEFORE "## Workflow: Complex Projects" (line 38):
@@ -73,9 +73,9 @@ Add a dedicated "Invoking Prometheus" section to the operator guide.
   - `MEATBAGS.md:38` — insertion point (before "## Workflow: Complex Projects")
 
   **Acceptance Criteria**:
-  - [ ] New section appears between "## Specialized Agents" and "## Workflow: Complex Projects"
-  - [ ] Section explains no `/ulw-loop` or `/ralph-loop` needed for Prometheus
-  - [ ] Interview-first behavior is documented
+  - [x] New section appears between "## Specialized Agents" and "## Workflow: Complex Projects"
+  - [x] Section explains no `/ulw-loop` or `/ralph-loop` needed for Prometheus
+  - [x] Interview-first behavior is documented
 
   **Parallelizable**: NO (single file edit)
   **Commit**: YES
@@ -84,7 +84,7 @@ Add a dedicated "Invoking Prometheus" section to the operator guide.
 
 ---
 
-- [ ] 2. Update "Step 1: Create Plan" to be less prescriptive
+- [x] 2. Update "Step 1: Create Plan" to be less prescriptive
 
   **What to do**:
   Change the prompt template in "Workflow: Complex Projects" from:
@@ -111,8 +111,8 @@ Add a dedicated "Invoking Prometheus" section to the operator guide.
   - `MEATBAGS.md:42-51` — current template location
 
   **Acceptance Criteria**:
-  - [ ] Template is conversational, not command-like
-  - [ ] No "Output:" directive (Prometheus handles this)
+  - [x] Template is conversational, not command-like
+  - [x] No "Output:" directive (Prometheus handles this)
 
   **Parallelizable**: NO (same file as TODO 1)
   **Commit**: Groups with TODO 1
@@ -128,7 +128,7 @@ grep "No loop command" MEATBAGS.md            # Should find this phrase
 ```
 
 ### Final Checklist
-- [ ] "Invoking Prometheus" section exists
-- [ ] No loop commands mentioned for Prometheus
-- [ ] Interview-first behavior documented
-- [ ] Prompt templates are user-friendly
+- [x] "Invoking Prometheus" section exists
+- [x] No loop commands mentioned for Prometheus
+- [x] Interview-first behavior documented
+- [x] Prompt templates are user-friendly

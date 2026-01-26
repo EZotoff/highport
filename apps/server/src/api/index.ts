@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { fetchDocumentState } from '../ws/hocuspocus.js';
 
 const FASTIFY_PORT = 3002;
 
@@ -12,6 +13,23 @@ export async function startFastify(): Promise<void> {
 
   fastify.get('/health', async () => {
     return { status: 'ok' };
+  });
+
+  fastify.get<{
+    Params: { campaignId: string; docType: string };
+  }>('/api/doc/:campaignId/:docType', async (request, reply) => {
+    const { campaignId, docType } = request.params;
+    const docId = `${campaignId}:${docType}`;
+
+    const state = await fetchDocumentState(docId);
+
+    if (!state) {
+      reply.code(404);
+      return { error: 'Document not found or empty' };
+    }
+
+    reply.header('Content-Type', 'application/octet-stream');
+    return Buffer.from(state);
   });
 
   try {
