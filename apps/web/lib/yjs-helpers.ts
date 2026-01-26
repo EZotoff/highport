@@ -108,3 +108,19 @@ export function deleteEdge(doc: Y.Doc, edgeId: string): void {
   const edges = getEdgesMap(doc);
   edges.delete(edgeId);
 }
+
+export function updateNodeLock(doc: Y.Doc, nodeId: string, locked: boolean): void {
+  const nodes = getNodesMap(doc);
+  const ymap = nodes.get(nodeId);
+  if (ymap) {
+    ymap.set('locked', locked);
+  }
+}
+
+export function updateNodeVisibility(doc: Y.Doc, nodeId: string, hidden: boolean): void {
+  const nodes = getNodesMap(doc);
+  const ymap = nodes.get(nodeId);
+  if (ymap) {
+    ymap.set('hidden', hidden);
+  }
+}

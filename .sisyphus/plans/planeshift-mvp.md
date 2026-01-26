@@ -2473,7 +2473,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 6. Graph Polish & Node Styling
+- [x] 6. Graph Polish & Node Styling
 
   **What to do**:
   - Implement node type-specific styling (icons, colors per NodeType)

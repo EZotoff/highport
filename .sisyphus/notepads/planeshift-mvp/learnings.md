@@ -119,3 +119,11 @@ doc.transact(() => {
 - `initProvider` (HocuspocusProvider) handles both document sync and awareness.
 - Listen to `provider.awareness.on('change')` to update local React state for cursors/users.
 - Filter out local user from remote users list to avoid self-rendering.
+
+## Graph Implementation Details
+- **Node Styling**: Used a generic `BaseNode` with a configuration map in `node-config.ts` to handle different node types easily.
+- **Context Menu**: Implemented a custom context menu using a portal-like approach (absolute positioning) triggered by `onNodeContextMenu`.
+- **Yjs UndoManager**: Initialized `Y.UndoManager` on the `nodes` and `edges` maps. Note that it tracks all changes, so careful filtering might be needed if ephemeral state is added to these maps.
+- **Lock/Hide Logic**: Implemented via `locked` and `hidden` properties on `GraphNode`. `draggable` prop on React Flow nodes is dynamic based on lock state and GM mode.
+- **Edge Styling**: Mapped edge `weight` to `strokeWidth` (1-5 range) and used `relation_label` for potential future coloring (currently default).
+- **Type Safety**: Shared types import paths are sensitive. Used `@planeshift/shared/types/graph` and `@planeshift/shared/types/identity` explicitly to resolve issues.
