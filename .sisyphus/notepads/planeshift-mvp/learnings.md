@@ -80,3 +80,25 @@ doc.transact(() => {
 - Use `createYDoc()` in beforeEach for fresh doc per test
 - Add entities via helper functions (addNode, addEdge) to attach to doc
 - Read back via yMapToNode/yMapToEdge for roundtrip validation
+
+## 2026-01-27 Task 2: React Flow Integration
+
+### React Flow (v12) Patterns
+- Uses `@xyflow/react` package instead of `react-flow-renderer`.
+- Component `ReactFlow` requires `useNodesState` and `useEdgesState` hooks for internal state management.
+- Requires `ReactFlowProvider` wrapper for context access.
+
+### Yjs <-> React Flow Sync
+- **Yjs -> Flow**: Use `nodesMap.observeDeep()` to detect changes, then update Flow state via `setNodes`.
+- **Flow -> Yjs**: Use `onNodesChange` to capture user interactions (drag, delete) and apply to Yjs via `updateNodePosition` or `deleteNode`.
+- Use `requestAnimationFrame` to throttle updates from Yjs to prevent UI jank.
+
+### Custom Node Types
+- Map `GraphNode` types (e.g., `custom:generic`) to React Flow `nodeTypes` key (e.g., `custom`).
+- Custom components must be wrapped in `React.memo` to prevent unnecessary re-renders.
+- Use `NodeProps` interface for props typing.
+
+### Offline Persistence
+- Use `y-indexeddb` with `IndexeddbPersistence`.
+- Persistence is async; initial load might be empty until `synced` event or data is loaded.
+- `onlyRenderVisibleElements={true}` improves performance with large graphs.
