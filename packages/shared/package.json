@@ -1,0 +1,33 @@
+{
+  "name": "@planeshift/shared",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./types/*": "./dist/types/*.js",
+    "./utils/*": "./dist/utils/*.js",
+    "./constants": "./dist/constants.js"
+  },
+  "typesVersions": {
+    "*": {
+      "*": ["./dist/*"],
+      "types/*": ["./dist/types/*"],
+      "utils/*": ["./dist/utils/*"],
+      "constants": ["./dist/constants"]
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.56.0"
+  }
+}
