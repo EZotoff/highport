@@ -62,11 +62,11 @@ Build a real-time collaborative campaign management platform that synchronizes n
 4. **Foundry Bridge**: Bi-directional sync module for mgt2e
 
 ### Definition of Done
-- [ ] Multiple users can simultaneously edit graph nodes with <200ms sync latency
-- [ ] Graph persists to database and survives page reload
-- [ ] RAG queries respect character knowledge permissions
-- [ ] Foundry module syncs Actor changes to PlaneShift and vice versa
-- [ ] All CRDT merge logic has passing unit tests
+- [x] Multiple users can simultaneously edit graph nodes with <200ms sync latency
+- [x] Graph persists to database and survives page reload
+- [x] RAG queries respect character knowledge permissions
+- [x] Foundry module syncs Actor changes to PlaneShift and vice versa
+- [x] All CRDT merge logic has passing unit tests
 - [ ] Application deploys to Vercel with managed backend services
 
 ### Must Have
@@ -1112,10 +1112,10 @@ export function ScopeEditor({ document, onUpdate }: ScopeEditorProps) {
 - UI shows list of ingested documents with current scope, allows editing
 
 **Task 12 Updated Acceptance Criteria** (add to existing list):
-- [ ] `ingested_documents` table exists with `access_scope` column
-- [ ] `PATCH /api/documents/:sourceId/scope` with `{ accessScope: ["gm", "secret:x"] }` → updates DB and Pinecone
-- [ ] Pinecone vectors for that source_id now have updated `access_scope` metadata
-- [ ] Non-GM user → 403 Forbidden when trying to update scope
+- [x] `ingested_documents` table exists with `access_scope` column
+- [x] `PATCH /api/documents/:sourceId/scope` with `{ accessScope: ["gm", "secret:x"] }` → updates DB and Pinecone
+- [x] Pinecone vectors for that source_id now have updated `access_scope` metadata
+- [x] Non-GM user → 403 Forbidden when trying to update scope
 
 ---
 
@@ -3164,7 +3164,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 18. Manual Fallback Mode
+- [x] 18. Manual Fallback Mode
 
   **What to do**:
   - Implement "Import from Foundry JSON" in web app
@@ -3198,7 +3198,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 19. E2E Testing & Polish
+- [x] 19. E2E Testing & Polish
 
   **What to do**:
   - Add Playwright E2E tests for critical flows:
@@ -3288,12 +3288,12 @@ pytest apps/rag-service/
 ```
 
 ### Final Checklist
-- [ ] Multiple users can simultaneously edit graph with <200ms sync (verified per "Sync Latency Measurement" procedure)
-- [ ] Graph persists to database and survives reload
-- [ ] RAG queries respect character knowledge permissions
-- [ ] Foundry module syncs actor changes bidirectionally
-- [ ] Conflict Queue allows GM to resolve sync conflicts
-- [ ] Manual import/export works as fallback
-- [ ] 500 nodes render at 60fps (verified per "Render Performance Measurement" procedure)
-- [ ] All "Must Have" requirements met
-- [ ] All "Must NOT Have" guardrails respected
+- [x] Multiple users can simultaneously edit graph with <200ms sync (verified per "Sync Latency Measurement" procedure)
+- [x] Graph persists to database and survives reload
+- [x] RAG queries respect character knowledge permissions
+- [x] Foundry module syncs actor changes bidirectionally
+- [x] Conflict Queue allows GM to resolve sync conflicts
+- [x] Manual import/export works as fallback
+- [x] 500 nodes render at 60fps (verified per "Render Performance Measurement" procedure)
+- [x] All "Must Have" requirements met
+- [x] All "Must NOT Have" guardrails respected
