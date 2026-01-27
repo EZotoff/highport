@@ -5,6 +5,7 @@ import { registerKnowledgeRoutes } from '../routes/knowledge.js';
 import { registerDocumentRoutes } from '../routes/documents.js';
 import { registerFoundryRoutes } from '../routes/foundry.js';
 import { registerConflictRoutes } from '../routes/conflicts.js';
+import { registerExportRoutes } from '../routes/export.js';
 
 const FASTIFY_PORT = 3002;
 
@@ -19,6 +20,7 @@ export async function startFastify(): Promise<void> {
   await registerDocumentRoutes(fastify);
   await registerFoundryRoutes(fastify);
   await registerConflictRoutes(fastify);
+  await registerExportRoutes(fastify);
 
   fastify.get('/health', async () => {
     return { status: 'ok' };

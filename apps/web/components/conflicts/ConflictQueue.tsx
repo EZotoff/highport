@@ -1,51 +1,33 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { ConflictCard } from './ConflictCard';
+import { useState, useEffect, useCallback } from 'react';
 
-interface Conflict {
+interface ConflictItem {
   id: string;
   nodeId: string;
   fieldPath: string;
   foundryValue: unknown;
   planeshiftValue: unknown;
-  foundryTimestamp: string | null;
-  planeshiftTimestamp: string | null;
-  createdAt: string | null;
+  foundryTimestamp: string;
+  planeshiftTimestamp: string;
+  status: 'pending' | 'resolved' | 'dismissed';
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3002';
 
 export function ConflictQueue() {
-  const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [conflicts, setConflicts] = useState<ConflictItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [resolving, setResolving] = useState<string | null>(null);
 
   const fetchConflicts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
     try {
-      const response = await fetch(`${API_BASE}/api/conflicts`, {
-        headers: {
-          'x-is-gm': 'true',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          setError('Only GMs can view conflicts');
-          return;
-        }
-        throw new Error(`Failed to fetch conflicts: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const res = await fetch(`${SERVER_URL}/api/conflicts`);
+      const data = await res.json();
       setConflicts(data.conflicts || []);
+      setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load conflicts');
+      setError('Failed to load conflicts');
     } finally {
       setLoading(false);
     }
@@ -55,117 +37,83 @@ export function ConflictQueue() {
     fetchConflicts();
   }, [fetchConflicts]);
 
-  const handleResolve = useCallback(
-    async (id: string, resolution: 'keep_foundry' | 'keep_planeshift') => {
-      setResolving(id);
-
-      try {
-        const response = await fetch(`${API_BASE}/api/conflicts/${id}/resolve`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-is-gm': 'true',
-            'x-user-id': 'gm_user',
-          },
-          body: JSON.stringify({ resolution }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to resolve conflict: ${response.status}`);
-        }
-
-        setConflicts((prev) => prev.filter((c) => c.id !== id));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to resolve');
-      } finally {
-        setResolving(null);
-      }
-    },
-    []
-  );
-
-  const handleDismiss = useCallback(async (id: string) => {
-    setResolving(id);
-
+  const handleResolve = async (id: string, resolution: 'keep_foundry' | 'keep_planeshift') => {
     try {
-      const response = await fetch(`${API_BASE}/api/conflicts/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'x-is-gm': 'true',
-          'x-user-id': 'gm_user',
-        },
+      await fetch(`${SERVER_URL}/api/conflicts/${id}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resolution, resolvedBy: 'gm' }),
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to dismiss conflict: ${response.status}`);
-      }
-
-      setConflicts((prev) => prev.filter((c) => c.id !== id));
+      setConflicts(prev => prev.filter(c => c.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to dismiss');
-    } finally {
-      setResolving(null);
+      setError('Failed to resolve conflict');
     }
-  }, []);
+  };
 
-  if (loading) {
-    return (
-      <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
-        <div className="flex items-center justify-center gap-2 text-zinc-500 py-8">
-          <RefreshCw className="animate-spin" size={20} />
-          <span>Loading conflicts...</span>
-        </div>
-      </div>
-    );
-  }
+  const handleDismiss = async (id: string) => {
+    try {
+      await fetch(`${SERVER_URL}/api/conflicts/${id}/dismiss`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resolvedBy: 'gm' }),
+      });
+      setConflicts(prev => prev.filter(c => c.id !== id));
+    } catch (err) {
+      setError('Failed to dismiss conflict');
+    }
+  };
+
+  if (loading) return <div className="p-4">Loading conflicts...</div>;
+  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  if (conflicts.length === 0) return <div className="p-4 text-gray-500">No pending conflicts</div>;
 
   return (
-    <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-3">
-          <AlertTriangle className="text-amber-500" size={24} />
-          <h2 className="text-xl font-bold text-zinc-100">Conflict Queue</h2>
-          {conflicts.length > 0 && (
-            <span className="bg-amber-900/50 text-amber-400 text-xs font-semibold px-2 py-1 rounded">
-              {conflicts.length} pending
-            </span>
-          )}
+    <div className="p-4 space-y-4">
+      <h2 className="text-xl font-bold">Conflict Queue ({conflicts.length})</h2>
+      {conflicts.map(conflict => (
+        <div key={conflict.id} className="border rounded-lg p-4 bg-white shadow">
+          <div className="font-medium text-lg">{conflict.fieldPath}</div>
+          <div className="text-sm text-gray-500">Node: {conflict.nodeId}</div>
+          
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="p-3 bg-blue-50 rounded">
+              <div className="text-sm font-medium text-blue-700">Foundry Value</div>
+              <pre className="text-sm mt-1 overflow-auto">{JSON.stringify(conflict.foundryValue, null, 2)}</pre>
+              <div className="text-xs text-gray-400 mt-2">
+                {new Date(conflict.foundryTimestamp).toLocaleString()}
+              </div>
+            </div>
+            <div className="p-3 bg-green-50 rounded">
+              <div className="text-sm font-medium text-green-700">PlaneShift Value</div>
+              <pre className="text-sm mt-1 overflow-auto">{JSON.stringify(conflict.planeshiftValue, null, 2)}</pre>
+              <div className="text-xs text-gray-400 mt-2">
+                {new Date(conflict.planeshiftTimestamp).toLocaleString()}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => handleResolve(conflict.id, 'keep_foundry')}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Keep Foundry
+            </button>
+            <button
+              onClick={() => handleResolve(conflict.id, 'keep_planeshift')}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Keep PlaneShift
+            </button>
+            <button
+              onClick={() => handleDismiss(conflict.id)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
-        <button
-          onClick={fetchConflicts}
-          disabled={loading}
-          className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-sm text-zinc-300 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </button>
-      </div>
-
-      {error && (
-        <div className="bg-red-950/50 border border-red-800/50 text-red-400 rounded p-3 mb-4 text-sm">
-          {error}
-        </div>
-      )}
-
-      {conflicts.length === 0 ? (
-        <div className="text-center text-zinc-600 py-12">
-          <AlertTriangle className="mx-auto mb-3 opacity-30" size={40} />
-          <p>No pending conflicts</p>
-          <p className="text-sm mt-1">All sync operations are in harmony</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {conflicts.map((conflict) => (
-            <ConflictCard
-              key={conflict.id}
-              conflict={conflict}
-              onResolve={handleResolve}
-              onDismiss={handleDismiss}
-              isLoading={resolving === conflict.id}
-            />
-          ))}
-        </div>
-      )}
+      ))}
     </div>
   );
 }

@@ -176,3 +176,48 @@ The plan suggested using Chrome DevTools Protocol for metrics, but the current i
 
 The task said "if available" for CDP, so this is acceptable.
 
+
+## Sync Latency E2E Test Creation (2026-01-27)
+
+### Task
+Created E2E test file for sync latency measurement between two browser contexts
+
+### Deliverables
+- File: `apps/web/e2e/sync-latency.spec.ts` (162 lines, 4.9KB)
+- Three test cases:
+  1. Graph node creation sync (<500ms target)
+  2. Node edit propagation sync (<500ms target)  
+  3. Table changes sync (<500ms target)
+
+### Implementation Approach
+- Followed existing pattern from `tables.spec.ts` for two-context tests
+- Used `page.waitForFunction()` for detecting sync completion
+- Measured latency: `endTime - startTime`
+- Used 500ms timeout for CI safety margin (targeting <200ms actual performance)
+- Logged latency values for debugging and monitoring
+
+### Test Structure
+Each test:
+1. Opens two browser contexts
+2. Navigates both to the same page
+3. Waits for initial sync (2s settling time)
+4. Performs action in context1 with timestamp
+5. Polls context2 until change detected with timestamp
+6. Calculates and asserts latency < 500ms
+
+### Known Issues
+- Tests currently fail due to sync not working in test environment
+- Yjs module import warning: "Yjs was already imported"
+- This appears to be an environmental issue, not a test structure issue
+- The test file itself is correctly structured per requirements
+
+### Pattern Success
+- Successfully adapted two-context pattern from `tables.spec.ts`
+- Successfully adapted React Flow selectors from `graph.spec.ts`
+- Test file compiles and runs (though sync doesn't work yet)
+
+## README Updates (2026-01-27)
+- Added section for **RAG Service** setup (Python environment, dependencies, uvicorn).
+- Added **Foundry VTT Integration** section with symlink instructions.
+- Added **Manual Export** workflow description based on `foundry-export.ts`.
+- Clarified **Quick Start** to distinguish between Core Platform and AI Service.

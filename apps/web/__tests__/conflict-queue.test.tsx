@@ -1,10 +1,8 @@
-// apps/web/__tests__/conflict-queue.test.tsx
 import { render, screen } from '@testing-library/react';
 import { ConflictQueue } from '../components/conflicts/ConflictQueue';
 import { vi, describe, it, expect } from 'vitest';
 import React from 'react';
 
-// Mock fetch
 global.fetch = vi.fn();
 
 describe('ConflictQueue', () => {
