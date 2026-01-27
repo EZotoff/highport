@@ -82,3 +82,17 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **Pytest Asyncio Strict Mode**: Encountered failures with `@pytest.fixture` on async fixtures. Switched to `@pytest_asyncio.fixture` to satisfy strict mode requirements in `pytest-asyncio`.
 - **Vitest Alias Resolution**: Encountered issues with `@/lib/...` alias resolution in component tests. Switched to relative imports (`../../lib/...`) which proved more stable for this test setup.
 - **Pinecone Metadata Filtering**: Implemented scope-based access control using Pinecone's metadata filters. Mock implementation required careful simulation of the `` operator for array fields.
+
+## Task 14 - Foundry Bridge Module Setup
+- **Foundry V12 ESM Modules**: Foundry VTT V12+ uses ES modules (`esmodules` in module.json). Must use `export` syntax, not CommonJS.
+- **Settings Registration Timing**: `game.settings.register()` must be called during `Hooks.once('init')` - this is when Foundry initializes the settings system.
+- **WebSocket Handshake Pattern**: Since WebSocket clients can't reliably set custom HTTP headers, send authentication via JSON message after connection: `{type: 'handshake', apiKey: '...', clientType: 'foundry', version: '1.0.0'}`.
+- **Exponential Backoff Formula**: `baseDelay * 2^(attempt-1)` gives 1s, 2s, 4s, 8s, 16s delays for max 5 attempts.
+- **Foundry Localization**: Use `game.i18n.localize('NAMESPACE.Key.Path')` with nested JSON structure in `lang/en.json`.
+- **Global Connection State**: Exported `connection` instance allows external access/testing while `PlaneShiftConnection` class enables custom instantiation.
+
+## Task 14 (Refined) - Foundry Module Initialization
+- **Modular File Structure**: Split settings/socket logic into separate ES modules (`scripts/settings.js`, `scripts/socket.js`) for cleaner separation of concerns. Main `module.js` only handles hooks and orchestration.
+- **Localization Keys vs Runtime Translation**: Use raw localization keys (`"PLANE_SHIFT.Settings.ServerUrl.Name"`) in `game.settings.register()` - Foundry automatically resolves them at display time. Don't call `game.i18n.localize()` during registration.
+- **WebSocket URL Construction**: Server URL is stored as base URL (e.g., `ws://localhost:3002`), then `/foundry` path is appended in the FoundryBridge constructor. This keeps configuration clean while enabling endpoint-specific routing.
+- **Export Pattern for Foundry Modules**: Export both the bridge instance AND the class: `export { bridge, FoundryBridge }`. This allows external modules to access current connection state or create custom instances.

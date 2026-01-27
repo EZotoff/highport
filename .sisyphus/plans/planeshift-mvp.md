@@ -2895,7 +2895,7 @@ Phase 4: Foundry Integration
 
 ### Phase 4: Foundry VTT Integration
 
-- [ ] 14. Foundry Bridge Module Setup
+- [x] 14. Foundry Bridge Module Setup
 
   **What to do**:
   - Initialize Foundry module in `packages/foundry-module`
