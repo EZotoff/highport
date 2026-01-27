@@ -119,3 +119,16 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **node_update_result Response Pattern**: The Foundry module sends `{ type: 'node_update_result', requestId, payload: { success, error?, updated? } }` back to the server, allowing the server to track which updates were successfully applied.
 - **Connection Tracking with Set**: Using `Set<WebSocket>` on the server side enables efficient O(1) add/delete for connected clients. The `broadcastNodeUpdate()` function iterates this set to push changes to all connected Foundry instances.
 - **Whitelist Consistency**: The same fields whitelisted in sync.js (Foundry→PlaneShift direction) should be the inverse of what's accepted in receive.js (PlaneShift→Foundry direction). This ensures bidirectional sync only touches agreed-upon fields.
+
+## Task 17 - Conflict Resolution System
+
+- **Conflict Detection Window**: Using a 5-second conflict window (`CONFLICT_WINDOW_MS = 5000`) to detect near-simultaneous edits. Conflicts occur when the opposite side changed AFTER the last sync of that field, within the window.
+- **Pure vs DB Functions Pattern**: Separated pure functions for testing (`detectConflict(state, incoming)`) from async database functions (`detectConflictFromDb(nodeId, fieldPath, incoming)`). This enables unit testing without mocking the database.
+- **Conflict Matrix Implementation**:
+  - GM edits always win (source-agnostic: whichever side GM edited takes priority)
+  - Foundry stats (hp, characteristics, credits) are authoritative over PlaneShift
+  - Text fields (notes, description, biography) queue for GM review
+  - Default: Last Write Wins (LWW)
+- **Schema Already Existed**: The `syncState` and `conflictQueue` tables were already defined in schema.ts with migrations generated. Always check existing schema before creating new tables.
+- **Route Registration Pattern**: Added `registerConflictRoutes(fastify)` to api/index.ts following existing pattern. Routes use `x-is-gm` header to restrict conflict management to GM users.
+- **UI Component Pattern**: ConflictQueue fetches `/api/conflicts`, ConflictCard displays diff between Foundry/PlaneShift values with timestamps. Resolution buttons call POST/DELETE endpoints.

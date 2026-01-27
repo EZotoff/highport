@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, unique, customType, text, integer, check } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, timestamp, unique, customType, text, integer, check, jsonb } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Custom type for bytea since drizzle-orm/pg-core doesn't export it directly
@@ -62,4 +62,31 @@ export const ingestedDocuments = pgTable('ingested_documents', {
   chunkCount: integer('chunk_count').notNull(),
   ingestedAt: timestamp('ingested_at').defaultNow().notNull(),
   ingestedBy: text('ingested_by').notNull(),
+});
+
+export const syncState = pgTable('sync_state', {
+  id: varchar('id', { length: 64 }).primaryKey(),
+  nodeId: varchar('node_id', { length: 64 }).notNull(),
+  foundryUuid: varchar('foundry_uuid', { length: 255 }).notNull(),
+  fieldPath: varchar('field_path', { length: 255 }).notNull(),
+  currentValue: jsonb('current_value'),
+  lastFoundrySync: timestamp('last_foundry_sync'),
+  lastPlaneshiftSync: timestamp('last_planeshift_sync'),
+}, (table) => ({
+  uniqueNodeField: unique().on(table.nodeId, table.fieldPath),
+}));
+
+export const conflictQueue = pgTable('conflict_queue', {
+  id: varchar('id', { length: 64 }).primaryKey(),
+  nodeId: varchar('node_id', { length: 64 }).notNull(),
+  fieldPath: varchar('field_path', { length: 255 }).notNull(),
+  foundryValue: jsonb('foundry_value'),
+  planeshiftValue: jsonb('planeshift_value'),
+  foundryTimestamp: timestamp('foundry_timestamp'),
+  planeshiftTimestamp: timestamp('planeshift_timestamp'),
+  status: varchar('status', { length: 20 }).default('pending'),
+  resolvedBy: varchar('resolved_by', { length: 64 }),
+  resolvedAt: timestamp('resolved_at'),
+  resolution: varchar('resolution', { length: 20 }),
+  createdAt: timestamp('created_at').defaultNow(),
 });
