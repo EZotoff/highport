@@ -44,3 +44,22 @@ export function initProvider(doc: Y.Doc, campaignId: string = 'default'): Hocusp
 export function getProvider(): HocuspocusProvider | null {
   return provider;
 }
+
+export function destroyProvider(): void {
+  if (provider) {
+    provider.destroy();
+    provider = null;
+  }
+}
+
+export function destroyPersistence(): void {
+  if (persistence) {
+    persistence.destroy();
+    persistence = null;
+  }
+}
+
+export function resetSync(): void {
+  destroyProvider();
+  destroyPersistence();
+}
