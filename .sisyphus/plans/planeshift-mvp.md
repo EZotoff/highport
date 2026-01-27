@@ -3010,7 +3010,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 16. PlaneShift → Foundry Sync
+- [x] 16. PlaneShift → Foundry Sync
 
   **What to do**:
   - Server detects changes to Foundry-linked nodes

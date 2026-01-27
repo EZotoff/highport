@@ -110,3 +110,12 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **TypeScript ws Types**: @fastify/websocket's types depend on `ws` module. Adding both `ws` and `@types/ws` as dependencies ensures proper typing for WebSocket class. Import as `import type { WebSocket as WS } from 'ws'` to get the correct type.
 - **Field Mapping at Sync Layer**: The sync.js `buildSyncPayload` maps mgt2e actor paths (e.g., `system.hits.value`) to PlaneShift metadata structure (`hp.current`). This keeps Foundry-specific schemas isolated from the PlaneShift data model.
 - **hasPlayerOwner Guard**: Using `actor.hasPlayerOwner` filters to party members only, avoiding sync of GM-only NPCs/creatures. Combined with `userId !== game.user.id` check to prevent echo when receiving server updates.
+
+## Task 16 - PlaneShift → Foundry Sync
+
+- **fromUuid() for Actor Lookup**: Foundry's global async `fromUuid(uuid)` function is the preferred way to look up documents by UUID. It handles all document types and world/compendium resolution automatically.
+- **Echo Prevention via Options Flag**: Pass `{ planeshift: true }` as the second argument to `actor.update()` - this flag is available in the `options` parameter of the `updateActor` hook, allowing sync.js to skip changes that originated from PlaneShift and prevent infinite loops.
+- **Permission Checks in Foundry**: Check `actor.isOwner` for basic ownership permission, and `actor.limited && !game.user.isGM` to detect GM-locked actors that shouldn't be modified by players.
+- **node_update_result Response Pattern**: The Foundry module sends `{ type: 'node_update_result', requestId, payload: { success, error?, updated? } }` back to the server, allowing the server to track which updates were successfully applied.
+- **Connection Tracking with Set**: Using `Set<WebSocket>` on the server side enables efficient O(1) add/delete for connected clients. The `broadcastNodeUpdate()` function iterates this set to push changes to all connected Foundry instances.
+- **Whitelist Consistency**: The same fields whitelisted in sync.js (Foundry→PlaneShift direction) should be the inverse of what's accepted in receive.js (PlaneShift→Foundry direction). This ensures bidirectional sync only touches agreed-upon fields.

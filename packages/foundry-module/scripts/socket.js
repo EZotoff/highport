@@ -1,6 +1,5 @@
-/**
- * FoundryBridge - WebSocket connection to PlaneShift server
- */
+import { handleNodeUpdate } from "./receive.js";
+
 export class FoundryBridge {
   constructor(serverUrl, apiKey) {
     this.serverUrl = serverUrl;
@@ -70,7 +69,29 @@ export class FoundryBridge {
     }
   }
 
-  handleMessage(msg) {
+  async handleMessage(msg) {
     console.log("PlaneShift Bridge: Received message", msg.type);
+
+    switch (msg.type) {
+      case "handshake_ack":
+        console.log("PlaneShift Bridge: Handshake acknowledged");
+        break;
+      case "node_update": {
+        const result = await handleNodeUpdate(msg);
+        this.send({
+          type: result.success ? "ack" : "error",
+          requestId: msg.requestId,
+          ...result,
+        });
+        break;
+      }
+      case "ack":
+        break;
+      case "error":
+        console.error("PlaneShift Bridge: Server error", msg.payload);
+        break;
+      default:
+        console.log("PlaneShift Bridge: Received", msg.type);
+    }
   }
 }

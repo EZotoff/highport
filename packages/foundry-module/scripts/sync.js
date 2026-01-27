@@ -92,16 +92,14 @@ function buildSyncPayload(actor, changes) {
  * Hook: Detect actor updates and sync to PlaneShift
  */
 Hooks.on("updateActor", (actor, changes, options, userId) => {
-  // Only sync player-owned actors (party members)
+  if (options.planeshift) return;
+
   if (!actor.hasPlayerOwner) return;
 
-  // Only sync if this client made the change (avoid echo)
   if (userId !== game.user.id) return;
 
-  // Check if any whitelisted fields changed
   if (!hasWhitelistedChanges(changes)) return;
 
-  // Build and send payload
   const payload = buildSyncPayload(actor, changes);
   if (payload && bridge) {
     bridge.send({
