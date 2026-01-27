@@ -2558,7 +2558,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 8. Reputation & Faction Table
+- [x] 8. Reputation & Faction Table
 
   **What to do**:
   - Create `ReputationTable` component
@@ -2626,7 +2626,7 @@ Phase 4: Foundry Integration
 
 ### Phase 3: GraphRAG (Knowledge System)
 
-- [ ] 10. Python RAG Service Setup
+- [x] 10. Python RAG Service Setup
 
   **What to do**:
   - Initialize FastAPI service in `apps/rag-service`
