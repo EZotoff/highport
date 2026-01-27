@@ -19,8 +19,6 @@ import {
   Panel,
   useReactFlow,
   OnSelectionChangeParams,
-  Connection,
-  addEdge as addReactFlowEdge,
   MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -38,11 +36,11 @@ import {
 import { initPersistence, initProvider, getProvider } from '../../lib/sync';
 import { initAwareness, updateCursor, updateSelection, PresenceState } from '../../lib/awareness';
 import { CursorOverlay, UserList, SelectionHalos } from './Presence';
-import { generateNodeId } from '@planeshift/shared/utils/id';
-import { GraphNode, NodeType } from '@planeshift/shared/types/graph';
+import { generateNodeId, GraphNode, NodeType, MockUser } from '@planeshift/shared';
 import { nodeTypes } from './nodes';
 import { ContextMenu } from './ContextMenu';
 import { initUndoManager, undo, redo } from '../../lib/undo';
+import { getOrCreateUser } from '../../lib/identity';
 
 function GraphCanvasContent() {
   const [nodes, setNodes] = useNodesState<Node>([]);
@@ -50,16 +48,13 @@ function GraphCanvasContent() {
   const { screenToFlowPosition } = useReactFlow();
   const [remoteUsers, setRemoteUsers] = React.useState<PresenceState[]>([]);
   const [currentUser, setCurrentUser] = React.useState<PresenceState | null>(null);
+  const [user, setUser] = useState<MockUser | null>(null);
   
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
-  const [isGM, setIsGM] = useState(false);
+  const isGM = user?.isGM || false;
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('gm') === 'true') {
-      localStorage.setItem('planeshift_gm', 'true');
-    }
-    setIsGM(localStorage.getItem('planeshift_gm') === 'true');
+    setUser(getOrCreateUser());
   }, []);
 
   useEffect(() => {
@@ -89,8 +84,10 @@ function GraphCanvasContent() {
     const provider = initProvider(doc);
     if (!provider.awareness) return;
 
-    const userId = Math.random().toString(36).substring(7);
-    initAwareness(provider.awareness, userId, `User ${userId.slice(0, 4)}`);
+    const userId = user?.userId || Math.random().toString(36).substring(7);
+    const userName = user?.name || `User ${userId.slice(0, 4)}`;
+    
+    initAwareness(provider.awareness, userId, userName);
 
     const updateAwarenessState = () => {
       if (!provider.awareness) return;
@@ -112,7 +109,7 @@ function GraphCanvasContent() {
     return () => {
       provider.awareness?.off('change', updateAwarenessState);
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const doc = getYDoc();
@@ -128,11 +125,12 @@ function GraphCanvasContent() {
 
         loadedNodes.push({
           id: node.id,
-          type: node.type || 'custom',
+          type: node.type || 'custom', 
           position: node.position,
           data: { 
             label: node.label, 
             description: node.metadata.description, 
+            type: node.type,
             locked: node.locked,
             hidden: node.hidden,
             ...node.metadata 
@@ -145,6 +143,8 @@ function GraphCanvasContent() {
       edgesMap.forEach((yMap: any) => {
         const edge = yMapToEdge(yMap);
         
+        if (edge.hidden && !isGM) return;
+
         const strokeWidth = Math.max(1, Math.min(5, edge.weight || 1));
         
         loadedEdges.push({
@@ -156,6 +156,7 @@ function GraphCanvasContent() {
           style: { 
             strokeWidth,
             stroke: edge.color || '#b1b1b7',
+            strokeDasharray: edge.style === 'dashed' ? '5,5' : edge.style === 'dotted' ? '2,2' : undefined,
           },
           markerEnd: {
             type: MarkerType.ArrowClosed,
@@ -238,11 +239,11 @@ function GraphCanvasContent() {
       locked: false,
       hidden: false,
       created_at: Date.now(),
-      created_by: 'local-user',
+      created_by: user?.userId || 'anonymous',
     };
 
     addNode(doc, newNode);
-  }, []);
+  }, [user]);
 
   const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault();
@@ -257,25 +258,36 @@ function GraphCanvasContent() {
     setContextMenu(null);
   }, []);
 
-  const handleContextAction = useCallback((action: 'edit' | 'delete' | 'lock' | 'hide') => {
+  const handleContextAction = useCallback((action: 'edit' | 'delete' | 'lock' | 'unlock' | 'hide' | 'unhide') => {
     if (!contextMenu) return;
     const doc = getYDoc();
-    const node = nodes.find(n => n.id === contextMenu.nodeId);
+    const nodesMap = getNodesMap(doc);
+    const yNode = nodesMap.get(contextMenu.nodeId);
+    if (!yNode) return;
+    const node = yMapToNode(yNode);
     
     if (action === 'delete') {
       deleteNode(doc, contextMenu.nodeId);
-    } else if (action === 'lock') {
-      updateNodeLock(doc, contextMenu.nodeId, !node?.data.locked);
-    } else if (action === 'hide') {
-      updateNodeVisibility(doc, contextMenu.nodeId, !node?.data.hidden);
+    } else if (action === 'lock' || action === 'unlock') {
+      updateNodeLock(doc, contextMenu.nodeId, action === 'lock');
+    } else if (action === 'hide' || action === 'unhide') {
+      updateNodeVisibility(doc, contextMenu.nodeId, action === 'hide');
     } else if (action === 'edit') {
-      alert('Edit feature coming soon!');
+      alert(`Edit node: ${node.label}`);
     }
     
     closeContextMenu();
-  }, [contextMenu, nodes, closeContextMenu]);
+  }, [contextMenu, closeContextMenu]);
 
-  const contextNode = nodes.find(n => n.id === contextMenu?.nodeId);
+  const getContextNode = (): GraphNode | null => {
+    if (!contextMenu) return null;
+    const doc = getYDoc();
+    const nodesMap = getNodesMap(doc);
+    const yNode = nodesMap.get(contextMenu.nodeId);
+    return yNode ? yMapToNode(yNode) : null;
+  };
+  
+  const contextNode = getContextNode();
 
   return (
     <div style={{ width: '100vw', height: '100vh' }} onMouseMove={onMouseMove}>
@@ -312,17 +324,14 @@ function GraphCanvasContent() {
         </Panel>
       </ReactFlow>
       
-      {contextMenu && (
+      {contextMenu && contextNode && (
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
+          node={contextNode}
           onClose={closeContextMenu}
-          onEdit={() => handleContextAction('edit')}
-          onDelete={() => handleContextAction('delete')}
-          onLock={() => handleContextAction('lock')}
-          onHide={() => handleContextAction('hide')}
-          isLocked={!!contextNode?.data.locked}
-          isHidden={!!contextNode?.data.hidden}
+          onAction={handleContextAction}
+          isGM={isGM}
         />
       )}
     </div>

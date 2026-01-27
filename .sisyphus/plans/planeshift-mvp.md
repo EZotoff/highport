@@ -2519,7 +2519,7 @@ Phase 4: Foundry Integration
 
 ### Phase 2: Campaign State (Tables)
 
-- [ ] 7. Base Resources Table
+- [x] 7. Base Resources Table
 
   **What to do**:
   - Create `BaseResources` component with data grid (React Table or similar)
