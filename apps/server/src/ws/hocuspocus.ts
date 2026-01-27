@@ -114,6 +114,7 @@ export const hocuspocus = new Hocuspocus({
 });
 
 export async function startHocuspocus(): Promise<void> {
+  await hocuspocus.listen();
   console.log(`[Hocuspocus] WebSocket server listening on port ${HOCUSPOCUS_PORT}`);
 }
 
