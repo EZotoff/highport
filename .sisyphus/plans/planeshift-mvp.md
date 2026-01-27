@@ -67,7 +67,7 @@ Build a real-time collaborative campaign management platform that synchronizes n
 - [x] RAG queries respect character knowledge permissions
 - [x] Foundry module syncs Actor changes to PlaneShift and vice versa
 - [x] All CRDT merge logic has passing unit tests
-- [ ] Application deploys to Vercel with managed backend services
+- [x] Application deploys to Vercel with managed backend services
 
 ### Must Have
 - Real-time collaboration (Yjs CRDT)
