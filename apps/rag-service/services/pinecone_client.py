@@ -1,0 +1,131 @@
+"""Pinecone vector database client wrapper."""
+
+import os
+from typing import Optional
+from dataclasses import dataclass
+
+
+@dataclass
+class QueryResult:
+    """Result from a Pinecone query."""
+
+    id: str
+    score: float
+    metadata: dict
+
+
+class PineconeService:
+    """Wrapper for Pinecone vector database operations.
+
+    Provides a simplified interface for upserting and querying vectors.
+    """
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        index_name: Optional[str] = None,
+        environment: Optional[str] = None,
+    ):
+        """Initialize the Pinecone service.
+
+        Args:
+            api_key: Pinecone API key. If not provided, reads from
+                PINECONE_API_KEY environment variable.
+            index_name: Name of the Pinecone index. If not provided, reads from
+                PINECONE_INDEX_NAME environment variable.
+            environment: Pinecone environment. If not provided, reads from
+                PINECONE_ENVIRONMENT environment variable.
+        """
+        self.api_key = api_key or os.environ.get("PINECONE_API_KEY")
+        self.index_name = index_name or os.environ.get("PINECONE_INDEX_NAME")
+        self.environment = environment or os.environ.get("PINECONE_ENVIRONMENT")
+        self._index = None
+
+    def _ensure_index(self):
+        """Lazily initialize the Pinecone index."""
+        if self._index is None:
+            if not self.api_key:
+                raise ValueError(
+                    "PINECONE_API_KEY not set. Provide api_key or set environment variable."
+                )
+            if not self.index_name:
+                raise ValueError(
+                    "PINECONE_INDEX_NAME not set. Provide index_name or set environment variable."
+                )
+            from pinecone import Pinecone
+
+            pc = Pinecone(api_key=self.api_key)
+            self._index = pc.Index(self.index_name)
+
+    async def upsert(
+        self,
+        id: str,
+        vector: list[float],
+        metadata: Optional[dict] = None,
+        namespace: str = "",
+    ) -> None:
+        """Upsert a vector into Pinecone.
+
+        Args:
+            id: Unique identifier for the vector.
+            vector: The embedding vector.
+            metadata: Optional metadata to store with the vector.
+            namespace: Optional namespace for organization.
+        """
+        self._ensure_index()
+        self._index.upsert(
+            vectors=[{"id": id, "values": vector, "metadata": metadata or {}}],
+            namespace=namespace,
+        )
+
+    async def upsert_batch(self, vectors: list[dict], namespace: str = "") -> None:
+        """Upsert multiple vectors into Pinecone.
+
+        Args:
+            vectors: List of dicts with 'id', 'values', and optional 'metadata'.
+            namespace: Optional namespace for organization.
+        """
+        self._ensure_index()
+        self._index.upsert(vectors=vectors, namespace=namespace)
+
+    async def query(
+        self,
+        vector: list[float],
+        top_k: int = 5,
+        namespace: str = "",
+        include_metadata: bool = True,
+    ) -> list[QueryResult]:
+        """Query Pinecone for similar vectors.
+
+        Args:
+            vector: The query embedding vector.
+            top_k: Number of results to return.
+            namespace: Optional namespace to query.
+            include_metadata: Whether to include metadata in results.
+
+        Returns:
+            List of QueryResult objects with id, score, and metadata.
+        """
+        self._ensure_index()
+        results = self._index.query(
+            vector=vector,
+            top_k=top_k,
+            namespace=namespace,
+            include_metadata=include_metadata,
+        )
+        return [
+            QueryResult(
+                id=match["id"], score=match["score"], metadata=match.get("metadata", {})
+            )
+            for match in results.get("matches", [])
+        ]
+
+    async def delete(self, ids: list[str], namespace: str = "") -> None:
+        """Delete vectors by ID.
+
+        Args:
+            ids: List of vector IDs to delete.
+            namespace: Optional namespace.
+        """
+        self._ensure_index()
+        self._index.delete(ids=ids, namespace=namespace)
