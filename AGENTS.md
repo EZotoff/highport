@@ -628,3 +628,223 @@ Subagents frequently claim "done" when:
 - **Hot reloading**: Turbo handles cross-package rebuilds.
 - **Docker**: Must run `docker compose up -d` before server tests.
 - **Evidence**: All verification evidence goes to `.sisyphus/evidence/`.
+
+---
+
+# HOLISTIC VERIFICATION SYSTEM
+
+## Quick Start
+
+To run a full holistic verification of PlaneShift:
+
+```
+/verify-app
+```
+
+This triggers Atlas-orchestrated verification with:
+1. Prerequisites check (services, static gates, tests)
+2. Structured scenarios (Gherkin acceptance tests)
+3. Multi-user sync tests (two browser contexts)
+4. Exploratory testing (15 minutes agent-driven exploration)
+5. Report generation with evidence
+
+## Verification Files
+
+| File | Purpose |
+|------|---------|
+| `.sisyphus/verification/TEMPLATE.md` | Template for verification plans |
+| `.sisyphus/verification/planeshift-holistic.md` | PlaneShift-specific scenarios |
+| `.opencode/skills/verify-app.md` | Slash command skill |
+| `.sisyphus/evidence/{plan-name}/` | Evidence output directory |
+
+## Verification Plan Structure
+
+Verification plans contain:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  VERIFICATION PLAN STRUCTURE                                │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  PREREQUISITES                                              │
+│  - Services running (Docker, pnpm dev)                      │
+│  - Static gates pass (typecheck, build)                     │
+│  - Tests pass (unit, E2E)                                   │
+│                                                             │
+│  STRUCTURED SCENARIOS (Gherkin format)                      │
+│  - Smoke Tests (app loads, pages render)                    │
+│  - Feature Tests (CRUD operations)                          │
+│  - Persistence Tests (data survives reload)                 │
+│  - Multi-User Sync Tests (real-time collaboration)          │
+│  - Integration Tests (user journeys)                        │
+│  - Error Handling Tests (graceful degradation)              │
+│                                                             │
+│  EXPLORATORY TESTING                                        │
+│  - Time-boxed free exploration (15 min)                     │
+│  - Edge case discovery                                      │
+│  - Performance stress testing                               │
+│  - Visual/UX issue hunting                                  │
+│                                                             │
+│  EVIDENCE REQUIREMENTS                                      │
+│  - Screenshots for each scenario                            │
+│  - Console error logs                                       │
+│  - Sync latency measurements                                │
+│  - REPORT.md summary                                        │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Scenario Format (Gherkin)
+
+```markdown
+### Scenario {N}: {Name}
+
+**Priority**: Critical | High | Medium | Low
+**Component**: Graph | Table | Sync | RAG | Foundry
+**Multi-User**: Yes | No
+
+```gherkin
+GIVEN {precondition}
+AND {additional precondition}
+WHEN {user action}
+AND {additional action}
+THEN {expected outcome}
+AND {additional expectation}
+```
+
+**Evidence**: `{screenshot-name}.png`
+```
+
+## Execution Flow
+
+```
+User: /verify-app
+         │
+         ▼
+┌─────────────────┐
+│  ATLAS STARTS   │ ◄── Orchestrator
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ 1. PREREQUISITES│ ◄── Sequential, blocking
+│    - Services   │
+│    - TypeCheck  │
+│    - Tests      │
+└────────┬────────┘
+         │ PASS
+         ▼
+┌─────────────────┐
+│ 2. SMOKE TESTS  │ ◄── delegate_task + playwright
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ 3. FEATURE      │ ◄── Parallel where possible
+│    TESTS        │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ 4. PERSISTENCE  │
+│    TESTS        │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ 5. SYNC TESTS   │ ◄── Two browser contexts
+│    (Multi-User) │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ 6. INTEGRATION  │
+│    TESTS        │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ 7. EXPLORATORY  │ ◄── Time-boxed (15 min)
+│    TESTING      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ 8. REPORT       │ ◄── REPORT.md generated
+│    GENERATION   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  VERIFICATION   │
+│  COMPLETE       │
+└─────────────────┘
+```
+
+## Evidence Directory Structure
+
+```
+.sisyphus/evidence/planeshift-holistic/
+├── prerequisites/
+│   ├── typecheck-output.txt
+│   ├── test-output.txt
+│   └── e2e-output.txt
+├── smoke/
+│   └── smoke-*.png
+├── feature/
+│   └── feature-*.png
+├── persist/
+│   └── persist-*.png
+├── sync/
+│   ├── sync-*-A.png
+│   ├── sync-*-B.png
+│   └── sync-latency-measurements.json
+├── integration/
+│   └── integration-*.png
+├── exploratory/
+│   ├── exploration-log.md
+│   └── finding-*.png
+├── console-errors.txt
+└── REPORT.md
+```
+
+## Success Criteria
+
+| Category | Requirement | Blocking |
+|----------|-------------|----------|
+| Smoke Tests | 100% pass | Yes |
+| Feature Tests | 100% pass | Yes |
+| Persistence Tests | 100% pass | Yes |
+| Multi-User Sync | ≥75% pass | Yes |
+| Integration Tests | 100% pass | Yes |
+| Error Handling | ≥50% pass | No |
+| Exploratory | No Critical issues | Yes |
+| Console Errors | 0 errors | Yes |
+
+**PASS = All blocking requirements met**
+
+## Manual Invocation
+
+If you prefer to run verification manually instead of `/verify-app`:
+
+```markdown
+Run holistic verification of PlaneShift.
+
+1. Check services: localhost:3000, 3001, 3002
+2. Run: pnpm typecheck && pnpm test && pnpm e2e
+3. Load skill: /playwright
+4. Execute scenarios from .sisyphus/verification/planeshift-holistic.md
+5. Perform 15 min exploratory testing
+6. Generate REPORT.md in .sisyphus/evidence/
+```
+
+## Creating Custom Verification Plans
+
+To create a verification plan for a new feature or subsystem:
+
+1. Copy `.sisyphus/verification/TEMPLATE.md`
+2. Define prerequisites specific to the feature
+3. Write Gherkin scenarios for all acceptance criteria
+4. Add exploratory prompts for edge cases
+5. Define evidence requirements
+6. Run with: `/verify-app --plan=my-plan.md`
