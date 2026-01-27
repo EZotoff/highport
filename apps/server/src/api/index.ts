@@ -1,6 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { fetchDocumentState } from '../ws/hocuspocus.js';
+import { registerKnowledgeRoutes } from '../routes/knowledge.js';
+import { registerDocumentRoutes } from '../routes/documents.js';
 
 const FASTIFY_PORT = 3002;
 
@@ -10,6 +12,9 @@ export async function startFastify(): Promise<void> {
   await fastify.register(cors, {
     origin: ['http://localhost:3000'],
   });
+
+  await registerKnowledgeRoutes(fastify);
+  await registerDocumentRoutes(fastify);
 
   fastify.get('/health', async () => {
     return { status: 'ok' };

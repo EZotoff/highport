@@ -129,3 +129,44 @@ class PineconeService:
         """
         self._ensure_index()
         self._index.delete(ids=ids, namespace=namespace)
+
+    async def query_by_filter(
+        self, filter_dict: dict, top_k: int = 10000, namespace: str = ""
+    ) -> list[dict]:
+        """Query Pinecone with a metadata filter.
+
+        Args:
+            filter_dict: Pinecone metadata filter dictionary.
+            top_k: Maximum number of results to return.
+            namespace: Optional namespace to query.
+
+        Returns:
+            List of matching vectors with id and metadata.
+        """
+        self._ensure_index()
+        # Use a zero vector since we're filtering, not doing similarity search
+        zero_vector = [0.0] * 1536  # Standard OpenAI embedding dimension
+        results = self._index.query(
+            vector=zero_vector,
+            top_k=top_k,
+            namespace=namespace,
+            filter=filter_dict,
+            include_metadata=True,
+        )
+        return [
+            {"id": match["id"], "metadata": match.get("metadata", {})}
+            for match in results.get("matches", [])
+        ]
+
+    async def update_metadata(
+        self, id: str, metadata: dict, namespace: str = ""
+    ) -> None:
+        """Update metadata for a specific vector.
+
+        Args:
+            id: The vector ID to update.
+            metadata: The metadata fields to update (merged with existing).
+            namespace: Optional namespace.
+        """
+        self._ensure_index()
+        self._index.update(id=id, set_metadata=metadata, namespace=namespace)

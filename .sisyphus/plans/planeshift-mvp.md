@@ -2593,7 +2593,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 9. Graph-Table Linking
+- [x] 9. Graph-Table Linking
 
   **What to do**:
   - Implement "Focus on Graph" action from table row
@@ -2673,7 +2673,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 11. Document Ingestion Pipeline
+- [x] 11. Document Ingestion Pipeline
 
   **What to do**:
   - Create ingestion endpoint: `POST /ingest`
@@ -2727,7 +2727,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 12. Knowledge Gating & Access Control
+- [x] 12. Knowledge Gating & Access Control
 
   **What to do**:
   - **In apps/server**: Create database table `character_knowledge` (see schema in Scope Tag Specification)

@@ -30,3 +30,49 @@
 - **Component Isolation**: Created `NodePanel` as a standalone component that subscribes to Yjs data independently given a nodeId. This decoupling makes it reusable and easier to test.
 - **Visual Feedback**: Provided immediate visual feedback (Toast + Button Styles) for broken links (e.g., deleted nodes) directly in the table UI, improving user confidence.
 - **Testing with Vitest**: Successfully tested React components using `@testing-library/react` and mocked Yjs data access, proving that complex CRDT-backed components can be unit tested effectively.
+
+## Knowledge Gating & Access Control (Task 12)
+
+### Drizzle ORM Mock Pattern
+When mocking Drizzle's `db` for tests, tables expose their name through internal symbols, not `table._.name` directly. Use this helper to extract table names robustly:
+
+```typescript
+function getTableName(table: unknown): string {
+  if (!table || typeof table !== 'object') return '';
+  const tableObj = table as Record<string | symbol, unknown>;
+  for (const key of Object.getOwnPropertySymbols(tableObj)) {
+    const val = tableObj[key];
+    if (val && typeof val === 'object' && 'name' in val) {
+      return (val as { name: string }).name;
+    }
+  }
+  if ('_' in tableObj && tableObj._ && typeof tableObj._ === 'object' && 'name' in tableObj._) {
+    return (tableObj._ as { name: string }).name;
+  }
+  return '';
+}
+```
+
+### Pinecone Filter Queries
+For querying by metadata filter only (not similarity), use a zero vector:
+```python
+results = index.query(
+    vector=[0.0] * 1536,  # Zero vector for filter-only queries
+    filter={"source_id": {"$eq": source_id}},
+    top_k=10000,
+    include_metadata=True,
+)
+```
+
+### React 'use client' Callback Props
+The warning "Props must be serializable for components in the 'use client' entry file" for callback props like `onUpdate: () => void` is expected. Client components can receive function props when rendered by other client components.
+
+## Task 12 - Knowledge Gating & Access Control
+- **Drizzle Array Columns**: Use `.array()` modifier on text columns for PostgreSQL text arrays. Default values require `sql` template: `default(sql\`'{public}'::text[]\`)`.
+- **Database CHECK Constraints**: Drizzle supports CHECK constraints via the `check()` function in the table config. Used `sql\`\${table.knowledgeTag} LIKE 'secret:%'\`` to enforce only secret tags can be stored.
+- **Fastify Route Registration Pattern**: Created separate route files (`routes/knowledge.ts`, `routes/documents.ts`) with `registerXxxRoutes(fastify)` functions that get called from the main API index. Keeps route logic modular and testable.
+- **Mock-Aware Testing**: For Fastify tests, mocking the database client with `vi.mock('../src/db/client.js')` and providing mock implementations allows testing route logic without a real database.
+- **Cross-Service Communication**: The server calls RAG service for Pinecone updates. Using `try/catch` with a log warning allows graceful degradation if RAG service is unavailable.
+- **Existing Code Discovery**: Found that `ScopeEditor.tsx` and `routers/scope.py` already existed from previous work, avoiding duplicate implementation. Always check for existing files before writing.
+- **Python Test Environment**: Use `python -m pytest` instead of bare `pytest` to avoid module resolution issues with system-level pytest installations.
+- **Icon Mocking in React Tests**: Mocking icon libraries (lucide-react) with simple span elements with data-testid makes tests work without the actual icon implementations.

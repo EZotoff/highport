@@ -1,4 +1,5 @@
-import { pgTable, varchar, timestamp, unique, customType } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, timestamp, unique, customType, text, integer, check } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 // Custom type for bytea since drizzle-orm/pg-core doesn't export it directly
 const bytea = customType<{ data: Uint8Array; driverData: Buffer }>({
@@ -41,4 +42,24 @@ export const users = pgTable('users', {
   id: varchar('id', { length: 64 }).primaryKey(),
   name: varchar('name', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const characterKnowledge = pgTable('character_knowledge', {
+  id: text('id').primaryKey(),
+  characterId: text('character_id').notNull(),
+  knowledgeTag: text('knowledge_tag').notNull(),
+  grantedBy: text('granted_by').notNull(),
+  grantedAt: timestamp('granted_at').defaultNow().notNull(),
+}, (table) => ({
+  secretTagCheck: check('secret_tag_check', sql`${table.knowledgeTag} LIKE 'secret:%'`),
+}));
+
+export const ingestedDocuments = pgTable('ingested_documents', {
+  id: text('id').primaryKey(),
+  campaignId: text('campaign_id').notNull().references(() => campaigns.id),
+  filename: text('filename').notNull(),
+  accessScope: text('access_scope').array().notNull().default(sql`'{public}'::text[]`),
+  chunkCount: integer('chunk_count').notNull(),
+  ingestedAt: timestamp('ingested_at').defaultNow().notNull(),
+  ingestedBy: text('ingested_by').notNull(),
 });
