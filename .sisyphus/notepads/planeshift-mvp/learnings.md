@@ -141,3 +141,38 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **No Auto-Import Pattern**: Per requirements, import shows a report/preview requiring user confirmation before applying changes. Unmatched actors are listed but not imported.
 - **Filename Sanitization**: Used simple regex `name.replace(/[^a-zA-Z0-9]/g, '_')` to create safe filenames for ZIP entries.
 - **Download via Anchor Tag**: Created temporary anchor element with `href=URL.createObjectURL(blob)` and programmatically clicked for download, then cleaned up with `revokeObjectURL()`.
+
+## E2E Performance Test (2026-01-27)
+
+### Status
+**File already exists:** `apps/web/e2e/performance.spec.ts`
+
+The performance test file was already implemented and includes:
+- 500 node creation and rendering test
+- FPS measurement using requestAnimationFrame (>= 30 fps threshold)
+- Pan/zoom responsiveness test (< 2000ms threshold)
+- Concurrent users test (5 users, 20 nodes)
+
+### Implementation Notes
+- Uses programmatic node creation via `page.evaluate()` with button clicks
+- Batches creation (pauses every 50 nodes) to avoid overwhelming the browser
+- Measures FPS over 1 second window using requestAnimationFrame
+- Tests real interaction performance (zoom button, pan gestures)
+- Reasonable thresholds for CI environments (30fps not 60fps)
+
+### Current Blocker
+The test cannot run because `/graph` page has a build error:
+```
+Error: useSearchParams() should be wrapped in a suspense boundary
+```
+
+This is a separate issue in `apps/web/app/graph/page.tsx` that needs fixing before E2E tests can run.
+
+### CDP vs requestAnimationFrame
+The plan suggested using Chrome DevTools Protocol for metrics, but the current implementation uses requestAnimationFrame which is:
+- Simpler to implement
+- Adequate for detecting major performance issues
+- Doesn't require CDP session setup
+
+The task said "if available" for CDP, so this is acceptable.
+
