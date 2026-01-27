@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useToast } from '../../components/ui/ToastContext';
 import {
   useReactTable,
   getCoreRowModel,
@@ -8,7 +10,7 @@ import {
   ColumnDef,
 } from '@tanstack/react-table';
 import * as Y from 'yjs';
-import { Plus, Link as LinkIcon, Unlink } from 'lucide-react';
+import { Plus, Link as LinkIcon, Unlink, ExternalLink, AlertTriangle } from 'lucide-react';
 import { getYDoc, getNodesMap } from '../../lib/ydoc';
 import {
   Faction,
@@ -27,6 +29,8 @@ const EditableCell = ({
   min,
   max,
   className = '',
+  onClick,
+  isLink = false,
 }: {
   value: string | number;
   onChange: (val: string | number) => void;
@@ -34,14 +38,18 @@ const EditableCell = ({
   min?: number;
   max?: number;
   className?: string;
+  onClick?: () => void;
+  isLink?: boolean;
 }) => {
   const [localValue, setLocalValue] = useState(value);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
 
   const handleBlur = () => {
+    setIsEditing(false);
     if (localValue !== value) {
       onChange(localValue);
     }
@@ -63,6 +71,15 @@ const EditableCell = ({
     setLocalValue(val);
   };
 
+  if (!isEditing && isLink) {
+    return (
+      <div className="flex items-center gap-2 group cursor-pointer" onClick={onClick}>
+        <span className={`${className} hover:underline`}>{value}</span>
+        <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-400" />
+      </div>
+    );
+  }
+
   return (
     <input
       type={type}
@@ -70,6 +87,7 @@ const EditableCell = ({
       onChange={handleChange}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
+      onFocus={() => setIsEditing(true)}
       className={`w-full bg-transparent border-none focus:ring-1 focus:ring-blue-500 rounded px-1 ${className}`}
     />
   );
@@ -79,6 +97,8 @@ export function ReputationTable() {
   const [data, setData] = useState<Faction[]>([]);
   const [nodes, setNodes] = useState<{ id: string; label: string }[]>([]);
   const [isNodePickerOpen, setIsNodePickerOpen] = useState<string | null>(null); // factionId
+  const router = useRouter();
+  const { showToast } = useToast();
 
   // Initialize Data
   useEffect(() => {
@@ -146,6 +166,20 @@ export function ReputationTable() {
       setIsNodePickerOpen(null);
   }, []);
 
+  const handleNameClick = useCallback((faction: Faction) => {
+    if (faction.factionNodeId) {
+      // Check if node exists
+      const nodeExists = nodes.some(n => n.id === faction.factionNodeId);
+      if (nodeExists) {
+        router.push(`/graph?focusNode=${faction.factionNodeId}`);
+      } else {
+        showToast('Linked node not found in graph', 'warning');
+      }
+    } else {
+      showToast('This faction is not linked to any graph node', 'info');
+    }
+  }, [nodes, router, showToast]);
+
   const columns = useMemo<ColumnDef<Faction>[]>(
     () => [
       {
@@ -156,6 +190,8 @@ export function ReputationTable() {
             value={getValue() as string}
             onChange={(val) => handleUpdate(row.original.id, 'name', val)}
             className="font-medium text-zinc-200"
+            isLink={!!row.original.factionNodeId}
+            onClick={() => handleNameClick(row.original)}
           />
         ),
       },
@@ -219,6 +255,7 @@ export function ReputationTable() {
         cell: ({ row }) => {
           const faction = row.original;
           const linkedNode = nodes.find((n) => n.id === faction.factionNodeId);
+          const isMissing = faction.factionNodeId && !linkedNode;
 
           return (
             <div className="relative">
@@ -253,13 +290,15 @@ export function ReputationTable() {
                 <button
                   onClick={() => setIsNodePickerOpen(faction.id)}
                   className={`flex items-center gap-2 px-2 py-1 rounded text-sm transition-colors ${
-                    linkedNode
-                      ? 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/50 border border-blue-800/50'
-                      : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
+                    isMissing 
+                      ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-800/50'
+                      : linkedNode
+                        ? 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/50 border border-blue-800/50'
+                        : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
                   }`}
                 >
-                  <LinkIcon size={14} />
-                  {linkedNode ? linkedNode.label : 'Link Node'}
+                  {isMissing ? <AlertTriangle size={14} /> : <LinkIcon size={14} />}
+                  {isMissing ? 'Missing Node' : linkedNode ? linkedNode.label : 'Link Node'}
                 </button>
               )}
             </div>
@@ -267,7 +306,7 @@ export function ReputationTable() {
         },
       },
     ],
-    [handleUpdate, nodes, isNodePickerOpen, handleLinkNode]
+    [handleUpdate, nodes, isNodePickerOpen, handleLinkNode, handleNameClick]
   );
 
   const table = useReactTable({

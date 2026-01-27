@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   ReactFlow,
   Background,
@@ -39,19 +40,34 @@ import { CursorOverlay, UserList, SelectionHalos } from './Presence';
 import { generateNodeId, GraphNode, NodeType, MockUser } from '@planeshift/shared';
 import { nodeTypes } from './nodes';
 import { ContextMenu } from './ContextMenu';
+import { NodePanel } from './NodePanel';
 import { initUndoManager, undo, redo } from '../../lib/undo';
 import { getOrCreateUser } from '../../lib/identity';
 
 function GraphCanvasContent() {
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, setCenter } = useReactFlow();
+  const searchParams = useSearchParams();
   const [remoteUsers, setRemoteUsers] = React.useState<PresenceState[]>([]);
   const [currentUser, setCurrentUser] = React.useState<PresenceState | null>(null);
   const [user, setUser] = useState<MockUser | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
   const isGM = user?.isGM || false;
+
+  // Handle URL focus param
+  useEffect(() => {
+    const focusNodeId = searchParams.get('focusNode');
+    if (focusNodeId && nodes.length > 0) {
+      const node = nodes.find((n) => n.id === focusNodeId);
+      if (node) {
+        setCenter(node.position.x, node.position.y, { zoom: 1.5, duration: 800 });
+        setSelectedNodeId(focusNodeId);
+      }
+    }
+  }, [searchParams, nodes, setCenter]);
 
   useEffect(() => {
     setUser(getOrCreateUser());
@@ -221,6 +237,7 @@ function GraphCanvasContent() {
     if (provider && provider.awareness) {
       const selectedId = nodes.length > 0 ? nodes[0].id : null;
       updateSelection(provider.awareness, selectedId);
+      setSelectedNodeId(selectedId);
     }
   }, []);
 
@@ -323,6 +340,8 @@ function GraphCanvasContent() {
           </div>
         </Panel>
       </ReactFlow>
+      
+      <NodePanel nodeId={selectedNodeId} onClose={() => setSelectedNodeId(null)} />
       
       {contextMenu && contextNode && (
         <ContextMenu
