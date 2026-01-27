@@ -1,3 +1,4 @@
+from typing import AsyncGenerator
 from providers.base import LLMProvider
 
 
@@ -22,3 +23,19 @@ class MockGeminiProvider(LLMProvider):
             {"method": "generate_with_context", "prompt": prompt, "context": context}
         )
         return f"Context-aware response for: {prompt}"
+
+    async def stream(self, prompt: str) -> AsyncGenerator[str, None]:
+        self.call_history.append({"method": "stream", "prompt": prompt})
+        response = self.responses.get(prompt, self.responses["default"])
+        for word in response.split():
+            yield word + " "
+
+    async def stream_with_context(
+        self, prompt: str, context: list[str]
+    ) -> AsyncGenerator[str, None]:
+        self.call_history.append(
+            {"method": "stream_with_context", "prompt": prompt, "context": context}
+        )
+        response = f"Context-aware response for: {prompt}"
+        for word in response.split():
+            yield word + " "

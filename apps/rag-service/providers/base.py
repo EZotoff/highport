@@ -1,6 +1,7 @@
 """Abstract base class for LLM providers."""
 
 from abc import ABC, abstractmethod
+from typing import AsyncGenerator
 
 
 class LLMProvider(ABC):
@@ -32,5 +33,32 @@ class LLMProvider(ABC):
 
         Returns:
             The generated text response.
+        """
+        pass
+
+    @abstractmethod
+    async def stream(self, prompt: str) -> AsyncGenerator[str, None]:
+        """Stream generated text from a prompt.
+
+        Args:
+            prompt: The input prompt for text generation.
+
+        Yields:
+            Chunks of generated text.
+        """
+        pass
+
+    @abstractmethod
+    async def stream_with_context(
+        self, prompt: str, context: list[str]
+    ) -> AsyncGenerator[str, None]:
+        """Stream generated text with additional context documents.
+
+        Args:
+            prompt: The input prompt for text generation.
+            context: List of context documents to include.
+
+        Yields:
+            Chunks of generated text.
         """
         pass

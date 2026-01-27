@@ -1,7 +1,7 @@
 """Google Gemini LLM provider implementation."""
 
 import os
-from typing import Optional
+from typing import Optional, AsyncGenerator
 
 from providers.base import LLMProvider
 
@@ -73,3 +73,43 @@ User query: {prompt}
 Please provide a helpful response based on the context above."""
 
         return await self.generate(full_prompt)
+
+    async def stream(self, prompt: str) -> AsyncGenerator[str, None]:
+        """Stream generated text from a prompt using Gemini.
+
+        Args:
+            prompt: The input prompt for text generation.
+
+        Yields:
+            Chunks of generated text.
+        """
+        self._ensure_client()
+        response = await self._model.generate_content_async(prompt, stream=True)
+        async for chunk in response:
+            yield chunk.text
+
+    async def stream_with_context(
+        self, prompt: str, context: list[str]
+    ) -> AsyncGenerator[str, None]:
+        """Stream generated text with additional context documents.
+
+        Args:
+            prompt: The input prompt for text generation.
+            context: List of context documents to include.
+
+        Yields:
+            Chunks of generated text.
+        """
+        context_text = "\n\n---\n\n".join(context)
+        full_prompt = f"""Based on the following context documents:
+
+{context_text}
+
+---
+
+User query: {prompt}
+
+Please provide a helpful response based on the context above."""
+
+        async for chunk in self.stream(full_prompt):
+            yield chunk

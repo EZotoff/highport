@@ -51,15 +51,49 @@ class MockPineconeIndex:
         top_k: int = 5,
         namespace: str = "",
         include_metadata: bool = True,
+        filter: Optional[dict] = None,
     ) -> list[MockQueryResult]:
         self.call_history.append(
-            {"method": "query", "top_k": top_k, "namespace": namespace}
+            {
+                "method": "query",
+                "top_k": top_k,
+                "namespace": namespace,
+                "filter": filter,
+            }
         )
         # Return canned results based on stored vectors
         results = []
         for key, stored in self.vectors.items():
             if namespace and stored["namespace"] != namespace:
                 continue
+
+            # Simple filter simulation
+            if filter:
+                match = True
+                for f_key, f_val in filter.items():
+                    # Handle $in operator
+                    if isinstance(f_val, dict) and "$in" in f_val:
+                        if stored["metadata"].get(f_key) not in f_val["$in"]:
+                            # Special case: check if any of the stored value (if list) is in target list
+                            # But here we are checking if access_scope (list) contains one of scope (list)
+                            # The instructions say: filter={"access_scope": {"$in": scope}}
+                            # Pinecone $in checks if the field value equals one of the values in the list.
+                            # BUT access_scope is a list of strings.
+                            # Pinecone behavior for array fields:
+                            # If the metadata field is an array, the $in operator matches if the array contains ANY of the values in the $in list.
+
+                            stored_val = stored["metadata"].get(f_key)
+                            if isinstance(stored_val, list):
+                                if not any(v in f_val["$in"] for v in stored_val):
+                                    match = False
+                            elif stored_val not in f_val["$in"]:
+                                match = False
+                    # Handle direct equality
+                    elif stored["metadata"].get(f_key) != f_val:
+                        match = False
+                if not match:
+                    continue
+
             results.append(
                 MockQueryResult(
                     id=stored["id"],

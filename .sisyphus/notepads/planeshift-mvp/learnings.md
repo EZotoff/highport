@@ -76,3 +76,9 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **Existing Code Discovery**: Found that `ScopeEditor.tsx` and `routers/scope.py` already existed from previous work, avoiding duplicate implementation. Always check for existing files before writing.
 - **Python Test Environment**: Use `python -m pytest` instead of bare `pytest` to avoid module resolution issues with system-level pytest installations.
 - **Icon Mocking in React Tests**: Mocking icon libraries (lucide-react) with simple span elements with data-testid makes tests work without the actual icon implementations.
+
+## RAG System Implementation (Task 13)
+- **FastAPI SSE Pattern**: Used `StreamingResponse` with `media_type="text/event-stream"` for real-time chat. Yielding `data: {json}\n\n` ensures compatibility with standard SSE clients.
+- **Pytest Asyncio Strict Mode**: Encountered failures with `@pytest.fixture` on async fixtures. Switched to `@pytest_asyncio.fixture` to satisfy strict mode requirements in `pytest-asyncio`.
+- **Vitest Alias Resolution**: Encountered issues with `@/lib/...` alias resolution in component tests. Switched to relative imports (`../../lib/...`) which proved more stable for this test setup.
+- **Pinecone Metadata Filtering**: Implemented scope-based access control using Pinecone's metadata filters. Mock implementation required careful simulation of the `` operator for array fields.

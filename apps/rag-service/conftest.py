@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 
 from main import app
@@ -23,7 +24,7 @@ def pinecone_index():
     return MockPineconeIndex()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -42,7 +43,7 @@ def entity_llm(mock_entity_response):
     return MockGeminiProvider(responses=mock_entity_response)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def ingest_client(embeddings, entity_llm, pinecone_index):
     set_dependencies(embeddings=embeddings, llm=entity_llm, pinecone=pinecone_index)
     transport = ASGITransport(app=app)

@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import ingest_router, scope_router
+from routers import ingest_router, scope_router, query_router
 
 app = FastAPI(title="PlaneShift RAG Service")
 
 app.include_router(ingest_router)
 app.include_router(scope_router)
+app.include_router(query_router)
 
 app.add_middleware(
     CORSMiddleware,

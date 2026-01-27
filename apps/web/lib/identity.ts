@@ -1,6 +1,19 @@
 import { MockUser, generateUserId } from '@planeshift/shared';
 import { getRandomColor } from './awareness';
 
+export interface ActiveCharacter {
+  characterId: string;
+  name: string;
+}
+
+export function getActiveCharacter(): ActiveCharacter | null {
+  if (typeof window !== 'undefined') {
+    const storedJson = localStorage.getItem('planeshift_active_character');
+    return storedJson ? JSON.parse(storedJson) : null;
+  }
+  return null;
+}
+
 export function getOrCreateUser(): MockUser {
   let gmPromotion = false;
   if (typeof window !== 'undefined') {

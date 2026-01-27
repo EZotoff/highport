@@ -94,6 +94,7 @@ class PineconeService:
         top_k: int = 5,
         namespace: str = "",
         include_metadata: bool = True,
+        filter: Optional[dict] = None,
     ) -> list[QueryResult]:
         """Query Pinecone for similar vectors.
 
@@ -102,6 +103,7 @@ class PineconeService:
             top_k: Number of results to return.
             namespace: Optional namespace to query.
             include_metadata: Whether to include metadata in results.
+            filter: Optional metadata filter.
 
         Returns:
             List of QueryResult objects with id, score, and metadata.
@@ -112,6 +114,7 @@ class PineconeService:
             top_k=top_k,
             namespace=namespace,
             include_metadata=include_metadata,
+            filter=filter,
         )
         return [
             QueryResult(
