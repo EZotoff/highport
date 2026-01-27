@@ -132,3 +132,12 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **Schema Already Existed**: The `syncState` and `conflictQueue` tables were already defined in schema.ts with migrations generated. Always check existing schema before creating new tables.
 - **Route Registration Pattern**: Added `registerConflictRoutes(fastify)` to api/index.ts following existing pattern. Routes use `x-is-gm` header to restrict conflict management to GM users.
 - **UI Component Pattern**: ConflictQueue fetches `/api/conflicts`, ConflictCard displays diff between Foundry/PlaneShift values with timestamps. Resolution buttons call POST/DELETE endpoints.
+
+## Task 18 - Manual Fallback Mode (Import/Export)
+
+- **JSZip for ZIP Generation**: Used `jszip` package for client-side ZIP file creation. The `generateAsync({ type: 'blob' })` method produces a Blob for download.
+- **Foundry Actor JSON Structure**: Foundry VTT (mgt2e system) stores actor data in nested paths: `system.hits.value`, `system.characteristics.<char>.value`, `system.finance.cash`. Import/export logic maps these to PlaneShift's flat metadata structure.
+- **Match by UUID then Name**: Import matching uses `foundry_uuid` first (from previous sync), then falls back to case-insensitive name matching. This handles both previously-synced and new actors.
+- **No Auto-Import Pattern**: Per requirements, import shows a report/preview requiring user confirmation before applying changes. Unmatched actors are listed but not imported.
+- **Filename Sanitization**: Used simple regex `name.replace(/[^a-zA-Z0-9]/g, '_')` to create safe filenames for ZIP entries.
+- **Download via Anchor Tag**: Created temporary anchor element with `href=URL.createObjectURL(blob)` and programmatically clicked for download, then cleaned up with `revokeObjectURL()`.
