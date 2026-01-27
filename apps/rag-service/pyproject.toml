@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "planeshift-rag-service"
+version = "0.1.0"
+description = "RAG service for PlaneShift TTRPG campaign management"
+authors = ["PlaneShift Team"]
+readme = "README.md"
+packages = [{include = "providers"}, {include = "services"}, {include = "mocks"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.0"
+uvicorn = "^0.27.0"
+python-dotenv = "^1.0.0"
+pinecone-client = "^3.0.0"
+openai = "^1.10.0"
+tiktoken = "^0.5.0"
+google-generativeai = "^0.3.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+httpx = "^0.26.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
