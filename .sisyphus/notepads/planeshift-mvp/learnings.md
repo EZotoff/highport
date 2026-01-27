@@ -96,3 +96,17 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **Localization Keys vs Runtime Translation**: Use raw localization keys (`"PLANE_SHIFT.Settings.ServerUrl.Name"`) in `game.settings.register()` - Foundry automatically resolves them at display time. Don't call `game.i18n.localize()` during registration.
 - **WebSocket URL Construction**: Server URL is stored as base URL (e.g., `ws://localhost:3002`), then `/foundry` path is appended in the FoundryBridge constructor. This keeps configuration clean while enabling endpoint-specific routing.
 - **Export Pattern for Foundry Modules**: Export both the bridge instance AND the class: `export { bridge, FoundryBridge }`. This allows external modules to access current connection state or create custom instances.
+
+## Task 15 - Foundry → PlaneShift Sync
+- **@fastify/websocket v8 Breaking Change**: In version 8+, the handler's first parameter is `SocketStream` (a Duplex stream), not the WebSocket directly. Listen for `data` events on the stream, not `message` events: `connection.on('data', (data: Buffer) => {...})`. Access the underlying WebSocket via `connection.socket.send()` for responses.
+- **Foundry Hook Filtering**: Use `actor.hasPlayerOwner` to filter to only party-relevant actors, and `userId !== game.user.id` to avoid echo loops where changes made by this client trigger sync back.
+- **Whitelist-Based Sync**: Only syncing whitelisted paths (`system.hits`, `system.characteristics`, etc.) prevents excessive data transfer and focuses on game-relevant state changes.
+- **Field Mapping in Sync**: Transform Foundry's data structure (e.g., `system.hits.value` → `hp.current`) at sync time to match PlaneShift's metadata schema, keeping the server-side simple.
+- **requestId Pattern**: Including a unique `requestId` in messages enables reliable ack/nack handling for sync operations.
+
+## Task 15 - Foundry → PlaneShift Actor Sync
+- **@fastify/websocket SocketStream Pattern**: In @fastify/websocket v8, the WebSocket handler receives a `SocketStream` (Duplex stream), not a raw WebSocket. Access the actual WebSocket via `connection.socket`, then use standard WebSocket events (`message`, `close`, `error`).
+- **Side-Effect Imports for Hooks**: Importing a module purely for side effects (e.g., `import "./scripts/sync.js"`) registers Foundry hooks at module load time. No explicit function call needed since hooks are registered at top-level.
+- **TypeScript ws Types**: @fastify/websocket's types depend on `ws` module. Adding both `ws` and `@types/ws` as dependencies ensures proper typing for WebSocket class. Import as `import type { WebSocket as WS } from 'ws'` to get the correct type.
+- **Field Mapping at Sync Layer**: The sync.js `buildSyncPayload` maps mgt2e actor paths (e.g., `system.hits.value`) to PlaneShift metadata structure (`hp.current`). This keeps Foundry-specific schemas isolated from the PlaneShift data model.
+- **hasPlayerOwner Guard**: Using `actor.hasPlayerOwner` filters to party members only, avoiding sync of GM-only NPCs/creatures. Combined with `userId !== game.user.id` check to prevent echo when receiving server updates.

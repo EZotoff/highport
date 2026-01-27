@@ -1,5 +1,6 @@
 import { registerSettings, getServerUrl, getApiKey } from "./scripts/settings.js";
 import { FoundryBridge } from "./scripts/socket.js";
+import "./scripts/sync.js";
 
 let bridge = null;
 

@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import { fetchDocumentState } from '../ws/hocuspocus.js';
 import { registerKnowledgeRoutes } from '../routes/knowledge.js';
 import { registerDocumentRoutes } from '../routes/documents.js';
+import { registerFoundryRoutes } from '../routes/foundry.js';
 
 const FASTIFY_PORT = 3002;
 
@@ -15,6 +16,7 @@ export async function startFastify(): Promise<void> {
 
   await registerKnowledgeRoutes(fastify);
   await registerDocumentRoutes(fastify);
+  await registerFoundryRoutes(fastify);
 
   fastify.get('/health', async () => {
     return { status: 'ok' };

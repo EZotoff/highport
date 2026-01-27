@@ -2947,7 +2947,7 @@ Phase 4: Foundry Integration
 
 ---
 
-- [ ] 15. Foundry → PlaneShift Sync
+- [x] 15. Foundry → PlaneShift Sync
 
   **What to do**:
   - Implement Hooks.on("updateActor") to detect changes
