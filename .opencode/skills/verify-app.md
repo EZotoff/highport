@@ -54,13 +54,13 @@ TodoWrite([
 
 ```bash
 # Check if services are running
-WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null)
-HOCUSPOCUS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001 2>/dev/null)
-FASTIFY_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3002/health 2>/dev/null)
+WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3010 2>/dev/null)
+HOCUSPOCUS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3011 2>/dev/null)
+FASTIFY_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3012/health 2>/dev/null)
 
-echo "Web (3000): $WEB_STATUS"
-echo "Hocuspocus (3001): $HOCUSPOCUS_STATUS"
-echo "Fastify (3002): $FASTIFY_STATUS"
+echo "Web (3010): $WEB_STATUS"
+echo "Hocuspocus (3011): $HOCUSPOCUS_STATUS"
+echo "Fastify (3012): $FASTIFY_STATUS"
 ```
 
 **If services not running**:
@@ -74,7 +74,7 @@ echo "turbo:$!" > /tmp/verify-app-server.info
 
 # Wait for services to be ready
 for i in {1..30}; do
-  curl -s http://localhost:3000 > /dev/null && break
+  curl -s http://localhost:3010 > /dev/null && break
   sleep 1
 done
 ```
@@ -132,7 +132,7 @@ delegate_task(
 Execute Smoke Tests from verification plan.
 
 ## SCENARIOS
-S1: Application Loads - Navigate to localhost:3000, verify no errors
+S1: Application Loads - Navigate to localhost:3010, verify no errors
 S2: Graph Page Renders - Navigate to /graph, verify React Flow canvas
 S3: Table Page Renders - Navigate to /reputation, verify table
 
@@ -242,8 +242,8 @@ async (page) => {
   const pageB = await contextB.newPage();
   
   // Navigate both to /graph
-  await pageA.goto('http://localhost:3000/graph');
-  await pageB.goto('http://localhost:3000/graph');
+  await pageA.goto('http://localhost:3010/graph');
+  await pageB.goto('http://localhost:3010/graph');
   
   // Wait for sync establishment
   await pageA.waitForTimeout(3000);
@@ -463,9 +463,9 @@ OVERALL: PASS ✓
 ### Service Ports
 | Service | Port |
 |---------|------|
-| Web (Next.js) | 3000 |
-| Hocuspocus | 3001 |
-| Fastify API | 3002 |
+| Web (Next.js) | 3010 |
+| Hocuspocus | 3011 |
+| Fastify API | 3012 |
 | PostgreSQL | 5432 |
 
 ### Success Criteria

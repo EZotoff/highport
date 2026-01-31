@@ -6,7 +6,7 @@ import { generateId } from '@planeshift/shared';
 import { db } from '../db/client.js';
 import { campaigns, documents, documentUpdates } from '../db/schema.js';
 
-const HOCUSPOCUS_PORT = 3001;
+const HOCUSPOCUS_PORT = 3011;
 const DEFAULT_CAMPAIGN_ID = 'campaign_default';
 
 async function ensureDocumentExists(docId: string): Promise<void> {
@@ -80,7 +80,7 @@ export const hocuspocus = new Hocuspocus({
 
   async onRequest({ request, response }) {
     const origin = request.headers.origin;
-    if (origin === 'http://localhost:3000') {
+    if (origin === 'http://localhost:3010') {
       response.setHeader('Access-Control-Allow-Origin', origin);
       response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       response.setHeader('Access-Control-Allow-Headers', 'Content-Type');

@@ -3,7 +3,7 @@
     "Settings": {
       "ServerUrl": {
         "Name": "PlaneShift Server URL",
-        "Hint": "The WebSocket URL of your PlaneShift server (e.g., ws://localhost:3002)"
+        "Hint": "The WebSocket URL of your PlaneShift server (e.g., ws://localhost:3012)"
       },
       "ApiKey": {
         "Name": "API Key",

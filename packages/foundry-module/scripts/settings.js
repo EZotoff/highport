@@ -13,7 +13,7 @@ export function registerSettings() {
     scope: "world",
     config: true,
     type: String,
-    default: "ws://localhost:3002"
+    default: "ws://localhost:3012"
   });
 
   game.settings.register("plane-shift-bridge", "apiKey", {

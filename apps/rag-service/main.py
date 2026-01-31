@@ -12,7 +12,7 @@ app.include_router(query_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
+        "http://localhost:3010",
         "https://planeshift.app",
     ],
     allow_methods=["*"],

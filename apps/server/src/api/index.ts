@@ -7,13 +7,13 @@ import { registerFoundryRoutes } from '../routes/foundry.js';
 import { registerConflictRoutes } from '../routes/conflicts.js';
 import { registerExportRoutes } from '../routes/export.js';
 
-const FASTIFY_PORT = 3002;
+const FASTIFY_PORT = 3012;
 
 export const fastify = Fastify({ logger: true });
 
 export async function startFastify(): Promise<void> {
   await fastify.register(cors, {
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3010'],
   });
 
   await registerKnowledgeRoutes(fastify);

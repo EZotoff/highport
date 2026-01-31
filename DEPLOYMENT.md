@@ -56,7 +56,7 @@ The PlaneShift frontend requires three backend services:
 - **Service**: REST API endpoints
 - **Recommended**: Same host as Hocuspocus
 - **Environment**: Node.js 20+
-- **Port**: 3002 locally (configure via environment)
+- **Port**: 3012 locally (configure via environment)
 
 ### RAG Service (Optional)
 - **Service**: AI chat and knowledge queries

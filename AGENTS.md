@@ -396,23 +396,23 @@ See `packages/foundry-module/AGENTS.md` for detailed protocol.
 
 | Service | Command | Port | Purpose |
 |---------|---------|------|---------|
-| **Next.js** | `pnpm dev --filter web` | 3000 | Frontend UI |
-| **Hocuspocus** | `pnpm dev --filter server` | 3001 | WebSocket sync |
-| **Fastify** | `pnpm dev --filter server` | 3002 | REST API |
+| **Next.js** | `pnpm dev --filter web` | 3010 | Frontend UI |
+| **Hocuspocus** | `pnpm dev --filter server` | 3011 | WebSocket sync |
+| **Fastify** | `pnpm dev --filter server` | 3012 | REST API |
 | **RAG Service** | `cd apps/rag-service && uvicorn main:app --reload` | 8000 | Python RAG |
 | **PostgreSQL** | `docker compose up -d` | 5432 | Database |
 
 ### Detect Server State
 
 ```bash
-WEB_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null)
-HOCUSPOCUS_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001 2>/dev/null)
-FASTIFY_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3002/health 2>/dev/null)
+WEB_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3010 2>/dev/null)
+HOCUSPOCUS_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3011 2>/dev/null)
+FASTIFY_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3012/health 2>/dev/null)
 RAG_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null)
 
-echo "Web (3000): $WEB_HTTP"
-echo "Hocuspocus (3001): $HOCUSPOCUS_HTTP"
-echo "Fastify (3002): $FASTIFY_HTTP"
+echo "Web (3010): $WEB_HTTP"
+echo "Hocuspocus (3011): $HOCUSPOCUS_HTTP"
+echo "Fastify (3012): $FASTIFY_HTTP"
 echo "RAG (8000): $RAG_HTTP"
 ```
 
@@ -420,9 +420,9 @@ echo "RAG (8000): $RAG_HTTP"
 
 | Task Type | Required Services |
 |-----------|------------------|
-| UI-only testing | Web (3000) |
-| Real-time sync testing | Web (3000) + Server (3001, 3002) + Postgres |
-| RAG/Chat testing | Web (3000) + Server (3002) + RAG (8000) |
+| UI-only testing | Web (3010) |
+| Real-time sync testing | Web (3010) + Server (3011, 3012) + Postgres |
+| RAG/Chat testing | Web (3010) + Server (3012) + RAG (8000) |
 | Full E2E testing | All services |
 
 ### Start Services
@@ -437,7 +437,7 @@ echo "turbo:$!" > /tmp/dev-server.info
 
 # Wait for services to be ready
 for i in {1..30}; do
-  curl -s http://localhost:3000 > /dev/null && break
+  curl -s http://localhost:3010 > /dev/null && break
   sleep 1
 done
 ```
@@ -605,9 +605,9 @@ Subagents frequently claim "done" when:
 
 | Service | Port |
 |---------|------|
-| Web (Next.js) | 3000 |
-| Hocuspocus | 3001 |
-| Fastify API | 3002 |
+| Web (Next.js) | 3010 |
+| Hocuspocus | 3011 |
+| Fastify API | 3012 |
 | RAG Service | 8000 |
 | PostgreSQL | 5432 |
 
@@ -830,7 +830,7 @@ If you prefer to run verification manually instead of `/verify-app`:
 ```markdown
 Run holistic verification of PlaneShift.
 
-1. Check services: localhost:3000, 3001, 3002
+1. Check services: localhost:3010, 3011, 3012
 2. Run: pnpm typecheck && pnpm test && pnpm e2e
 3. Load skill: /playwright
 4. Execute scenarios from .sisyphus/verification/planeshift-holistic.md

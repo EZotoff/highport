@@ -29,7 +29,7 @@ export function initProvider(doc: Y.Doc, campaignId: string = 'default'): Hocusp
   }
 
   provider = new HocuspocusProvider({
-    url: 'ws://localhost:3001',
+    url: 'ws://localhost:3011',
     name: `${campaignId}:graph`,
     document: doc,
   });

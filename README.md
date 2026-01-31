@@ -33,11 +33,11 @@ docker compose up -d
 # Run database migrations
 pnpm --filter server db:migrate
 
-# Start development servers (Web: 3000, Sync: 3001, API: 3002)
+# Start development servers (Web: 3010, Sync: 3011, API: 3012)
 pnpm dev
 ```
 
-The web app will be available at `http://localhost:3000`.
+The web app will be available at `http://localhost:3010`.
 
 ### 2. AI RAG Service (Optional)
 
@@ -175,9 +175,9 @@ PINECONE_API_KEY=your-pinecone-key
 
 | Service | Local Port | Description |
 |---------|------------|-------------|
-| Web | 3000 | Next.js frontend |
-| Hocuspocus | 3001 | WebSocket sync server |
-| Fastify | 3002 | REST API server |
+| Web | 3010 | Next.js frontend |
+| Hocuspocus | 3011 | WebSocket sync server |
+| Fastify | 3012 | REST API server |
 | RAG Service | 8000 | Python FastAPI |
 | PostgreSQL | 5432 | Database |
 
@@ -204,7 +204,7 @@ docker compose logs postgres
 ```
 
 ### Sync not working
-- Verify Hocuspocus server is running on port 3001
+- Verify Hocuspocus server is running on port 3011
 - Check browser console for WebSocket errors
 - Clear IndexedDB if data is corrupted: Dev Tools > Application > IndexedDB > Delete database
 

@@ -19,7 +19,7 @@ Backend for PlaneShift. Handles WebSocket sync via Hocuspocus and REST API via F
 | `src/api/index.ts` | REST API endpoints |
 
 ## HOCUSPOCUS PATTERNS
-- **Configuration**: Server listens on port 3001. Configured in `src/ws/hocuspocus.ts`.
+- **Configuration**: Server listens on port 3011. Configured in `src/ws/hocuspocus.ts`.
 - **Persistence**: Uses `DatabaseExtension` to save Y.Doc updates to PostgreSQL `documents` table.
 - **Hooks**:
   - `onConnect`: Validates auth token (future) and logs connection.
@@ -40,17 +40,17 @@ After any backend changes:
 - `pnpm --filter server test` → all pass
 
 ### Level 3: API Testing (Agentic)
-1. Ensure server is running (port 3002)
+1. Ensure server is running (port 3012)
 2. Test happy path:
    ```bash
-   curl -X GET http://localhost:3002/health
-   curl -X POST http://localhost:3002/api/documents -d '...'
+   curl -X GET http://localhost:3012/health
+   curl -X POST http://localhost:3012/api/documents -d '...'
    ```
 3. Test error cases: 400, 401, 404, 500
 4. Document response schemas
 
 ### WebSocket Verification
-1. Connect to ws://localhost:3001
+1. Connect to ws://localhost:3011
 2. Verify Yjs sync handshake
 3. Test document load/save persistence
 

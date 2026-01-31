@@ -17,7 +17,7 @@ async function waitForServer(url: string, timeout: number): Promise<void> {
 }
 
 export default async function globalSetup() {
-  console.log('🚀 Waiting for Hocuspocus server on port 3001...');
-  await waitForServer('http://localhost:3001', 60000);
+  console.log('🚀 Waiting for Hocuspocus server on port 3011...');
+  await waitForServer('http://localhost:3011', 60000);
   console.log('✓ All services ready. Starting E2E tests.');
 }
