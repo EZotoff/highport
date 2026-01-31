@@ -8,6 +8,8 @@ node_modules/
 
 # Testing
 coverage/
+playwright-report/
+test-results/
 
 # Build outputs
 dist/
@@ -33,3 +35,15 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.Python
+*.so
+
+# TypeScript build info
+*.tsbuildinfo
