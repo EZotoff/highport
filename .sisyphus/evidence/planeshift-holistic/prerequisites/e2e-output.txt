@@ -1,0 +1,50 @@
+
+> @planeshift/web@0.0.1 e2e /home/ezotoff/AI_projects/traveller/apps/web
+> playwright test
+
+🚀 Waiting for Hocuspocus server on port 3001...
+✓ Server at http://localhost:3001 is ready
+✓ All services ready. Starting E2E tests.
+
+Running 28 tests using 4 workers
+
+[1A[2K[1/28] [chromium] › e2e/graph.spec.ts:26:3 › Graph CRUD › can select a node
+[1A[2K[2/28] [chromium] › e2e/graph.spec.ts:18:3 › Graph CRUD › creates a node via Add Node button
+[1A[2K[3/28] [chromium] › e2e/graph.spec.ts:13:3 › Graph CRUD › renders graph page with controls
+[1A[2K[4/28] [chromium] › e2e/graph.spec.ts:37:3 › Graph CRUD › can delete a node via context menu
+[1A[2K[5/28] [chromium] › e2e/graph.spec.ts:49:3 › Graph CRUD › node persists after page reload
+[1A[2K[6/28] [chromium] › e2e/graph.spec.ts:63:3 › Graph Navigation › navigation links work
+[1A[2K[7/28] [chromium] › e2e/graph.spec.ts:71:3 › Graph Navigation › can navigate to resources page
+[1A[2K[8/28] [chromium] › e2e/performance.spec.ts:6:3 › Performance › renders 500 nodes without major FPS drop
+[1A[2K[9/28] [chromium] › e2e/performance.spec.ts:53:3 › Performance › graph remains responsive with many nodes
+[1A[2K[10/28] [chromium] › e2e/performance.spec.ts:97:8 › Performance › concurrent users with moderate node count
+[1A[2K[11/28] [chromium] › e2e/rag.spec.ts:9:3 › RAG Chat Interface › renders chat interface with input and placeholder
+[1A[2K[12/28] [chromium] › e2e/rag.spec.ts:16:3 › RAG Chat Interface › can type a message in the input field
+[1A[2K[13/28] [chromium] › e2e/rag.spec.ts:22:3 › RAG Chat Interface › can submit a query and see user message appear
+[1A[2K[14/28] [chromium] › e2e/rag.spec.ts:32:3 › RAG Chat Interface › displays loading indicator while waiting for response
+[1A[2K[15/28] [chromium] › e2e/rag.spec.ts:43:3 › RAG Chat Interface › handles RAG service unavailable gracefully
+[1A[2K[16/28] [chromium] › e2e/rag.spec.ts:54:3 › RAG Chat Interface › submit button is disabled when input is empty
+[1A[2K[17/28] [chromium] › e2e/rag.spec.ts:64:3 › RAG Chat Interface › can send multiple messages in sequence
+[1A[2K[18/28] [chromium] › e2e/rag.spec.ts:80:8 › RAG Chat with Mock Response › intercepts API and displays mocked response
+[1A[2K[19/28] [chromium] › e2e/sync-latency.spec.ts:4:8 › Sync Latency › graph changes sync within 500ms between two users
+[1A[2K[20/28] [chromium] › e2e/sync-latency.spec.ts:47:8 › Sync Latency › node edit propagation syncs within 500ms between two users
+[1A[2K[21/28] [chromium] › e2e/sync-latency.spec.ts:109:8 › Sync Latency › table changes sync within 500ms between two users
+[1A[2K[22/28] [chromium] › e2e/tables.spec.ts:13:3 › Reputation Table › renders reputation table with header
+[1A[2K[23/28] [chromium] › e2e/tables.spec.ts:18:3 › Reputation Table › can add a new faction
+[1A[2K[24/28] [chromium] › e2e/tables.spec.ts:30:3 › Reputation Table › can edit faction name inline
+[1A[2K[chromium] › e2e/performance.spec.ts:53:3 › Performance › graph remains responsive with many nodes
+Zoom interaction time: 109ms
+
+[1A[2KPan interaction time: 35ms
+
+[1A[2K[25/28] [chromium] › e2e/tables.spec.ts:41:3 › Reputation Table › can edit standing value
+[1A[2K[26/28] [chromium] › e2e/tables.spec.ts:52:3 › Reputation Table › standing color changes based on value
+[1A[2K[27/28] [chromium] › e2e/tables.spec.ts:66:8 › Reputation Table › data persists after page reload
+[1A[2K[28/28] [chromium] › e2e/tables.spec.ts:84:8 › Two-User Table Sync › changes sync between two browser contexts
+[1A[2K[chromium] › e2e/performance.spec.ts:6:3 › Performance › renders 500 nodes without major FPS drop
+Initial: 0, Final: 22, Added: 22
+
+[1A[2KFPS with 500 nodes: 62
+
+[1A[2K  7 skipped
+  21 passed (14.6s)
