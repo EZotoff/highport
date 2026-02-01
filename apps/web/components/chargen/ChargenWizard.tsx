@@ -9,6 +9,8 @@ import TermResolutionStep from './steps/TermResolutionStep';
 import MusteringOutStep from './steps/MusteringOutStep';
 import FinalizeStep from './steps/FinalizeStep';
 import VerbositySelector from './VerbositySelector';
+import ParticipantPanel from './ParticipantPanel';
+import { EntityPoolPanel } from './EntityPoolPanel';
 import { useCharacter } from '../../lib/chargen/hooks';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { getActiveCharacter } from '../../lib/identity';
@@ -111,7 +113,16 @@ export default function ChargenWizard() {
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0 overflow-hidden">
+        {/* Left sidebar: Participants */}
+        <div className="hidden lg:block lg:col-span-1 h-full overflow-hidden">
+          <ParticipantPanel 
+            currentUserId={characterId || undefined}
+            onViewCharacter={setCharacterId}
+          />
+        </div>
+
+        {/* Main content: Wizard steps */}
         <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
           <div className="flex-1 overflow-y-auto pr-2 pb-4">
             {renderStepContent()}
@@ -144,8 +155,16 @@ export default function ChargenWizard() {
           </div>
         </div>
 
-        <div className="hidden lg:block lg:col-span-1 h-full overflow-y-auto">
-          <CharacterPreview characterId={characterId} />
+        {/* Right sidebar: Character Preview + Entity Pool */}
+        <div className="hidden lg:flex lg:col-span-1 h-full flex-col gap-4 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <CharacterPreview characterId={characterId} />
+          </div>
+          <div className="h-64 shrink-0 overflow-hidden">
+            <EntityPoolPanel 
+              currentCharId={characterId || undefined}
+            />
+          </div>
         </div>
       </div>
     </div>

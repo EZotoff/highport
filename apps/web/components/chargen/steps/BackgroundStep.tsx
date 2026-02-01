@@ -7,7 +7,9 @@ import {
   rerollCharacteristics, 
   swapCharacteristics, 
   setBackgroundSkills,
-  updateCharacter
+  updateCharacter,
+  createSession,
+  getSession
 } from '../../../lib/chargen/state';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { getOrCreateUser } from '../../../lib/identity';
@@ -29,6 +31,12 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
   const handleCreate = async () => {
     const user = getOrCreateUser();
     const doc = getYDoc();
+    
+    // Create a session if one doesn't exist
+    if (!getSession(doc)) {
+      createSession(doc, 'default-campaign', user.userId);
+    }
+    
     const newId = createCharacter(doc, user.userId);
     onCharacterCreated(newId);
   };

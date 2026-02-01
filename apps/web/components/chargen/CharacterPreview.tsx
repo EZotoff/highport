@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useCharacter } from '../../lib/chargen/hooks';
 import { getCharacteristicModifier, CharacteristicCode } from '@planeshift/mgt2e';
+import { LifepathTimeline } from './LifepathTimeline';
 
 interface CharacterPreviewProps {
   characterId?: string | null;
@@ -12,6 +14,7 @@ const PREVIEW_STATS: CharacteristicCode[] = ['STR', 'DEX', 'END', 'INT', 'EDU', 
 
 export default function CharacterPreview({ characterId }: CharacterPreviewProps) {
   const character = useCharacter(characterId || null);
+  const [showLifepath, setShowLifepath] = useState(false);
 
   if (!character) {
     return (
@@ -101,6 +104,23 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
             </div>
           )}
         </div>
+
+        {character.terms.length > 0 && (
+          <div className="border-t border-zinc-800 pt-4">
+            <button
+              onClick={() => setShowLifepath(!showLifepath)}
+              className="flex items-center gap-2 text-xs uppercase text-zinc-400 font-bold hover:text-zinc-200 transition-colors w-full"
+            >
+              {showLifepath ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              Career Timeline ({character.terms.length} terms)
+            </button>
+            {showLifepath && characterId && (
+              <div className="mt-3 -mx-6 px-2">
+                <LifepathTimeline characterId={characterId} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mt-6 pt-4 border-t border-zinc-800 text-center text-xs text-zinc-600">
