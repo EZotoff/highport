@@ -12,7 +12,9 @@ class GeminiProvider(LLMProvider):
     Uses the google-generativeai SDK to interact with Gemini models.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gemini-pro"):
+    def __init__(
+        self, api_key: Optional[str] = None, model: str = "models/gemini-2.0-flash"
+    ):
         """Initialize the Gemini provider.
 
         Args:
