@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@hocuspocus/provider": "^2.15.3",
+    "@planeshift/mgt2e": "workspace:^",
     "@planeshift/shared": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
     "@xyflow/react": "^12.10.0",
