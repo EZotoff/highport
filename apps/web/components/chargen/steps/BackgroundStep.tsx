@@ -32,12 +32,17 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
     const user = getOrCreateUser();
     const doc = getYDoc();
     
-    // Create a session if one doesn't exist
     if (!getSession(doc)) {
       createSession(doc, 'default-campaign', user.userId);
     }
     
     const newId = createCharacter(doc, user.userId);
+    
+    localStorage.setItem('planeshift_active_character', JSON.stringify({
+      characterId: newId,
+      name: 'Unnamed Character',
+    }));
+    
     onCharacterCreated(newId);
   };
 
@@ -73,7 +78,13 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!characterId) return;
     const doc = getYDoc();
-    updateCharacter(doc, characterId, 'name', e.target.value);
+    const newName = e.target.value;
+    updateCharacter(doc, characterId, 'name', newName);
+    
+    localStorage.setItem('planeshift_active_character', JSON.stringify({
+      characterId,
+      name: newName || 'Unnamed Character',
+    }));
   }
 
   if (!characterId) {

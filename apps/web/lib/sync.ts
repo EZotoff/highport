@@ -63,3 +63,22 @@ export function resetSync(): void {
   destroyProvider();
   destroyPersistence();
 }
+
+export function waitForPersistenceSync(p: IndexeddbPersistence): Promise<void> {
+  return new Promise((resolve) => {
+    if (p.synced) {
+      resolve();
+      return;
+    }
+    p.once('synced', () => resolve());
+  });
+}
+
+export async function initAndWaitForPersistence(
+  doc: Y.Doc,
+  name: string = 'planeshift-graph'
+): Promise<IndexeddbPersistence> {
+  const p = initPersistence(doc, name);
+  await waitForPersistenceSync(p);
+  return p;
+}

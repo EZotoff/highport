@@ -1,6 +1,7 @@
 import * as Y from 'yjs';
 import { getYDoc } from '../ydoc';
 import { addNode, addEdge } from '../yjs-helpers';
+import { addEntityToPool } from './state';
 import type { GraphNode, GraphEdge, NodeType } from '@planeshift/shared/types/graph';
 import type { SpawnedEntityRef } from './types';
 import type { EventSpawn } from '@planeshift/mgt2e';
@@ -55,6 +56,19 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
     addNode(doc, node);
     addEdge(doc, edge);
   }, 'chargen-spawn');
+  
+  addEntityToPool(doc, {
+    type: input.spawn.type as 'npc' | 'location' | 'item' | 'secret',
+    createdBy: input.characterId,
+    createdFor: input.characterId,
+    createdDuring: { termNumber: input.termNumber, eventRoll: input.eventRoll },
+    ownedBy: input.characterId,
+    name: input.name,
+    description: input.description,
+    metadata: { relationship: input.spawn.relationship },
+    graphNodeId: nodeId,
+    claimedBy: [input.characterId],
+  });
   
   return {
     type: input.spawn.type,

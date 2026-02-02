@@ -14,6 +14,8 @@ import { EntityPoolPanel } from './EntityPoolPanel';
 import { useCharacter } from '../../lib/chargen/hooks';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { getActiveCharacter } from '../../lib/identity';
+import { initAndWaitForPersistence } from '../../lib/sync';
+import { getYDoc } from '../../lib/ydoc';
 
 const STEPS = [
   { id: 'background', label: 'Background' },
@@ -27,15 +29,54 @@ export default function ChargenWizard() {
   const [currentStep, setCurrentStep] = useState(0);
   const [characterId, setCharacterId] = useState<string | null>(null);
   const [verbosity, setVerbosity] = useState<VerbosityLevel>('structured');
+  const [isSynced, setIsSynced] = useState(false);
   const character = useCharacter(characterId);
 
   useEffect(() => {
-    if (characterId) return;
+    const doc = getYDoc();
+    initAndWaitForPersistence(doc).then(() => {
+      setIsSynced(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isSynced || characterId) return;
     const active = getActiveCharacter();
     if (active && active.characterId) {
         setCharacterId(active.characterId);
     }
-  }, [characterId]);
+  }, [isSynced, characterId]);
+
+  useEffect(() => {
+    if (!isSynced || !characterId) return;
+    if (character) return;
+    
+    const timer = setTimeout(() => {
+      if (!character) {
+        localStorage.removeItem('planeshift_active_character');
+        setCharacterId(null);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [isSynced, characterId, character]);
+
+  useEffect(() => {
+    if (!character) return;
+    
+    const statusToStep: Record<string, number> = {
+      'background': 0,
+      'career_selection': 1,
+      'term_resolution': 1,
+      'mustering_out': 1,
+      'finalized': 4,
+    };
+    
+    const targetStep = statusToStep[character.status] ?? 0;
+    if (currentStep !== targetStep) {
+      setCurrentStep(targetStep);
+    }
+  }, [character?.status]);
 
   const isStepValid = () => {
     switch (currentStep) {
@@ -96,6 +137,17 @@ export default function ChargenWizard() {
         );
     }
   };
+
+  if (!isSynced) {
+    return (
+      <div className="flex flex-col h-full max-w-7xl mx-auto items-center justify-center">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 text-center">
+          <div className="animate-pulse text-zinc-400 mb-2">Loading...</div>
+          <p className="text-zinc-500 text-sm">Syncing character data</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full max-w-7xl mx-auto">
