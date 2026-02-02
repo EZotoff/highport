@@ -28,7 +28,6 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
   }
 
   const skillCount = Object.keys(character.skills).length;
-  const bgSkillCount = character.backgroundSkills.length;
   
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 h-full flex flex-col">
@@ -85,16 +84,10 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
 
         <div>
           <label className="block text-xs uppercase text-zinc-500 font-bold mb-1">Skills</label>
-          {bgSkillCount === 0 && skillCount === 0 ? (
+          {skillCount === 0 ? (
             <div className="text-zinc-500 text-sm italic">No skills learned yet</div>
           ) : (
             <div className="space-y-1">
-              {character.backgroundSkills.map(s => (
-                <div key={s} className="text-sm text-zinc-300 flex justify-between">
-                  <span>{s}</span>
-                  <span className="text-zinc-500 text-xs">0</span>
-                </div>
-              ))}
               {Object.entries(character.skills).map(([s, level]) => (
                 <div key={s} className="text-sm text-zinc-300 flex justify-between">
                   <span>{s}</span>
