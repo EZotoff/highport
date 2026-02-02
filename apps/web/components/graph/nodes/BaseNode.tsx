@@ -1,9 +1,11 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { getNodeConfig } from './node-config';
 import { Lock, EyeOff } from 'lucide-react';
+import { THEME_HEX, TYPOGRAPHY } from '@/lib/design-system/themeUtils';
 
 const BaseNode = memo(({ data, selected, type }: NodeProps) => {
+  const [isHovered, setIsHovered] = useState(false);
   const config = getNodeConfig(type);
   const description = data.description as string | undefined;
   const isLocked = data.locked as boolean;
@@ -11,40 +13,121 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
 
   const Icon = config.icon;
 
+  const getBoxShadow = () => {
+    if (selected) {
+      return `0 0 15px ${config.themeHex}50, 0 0 30px ${config.themeHex}30, 0 0 45px ${config.themeHex}15, 0 10px 30px rgba(0,0,0,0.4)`;
+    }
+    if (isHovered) {
+      return `0 0 15px ${config.themeHex}25, 0 10px 30px rgba(0,0,0,0.4)`;
+    }
+    return '0 10px 30px rgba(0,0,0,0.4)';
+  };
+
+  const getBorder = () => {
+    if (selected) {
+      return `2px solid ${config.themeHex}`;
+    }
+    if (isHovered) {
+      return `1px solid ${config.themeHex}60`;
+    }
+    return '1px solid var(--asteroid-dust-50)';
+  };
+
+  const getHandleGlow = () => {
+    if (selected) {
+      return `0 0 8px ${THEME_HEX.cyan}, 0 0 16px ${THEME_HEX.cyan}80, 0 0 24px ${THEME_HEX.cyan}40`;
+    }
+    if (isHovered) {
+      return `0 0 10px ${THEME_HEX.cyan}80`;
+    }
+    return `0 0 6px ${THEME_HEX.cyan}50`;
+  };
+
   return (
     <div
-      className={`relative px-4 py-3 shadow-md rounded-lg bg-white border-2 transition-all min-w-[180px] group ${
-        selected ? config.borderColor : 'border-gray-200 hover:border-gray-300'
-      } ${isHidden ? 'opacity-60 border-dashed' : ''} ${isLocked ? 'cursor-not-allowed' : ''}`}
+      className="relative px-4 py-3 shadow-lg rounded-lg transition-all duration-200 min-w-[180px] group"
+      style={{
+        background: 'var(--nebula-mist-90)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: getBorder(),
+        boxShadow: getBoxShadow(),
+        opacity: isHidden ? 0.6 : 1,
+        borderStyle: isHidden ? 'dashed' : 'solid',
+        cursor: isLocked ? 'not-allowed' : 'grab',
+        transform: isHovered && !selected ? 'translateY(-3px)' : 'translateY(0)',
+        transition: 'all 0.3s ease-out',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      <div 
+        className="absolute inset-0 pointer-events-none rounded-lg opacity-[0.03]"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
+        }}
+      />
+
+      {selected && (
+        <div className="absolute inset-[-8px] rounded-lg border border-plasma-cyan/20 animate-spin-slow pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-plasma-cyan rounded-full shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
+        </div>
+      )}
+
       <Handle 
         type="target" 
         position={Position.Top} 
-        className="!w-3 !h-3 !bg-gray-400 !border-2 !border-white transition-colors group-hover:!bg-gray-600" 
+        className="!w-3 !h-3 !border-2 transition-all duration-200"
+        style={{
+          backgroundColor: THEME_HEX.cyan,
+          borderColor: '#1a1f2e',
+          boxShadow: getHandleGlow(),
+          transform: isHovered || selected ? 'scale(1.2)' : 'scale(1)',
+        }}
       />
       
       <div className="flex items-start gap-3">
-        <div className={`flex items-center justify-center w-10 h-10 rounded-full text-xl shrink-0 ${config.iconBg}`}>
+        <div 
+          className="flex items-center justify-center w-10 h-10 rounded-full text-xl shrink-0"
+          style={{
+            backgroundColor: `${config.themeHex}20`,
+            color: config.themeHex
+          }}
+        >
           <Icon className="w-5 h-5" />
         </div>
         
         <div className="flex flex-col min-w-0">
-          <div className="font-bold text-sm text-gray-800 leading-tight break-words">{data.label as string}</div>
+          <div className="font-bold text-sm tracking-wide text-gray-100 leading-tight break-words">{data.label as string}</div>
           {description && (
-            <div className="text-xs text-gray-500 mt-1 line-clamp-2 leading-snug">{description}</div>
+            <div className={`mt-1 line-clamp-2 text-gray-400 ${TYPOGRAPHY.secondary} text-xs`}>{description}</div>
           )}
         </div>
       </div>
 
       <div className="absolute -top-2 -right-2 flex gap-1 pointer-events-none">
         {isLocked && (
-          <div className="bg-gray-100 p-1 rounded-full border border-gray-200 shadow-sm text-xs">
-            <Lock className="w-3 h-3 text-gray-500" />
+          <div 
+            className="p-1 rounded-full border shadow-sm text-xs"
+            style={{
+              backgroundColor: '#1a1f2e',
+              borderColor: 'var(--asteroid-dust-50)',
+              color: THEME_HEX.amber
+            }}
+          >
+            <Lock className="w-3 h-3" />
           </div>
         )}
         {isHidden && (
-          <div className="bg-gray-100 p-1 rounded-full border border-gray-200 shadow-sm text-xs">
-            <EyeOff className="w-3 h-3 text-gray-500" />
+          <div 
+            className="p-1 rounded-full border shadow-sm text-xs"
+            style={{
+              backgroundColor: '#1a1f2e',
+              borderColor: 'var(--asteroid-dust-50)',
+              color: THEME_HEX.violet
+            }}
+          >
+            <EyeOff className="w-3 h-3" />
           </div>
         )}
       </div>
@@ -52,7 +135,13 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
       <Handle 
         type="source" 
         position={Position.Bottom} 
-        className="!w-3 !h-3 !bg-gray-400 !border-2 !border-white transition-colors group-hover:!bg-gray-600" 
+        className="!w-3 !h-3 !border-2 transition-all duration-200"
+        style={{
+          backgroundColor: THEME_HEX.cyan,
+          borderColor: '#1a1f2e',
+          boxShadow: getHandleGlow(),
+          transform: isHovered || selected ? 'scale(1.2)' : 'scale(1)',
+        }}
       />
     </div>
   );

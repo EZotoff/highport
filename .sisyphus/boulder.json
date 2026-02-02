@@ -5,6 +5,15 @@
   "plan_name": null,
   "completed_plans": [
     {
+      "plan": "/home/ezotoff/AI_projects/traveller/.sisyphus/plans/chargen-ui-polish.md",
+      "plan_name": "chargen-ui-polish",
+      "started_at": "2026-02-02T16:00:04.038Z",
+      "completed_at": "2026-02-02T17:45:00.000Z",
+      "session_ids": [
+        "ses_3e215abb6ffeUT6KZOIHzi3oSc"
+      ]
+    },
+    {
       "plan": "/home/ezotoff/AI_projects/traveller/.sisyphus/plans/phase1-mgt2e-data-foundation.md",
       "plan_name": "phase1-mgt2e-data-foundation",
       "started_at": "2026-01-31T22:31:12.449Z",
@@ -47,6 +56,15 @@
       "completed_at": "2026-02-02T03:15:00.000Z",
       "session_ids": [
         "ses_3e4d480f1ffeVpSuT8SDUHh7Z1"
+      ]
+    },
+    {
+      "plan": "/home/ezotoff/AI_projects/traveller/.sisyphus/plans/chargen-ui-redesign.md",
+      "plan_name": "chargen-ui-redesign",
+      "started_at": "2026-02-02T10:48:47.050Z",
+      "completed_at": "2026-02-02T11:40:00.000Z",
+      "session_ids": [
+        "ses_3e207dd39ffeiBT5Eo3iNlfnRg"
       ]
     }
   ]

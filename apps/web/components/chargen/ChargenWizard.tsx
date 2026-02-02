@@ -16,6 +16,8 @@ import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { getActiveCharacter } from '../../lib/identity';
 import { initAndWaitForPersistence } from '../../lib/sync';
 import { getYDoc } from '../../lib/ydoc';
+import { GlassPanel } from '@/components/ui/scifi';
+import { THEME_HEX } from '@/lib/design-system/themeUtils';
 
 const STEPS = [
   { id: 'background', label: 'Background' },
@@ -81,7 +83,9 @@ export default function ChargenWizard() {
   const isStepValid = () => {
     switch (currentStep) {
       case 0:
-        return !!character && (character.backgroundSkills?.length || 0) === 3;
+        return !!character && 
+               (character.backgroundSkills?.length || 0) === 3 &&
+               !!character.name?.trim();
       default:
         return true;
     }
@@ -100,6 +104,10 @@ export default function ChargenWizard() {
   };
 
   const renderStepContent = () => {
+    if (character?.status === 'finalized') {
+      return <FinalizeStep characterId={characterId} />;
+    }
+
     switch (currentStep) {
       case 0:
         return (
@@ -120,20 +128,33 @@ export default function ChargenWizard() {
         if (character?.status === 'mustering_out') {
           return <MusteringOutStep characterId={characterId} />;
         }
-        if (character?.status === 'finalized') {
-          return <FinalizeStep characterId={characterId} />;
-        }
         return (
           <CareerSelectionStep 
             characterId={characterId} 
           />
         );
+      case 2:
+        return (
+          <GlassPanel theme="violet" variant="default" className="p-6 text-center">
+            <h2 className="text-xl font-bold text-gray-100 mb-2">Skills</h2>
+            <p style={{ color: THEME_HEX.slate }}>Step content coming soon...</p>
+          </GlassPanel>
+        );
+      case 3:
+        return (
+          <GlassPanel theme="violet" variant="default" className="p-6 text-center">
+            <h2 className="text-xl font-bold text-gray-100 mb-2">Benefits</h2>
+            <p style={{ color: THEME_HEX.slate }}>Step content coming soon...</p>
+          </GlassPanel>
+        );
+      case 4:
+        return <FinalizeStep characterId={characterId} />;
       default:
         return (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-bold text-zinc-100 mb-2">{STEPS[currentStep].label}</h2>
-            <p className="text-zinc-400">Step content coming soon...</p>
-          </div>
+          <GlassPanel theme="violet" variant="default" className="p-6 text-center">
+            <h2 className="text-xl font-bold text-gray-100 mb-2">{STEPS[currentStep].label}</h2>
+            <p style={{ color: THEME_HEX.slate }}>Step content coming soon...</p>
+          </GlassPanel>
         );
     }
   };
@@ -141,10 +162,15 @@ export default function ChargenWizard() {
   if (!isSynced) {
     return (
       <div className="flex flex-col h-full max-w-7xl mx-auto items-center justify-center">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 text-center">
-          <div className="animate-pulse text-zinc-400 mb-2">Loading...</div>
-          <p className="text-zinc-500 text-sm">Syncing character data</p>
-        </div>
+        <GlassPanel theme="cyan" variant="default" className="p-8 text-center">
+          <div 
+            className="animate-pulse mb-2 text-lg font-medium"
+            style={{ color: THEME_HEX.cyan }}
+          >
+            Loading...
+          </div>
+          <p className="text-sm" style={{ color: THEME_HEX.slate }}>Syncing character data</p>
+        </GlassPanel>
       </div>
     );
   }
@@ -180,29 +206,72 @@ export default function ChargenWizard() {
             {renderStepContent()}
           </div>
           
-          <div className="mt-4 pt-4 border-t border-zinc-800 flex justify-between">
+          <div 
+            className="mt-4 pt-4 flex justify-between"
+            style={{ borderTop: `1px solid rgba(148, 163, 184, 0.2)` }}
+          >
             <button
               onClick={handleBack}
               disabled={currentStep === 0}
-              className={`px-6 py-2 rounded font-medium transition-colors ${
-                currentStep === 0
-                  ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
-                  : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
-              }`}
+              className="px-6 py-2 rounded font-medium transition-all duration-200"
+              style={currentStep === 0 
+                ? { 
+                    backgroundColor: 'rgba(26, 31, 46, 0.6)',
+                    color: THEME_HEX.slate,
+                    cursor: 'not-allowed',
+                  }
+                : { 
+                    backgroundColor: 'rgba(148, 163, 184, 0.15)',
+                    color: '#e2e8f0',
+                    border: `1px solid rgba(148, 163, 184, 0.3)`,
+                  }
+              }
+              onMouseEnter={(e) => {
+                if (currentStep !== 0) {
+                  e.currentTarget.style.backgroundColor = 'rgba(148, 163, 184, 0.25)';
+                  e.currentTarget.style.boxShadow = `0 0 12px rgba(148, 163, 184, 0.2)`;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentStep !== 0) {
+                  e.currentTarget.style.backgroundColor = 'rgba(148, 163, 184, 0.15)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
             >
-              &larr; Back
+              ← Back
             </button>
             
             <button
               onClick={handleNext}
               disabled={currentStep === STEPS.length - 1 || !isStepValid()}
-              className={`px-6 py-2 rounded font-medium transition-colors ${
-                currentStep === STEPS.length - 1 || !isStepValid()
-                  ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-500'
-              }`}
+              className="px-6 py-2 rounded font-medium transition-all duration-200"
+              style={currentStep === STEPS.length - 1 || !isStepValid()
+                ? { 
+                    backgroundColor: 'rgba(26, 31, 46, 0.6)',
+                    color: THEME_HEX.slate,
+                    cursor: 'not-allowed',
+                  }
+                : { 
+                    backgroundColor: THEME_HEX.cyan,
+                    color: '#0a0d14',
+                    boxShadow: `0 0 16px ${THEME_HEX.cyan}40`,
+                  }
+              }
+              onMouseEnter={(e) => {
+                if (!(currentStep === STEPS.length - 1 || !isStepValid())) {
+                  e.currentTarget.style.boxShadow = `0 0 24px ${THEME_HEX.cyan}60`;
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!(currentStep === STEPS.length - 1 || !isStepValid())) {
+                  e.currentTarget.style.boxShadow = `0 0 16px ${THEME_HEX.cyan}40`;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }
+              }}
             >
-              Continue &rarr;
+              Continue →
             </button>
           </div>
         </div>

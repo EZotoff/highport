@@ -10,10 +10,14 @@ import {
   Trophy, 
   Briefcase,
   ExternalLink,
-  Dices
+  Dices,
+  X
 } from 'lucide-react';
 import type { CareerTermResult, SpawnedEntityRef } from '../../lib/chargen/types';
 import type { DiceResult } from '@planeshift/mgt2e';
+import { GlassPanel, ProcessFlowSheen, DiceRollDisplay } from '../ui/scifi';
+import { THEME_HEX, TYPOGRAPHY } from '@/lib/design-system/themeUtils';
+import { ANIMATION_TIMING } from '@/lib/design-system/visualConfig';
 
 interface TermDetailCardProps {
   term: CareerTermResult;
@@ -35,86 +39,147 @@ export function TermDetailCard({
   useEffect(() => {
     if (isOpen) setIsVisible(true);
     else {
-      const timer = setTimeout(() => setIsVisible(false), 300);
+      const timer = setTimeout(() => setIsVisible(false), ANIMATION_TIMING.TRANSITION_EXIT);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
   if (!isVisible) return null;
 
+  const themeColor = term.mishap ? 'red' : term.survived ? 'violet' : 'slate';
+  const themeHex = THEME_HEX[themeColor];
+
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+      style={{
+        backgroundColor: 'var(--deep-void-80)',
+        backdropFilter: 'blur(8px)',
+      }}
       onClick={onClose}
     >
-      <div 
-        className={`w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
-        onClick={e => e.stopPropagation()}
+      <GlassPanel
+        theme={themeColor}
+        variant="bordered"
+        glow
+        className={`w-full max-w-2xl shadow-2xl transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 bg-gray-800/50 border-b border-gray-700">
+        <ProcessFlowSheen duration={4} />
+        
+        <div 
+          className="flex items-center justify-between px-6 py-4"
+          style={{
+            background: `linear-gradient(90deg, ${themeHex}15 0%, transparent 100%)`,
+            borderBottom: `1px solid ${themeHex}30`,
+          }}
+        >
           <div>
-            <div className="flex items-center gap-2 text-sm text-gray-400 uppercase tracking-wider font-semibold">
+            <div 
+              className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
+              style={{ color: themeHex }}
+            >
               Term {term.termNumber}
             </div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-blue-400" />
+            <h2 className={`flex items-center gap-2 mt-1 text-gray-100 ${TYPOGRAPHY.subheading}`}>
+              <Briefcase className="w-5 h-5" style={{ color: THEME_HEX.violet }} />
               {career.name}
-              <span className="text-gray-500 font-normal text-base">
+              <span className="text-gray-500 font-normal text-sm">
                 ({term.assignmentId})
               </span>
             </h2>
           </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-400">Age</div>
-            <div className="text-lg font-mono text-white">
-              {term.startAge} <span className="text-gray-600">→</span> {term.startAge + 4}
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className={`text-gray-500 ${TYPOGRAPHY.label}`}>Age</div>
+              <div className={`text-gray-200 ${TYPOGRAPHY.data} text-lg`}>
+                {term.startAge} <span style={{ color: themeHex }}>→</span> {term.startAge + 4}
+              </div>
             </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg transition-all"
+              style={{
+                background: 'var(--star-metal-50)',
+                border: '1px solid var(--asteroid-dust-50)',
+                color: '#94a3b8',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = themeHex;
+                e.currentTarget.style.color = themeHex;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--asteroid-dust-50)';
+                e.currentTarget.style.color = '#94a3b8';
+              }}
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
         <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
           
           <section className="space-y-3">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+            <h3 
+              className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
+              style={{ color: THEME_HEX.cyan }}
+            >
               <Dices className="w-4 h-4" />
               Key Rolls
             </h3>
             <div className="grid gap-3">
               {term.survivalRoll && (
-                <RollRow 
-                  label="Survival" 
-                  result={term.survivalRoll} 
-                  success={term.survived} 
-                  attribute="INT" 
-                />
+                <div className="space-y-1">
+                  <span className={`text-gray-500 ${TYPOGRAPHY.label}`}>Survival</span>
+                  <DiceRollDisplay 
+                    dice={term.survivalRoll.dice}
+                    rolls={term.survivalRoll.rolls}
+                    total={term.survivalRoll.total}
+                    modifier={term.survivalRoll.modifier}
+                    target={term.survivalRoll.target}
+                    success={term.survived}
+                    attribute="INT"
+                  />
+                </div>
               )}
               {term.commissionRoll && (
-                <RollRow 
-                  label="Commission" 
-                  result={term.commissionRoll} 
-                  success={!!term.commissioned} 
-                  attribute="SOC" 
-                />
+                <div className="space-y-1">
+                  <span className={`text-gray-500 ${TYPOGRAPHY.label}`}>Commission</span>
+                  <DiceRollDisplay 
+                    dice={term.commissionRoll.dice}
+                    rolls={term.commissionRoll.rolls}
+                    total={term.commissionRoll.total}
+                    modifier={term.commissionRoll.modifier}
+                    target={term.commissionRoll.target}
+                    success={!!term.commissioned}
+                    attribute="SOC"
+                  />
+                </div>
               )}
               {term.advancementRoll && (
-                <RollRow 
-                  label="Advancement" 
-                  result={term.advancementRoll} 
-                  success={term.advanced} 
-                  attribute="EDU" 
-                />
+                <div className="space-y-1">
+                  <span className={`text-gray-500 ${TYPOGRAPHY.label}`}>Advancement</span>
+                  <DiceRollDisplay 
+                    dice={term.advancementRoll.dice}
+                    rolls={term.advancementRoll.rolls}
+                    total={term.advancementRoll.total}
+                    modifier={term.advancementRoll.modifier}
+                    target={term.advancementRoll.target}
+                    success={term.advanced}
+                    attribute="EDU"
+                  />
+                </div>
               )}
               {term.eventRoll && (
-                <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-300 w-24">Event</span>
-                    <span className="font-mono text-sm text-gray-400">
-                      {term.eventRoll.dice}({term.eventRoll.rolls.join(',')}) = 
-                    </span>
-                    <span className="font-mono font-bold text-white text-lg">
-                      {term.eventRoll.total}
-                    </span>
-                  </div>
+                <div className="space-y-1">
+                  <span className={`text-gray-500 ${TYPOGRAPHY.label}`}>Event</span>
+                  <DiceRollDisplay 
+                    dice={term.eventRoll.dice}
+                    rolls={term.eventRoll.rolls}
+                    total={term.eventRoll.total}
+                    compact
+                  />
                 </div>
               )}
             </div>
@@ -122,11 +187,22 @@ export function TermDetailCard({
 
           {(term.eventDescription || term.mishap) && (
             <section className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                {term.mishap ? <ShieldAlert className="w-4 h-4 text-red-400" /> : <Trophy className="w-4 h-4 text-yellow-400" />}
+              <h3 
+                className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
+                style={{ color: term.mishap ? THEME_HEX.red : THEME_HEX.amber }}
+              >
+                {term.mishap ? <ShieldAlert className="w-4 h-4" /> : <Trophy className="w-4 h-4" />}
                 {term.mishap ? 'Mishap' : 'Life Event'}
               </h3>
-              <div className={`p-4 rounded-lg border ${term.mishap ? 'bg-red-950/20 border-red-900/50' : 'bg-gray-800 rounded-lg border-gray-700'}`}>
+              <div 
+                className="p-4 rounded-lg"
+                style={{
+                  background: term.mishap 
+                    ? 'rgba(239, 68, 68, 0.1)' 
+                    : 'var(--star-metal-60)',
+                  border: `1px solid ${term.mishap ? 'rgba(239, 68, 68, 0.3)' : 'var(--asteroid-dust-50)'}`,
+                }}
+              >
                 <p className="text-gray-200 leading-relaxed">
                   {term.eventDescription || term.mishap?.description || term.eventChoice || "No details available."}
                 </p>
@@ -136,7 +212,10 @@ export function TermDetailCard({
 
           {term.spawnedEntities.length > 0 && (
             <section className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <h3 
+                className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
+                style={{ color: THEME_HEX.violet }}
+              >
                 <User className="w-4 h-4" />
                 Encounters
               </h3>
@@ -150,18 +229,34 @@ export function TermDetailCard({
 
           {term.skillsGained.length > 0 && (
             <section className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <h3 
+                className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
+                style={{ color: THEME_HEX.emerald }}
+              >
                 <Trophy className="w-4 h-4" />
                 Skills Gained
               </h3>
               <div className="flex flex-wrap gap-2">
                 {term.skillsGained.map((skill, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md">
-                    <span className="text-sm font-medium text-blue-200">
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md"
+                    style={{
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                    }}
+                  >
+                    <span className="text-sm font-medium" style={{ color: THEME_HEX.emerald }}>
                       {skill.skill}
                       {skill.specialty ? `: ${skill.specialty}` : ''}
                     </span>
-                    <span className="text-xs font-bold px-1.5 py-0.5 bg-gray-700 rounded text-gray-300">
+                    <span 
+                      className="text-xs font-bold px-1.5 py-0.5 rounded"
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.2)',
+                        color: THEME_HEX.emerald,
+                      }}
+                    >
                       {skill.level}
                     </span>
                   </div>
@@ -171,60 +266,7 @@ export function TermDetailCard({
           )}
 
         </div>
-
-        <div className="p-4 border-t border-gray-800 bg-gray-900/50 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-          >
-            Close Details
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RollRow({ 
-  label, 
-  result, 
-  success, 
-  attribute 
-}: { 
-  label: string; 
-  result: DiceResult; 
-  success: boolean; 
-  attribute?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
-      <div className="flex items-center gap-3">
-        {success ? (
-          <CheckCircle2 className="w-5 h-5 text-green-500" />
-        ) : (
-          <XCircle className="w-5 h-5 text-red-500" />
-        )}
-        <span className="text-sm font-medium text-gray-300 w-20">{label}</span>
-      </div>
-      
-      <div className="flex items-center gap-2 font-mono text-sm text-gray-400">
-        <span>{result.dice}({result.rolls.join(',')})</span>
-        {result.modifier !== 0 && (
-          <span className={result.modifier && result.modifier > 0 ? 'text-blue-400' : 'text-red-400'}>
-            {result.modifier && result.modifier > 0 ? '+' : ''}{result.modifier}
-            {attribute && <span className="text-gray-500 text-xs ml-0.5">({attribute})</span>}
-          </span>
-        )}
-        <span className="text-gray-600">=</span>
-        <span className={`text-lg font-bold ${success ? 'text-white' : 'text-gray-400'}`}>
-          {result.total}
-        </span>
-        {result.target && (
-          <span className="text-xs text-gray-500 ml-1">
-            ≥ {result.target}
-          </span>
-        )}
-      </div>
+      </GlassPanel>
     </div>
   );
 }
@@ -236,6 +278,9 @@ function EntityCard({
   entity: SpawnedEntityRef; 
   onClick?: (id: string) => void; 
 }) {
+  const isHostile = entity.relationship === 'rival' || entity.relationship === 'enemy';
+  const entityColor = isHostile ? THEME_HEX.red : THEME_HEX.cyan;
+  
   const Icon = {
     npc: User,
     location: MapPin,
@@ -244,24 +289,40 @@ function EntityCard({
   }[entity.type] || User;
 
   return (
-    <div className="flex items-start gap-4 p-3 bg-gray-800/80 border border-gray-700 rounded-lg hover:border-gray-600 transition-colors group">
-      <div className={`mt-1 p-2 rounded-md ${
-        entity.relationship === 'rival' || entity.relationship === 'enemy' 
-          ? 'bg-red-900/30 text-red-400' 
-          : 'bg-blue-900/30 text-blue-400'
-      }`}>
+    <div 
+      className="flex items-start gap-4 p-3 rounded-lg transition-all group"
+      style={{
+        background: 'var(--star-metal-60)',
+        border: `1px solid ${isHostile ? 'rgba(239, 68, 68, 0.3)' : 'var(--asteroid-dust-50)'}`,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = entityColor;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = isHostile ? 'rgba(239, 68, 68, 0.3)' : 'var(--asteroid-dust-50)';
+      }}
+    >
+      <div 
+        className="mt-1 p-2 rounded-lg"
+        style={{
+          background: `${entityColor}20`,
+          color: entityColor,
+        }}
+      >
         <Icon className="w-5 h-5" />
       </div>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h4 className="text-sm font-bold text-white truncate">{entity.name}</h4>
+          <h4 className="text-sm font-bold text-gray-100 truncate">{entity.name}</h4>
           {entity.relationship && (
-            <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold ${
-              entity.relationship === 'rival' || entity.relationship === 'enemy'
-                ? 'bg-red-900/50 text-red-300'
-                : 'bg-blue-900/50 text-blue-300'
-            }`}>
+            <span 
+              className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold"
+              style={{
+                background: `${entityColor}20`,
+                color: entityColor,
+              }}
+            >
               {entity.relationship}
             </span>
           )}
@@ -276,7 +337,18 @@ function EntityCard({
       {onClick && (
         <button 
           onClick={() => onClick(entity.graphNodeId)}
-          className="p-2 text-gray-500 hover:text-white hover:bg-gray-700 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+          className="p-2 rounded-md transition-all opacity-0 group-hover:opacity-100"
+          style={{
+            color: '#94a3b8',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--star-metal-80)';
+            e.currentTarget.style.color = THEME_HEX.cyan;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#94a3b8';
+          }}
           title="View in Graph"
         >
           <ExternalLink className="w-4 h-4" />

@@ -8,7 +8,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-zinc-950 text-zinc-100">
+      <body className="text-zinc-100" style={{ backgroundColor: 'var(--deep-void, #0a0d14)' }}>
         <ToastProvider>
           {children}
         </ToastProvider>

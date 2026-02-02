@@ -15,6 +15,8 @@ import { useCharacter } from '../../../lib/chargen/hooks';
 import { getOrCreateUser } from '../../../lib/identity';
 import { getBackgroundSkills, getCharacteristicModifier } from '@planeshift/mgt2e';
 import type { CharacteristicCode } from '@planeshift/mgt2e';
+import { GlassPanel } from '../../../components/ui/scifi/GlassPanel';
+import { THEME_HEX } from '../../../lib/design-system/themeUtils';
 
 interface BackgroundStepProps {
   characterId: string | null;
@@ -90,47 +92,90 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
   if (!characterId) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8">
-        <div className="text-center space-y-4">
+        <GlassPanel theme="cyan" variant="elevated" className="max-w-md p-8 text-center space-y-6">
           <h2 className="text-2xl font-bold text-zinc-100">Start Character Generation</h2>
-          <p className="text-zinc-400 max-w-md">
+          <p className="text-zinc-400">
             Create a new Traveller character. You'll roll for characteristics, choose a background,
             and embark on a career.
           </p>
           <button 
             onClick={handleCreate}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+            className="px-6 py-3 rounded-lg font-bold transition-all duration-300"
+            style={{
+              backgroundColor: THEME_HEX.cyan,
+              color: '#0a0d14',
+              boxShadow: `0 0 16px ${THEME_HEX.cyan}40`,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = `0 0 24px ${THEME_HEX.cyan}60`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = `0 0 16px ${THEME_HEX.cyan}40`;
+            }}
           >
             Create New Character
           </button>
-        </div>
+        </GlassPanel>
       </div>
     );
   }
 
-  if (!character) return <div className="p-8 text-zinc-400">Loading character...</div>;
+  if (!character) {
+    return (
+      <div className="p-8">
+        <GlassPanel theme="cyan" className="p-8 text-center animate-pulse">
+          <span className="text-zinc-400">Loading character...</span>
+        </GlassPanel>
+      </div>
+    );
+  }
 
   const bgSkills = getBackgroundSkills();
   const selectedCount = character.backgroundSkills?.length || 0;
 
   return (
     <div className="space-y-8 p-1">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+      <GlassPanel theme="violet" variant="bordered" className="p-4 rounded-lg">
         <label className="block text-sm font-medium text-zinc-400 mb-2">Name</label>
         <input 
           type="text" 
           value={character.name}
           onChange={handleNameChange}
-          className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2 text-zinc-100 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full px-4 py-2 rounded text-zinc-100 transition-all focus:outline-none"
+          style={{
+            backgroundColor: 'rgba(10, 13, 20, 0.8)',
+            border: '1px solid rgba(148, 163, 184, 0.3)',
+          }}
           placeholder="Enter character name..."
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = THEME_HEX.cyan;
+            e.currentTarget.style.boxShadow = `0 0 8px ${THEME_HEX.cyan}30`;
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         />
-      </div>
+      </GlassPanel>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+      <GlassPanel theme="cyan" variant="bordered" className="p-4 rounded-lg">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-zinc-100">Characteristics</h3>
           <button 
             onClick={handleReroll}
-            className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1 rounded transition-colors"
+            className="text-xs text-zinc-200 px-3 py-1 rounded transition-all duration-300"
+            style={{ 
+              backgroundColor: 'rgba(30, 41, 59, 0.5)', 
+              border: '1px solid rgba(148, 163, 184, 0.2)' 
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = `0 0 10px ${THEME_HEX.slate}40`;
+              e.currentTarget.style.borderColor = THEME_HEX.slate;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.2)';
+            }}
           >
             Re-roll All
           </button>
@@ -141,22 +186,37 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
             const val = character.characteristics[stat] || 0;
             const mod = getCharacteristicModifier(val);
             const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+            const modColor = mod >= 0 ? THEME_HEX.cyan : '#ef4444';
+
             return (
-              <div key={stat} className="bg-zinc-950 border border-zinc-800 rounded p-3 text-center">
+              <div 
+                key={stat} 
+                className="rounded p-3 text-center transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(10, 13, 20, 0.8)',
+                  border: `1px solid ${THEME_HEX.cyan}30`
+                }}
+              >
                 <div className="text-xs font-bold text-zinc-500 mb-1">{stat}</div>
                 <div className="text-2xl font-mono text-zinc-100 font-bold">{val}</div>
-                <div className="text-sm text-zinc-500">{modStr}</div>
+                <div className="text-sm font-bold" style={{ color: modColor }}>{modStr}</div>
               </div>
             );
           })}
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 bg-zinc-950 p-3 rounded border border-zinc-800">
+        <div 
+          className="flex flex-col sm:flex-row items-center gap-4 p-3 rounded"
+          style={{
+            backgroundColor: 'rgba(10, 13, 20, 0.6)',
+            border: '1px solid rgba(148, 163, 184, 0.1)'
+          }}
+        >
           <span className="text-sm text-zinc-400">Swap:</span>
           <select 
             value={swap1} 
             onChange={(e) => setSwap1(e.target.value as CharacteristicCode)}
-            className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 text-sm"
+            className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 text-sm focus:outline-none focus:border-cyan-500"
           >
             {STAT_ORDER.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -164,24 +224,27 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
           <select 
             value={swap2} 
             onChange={(e) => setSwap2(e.target.value as CharacteristicCode)}
-            className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 text-sm"
+            className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 text-sm focus:outline-none focus:border-cyan-500"
           >
             {STAT_ORDER.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <button 
             onClick={handleSwap}
             disabled={swap1 === swap2}
-            className="bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-zinc-200 px-4 py-1 rounded text-sm transition-colors ml-auto"
+            className="bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-zinc-200 px-4 py-1 rounded text-sm transition-colors ml-auto border border-zinc-700 hover:border-zinc-600"
           >
             Swap
           </button>
         </div>
-      </div>
+      </GlassPanel>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+      <GlassPanel theme="violet" variant="bordered" className="p-4 rounded-lg">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-zinc-100">Background Skills</h3>
-          <span className={`text-sm ${selectedCount === 3 ? 'text-green-500' : 'text-zinc-400'}`}>
+          <span 
+            className="text-sm font-mono"
+            style={{ color: selectedCount === 3 ? THEME_HEX.cyan : THEME_HEX.slate }}
+          >
             Selected: {selectedCount}/3
           </span>
         </div>
@@ -198,29 +261,40 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
             return (
               <label 
                 key={skill.id} 
-                className={`flex items-center gap-2 p-2 rounded border transition-colors cursor-pointer select-none ${
-                  isSelected 
-                    ? 'bg-blue-900/20 border-blue-800' 
-                    : isDisabled 
-                      ? 'opacity-50 cursor-not-allowed border-transparent' 
-                      : 'hover:bg-zinc-800 border-transparent'
-                }`}
+                className="flex items-center gap-2 p-2 rounded transition-all cursor-pointer select-none"
+                style={{
+                  backgroundColor: isSelected ? `${THEME_HEX.violet}20` : 'transparent',
+                  border: `1px solid ${isSelected ? THEME_HEX.violet : 'transparent'}`,
+                  boxShadow: isSelected ? `0 0 10px ${THEME_HEX.violet}20` : 'none',
+                  opacity: isDisabled ? 0.5 : 1,
+                  cursor: isDisabled ? 'not-allowed' : 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected && !isDisabled) {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
                 <input 
                   type="checkbox"
                   checked={isSelected}
                   onChange={() => handleSkillToggle(skill.id)}
                   disabled={isDisabled}
-                  className="accent-blue-500 w-4 h-4 rounded"
+                  className="accent-violet-500 w-4 h-4 rounded"
                 />
-                <span className={`text-sm ${isSelected ? 'text-blue-200' : 'text-zinc-300'}`}>
+                <span className={`text-sm ${isSelected ? 'text-violet-200' : 'text-zinc-300'}`}>
                   {skill.name}
                 </span>
               </label>
             );
           })}
         </div>
-      </div>
+      </GlassPanel>
     </div>
   );
 }

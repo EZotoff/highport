@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   ReactFlow,
-  Background,
   Controls,
   useNodesState,
   useEdgesState,
@@ -39,10 +38,13 @@ import { initAwareness, updateCursor, updateSelection, PresenceState } from '../
 import { CursorOverlay, UserList, SelectionHalos } from './Presence';
 import { generateNodeId, GraphNode, NodeType, MockUser } from '@planeshift/shared';
 import { nodeTypes } from './nodes';
+import { edgeTypes } from './edges';
 import { ContextMenu } from './ContextMenu';
 import { NodePanel } from './NodePanel';
 import { initUndoManager, undo, redo } from '../../lib/undo';
 import { getOrCreateUser } from '../../lib/identity';
+import { CosmicBackground } from '@/components/ui/scifi';
+import { THEME_HEX } from '@/lib/design-system/themeUtils';
 
 function GraphCanvasContent() {
   const [nodes, setNodes] = useNodesState<Node>([]);
@@ -307,7 +309,14 @@ function GraphCanvasContent() {
   const contextNode = getContextNode();
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }} onMouseMove={onMouseMove}>
+    <div 
+      style={{ 
+        width: '100vw', 
+        height: '100vh',
+        background: 'var(--deep-void)'
+      }} 
+      onMouseMove={onMouseMove}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -316,12 +325,20 @@ function GraphCanvasContent() {
         onSelectionChange={onSelectionChange}
         onNodeContextMenu={onNodeContextMenu}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         onlyRenderVisibleElements={true}
         minZoom={0.1}
         maxZoom={5}
       >
-        <Background />
+        <CosmicBackground />
+        {/* Vignette overlay */}
+        <div 
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            background: 'radial-gradient(ellipse at center, transparent 40%, rgba(10, 13, 20, 0.7) 100%)'
+          }}
+        />
         <Controls />
         <CursorOverlay cursors={remoteUsers} />
         <SelectionHalos users={remoteUsers} />
@@ -331,7 +348,12 @@ function GraphCanvasContent() {
             <div className="flex flex-col items-end gap-1">
               <button
                 onClick={handleAddNode}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow-md font-medium text-sm transition-colors"
+                className="px-4 py-2 rounded font-medium text-sm transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:shadow-[0_0_25px_rgba(0,240,255,0.6)] hover:border-cyan-400"
+                style={{
+                  background: `${THEME_HEX.cyan}20`,
+                  border: `1px solid ${THEME_HEX.cyan}50`,
+                  color: THEME_HEX.cyan
+                }}
               >
                 Add Node
               </button>

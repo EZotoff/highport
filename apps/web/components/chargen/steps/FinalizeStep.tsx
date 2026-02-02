@@ -12,6 +12,8 @@ import {
   formatSkillsLevel0,
 } from '../../../lib/chargen/finalize';
 import { getRankInfo } from '../../../lib/chargen/term-resolution';
+import { GlassPanel } from '@/components/ui/scifi';
+import { THEME_HEX } from '@/lib/design-system/themeUtils';
 
 interface FinalizeStepProps {
   characterId: string | null;
@@ -84,41 +86,63 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+      <GlassPanel theme="cyan" variant="default" className="p-6">
         <h2 className="text-2xl font-bold text-white mb-6">Character Complete</h2>
 
-        <div className="bg-zinc-950 rounded-lg p-4 mb-6">
+        <div 
+          className="rounded-lg p-4 mb-6"
+          style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
+        >
           <div className="mb-4">
-            <label className="block text-sm text-zinc-400 mb-1">Character Name</label>
+            <label className="block text-sm mb-1" style={{ color: THEME_HEX.slate }}>Character Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Enter character name..."
-              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded text-xl text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded text-xl text-white font-bold transition-all duration-300 focus:outline-none"
+              style={{
+                backgroundColor: 'transparent',
+                border: `1px solid ${THEME_HEX.slate}40`,
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = THEME_HEX.cyan;
+                e.currentTarget.style.boxShadow = `0 0 12px ${THEME_HEX.cyan}40`;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = `${THEME_HEX.slate}40`;
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             />
           </div>
           
-          <div className="flex justify-between text-zinc-400">
+          <div className="flex justify-between" style={{ color: THEME_HEX.slate }}>
             <span>Age: <span className="text-white">{character.age}</span></span>
             <span>
               {career?.name} ({character.terms.length} term{character.terms.length !== 1 ? 's' : ''})
-              {rankInfo && <span className="text-zinc-300"> • {rankInfo.title}</span>}
+              {rankInfo && <span style={{ color: THEME_HEX.slate }}> • {rankInfo.title}</span>}
             </span>
           </div>
         </div>
 
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-zinc-100 mb-3">Characteristics</h3>
+          <h3 className="text-lg font-bold text-white mb-3">Characteristics</h3>
           <div className="grid grid-cols-3 gap-3">
             {CHARACTERISTIC_ORDER.map(stat => {
               const value = character.characteristics[stat] || 0;
               const dm = getCharacteristicModifier(value);
               return (
-                <div key={stat} className="bg-zinc-950 rounded p-3 text-center">
-                  <div className="text-xs text-zinc-500 mb-1">{stat}</div>
+                <div 
+                  key={stat} 
+                  className="rounded p-3 text-center"
+                  style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
+                >
+                  <div style={{ color: THEME_HEX.slate }} className="text-xs mb-1">{stat}</div>
                   <div className="text-2xl font-bold text-white">{value}</div>
-                  <div className={`text-sm ${dm >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div 
+                    style={{ color: dm >= 0 ? THEME_HEX.cyan : '#ef4444' }}
+                    className="text-sm"
+                  >
                     {dm >= 0 ? '+' : ''}{dm}
                   </div>
                 </div>
@@ -128,26 +152,40 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-zinc-100 mb-3">Skills</h3>
-          <div className="bg-zinc-950 rounded p-4">
+          <h3 className="text-lg font-bold text-white mb-3">Skills</h3>
+          <div className="rounded p-4" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
             {trainedSkills.length > 0 ? (
               <div className="flex flex-wrap gap-2 mb-3">
                 {trainedSkills.map((skill, i) => (
-                  <span key={i} className="px-2 py-1 bg-blue-900/30 text-blue-300 rounded text-sm">
+                  <span 
+                    key={i} 
+                    className="px-2 py-1 rounded text-sm"
+                    style={{ 
+                      backgroundColor: 'rgba(0, 240, 255, 0.15)', 
+                      color: THEME_HEX.cyan 
+                    }}
+                  >
                     {skill}
                   </span>
                 ))}
               </div>
             ) : (
-              <div className="text-zinc-500 mb-3">No trained skills</div>
+              <div style={{ color: THEME_HEX.slate }} className="mb-3">No trained skills</div>
             )}
             
             {level0Skills.length > 0 && (
               <div>
-                <div className="text-xs text-zinc-500 mb-2">Level 0:</div>
+                <div className="text-xs mb-2" style={{ color: THEME_HEX.slate }}>Level 0:</div>
                 <div className="flex flex-wrap gap-2">
                   {level0Skills.map((skill, i) => (
-                    <span key={i} className="px-2 py-1 bg-zinc-800 text-zinc-400 rounded text-xs">
+                    <span 
+                      key={i} 
+                      className="px-2 py-1 rounded text-xs"
+                      style={{ 
+                        backgroundColor: 'rgba(148, 163, 184, 0.1)', 
+                        color: THEME_HEX.slate 
+                      }}
+                    >
                       {skill}
                     </span>
                   ))}
@@ -158,8 +196,8 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-zinc-100 mb-3">Benefits</h3>
-          <div className="bg-zinc-950 rounded p-4 space-y-2">
+          <h3 className="text-lg font-bold text-white mb-3">Benefits</h3>
+          <div className="rounded p-4 space-y-2" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
             <div className="flex items-center gap-2">
               <span className="text-green-400">💰</span>
               <span className="text-white">Cr{character.credits.toLocaleString()}</span>
@@ -171,32 +209,47 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
               </div>
             ))}
             {character.benefits.length === 0 && character.credits === 0 && (
-              <div className="text-zinc-500">No benefits accumulated</div>
+              <div style={{ color: THEME_HEX.slate }}>No benefits accumulated</div>
             )}
           </div>
         </div>
 
         {connections.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-lg font-bold text-zinc-100 mb-3">Connections</h3>
-            <div className="bg-zinc-950 rounded p-4 space-y-2">
+            <h3 className="text-lg font-bold text-white mb-3">Connections</h3>
+            <div className="rounded p-4 space-y-2" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
               {connections.map((conn, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <span>{RELATIONSHIP_ICONS[conn.relationship || ''] || '⚪'}</span>
-                  <span className="capitalize text-zinc-400">{conn.relationship}:</span>
+                  <span className="capitalize" style={{ color: THEME_HEX.slate }}>{conn.relationship}:</span>
                   <span className="text-white">{conn.name}</span>
-                  <span className="text-zinc-500 text-sm">(Term {conn.termNumber})</span>
+                  <span className="text-sm" style={{ color: THEME_HEX.slate }}>(Term {conn.termNumber})</span>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
+      </GlassPanel>
 
       <div className="flex justify-between">
         <button
           onClick={handleBack}
-          className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded"
+          className="px-6 py-2 rounded transition-all duration-300"
+          style={{ 
+            backgroundColor: 'transparent', 
+            color: THEME_HEX.slate,
+            border: `1px solid ${THEME_HEX.slate}40`
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = THEME_HEX.cyan;
+            e.currentTarget.style.color = THEME_HEX.cyan;
+            e.currentTarget.style.boxShadow = `0 0 12px ${THEME_HEX.cyan}20`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = `${THEME_HEX.slate}40`;
+            e.currentTarget.style.color = THEME_HEX.slate;
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         >
           ← Back to Benefits
         </button>
@@ -204,7 +257,29 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
         <button
           onClick={handleCreateCharacter}
           disabled={isCreating || !name.trim()}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded font-bold transition-colors"
+          className="px-6 py-3 rounded font-bold transition-all duration-300"
+          style={isCreating || !name.trim() 
+            ? { 
+                backgroundColor: 'rgba(26, 31, 46, 0.6)',
+                color: THEME_HEX.slate,
+                cursor: 'not-allowed',
+              }
+            : { 
+                backgroundColor: THEME_HEX.cyan,
+                color: '#0a0d14',
+                boxShadow: `0 0 16px ${THEME_HEX.cyan}40`,
+              }
+          }
+          onMouseEnter={(e) => {
+            if (!isCreating && name.trim()) {
+              e.currentTarget.style.boxShadow = `0 0 24px ${THEME_HEX.cyan}60`;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isCreating && name.trim()) {
+              e.currentTarget.style.boxShadow = `0 0 16px ${THEME_HEX.cyan}40`;
+            }
+          }}
         >
           {isCreating ? 'Creating...' : 'Create Character & View Graph →'}
         </button>

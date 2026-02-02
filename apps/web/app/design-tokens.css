@@ -1,0 +1,65 @@
+:root {
+  /* === BASE COLORS === */
+  --deep-void: #0a0d14;
+  --star-metal: #1a1f2e;
+  --nebula-mist: #242b3d;
+  --asteroid-dust: #3d4555;
+  
+  /* === BASE COLORS WITH ALPHA === */
+  --deep-void-80: rgba(10, 13, 20, 0.8);
+  --star-metal-90: rgba(26, 31, 46, 0.9);
+  --star-metal-80: rgba(26, 31, 46, 0.8);
+  --star-metal-60: rgba(26, 31, 46, 0.6);
+  --star-metal-50: rgba(26, 31, 46, 0.5);
+  --star-metal-30: rgba(26, 31, 46, 0.3);
+  --nebula-mist-90: rgba(36, 43, 61, 0.9);
+  --nebula-mist-80: rgba(36, 43, 61, 0.8);
+  --nebula-mist-50: rgba(36, 43, 61, 0.5);
+  --nebula-mist-30: rgba(36, 43, 61, 0.3);
+  --asteroid-dust-50: rgba(61, 69, 85, 0.5);
+  --asteroid-dust-30: rgba(61, 69, 85, 0.3);
+  
+  /* === NEON ACCENT COLORS === */
+  --plasma-cyan: #00f0ff;
+  --impulse-violet: #8b5cf6;
+  --reactor-amber: #f59e0b;
+  --warp-emerald: #10b981;
+  --hull-breach-red: #ef4444;
+  
+  /* === GLOW EFFECTS === */
+  --glow-cyan: rgba(0, 240, 255, 0.6);
+  --glow-violet: rgba(139, 92, 246, 0.6);
+  --glow-amber: rgba(245, 158, 11, 0.6);
+  --glow-emerald: rgba(16, 185, 129, 0.6);
+  --glow-red: rgba(239, 68, 68, 0.6);
+  
+  /* === TEXT HIERARCHY === */
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-glow: #00f0ff;
+  
+  /* === SPACING === */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  
+  /* === TYPOGRAPHY === */
+  --font-display: 'Orbitron', 'Exo 2', system-ui, sans-serif;
+  --font-body: 'Inter', 'Roboto', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* === ANIMATION TIMING === */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+  
+  /* === BORDER RADIUS === */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
