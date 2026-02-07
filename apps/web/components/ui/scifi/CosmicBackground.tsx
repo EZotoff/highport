@@ -44,12 +44,14 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
         bottom: 0,
         left: 0,
         zIndex: 0,
+        pointerEvents: 'none',
       }}
     >
       <div 
         className={`animate-nebula-pulse`}
         style={{
           ...fullScreen,
+          pointerEvents: 'none',
           background: `
             radial-gradient(ellipse at 20% 80%, rgba(139, 92, 246, ${0.15 * opacity}) 0%, transparent 50%),
             radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, ${0.1 * opacity}) 0%, transparent 50%),
@@ -67,6 +69,7 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
               ...fullScreen,
               opacity: opacity * 0.7,
               animation: reducedMotion ? 'none' : undefined,
+              pointerEvents: 'none',
               backgroundImage: `
                 radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.8), transparent),
                 radial-gradient(1px 1px at 30% 50%, rgba(255,255,255,0.6), transparent),
@@ -82,6 +85,7 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
               ...fullScreen,
               opacity: opacity * 0.8,
               animation: reducedMotion ? 'none' : undefined,
+              pointerEvents: 'none',
               backgroundImage: `
                 radial-gradient(1.5px 1.5px at 50% 70%, rgba(255,255,255,0.9), transparent),
                 radial-gradient(1px 1px at 85% 60%, rgba(255,255,255,0.7), transparent),
@@ -97,6 +101,7 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
               ...fullScreen,
               opacity: opacity,
               animation: reducedMotion ? 'none' : undefined,
+              pointerEvents: 'none',
               backgroundImage: `
                 radial-gradient(2px 2px at 20% 80%, rgba(255,255,255,0.9), transparent),
                 radial-gradient(1.5px 1.5px at 40% 90%, rgba(255,255,255,0.8), transparent),
@@ -119,19 +124,21 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
             `,
             backgroundSize: '40px 40px',
             opacity: opacity * 0.5,
+            pointerEvents: 'none',
           }}
         />
       )}
       
       {showScanlines && (
         <div 
-          className="crt-scanlines"
-          style={{
-            ...fullScreen,
-            opacity: opacity * 0.8,
-          }}
-        />
-      )}
+            className="crt-scanlines"
+            style={{
+              ...fullScreen,
+              opacity: opacity * 0.8,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
     </div>
   );
 };
