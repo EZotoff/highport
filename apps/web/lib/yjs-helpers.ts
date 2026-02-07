@@ -60,8 +60,19 @@ export function yMapToEdge(ymap: Y.Map<unknown>): GraphEdge {
 
 export function addNode(doc: Y.Doc, node: GraphNode): void {
   const nodes = getNodesMap(doc);
-  const ymap = nodeToYMap(node);
-  nodes.set(node.id, ymap);
+  doc.transact(() => {
+    const ymap = new Y.Map<unknown>();
+    nodes.set(node.id, ymap);
+    ymap.set('id', node.id);
+    ymap.set('type', node.type);
+    ymap.set('label', node.label);
+    ymap.set('position', { x: node.position.x, y: node.position.y });
+    ymap.set('metadata', { ...node.metadata });
+    ymap.set('locked', node.locked);
+    ymap.set('hidden', node.hidden);
+    ymap.set('created_at', node.created_at);
+    ymap.set('created_by', node.created_by);
+  });
 }
 
 export function updateNodePosition(
@@ -100,8 +111,19 @@ export function deleteNode(doc: Y.Doc, nodeId: string): void {
 
 export function addEdge(doc: Y.Doc, edge: GraphEdge): void {
   const edges = getEdgesMap(doc);
-  const ymap = edgeToYMap(edge);
-  edges.set(edge.id, ymap);
+  doc.transact(() => {
+    const ymap = new Y.Map<unknown>();
+    edges.set(edge.id, ymap);
+    ymap.set('id', edge.id);
+    ymap.set('source_id', edge.source_id);
+    ymap.set('target_id', edge.target_id);
+    ymap.set('relation_label', edge.relation_label);
+    ymap.set('type', edge.type);
+    ymap.set('weight', edge.weight);
+    ymap.set('style', edge.style);
+    ymap.set('color', edge.color);
+    ymap.set('hidden', edge.hidden);
+  });
 }
 
 export function deleteEdge(doc: Y.Doc, edgeId: string): void {
@@ -123,4 +145,21 @@ export function updateNodeVisibility(doc: Y.Doc, nodeId: string, hidden: boolean
   if (ymap) {
     ymap.set('hidden', hidden);
   }
+}
+
+export function updateNodeMetadata(
+  doc: Y.Doc,
+  nodeId: string,
+  metadata: Partial<GraphNode['metadata']>
+): void {
+  const nodes = getNodesMap(doc);
+  const ymap = nodes.get(nodeId);
+  if (!ymap) return;
+
+  const currentMetadata = (ymap.get('metadata') as GraphNode['metadata']) || {};
+  const updatedMetadata = { ...currentMetadata, ...metadata };
+
+  doc.transact(() => {
+    ymap.set('metadata', updatedMetadata);
+  }, 'node-metadata-update');
 }

@@ -10,6 +10,7 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
   const description = data.description as string | undefined;
   const isLocked = data.locked as boolean;
   const isHidden = data.hidden as boolean;
+  const portraitUrl = data.image_url as string | undefined;
 
   const Icon = config.icon;
 
@@ -79,6 +80,7 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
         position={Position.Top} 
         className="!w-3 !h-3 !border-2 transition-all duration-200"
         style={{
+          top: -6,
           backgroundColor: THEME_HEX.cyan,
           borderColor: '#1a1f2e',
           boxShadow: getHandleGlow(),
@@ -106,6 +108,18 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
       </div>
 
       <div className="absolute -top-2 -right-2 flex gap-1 pointer-events-none">
+        {portraitUrl && (
+          <div
+            className="w-8 h-8 rounded-full overflow-hidden border border-asteroid-dust-50 shadow-lg"
+            style={{ backgroundColor: '#0d111a' }}
+          >
+            <img
+              src={portraitUrl}
+              alt="Portrait"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
         {isLocked && (
           <div 
             className="p-1 rounded-full border shadow-sm text-xs"
@@ -137,6 +151,7 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
         position={Position.Bottom} 
         className="!w-3 !h-3 !border-2 transition-all duration-200"
         style={{
+          bottom: -6,
           backgroundColor: THEME_HEX.cyan,
           borderColor: '#1a1f2e',
           boxShadow: getHandleGlow(),

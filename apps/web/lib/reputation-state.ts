@@ -39,13 +39,13 @@ export function addFaction(doc: Y.Doc, name: string): string {
   
   doc.transact(() => {
     const factionMap = new Y.Map();
+    factions.set(id, factionMap);
     factionMap.set('id', id);
     factionMap.set('factionNodeId', null);
     factionMap.set('name', name);
     factionMap.set('standing', 0);
     factionMap.set('heat', 0);
     factionMap.set('lastChange', Date.now());
-    factions.set(id, factionMap);
   });
   
   return id;

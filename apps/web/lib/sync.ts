@@ -5,6 +5,21 @@ import { HocuspocusProvider } from '@hocuspocus/provider';
 let persistence: IndexeddbPersistence | null = null;
 let provider: HocuspocusProvider | null = null;
 
+const SESSION_KEY = 'planeshift_session_id';
+
+export function getSessionId(scope: string): string {
+  if (typeof window === 'undefined') {
+    return `${scope}-server`;
+  }
+  const key = `${SESSION_KEY}:${scope}`;
+  let id = sessionStorage.getItem(key);
+  if (!id) {
+    id = Math.random().toString(36).slice(2, 10);
+    sessionStorage.setItem(key, id);
+  }
+  return id;
+}
+
 export function initPersistence(doc: Y.Doc, name: string = 'planeshift-graph'): IndexeddbPersistence {
   if (persistence) {
     return persistence;

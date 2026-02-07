@@ -33,7 +33,7 @@ import {
   updateNodeLock,
   updateNodeVisibility 
 } from '../../lib/yjs-helpers';
-import { initPersistence, initProvider, getProvider } from '../../lib/sync';
+import { getSessionId, initPersistence, initProvider, getProvider } from '../../lib/sync';
 import { initAwareness, updateCursor, updateSelection, PresenceState } from '../../lib/awareness';
 import { CursorOverlay, UserList, SelectionHalos } from './Presence';
 import { generateNodeId, GraphNode, NodeType, MockUser } from '@planeshift/shared';
@@ -55,6 +55,7 @@ function GraphCanvasContent() {
   const [currentUser, setCurrentUser] = React.useState<PresenceState | null>(null);
   const [user, setUser] = useState<MockUser | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const heavyGraph = nodes.length > 200;
   
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
   const isGM = user?.isGM || false;
@@ -98,8 +99,9 @@ function GraphCanvasContent() {
 
   useEffect(() => {
     const doc = getYDoc();
-    initPersistence(doc);
-    const provider = initProvider(doc);
+    const sessionId = getSessionId('graph');
+    initPersistence(doc, `planeshift-graph-${sessionId}`);
+    const provider = initProvider(doc, sessionId);
     if (!provider.awareness) return;
 
     const userId = user?.userId || Math.random().toString(36).substring(7);
@@ -287,6 +289,12 @@ function GraphCanvasContent() {
     
     if (action === 'delete') {
       deleteNode(doc, contextMenu.nodeId);
+      setNodes((current) => current.filter((node) => node.id !== contextMenu.nodeId));
+      setEdges((current) =>
+        current.filter(
+          (edge) => edge.source !== contextMenu.nodeId && edge.target !== contextMenu.nodeId
+        )
+      );
     } else if (action === 'lock' || action === 'unlock') {
       updateNodeLock(doc, contextMenu.nodeId, action === 'lock');
     } else if (action === 'hide' || action === 'unhide') {
@@ -296,7 +304,7 @@ function GraphCanvasContent() {
     }
     
     closeContextMenu();
-  }, [contextMenu, closeContextMenu]);
+  }, [contextMenu, closeContextMenu, setEdges, setNodes]);
 
   const getContextNode = (): GraphNode | null => {
     if (!contextMenu) return null;
@@ -331,7 +339,7 @@ function GraphCanvasContent() {
         minZoom={0.1}
         maxZoom={5}
       >
-        <CosmicBackground />
+        <CosmicBackground showStars={!heavyGraph} showGrid={!heavyGraph} intensity={heavyGraph ? 'low' : 'medium'} />
         {/* Vignette overlay */}
         <div 
           className="pointer-events-none fixed inset-0 z-0"
@@ -342,8 +350,8 @@ function GraphCanvasContent() {
         <Controls />
         <CursorOverlay cursors={remoteUsers} />
         <SelectionHalos users={remoteUsers} />
-        <Panel position="top-right">
-          <div className="flex gap-4 items-center">
+        <Panel position="top-right" className="pointer-events-auto" style={{ zIndex: 20 }}>
+          <div className="flex gap-4 items-center relative z-10 pointer-events-auto">
             <UserList users={[...(currentUser ? [currentUser] : []), ...remoteUsers]} currentUserId={currentUser?.userId || ''} />
             <div className="flex flex-col items-end gap-1">
               <button
