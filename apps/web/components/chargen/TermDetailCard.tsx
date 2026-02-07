@@ -4,8 +4,6 @@ import {
   MapPin, 
   Box, 
   Key, 
-  CheckCircle2, 
-  XCircle, 
   ShieldAlert, 
   Trophy, 
   Briefcase,
@@ -14,7 +12,6 @@ import {
   X
 } from 'lucide-react';
 import type { CareerTermResult, SpawnedEntityRef } from '../../lib/chargen/types';
-import type { DiceResult } from '@planeshift/mgt2e';
 import { GlassPanel, ProcessFlowSheen, DiceRollDisplay } from '../ui/scifi';
 import { THEME_HEX, TYPOGRAPHY } from '@/lib/design-system/themeUtils';
 import { ANIMATION_TIMING } from '@/lib/design-system/visualConfig';
@@ -35,6 +32,7 @@ export function TermDetailCard({
   onEntityClick
 }: TermDetailCardProps) {
   const [isVisible, setIsVisible] = useState(isOpen);
+  const modalRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) setIsVisible(true);
@@ -42,6 +40,33 @@ export function TermDetailCard({
       const timer = setTimeout(() => setIsVisible(false), ANIMATION_TIMING.TRANSITION_EXIT);
       return () => clearTimeout(timer);
     }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !modalRef.current) return;
+    const container = modalRef.current;
+    const selectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusables = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(el => !el.hasAttribute('disabled'));
+    focusables[0]?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const items = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(el => !el.hasAttribute('disabled'));
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    container.addEventListener('keydown', onKeyDown);
+    return () => container.removeEventListener('keydown', onKeyDown);
   }, [isOpen]);
 
   if (!isVisible) return null;
@@ -59,6 +84,10 @@ export function TermDetailCard({
       onClick={onClose}
     >
       <GlassPanel
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="term-detail-title"
         theme={themeColor}
         variant="bordered"
         glow
@@ -81,36 +110,31 @@ export function TermDetailCard({
             >
               Term {term.termNumber}
             </div>
-            <h2 className={`flex items-center gap-2 mt-1 text-gray-100 ${TYPOGRAPHY.subheading}`}>
+            <h2 id="term-detail-title" className={`flex items-center gap-2 mt-1 text-heading ${TYPOGRAPHY.subheading}`}>
               <Briefcase className="w-5 h-5" style={{ color: THEME_HEX.violet }} />
               {career.name}
-              <span className="text-gray-500 font-normal text-sm">
+              <span className="text-subtle font-normal text-sm">
                 ({term.assignmentId})
               </span>
             </h2>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <div className={`text-gray-500 ${TYPOGRAPHY.label}`}>Age</div>
-              <div className={`text-gray-200 ${TYPOGRAPHY.data} text-lg`}>
+              <div className={`text-subtle ${TYPOGRAPHY.label}`}>Age</div>
+              <div className={`text-default ${TYPOGRAPHY.data} text-lg`}>
                 {term.startAge} <span style={{ color: themeHex }}>→</span> {term.startAge + 4}
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg transition-all"
+              type="button"
+              aria-label="Close term details"
+              className="p-2 min-w-[44px] min-h-[44px] rounded-lg transition-all duration-200 border hover:-translate-y-0.5 hover:border-[var(--hover-color)] hover:text-[var(--hover-color)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2"
               style={{
                 background: 'var(--star-metal-50)',
-                border: '1px solid var(--asteroid-dust-50)',
+                borderColor: 'var(--asteroid-dust-50)',
                 color: '#94a3b8',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = themeHex;
-                e.currentTarget.style.color = themeHex;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--asteroid-dust-50)';
-                e.currentTarget.style.color = '#94a3b8';
+                ['--hover-color' as string]: themeHex,
               }}
             >
               <X className="w-4 h-4" />
@@ -131,7 +155,7 @@ export function TermDetailCard({
             <div className="grid gap-3">
               {term.survivalRoll && (
                 <div className="space-y-1">
-                  <span className={`text-gray-500 ${TYPOGRAPHY.label}`}>Survival</span>
+                  <span className={`text-subtle ${TYPOGRAPHY.label}`}>Survival</span>
                   <DiceRollDisplay 
                     dice={term.survivalRoll.dice}
                     rolls={term.survivalRoll.rolls}
@@ -145,7 +169,7 @@ export function TermDetailCard({
               )}
               {term.commissionRoll && (
                 <div className="space-y-1">
-                  <span className={`text-gray-500 ${TYPOGRAPHY.label}`}>Commission</span>
+                  <span className={`text-subtle ${TYPOGRAPHY.label}`}>Commission</span>
                   <DiceRollDisplay 
                     dice={term.commissionRoll.dice}
                     rolls={term.commissionRoll.rolls}
@@ -159,7 +183,7 @@ export function TermDetailCard({
               )}
               {term.advancementRoll && (
                 <div className="space-y-1">
-                  <span className={`text-gray-500 ${TYPOGRAPHY.label}`}>Advancement</span>
+                  <span className={`text-subtle ${TYPOGRAPHY.label}`}>Advancement</span>
                   <DiceRollDisplay 
                     dice={term.advancementRoll.dice}
                     rolls={term.advancementRoll.rolls}
@@ -173,7 +197,7 @@ export function TermDetailCard({
               )}
               {term.eventRoll && (
                 <div className="space-y-1">
-                  <span className={`text-gray-500 ${TYPOGRAPHY.label}`}>Event</span>
+                  <span className={`text-subtle ${TYPOGRAPHY.label}`}>Event</span>
                   <DiceRollDisplay 
                     dice={term.eventRoll.dice}
                     rolls={term.eventRoll.rolls}
@@ -203,7 +227,7 @@ export function TermDetailCard({
                   border: `1px solid ${term.mishap ? 'rgba(239, 68, 68, 0.3)' : 'var(--asteroid-dust-50)'}`,
                 }}
               >
-                <p className="text-gray-200 leading-relaxed">
+                <p className="text-default leading-relaxed">
                   {term.eventDescription || term.mishap?.description || term.eventChoice || "No details available."}
                 </p>
               </div>
@@ -290,16 +314,11 @@ function EntityCard({
 
   return (
     <div 
-      className="flex items-start gap-4 p-3 rounded-lg transition-all group"
+      className="flex items-start gap-4 p-3 rounded-lg transition-all group hover:border-[var(--entity-color)]"
       style={{
         background: 'var(--star-metal-60)',
         border: `1px solid ${isHostile ? 'rgba(239, 68, 68, 0.3)' : 'var(--asteroid-dust-50)'}`,
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = entityColor;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = isHostile ? 'rgba(239, 68, 68, 0.3)' : 'var(--asteroid-dust-50)';
+        ['--entity-color' as string]: entityColor,
       }}
     >
       <div 
@@ -314,7 +333,7 @@ function EntityCard({
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h4 className="text-sm font-bold text-gray-100 truncate">{entity.name}</h4>
+          <h4 className="text-sm font-bold text-heading truncate">{entity.name}</h4>
           {entity.relationship && (
             <span 
               className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold"
@@ -328,7 +347,7 @@ function EntityCard({
           )}
         </div>
         {entity.description && (
-          <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+          <p className="text-xs text-subtle mt-1 line-clamp-2">
             {entity.description}
           </p>
         )}
@@ -336,18 +355,12 @@ function EntityCard({
 
       {onClick && (
         <button 
+          type="button"
+          aria-label={`View ${entity.name} in graph`}
           onClick={() => onClick(entity.graphNodeId)}
-          className="p-2 rounded-md transition-all opacity-0 group-hover:opacity-100"
+          className="p-2 min-w-[44px] min-h-[44px] rounded-md transition-all opacity-0 group-hover:opacity-100 hover:bg-[var(--star-metal-80)] hover:text-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2"
           style={{
             color: '#94a3b8',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--star-metal-80)';
-            e.currentTarget.style.color = THEME_HEX.cyan;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#94a3b8';
           }}
           title="View in Graph"
         >

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import ChargenWizard from '../../components/chargen/ChargenWizard';
 import ChargenNotifications from '../../components/chargen/ChargenNotifications';
 import { CosmicBackground } from '@/components/ui/scifi';
-import { THEME_HEX } from '@/lib/design-system/themeUtils';
+import { THEME_HEX, TEXT_COLORS } from '@/lib/design-system/themeUtils';
 
 export default function ChargenPage() {
   return (
@@ -23,9 +23,9 @@ export default function ChargenPage() {
         <Link 
           href="/" 
           className="px-2 transition-colors pointer-events-auto"
-          style={{ color: THEME_HEX.slate }}
-          onMouseEnter={(e) => e.currentTarget.style.color = '#e2e8f0'}
-          onMouseLeave={(e) => e.currentTarget.style.color = THEME_HEX.slate}
+          style={{ color: TEXT_COLORS.label }}
+          onMouseEnter={(e) => e.currentTarget.style.color = TEXT_COLORS.hover}
+          onMouseLeave={(e) => e.currentTarget.style.color = TEXT_COLORS.label}
         >
           Home
         </Link>
@@ -33,9 +33,9 @@ export default function ChargenPage() {
         <Link 
           href="/graph" 
           className="px-2 transition-colors pointer-events-auto"
-          style={{ color: THEME_HEX.slate }}
-          onMouseEnter={(e) => e.currentTarget.style.color = '#e2e8f0'}
-          onMouseLeave={(e) => e.currentTarget.style.color = THEME_HEX.slate}
+          style={{ color: TEXT_COLORS.label }}
+          onMouseEnter={(e) => e.currentTarget.style.color = TEXT_COLORS.hover}
+          onMouseLeave={(e) => e.currentTarget.style.color = TEXT_COLORS.label}
         >
           Graph
         </Link>
@@ -49,18 +49,18 @@ export default function ChargenPage() {
         <Link 
           href="/resources" 
           className="px-2 transition-colors pointer-events-auto"
-          style={{ color: THEME_HEX.slate }}
-          onMouseEnter={(e) => e.currentTarget.style.color = '#e2e8f0'}
-          onMouseLeave={(e) => e.currentTarget.style.color = THEME_HEX.slate}
+          style={{ color: TEXT_COLORS.label }}
+          onMouseEnter={(e) => e.currentTarget.style.color = TEXT_COLORS.hover}
+          onMouseLeave={(e) => e.currentTarget.style.color = TEXT_COLORS.label}
         >
           Resources
         </Link>
         <Link 
           href="/reputation" 
           className="px-2 transition-colors pointer-events-auto"
-          style={{ color: THEME_HEX.slate }}
-          onMouseEnter={(e) => e.currentTarget.style.color = '#e2e8f0'}
-          onMouseLeave={(e) => e.currentTarget.style.color = THEME_HEX.slate}
+          style={{ color: TEXT_COLORS.label }}
+          onMouseEnter={(e) => e.currentTarget.style.color = TEXT_COLORS.hover}
+          onMouseLeave={(e) => e.currentTarget.style.color = TEXT_COLORS.label}
         >
           Reputation
         </Link>

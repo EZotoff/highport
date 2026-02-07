@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Crown, Dice5 } from 'lucide-react';
 import { useAllCharacters, useSession } from '../../lib/chargen/hooks';
 import type { ChargenCharacter } from '../../lib/chargen/types';
 
@@ -28,7 +29,7 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
   if (!session) {
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 h-full flex items-center justify-center">
-        <span className="text-zinc-500 text-sm">Loading session...</span>
+        <span className="text-subtle text-sm" data-testid="participant-panel">Loading session...</span>
       </div>
     );
   }
@@ -36,16 +37,18 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg flex flex-col h-full overflow-hidden">
       <div className="p-4 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
-        <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Session Participants</h3>
+        <h3 className="text-sm font-bold text-subtle uppercase tracking-wider" data-testid="participant-panel">
+          Session Participants
+        </h3>
       </div>
 
       <div className="p-4 space-y-3 overflow-y-auto flex-1">
         <div className="bg-zinc-950/50 border border-zinc-800 rounded-lg p-3 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="text-lg" role="img" aria-label="Game Master">👑</span>
+            <Crown className="w-4 h-4 text-amber-400" />
             <div className="flex flex-col">
-              <span className="text-zinc-200 font-medium text-sm">Game Master</span>
-              <span className="text-zinc-500 text-xs">Watching</span>
+              <span className="text-default font-medium text-sm">Game Master</span>
+              <span className="text-subtle text-xs">Watching</span>
             </div>
           </div>
         </div>
@@ -59,21 +62,30 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
             <div 
               key={char.id}
               onClick={() => onViewCharacter?.(char.id)}
+              role={onViewCharacter ? 'button' : undefined}
+              tabIndex={onViewCharacter ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (!onViewCharacter) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onViewCharacter(char.id);
+                }
+              }}
               className={`
                 relative bg-zinc-950 border rounded-lg p-3 transition-all
                 ${isCurrentUser ? 'border-blue-500 ring-2 ring-blue-500' : 'border-zinc-800 hover:border-zinc-700'}
-                ${onViewCharacter ? 'cursor-pointer hover:bg-zinc-900' : ''}
+                ${onViewCharacter ? 'cursor-pointer hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2' : ''}
               `}
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-zinc-500 text-xs" role="img" aria-label="Player">🎲</span>
-                    <span className="text-zinc-200 font-medium text-sm">
+                    <Dice5 className="w-3 h-3 text-subtle" />
+                    <span className="text-default font-medium text-sm">
                       {char.name ? `"${char.name}"` : 'Unnamed Character'}
                     </span>
                   </div>
-                  <div className="text-zinc-400 text-xs ml-5 mt-0.5">
+                  <div className="text-subtle text-xs ml-5 mt-0.5">
                     {currentTerm 
                       ? `${currentTerm.careerId} (Term ${currentTerm.termNumber})` 
                       : 'Not started'}
@@ -88,7 +100,7 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] text-zinc-500 uppercase font-medium">
+                <div className="flex justify-between text-[10px] text-subtle uppercase font-medium">
                   <span>{char.status.replace('_', ' ')}</span>
                   <span>{progress}%</span>
                 </div>
@@ -102,7 +114,7 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
         })}
 
         {characters.length === 0 && (
-          <div className="text-center py-8 text-zinc-600 text-sm italic border-2 border-dashed border-zinc-800 rounded-lg">
+          <div className="text-center py-8 text-subtle text-sm italic border-2 border-dashed border-zinc-800 rounded-lg">
             No characters created yet
           </div>
         )}

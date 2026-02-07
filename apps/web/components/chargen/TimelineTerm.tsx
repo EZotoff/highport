@@ -81,7 +81,7 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
             TERM {term.termNumber}
           </span>
           <span 
-            className="font-semibold text-sm tracking-wide text-gray-100 truncate max-w-[140px]" 
+            className="font-semibold text-sm tracking-wide text-heading truncate max-w-[140px]" 
             title={career.name}
           >
             {career.name}
@@ -89,7 +89,7 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
         </div>
         
         <div className="flex items-center gap-1">
-          <span className={`text-gray-400 ${TYPOGRAPHY.data} text-[10px]`}>AGE {term.startAge}</span>
+          <span className={`text-subtle ${TYPOGRAPHY.data} text-[10px]`}>AGE {term.startAge}</span>
           {term.survived ? (
             <div 
               className="p-1 rounded shadow-[0_0_8px_rgba(16,185,129,0.5),0_0_16px_rgba(16,185,129,0.25)]"
@@ -136,7 +136,10 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
           <div className="mt-1">
             <button
               onClick={handleToggleExpand}
-              className="flex items-center gap-1 text-[10px] uppercase tracking-wider mb-2 transition-colors"
+              type="button"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? 'Collapse encounters' : 'Expand encounters'}
+              className="flex items-center gap-1 text-[10px] uppercase tracking-wider mb-2 transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 rounded"
               style={{ color: THEME_HEX.violet }}
             >
               <ChevronDown 
@@ -195,7 +198,7 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
               </span>
             ))}
             {!isExpanded && term.skillsGained.length > 3 && (
-              <span className="text-[9px] text-gray-500">
+              <span className="text-[9px] text-subtle">
                 +{term.skillsGained.length - 3} more
               </span>
             )}
@@ -231,7 +234,7 @@ function EntityBadge({ entity, onClick }: { entity: SpawnedEntityRef; onClick: (
       case 'rival': return { color: THEME_HEX.amber, bgColor: `${THEME_HEX.amber}15`, borderColor: `${THEME_HEX.amber}30` };
       case 'ally': return { color: THEME_HEX.emerald, bgColor: `${THEME_HEX.emerald}15`, borderColor: `${THEME_HEX.emerald}30` };
       case 'contact': return { color: THEME_HEX.cyan, bgColor: `${THEME_HEX.cyan}15`, borderColor: `${THEME_HEX.cyan}30` };
-      default: return { color: THEME_HEX.slate, bgColor: `${THEME_HEX.slate}15`, borderColor: `${THEME_HEX.slate}30` };
+      default: return { color: '#94a3b8', bgColor: '#94a3b815', borderColor: '#94a3b830' };
     }
   };
 

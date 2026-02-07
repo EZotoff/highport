@@ -57,16 +57,16 @@ export default function Home() {
               <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-transparent group-hover:border-[var(--plasma-cyan)] transition-colors duration-300 rounded-bl" />
               <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-transparent group-hover:border-[var(--plasma-cyan)] transition-colors duration-300 rounded-br" />
               
-              <div className="relative z-10 flex flex-col items-center gap-2">
+              <div className="relative z-10 flex flex-col items-center gap-2 text-center">
                 <span className="text-2xl">{link.icon}</span>
                 <span 
-                  className="text-lg font-semibold tracking-wide group-hover:text-[var(--plasma-cyan)] transition-colors"
+                  className="text-lg font-semibold tracking-wide group-hover:text-[var(--plasma-cyan)] transition-colors leading-tight"
                   style={{ color: 'var(--text-primary)' }}
                 >
                   {link.label}
                 </span>
                 <span 
-                  className="text-sm"
+                  className="text-sm leading-snug line-clamp-2 min-h-[2.5rem]"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   {link.description}

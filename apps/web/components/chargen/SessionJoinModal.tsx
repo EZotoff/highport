@@ -8,6 +8,7 @@ import { createCharacter } from '../../lib/chargen/state';
 import { getYDoc } from '../../lib/ydoc';
 import { getOrCreateUser } from '../../lib/identity';
 import { Loader2, Users, AlertCircle, Shield } from 'lucide-react';
+import { SciFiInput, SciFiButton } from '@/components/ui/scifi';
 
 export default function SessionJoinModal() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function SessionJoinModal() {
   const [error, setError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<ReturnType<typeof getOrCreateUser> | null>(null);
   const [connectionTimedOut, setConnectionTimedOut] = useState(false);
+  const modalRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const user = getOrCreateUser();
@@ -47,6 +49,33 @@ export default function SessionJoinModal() {
          }
     }
   }, [currentUser, participants, router]);
+
+  useEffect(() => {
+    if (!modalRef.current) return;
+    const container = modalRef.current;
+    const selectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusables = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(el => !el.hasAttribute('disabled'));
+    focusables[0]?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const items = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(el => !el.hasAttribute('disabled'));
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    container.addEventListener('keydown', onKeyDown);
+    return () => container.removeEventListener('keydown', onKeyDown);
+  }, [session, connectionTimedOut]);
 
   const handleJoin = async () => {
     if (!playerName.trim()) {
@@ -88,18 +117,19 @@ export default function SessionJoinModal() {
     if (connectionTimedOut) {
         return (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-                <div className="bg-zinc-900 border border-red-900/50 rounded-lg p-8 max-w-md w-full text-center">
+                <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="session-timeout-title" className="bg-zinc-900 border border-red-900/50 rounded-lg p-8 max-w-md w-full text-center">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                    <h2 className="text-xl font-bold text-zinc-100 mb-2">Session Not Found</h2>
-                    <p className="text-zinc-400 mb-6">
+                     <h2 id="session-timeout-title" className="text-xl font-bold text-heading mb-2 font-display">Session Not Found</h2>
+                    <p className="text-subtle mb-6">
                         Could not connect to the session. Please check the link and try again.
                     </p>
-                    <button 
+                    <SciFiButton 
                         onClick={() => router.push('/')}
-                        className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-6 py-2 rounded transition-colors"
+                        theme="slate"
+                        scifiVariant="secondary"
                     >
                         Return Home
-                    </button>
+                    </SciFiButton>
                 </div>
             </div>
         );
@@ -107,9 +137,10 @@ export default function SessionJoinModal() {
 
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 flex flex-col items-center">
+        <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="session-loading-title" className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 flex flex-col items-center">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
-            <p className="text-zinc-400">Connecting to session...</p>
+            <h2 id="session-loading-title" className="sr-only">Connecting to session</h2>
+            <p className="text-subtle">Connecting to session...</p>
         </div>
       </div>
     );
@@ -119,20 +150,21 @@ export default function SessionJoinModal() {
   if (session.settings.isLocked || session.status !== 'active') {
       return (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-            <div className="bg-zinc-900 border border-red-900/50 rounded-lg p-8 max-w-md w-full text-center">
+            <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="session-unavailable-title" className="bg-zinc-900 border border-red-900/50 rounded-lg p-8 max-w-md w-full text-center">
                 <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-zinc-100 mb-2">Session Unavailable</h2>
-                <p className="text-zinc-400 mb-6">
+                 <h2 id="session-unavailable-title" className="text-xl font-bold text-heading mb-2 font-display">Session Unavailable</h2>
+                <p className="text-subtle mb-6">
                     {session.status !== 'active' 
                         ? "This session has ended or been abandoned." 
                         : "The GM has locked this session. New players cannot join."}
                 </p>
-                <button 
+                <SciFiButton 
                     onClick={() => router.push('/')}
-                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-6 py-2 rounded transition-colors"
+                    theme="slate"
+                    scifiVariant="secondary"
                 >
                     Return Home
-                </button>
+                </SciFiButton>
             </div>
         </div>
       );
@@ -143,18 +175,18 @@ export default function SessionJoinModal() {
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl max-w-lg w-full overflow-hidden">
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="session-join-title" className="bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl max-w-lg w-full overflow-hidden">
         {/* Header */}
         <div className="bg-zinc-950 p-6 border-b border-zinc-800">
-            <h1 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+             <h1 id="session-join-title" className="text-xl font-bold text-heading flex items-center gap-2 font-display">
                 <Users className="w-5 h-5 text-blue-500" />
                 Join Chargen Session
             </h1>
-            <div className="mt-2 text-zinc-400 text-sm">
-                Joining Campaign <span className="text-zinc-200 font-medium">{session.campaignId}</span>
+            <div className="mt-2 text-subtle text-sm">
+                Joining Campaign <span className="text-default font-medium">{session.campaignId}</span>
             </div>
             {gmParticipant && (
-                 <div className="mt-1 text-zinc-500 text-xs flex items-center gap-1">
+                 <div className="mt-1 text-subtle text-xs flex items-center gap-1">
                     <Shield className="w-3 h-3" />
                     GM: {gmParticipant.character?.name || "Game Master"}
                  </div>
@@ -165,15 +197,15 @@ export default function SessionJoinModal() {
         <div className="p-6 space-y-6">
             {/* Participants List */}
             <div>
-                <h3 className="text-sm font-medium text-zinc-400 mb-2">Current Participants: {players.length}</h3>
+                <h3 className="text-sm font-medium text-subtle mb-2">Current Participants: {players.length}</h3>
                 <div className="bg-zinc-950/50 rounded border border-zinc-800/50 p-3 max-h-32 overflow-y-auto space-y-2">
                     {players.length === 0 ? (
-                        <p className="text-zinc-600 text-sm italic">No other players yet.</p>
+                        <p className="text-subtle text-sm italic">No other players yet.</p>
                     ) : (
                         players.map(p => (
                             <div key={p.userId} className="flex items-center gap-2 text-sm">
                                 <div className="w-2 h-2 rounded-full bg-blue-500/50" />
-                                <span className="text-zinc-300">{p.character?.name || "Creating character..."}</span>
+                                <span className="text-label">{p.character?.name || "Creating character..."}</span>
                             </div>
                         ))
                     )}
@@ -183,13 +215,14 @@ export default function SessionJoinModal() {
             {/* Form */}
             <div className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">Your Name</label>
-                    <input 
+                    <label htmlFor="session-player-name" className="block text-sm font-medium text-subtle mb-1">Your Name</label>
+                    <SciFiInput 
+                        id="session-player-name"
+                        theme="cyan"
                         type="text"
                         value={playerName}
                         onChange={(e) => setPlayerName(e.target.value)}
                         placeholder="Enter your name"
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2 text-zinc-100 focus:outline-none focus:border-blue-500 transition-colors"
                         autoFocus
                     />
                 </div>
@@ -204,20 +237,23 @@ export default function SessionJoinModal() {
 
         {/* Footer */}
         <div className="bg-zinc-950 p-6 border-t border-zinc-800 flex justify-end gap-3">
-            <button 
+            <SciFiButton 
                 onClick={() => router.push('/')}
-                className="px-4 py-2 rounded text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
+                theme="slate"
+                scifiVariant="ghost"
             >
                 Cancel
-            </button>
-            <button 
+            </SciFiButton>
+            <SciFiButton 
                 onClick={handleJoin}
                 disabled={isJoining || !playerName.trim()}
-                className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
+                theme="cyan"
+                glow
+                className="flex items-center gap-2"
             >
                 {isJoining && <Loader2 className="w-4 h-4 animate-spin" />}
                 Join Session
-            </button>
+            </SciFiButton>
         </div>
       </div>
     </div>

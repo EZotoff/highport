@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, Check, X, Shield, Lock, Unlock, Users, Download, Ban } from 'lucide-react';
 import { useGMControls, ALL_CAREERS } from '../../lib/chargen/useGMControls';
 import { useAllCharacters } from '../../lib/chargen/hooks';
+import { SciFiButton } from '@/components/ui/scifi';
 
 interface GMControlPanelProps {
   currentUserId: string;
@@ -27,33 +28,35 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
     <div className="fixed bottom-4 right-4 z-50 w-96 bg-zinc-950 border border-zinc-800 rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-4 py-3 bg-zinc-900 border-b border-zinc-800 hover:bg-zinc-800 transition-colors"
+        aria-label={isOpen ? 'Collapse GM controls' : 'Expand GM controls'}
+        className="flex items-center justify-between w-full px-4 py-3 min-h-[44px] bg-zinc-900 border-b border-zinc-800 hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2"
       >
-        <div className="flex items-center gap-2 text-zinc-100 font-semibold">
+        <div className="flex items-center gap-2 text-heading font-semibold">
           <Shield className="w-4 h-4 text-blue-500" />
           <span>GM CONTROLS</span>
           {pendingRequests.length > 0 && (
-            <span className="px-1.5 py-0.5 text-xs font-bold bg-blue-600 text-white rounded-full">
+            <span className="px-1.5 py-0.5 text-xs font-bold bg-blue-600 text-heading rounded-full">
               {pendingRequests.length}
             </span>
           )}
         </div>
-        {isOpen ? <ChevronDown className="w-4 h-4 text-zinc-400" /> : <ChevronRight className="w-4 h-4 text-zinc-400" />}
+        {isOpen ? <ChevronDown className="w-4 h-4 text-subtle" /> : <ChevronRight className="w-4 h-4 text-subtle" />}
       </button>
 
       {isOpen && (
         <div className="overflow-y-auto p-4 space-y-6">
           
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Session Settings</h3>
+            <h3 className="text-xs font-semibold text-subtle uppercase tracking-wider">Session Settings</h3>
             
             <div className="space-y-2">
-              <label className="flex items-center justify-between text-sm text-zinc-300 cursor-pointer hover:text-zinc-100">
+              <label htmlFor="gm-require-approval" className="flex items-center justify-between text-sm text-label cursor-pointer hover:brightness-125">
                 <div className="flex items-center gap-2">
                   <Shield className="w-3.5 h-3.5" />
                   <span>Require GM Approval</span>
                 </div>
                 <input 
+                  id="gm-require-approval"
                   type="checkbox" 
                   checked={settings.requireGMApproval}
                   onChange={(e) => actions.updateSettings({ requireGMApproval: e.target.checked })}
@@ -61,12 +64,13 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                 />
               </label>
 
-              <label className="flex items-center justify-between text-sm text-zinc-300 cursor-pointer hover:text-zinc-100">
+              <label htmlFor="gm-cross-player" className="flex items-center justify-between text-sm text-label cursor-pointer hover:brightness-125">
                 <div className="flex items-center gap-2">
                   <Users className="w-3.5 h-3.5" />
                   <span>Cross-Player Connections</span>
                 </div>
                 <input 
+                  id="gm-cross-player"
                   type="checkbox" 
                   checked={settings.allowCrossPlayerConnections}
                   onChange={(e) => actions.updateSettings({ allowCrossPlayerConnections: e.target.checked })}
@@ -74,12 +78,13 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                 />
               </label>
 
-              <label className="flex items-center justify-between text-sm text-zinc-300 cursor-pointer hover:text-zinc-100">
+              <label htmlFor="gm-lock-session" className="flex items-center justify-between text-sm text-label cursor-pointer hover:brightness-125">
                 <div className="flex items-center gap-2">
                   {settings.isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                   <span>Lock Session</span>
                 </div>
                 <input 
+                  id="gm-lock-session"
                   type="checkbox" 
                   checked={settings.isLocked}
                   onChange={(e) => actions.updateSettings({ isLocked: e.target.checked })}
@@ -90,7 +95,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Allowed Careers</h3>
+            <h3 className="text-xs font-semibold text-subtle uppercase tracking-wider">Allowed Careers</h3>
             <div className="grid grid-cols-2 gap-2">
               {ALL_CAREERS.map(career => {
                 const isAllowed = settings.allowedCareers.length === 0 || settings.allowedCareers.includes(career);
@@ -100,8 +105,8 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                     className={`
                       flex items-center gap-2 px-2 py-1.5 rounded text-xs border cursor-pointer transition-colors
                       ${isAllowed 
-                        ? 'bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700' 
-                        : 'bg-zinc-900/50 border-zinc-800 text-zinc-600 hover:bg-zinc-900'}
+                        ? 'bg-zinc-800 border-zinc-700 text-default hover:bg-zinc-700' 
+                        : 'bg-zinc-900/50 border-zinc-800 text-subtle hover:bg-zinc-900'}
                     `}
                   >
                     <input 
@@ -111,7 +116,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                       className="hidden"
                     />
                     <div className={`w-3 h-3 rounded-sm border flex items-center justify-center ${isAllowed ? 'bg-blue-600 border-blue-600' : 'border-zinc-700'}`}>
-                      {isAllowed && <Check className="w-2.5 h-2.5 text-white" />}
+                      {isAllowed && <Check className="w-2.5 h-2.5 text-heading" />}
                     </div>
                     {career}
                   </label>
@@ -122,14 +127,14 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Pending Approvals</h3>
+              <h3 className="text-xs font-semibold text-subtle uppercase tracking-wider">Pending Approvals</h3>
               {pendingRequests.length > 0 && (
-                <span className="text-xs text-zinc-500">{pendingRequests.length} waiting</span>
+                <span className="text-xs text-subtle">{pendingRequests.length} waiting</span>
               )}
             </div>
             
             {pendingRequests.length === 0 ? (
-              <div className="text-xs text-zinc-600 italic text-center py-4 border border-zinc-900 rounded bg-zinc-900/20">
+              <div className="text-xs text-subtle italic text-center py-4 border border-zinc-900 rounded bg-zinc-900/20">
                 No pending requests
               </div>
             ) : (
@@ -137,34 +142,39 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                 {pendingRequests.map(req => (
                   <div key={req.id} className="p-2 bg-zinc-900 rounded border border-zinc-800 text-sm">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium text-zinc-200">
+                      <span className="font-medium text-default">
                         {getCharacterName(req.requesterCharId)}
                       </span>
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-subtle">
                         {new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div className="text-zinc-400 text-xs mb-3">
-                      wants to connect to <span className="text-zinc-300">{req.entity?.name || 'Unknown Entity'}</span> as <span className="text-blue-400">{req.relationship}</span>
+                    <div className="text-subtle text-xs mb-3">
+                      wants to connect to <span className="text-label">{req.entity?.name || 'Unknown Entity'}</span> as <span className="text-blue-400">{req.relationship}</span>
                     </div>
                     {req.note && (
-                      <div className="text-zinc-500 text-xs italic mb-3 pl-2 border-l-2 border-zinc-800">
+                      <div className="text-subtle text-xs italic mb-3 pl-2 border-l-2 border-zinc-800">
                         "{req.note}"
                       </div>
                     )}
                     <div className="flex gap-2">
-                      <button 
+                      <SciFiButton 
+                        theme="emerald" 
+                        scifiVariant="secondary" 
+                        size="sm"
                         onClick={() => actions.approveRequest(req.id)}
-                        className="flex-1 flex items-center justify-center gap-1 py-1 bg-zinc-800 hover:bg-green-900/30 text-zinc-300 hover:text-green-400 rounded text-xs border border-zinc-700 hover:border-green-800 transition-colors"
+                        className="flex-1"
                       >
                         <Check className="w-3 h-3" /> Approve
-                      </button>
-                      <button 
+                      </SciFiButton>
+                      <SciFiButton 
+                        scifiVariant="destructive" 
+                        size="sm"
                         onClick={() => actions.rejectRequest(req.id)}
-                        className="flex-1 flex items-center justify-center gap-1 py-1 bg-zinc-800 hover:bg-red-900/30 text-zinc-300 hover:text-red-400 rounded text-xs border border-zinc-700 hover:border-red-800 transition-colors"
+                        className="flex-1"
                       >
                         <X className="w-3 h-3" /> Reject
-                      </button>
+                      </SciFiButton>
                     </div>
                   </div>
                 ))}
@@ -173,22 +183,25 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
           </div>
 
           <div className="pt-4 border-t border-zinc-800 space-y-2">
-            <button 
+            <SciFiButton 
+              theme="slate" 
+              scifiVariant="secondary"
               onClick={actions.exportAllCharacters}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded text-sm border border-zinc-700 transition-colors"
+              className="w-full"
             >
               <Download className="w-4 h-4" /> Export All Characters
-            </button>
-            <button 
+            </SciFiButton>
+            <SciFiButton 
+              scifiVariant="destructive"
               onClick={() => {
                 if (confirm('Are you sure you want to end the session? This cannot be undone.')) {
                   actions.endSession();
                 }
               }}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-red-950/20 hover:bg-red-950/40 text-red-500 hover:text-red-400 rounded text-sm border border-red-900/30 hover:border-red-900/50 transition-colors"
+              className="w-full"
             >
               <Ban className="w-4 h-4" /> End Session
-            </button>
+            </SciFiButton>
           </div>
 
         </div>

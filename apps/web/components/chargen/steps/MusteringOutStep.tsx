@@ -5,10 +5,11 @@ import { getYDoc } from '../../../lib/ydoc';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
 import { getCareer } from '@planeshift/mgt2e';
+import { SciFiButton } from '@/components/ui/scifi';
+import { Coins, Gift } from 'lucide-react';
 import {
   calculateTotalBenefitRolls,
   rollBenefit,
-  parseBenefit,
   isHighRank,
   getGamblingBonus,
 } from '../../../lib/chargen/mustering';
@@ -46,7 +47,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
     }
   }, [character]);
 
-  if (!character) return <div className="text-zinc-400">Loading...</div>;
+  if (!character) return <div className="text-subtle">Loading...</div>;
 
   const totalRolls = calculateTotalBenefitRolls(character);
   const rollsUsed = collectedBenefits.length; // This is local state only. Ideally should be persisted.
@@ -127,10 +128,10 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Mustering Out</h2>
+         <h2 className="text-2xl font-bold text-heading mb-2 font-display">Mustering Out</h2>
         
         {/* Career Summary */}
-        <div className="text-zinc-400 mb-6">
+        <div className="text-subtle mb-6">
           {career?.name} • {character.terms.length} Terms • 
           Rank {finalTerm?.currentRank || 0}
           {highRank && <span className="text-amber-400 ml-2">(High Rank Bonuses)</span>}
@@ -139,49 +140,53 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         {/* Rolls Available */}
         <div className="grid grid-cols-2 gap-4 mb-6 text-center">
           <div className="bg-zinc-950 rounded p-3">
-            <div className="text-3xl font-bold text-white">{rollsRemaining}</div>
-            <div className="text-sm text-zinc-400">Rolls Remaining</div>
+            <div className="text-3xl font-bold text-heading">{rollsRemaining}</div>
+            <div className="text-sm text-subtle">Rolls Remaining</div>
           </div>
           <div className="bg-zinc-950 rounded p-3">
-            <div className="text-3xl font-bold text-white">{MAX_CASH_ROLLS - cashRollsUsed}</div>
-            <div className="text-sm text-zinc-400">Cash Rolls Left</div>
+            <div className="text-3xl font-bold text-heading">{MAX_CASH_ROLLS - cashRollsUsed}</div>
+            <div className="text-sm text-subtle">Cash Rolls Left</div>
           </div>
         </div>
 
         {/* Roll Buttons */}
         {rollsRemaining > 0 && (
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <button
+            <SciFiButton
               onClick={() => handleRoll('cash')}
               disabled={cashRollsUsed >= MAX_CASH_ROLLS}
-              className="p-4 bg-green-900/30 border border-green-800 rounded-lg hover:bg-green-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              scifiVariant="secondary"
+              theme="amber"
+              className="h-auto flex-col gap-2 p-4"
             >
-              <div className="text-2xl mb-1">💰</div>
-              <div className="font-bold text-green-400">Cash Table</div>
+              <Coins className="w-5 h-5 text-amber-400" />
+              <div className="font-bold">Roll Cash</div>
               {gamblingBonus > 0 && (
-                <div className="text-xs text-green-300">+{gamblingBonus} Gambler</div>
+                <div className="text-xs opacity-75">+{gamblingBonus} Gambler</div>
               )}
-            </button>
-            <button
+            </SciFiButton>
+            <SciFiButton
               onClick={() => handleRoll('benefit')}
-              className="p-4 bg-blue-900/30 border border-blue-800 rounded-lg hover:bg-blue-900/50 transition-colors"
+              scifiVariant="secondary"
+              theme="cyan"
+              className="h-auto flex-col gap-2 p-4"
             >
-              <div className="text-2xl mb-1">🎁</div>
-              <div className="font-bold text-blue-400">Benefits Table</div>
+              <Gift className="w-5 h-5 text-cyan-400" />
+              <div className="font-bold">Roll Benefits</div>
               {highRank && (
-                <div className="text-xs text-blue-300">High Rank Alternate</div>
+                <div className="text-xs opacity-75">High Rank Alternate</div>
               )}
-            </button>
+            </SciFiButton>
           </div>
         )}
 
         {/* Last Roll Result */}
         {showRollResult && lastRollResult && (
           <div className="bg-zinc-950 border border-zinc-700 rounded-lg p-4 mb-6 text-center animate-in fade-in">
-            <div className="text-zinc-400 text-sm mb-1">
+            <div className="text-subtle text-sm mb-1">
               Rolled: {lastRollResult.roll.total}
             </div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-heading">
               {lastRollResult.type === 'cash' 
                 ? `Cr${(lastRollResult.result as number).toLocaleString()}`
                 : lastRollResult.result}
@@ -192,15 +197,15 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         {/* Collected Benefits */}
         {collectedBenefits.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-lg font-bold text-zinc-100 mb-3">Benefits Received</h3>
+             <h3 className="text-lg font-bold text-heading mb-3 font-display">Benefits Received</h3>
             <div className="space-y-2">
               {collectedBenefits.map((b, i) => (
                 <div key={i} className="flex items-center gap-3 bg-zinc-950 rounded p-3">
-                  <span className="text-zinc-500 text-sm">#{b.rollNumber}</span>
-                  <span className={b.type === 'cash' ? 'text-green-400' : 'text-blue-400'}>
-                    {b.type === 'cash' ? '💰' : '🎁'}
+                  <span className="text-subtle text-sm">#{b.rollNumber}</span>
+                  <span className={b.type === 'cash' ? 'text-amber-400' : 'text-cyan-400'}>
+                    {b.type === 'cash' ? <Coins className="w-5 h-5 text-amber-400" /> : <Gift className="w-5 h-5 text-cyan-400" />}
                   </span>
-                  <span className="text-white">
+                  <span className="text-heading">
                     {b.type === 'cash' 
                       ? `Cr${(b.result as number).toLocaleString()}`
                       : b.result}
@@ -214,13 +219,13 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         {/* Totals */}
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-800">
           <div>
-            <div className="text-sm text-zinc-400">Total Credits</div>
+            <div className="text-sm text-subtle">Total Credits</div>
             <div className="text-xl font-bold text-green-400">
               Cr{totalCredits.toLocaleString()}
             </div>
           </div>
           <div>
-            <div className="text-sm text-zinc-400">Ship Shares</div>
+            <div className="text-sm text-subtle">Ship Shares</div>
             <div className="text-xl font-bold text-blue-400">{shipShares}</div>
           </div>
         </div>
@@ -228,23 +233,25 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
 
       {/* Navigation */}
       <div className="flex justify-between">
-        <button
-          className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded"
+        <SciFiButton
+          scifiVariant="ghost"
+          theme="slate"
           onClick={() => {
             const doc = getYDoc();
             updateCharacterFields(doc, character.id, { status: 'term_resolution' });
           }}
         >
-          ← Back to Career
-        </button>
+          ← Back
+        </SciFiButton>
         
         {rollsRemaining === 0 && (
-          <button
+          <SciFiButton
             onClick={handleFinalize}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold"
+            theme="cyan"
+            glow
           >
-            Finalize Character →
-          </button>
+            Continue →
+          </SciFiButton>
         )}
       </div>
     </div>

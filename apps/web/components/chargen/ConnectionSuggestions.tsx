@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { SciFiButton } from '@/components/ui/scifi';
 import type { SpawnedEntityRef } from '../../lib/chargen/types';
 
 interface ConnectionSuggestion {
@@ -89,7 +90,7 @@ export default function ConnectionSuggestions({
       </h4>
 
       {isLoading ? (
-        <div className="text-sm text-zinc-400 animate-pulse">
+        <div className="text-sm text-subtle animate-pulse">
           Analyzing relationships...
         </div>
       ) : (
@@ -103,27 +104,31 @@ export default function ConnectionSuggestions({
                 key={i}
                 className="p-3 bg-zinc-900/50 border border-zinc-800 rounded"
               >
-                <div className="flex items-center gap-2 text-sm font-medium text-zinc-200 mb-1">
+                <div className="flex items-center gap-2 text-sm font-medium text-default mb-1">
                   <span>{sourceEntity?.name || suggestion.source}</span>
                   <span className="text-purple-400">→</span>
                   <span>{targetEntity?.name || suggestion.target}</span>
                 </div>
-                <div className="text-xs text-zinc-400 mb-2">
+                <div className="text-xs text-subtle mb-2">
                   {suggestion.description}
                 </div>
                 <div className="flex gap-2">
-                  <button
+                  <SciFiButton
+                    theme="violet"
+                    scifiVariant="outline"
+                    size="sm"
                     onClick={() => onAccept(suggestion)}
-                    className="px-3 py-1 text-xs bg-purple-600 hover:bg-purple-500 text-white rounded"
                   >
                     Add Connection
-                  </button>
-                  <button
+                  </SciFiButton>
+                  <SciFiButton
+                    theme="slate"
+                    scifiVariant="ghost"
+                    size="sm"
                     onClick={() => handleDismiss(suggestion)}
-                    className="px-3 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded"
                   >
                     Dismiss
-                  </button>
+                  </SciFiButton>
                 </div>
               </div>
             );

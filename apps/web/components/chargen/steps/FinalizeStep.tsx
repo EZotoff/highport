@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getYDoc } from '../../../lib/ydoc';
-import { useCharacter } from '../../../lib/chargen/hooks';
+import { useCharacter, useSession } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
 import { getCharacteristicModifier, getCareer, type CharacteristicSet } from '@planeshift/mgt2e';
 import {
@@ -12,8 +12,13 @@ import {
   formatSkillsLevel0,
 } from '../../../lib/chargen/finalize';
 import { getRankInfo } from '../../../lib/chargen/term-resolution';
-import { GlassPanel } from '@/components/ui/scifi';
-import { THEME_HEX } from '@/lib/design-system/themeUtils';
+import { GlassPanel, SciFiButton, SciFiInput, SkillBadge } from '@/components/ui/scifi';
+import { PortraitGenerationProgress } from '@/components/portrait/PortraitGenerationProgress';
+import { Coins, Gift, UserCheck, Users, UserX, Skull, Circle } from 'lucide-react';
+import { attachPortraitRecord, attachPortraitToNode, usePortraitGenerator } from '../../../lib/portrait/usePortrait';
+import type { PortraitCareerType, PortraitRecord, PortraitTags } from '@planeshift/shared/types/portrait';
+import { PortraitLibrary } from '@/components/portrait/PortraitLibrary';
+import { PortraitRemixer } from '@/components/portrait/PortraitRemixer';
 
 interface FinalizeStepProps {
   characterId: string | null;
@@ -21,26 +26,47 @@ interface FinalizeStepProps {
 
 const CHARACTERISTIC_ORDER: (keyof CharacteristicSet)[] = ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC'];
 
-const RELATIONSHIP_ICONS: Record<string, string> = {
-  ally: '🟢',
-  contact: '🔵',
-  rival: '🟠',
-  enemy: '🔴',
+const RELATIONSHIP_ICONS: Record<string, React.ReactNode> = {
+  ally: <UserCheck className="w-4 h-4 text-emerald-400" />,
+  contact: <Users className="w-4 h-4 text-cyan-400" />,
+  rival: <UserX className="w-4 h-4 text-amber-400" />,
+  enemy: <Skull className="w-4 h-4 text-red-400" />,
 };
+
+const CAREER_TYPES: PortraitCareerType[] = [
+  'navy',
+  'marines',
+  'scout',
+  'merchant',
+  'army',
+  'agent',
+  'noble',
+  'drifter',
+  'scholar',
+  'rogue',
+  'citizen',
+  'entertainer',
+  'other',
+];
 
 export default function FinalizeStep({ characterId }: FinalizeStepProps) {
   const router = useRouter();
   const character = useCharacter(characterId);
+  const session = useSession();
   const [isCreating, setIsCreating] = useState(false);
   const [name, setName] = useState('');
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [portrait, setPortrait] = useState<PortraitRecord | null>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [remixerOpen, setRemixerOpen] = useState(false);
+  const { generate: generatePortrait, isLoading: generatingPortrait, error: portraitError } = usePortraitGenerator();
 
   if (character && !hasInitialized) {
     setName(character.name || '');
     setHasInitialized(true);
   }
 
-  if (!character) return <div className="text-zinc-400">Loading...</div>;
+  if (!character) return <div className="text-subtle">Loading...</div>;
 
   const finalTerm = character.terms[character.terms.length - 1];
   const career = getCareer(finalTerm?.careerId || '');
@@ -68,12 +94,45 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
     setIsCreating(true);
     
     try {
-      createCharacterNode(character);
+      const finalData = createCharacterNode(character);
+      if (portrait) {
+        await attachPortraitRecord(finalData.graphNodeId, portrait.id);
+        attachPortraitToNode(finalData.graphNodeId, portrait);
+      }
       router.push('/graph');
     } catch (error) {
       console.error('Failed to create character node:', error);
       setIsCreating(false);
     }
+  };
+
+  const handleGeneratePortrait = async () => {
+    if (!session?.campaignId) return;
+
+    const candidateCareer = finalTerm?.careerId as PortraitCareerType | undefined;
+    const careerType = candidateCareer && CAREER_TYPES.includes(candidateCareer)
+      ? candidateCareer
+      : undefined;
+
+    const tags: Partial<PortraitTags> = {
+      story: {
+        entity_type: 'traveller',
+        importance_level: 'key',
+      },
+      career: careerType ? { career_type: careerType } : undefined,
+    };
+
+    const appearanceText = `Age ${character.age}. ${career?.name || 'Traveller'} background.`;
+
+    const result = await generatePortrait({
+      campaignId: session.campaignId,
+      tags,
+      appearanceText,
+      protected: true,
+      sourcePolicy: 'subject_only',
+    });
+
+    setPortrait(result);
   };
 
   const handleBack = () => {
@@ -87,46 +146,123 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <GlassPanel theme="cyan" variant="default" className="p-6">
-        <h2 className="text-2xl font-bold text-white mb-6">Character Complete</h2>
+        <h2 className="text-2xl font-bold text-heading mb-6 font-display">Character Complete</h2>
 
         <div 
           className="rounded-lg p-4 mb-6"
           style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
         >
           <div className="mb-4">
-            <label className="block text-sm mb-1" style={{ color: THEME_HEX.slate }}>Character Name</label>
-            <input
-              type="text"
+            <label htmlFor="finalize-character-name" className="block text-sm mb-1 text-subtle">Character Name</label>
+            <SciFiInput
+              id="finalize-character-name"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Enter character name..."
-              className="w-full px-4 py-2 rounded text-xl text-white font-bold transition-all duration-300 focus:outline-none"
-              style={{
-                backgroundColor: 'transparent',
-                border: `1px solid ${THEME_HEX.slate}40`,
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = THEME_HEX.cyan;
-                e.currentTarget.style.boxShadow = `0 0 12px ${THEME_HEX.cyan}40`;
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = `${THEME_HEX.slate}40`;
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              theme="cyan"
+              className="text-xl font-bold"
             />
           </div>
           
-          <div className="flex justify-between" style={{ color: THEME_HEX.slate }}>
-            <span>Age: <span className="text-white">{character.age}</span></span>
+          <div className="flex justify-between text-label">
+            <span>Age: <span className="text-heading">{character.age}</span></span>
             <span>
               {career?.name} ({character.terms.length} term{character.terms.length !== 1 ? 's' : ''})
-              {rankInfo && <span style={{ color: THEME_HEX.slate }}> • {rankInfo.title}</span>}
+              {rankInfo && <span className="text-subtle"> • {rankInfo.title}</span>}
             </span>
           </div>
         </div>
 
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-white mb-3">Characteristics</h3>
+          <h3 className="text-lg font-bold text-heading mb-3 font-display">Portrait</h3>
+          <div className="rounded p-4" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
+            {portrait ? (
+              <div className="flex items-center gap-4">
+                <img
+                  src={portrait.image_url || ''}
+                  alt={`Portrait of ${name || 'Traveller'}`}
+                  className="w-24 h-24 rounded-lg object-cover border border-zinc-700"
+                />
+                <SciFiButton
+                  onClick={handleGeneratePortrait}
+                  disabled={generatingPortrait || !session?.campaignId}
+                  theme="slate"
+                  scifiVariant="secondary"
+                >
+                  Regenerate
+                </SciFiButton>
+                <SciFiButton
+                  onClick={() => setRemixerOpen(true)}
+                  disabled={!session?.campaignId}
+                  theme="violet"
+                  scifiVariant="secondary"
+                >
+                  Remix
+                </SciFiButton>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                {generatingPortrait ? (
+                  <div className="w-full flex justify-center">
+                    <PortraitGenerationProgress isGenerating={generatingPortrait} />
+                  </div>
+                ) : (
+                  <>
+                    <SciFiButton
+                      onClick={handleGeneratePortrait}
+                      disabled={generatingPortrait || !session?.campaignId}
+                      theme="slate"
+                      scifiVariant="secondary"
+                    >
+                      Generate Portrait
+                    </SciFiButton>
+                    <SciFiButton
+                      onClick={() => setLibraryOpen(true)}
+                      disabled={!session?.campaignId}
+                      theme="slate"
+                      scifiVariant="secondary"
+                    >
+                      Browse Library
+                    </SciFiButton>
+                  </>
+                )}
+              </div>
+            )}
+
+            {portraitError && (
+              <div className="text-red-400 text-xs mt-2">{portraitError.message}</div>
+            )}
+            {!session?.campaignId && (
+              <div className="text-amber-300 text-xs mt-2">Portraits require an active session.</div>
+            )}
+          </div>
+        </div>
+
+        {session?.campaignId && (
+          <>
+            <PortraitLibrary
+              open={libraryOpen}
+              onOpenChange={setLibraryOpen}
+              campaignId={session.campaignId}
+              onSelect={(p) => { setPortrait(p); setLibraryOpen(false); }}
+              filterTags={{
+                story: { entity_type: 'traveller', importance_level: 'key' }
+              }}
+            />
+            {portrait && (
+              <PortraitRemixer
+                open={remixerOpen}
+                onOpenChange={setRemixerOpen}
+                sourcePortrait={portrait}
+                campaignId={session.campaignId}
+                onRemixed={(p) => { setPortrait(p); setRemixerOpen(false); }}
+              />
+            )}
+          </>
+        )}
+
+        <div className="mb-6">
+          <h3 className="text-lg font-bold text-heading mb-3 font-display">Characteristics</h3>
           <div className="grid grid-cols-3 gap-3">
             {CHARACTERISTIC_ORDER.map(stat => {
               const value = character.characteristics[stat] || 0;
@@ -137,10 +273,10 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
                   className="rounded p-3 text-center"
                   style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
                 >
-                  <div style={{ color: THEME_HEX.slate }} className="text-xs mb-1">{stat}</div>
-                  <div className="text-2xl font-bold text-white">{value}</div>
+                  <div className="text-xs mb-1 text-subtle">{stat}</div>
+                  <div className="text-2xl font-bold text-heading">{value}</div>
                   <div 
-                    style={{ color: dm >= 0 ? THEME_HEX.cyan : '#ef4444' }}
+                    style={{ color: dm >= 0 ? '#22d3ee' : '#f87171' }}
                     className="text-sm"
                   >
                     {dm >= 0 ? '+' : ''}{dm}
@@ -152,42 +288,47 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-white mb-3">Skills</h3>
+          <h3 className="text-lg font-bold text-heading mb-3 font-display">Skills</h3>
           <div className="rounded p-4" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
             {trainedSkills.length > 0 ? (
               <div className="flex flex-wrap gap-2 mb-3">
-                {trainedSkills.map((skill, i) => (
-                  <span 
-                    key={i} 
-                    className="px-2 py-1 rounded text-sm"
-                    style={{ 
-                      backgroundColor: 'rgba(0, 240, 255, 0.15)', 
-                      color: THEME_HEX.cyan 
-                    }}
-                  >
-                    {skill}
-                  </span>
-                ))}
+                {trainedSkills.map((skillStr, i) => {
+                   const lastSpaceIndex = skillStr.lastIndexOf(' ');
+                   let skillName = skillStr;
+                   let skillLevel = 0;
+                   if (lastSpaceIndex !== -1) {
+                     const levelPart = skillStr.substring(lastSpaceIndex + 1);
+                     if (!isNaN(parseInt(levelPart))) {
+                       skillName = skillStr.substring(0, lastSpaceIndex);
+                       skillLevel = parseInt(levelPart);
+                     }
+                   }
+                   
+                   return (
+                    <SkillBadge 
+                      key={i}
+                      skill={skillName} 
+                      level={skillLevel} 
+                      theme="emerald" 
+                    />
+                   );
+                })}
               </div>
             ) : (
-              <div style={{ color: THEME_HEX.slate }} className="mb-3">No trained skills</div>
+              <div className="mb-3 text-subtle">No trained skills</div>
             )}
             
             {level0Skills.length > 0 && (
               <div>
-                <div className="text-xs mb-2" style={{ color: THEME_HEX.slate }}>Level 0:</div>
+                <div className="text-xs mb-2 text-subtle">Level 0:</div>
                 <div className="flex flex-wrap gap-2">
                   {level0Skills.map((skill, i) => (
-                    <span 
-                      key={i} 
-                      className="px-2 py-1 rounded text-xs"
-                      style={{ 
-                        backgroundColor: 'rgba(148, 163, 184, 0.1)', 
-                        color: THEME_HEX.slate 
-                      }}
-                    >
-                      {skill}
-                    </span>
+                    <SkillBadge 
+                      key={i}
+                      skill={skill} 
+                      level={0} 
+                      theme="slate" 
+                    />
                   ))}
                 </div>
               </div>
@@ -196,34 +337,34 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-white mb-3">Benefits</h3>
+          <h3 className="text-lg font-bold text-heading mb-3 font-display">Benefits</h3>
           <div className="rounded p-4 space-y-2" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
             <div className="flex items-center gap-2">
-              <span className="text-green-400">💰</span>
-              <span className="text-white">Cr{character.credits.toLocaleString()}</span>
+              <Coins className="w-4 h-4 text-amber-400" />
+              <span className="text-heading">Cr{character.credits.toLocaleString()}</span>
             </div>
             {character.benefits.map((benefit, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span>🎁</span>
-                <span className="text-white">{benefit}</span>
+                <Gift className="w-4 h-4 text-cyan-400" />
+                <span className="text-heading">{benefit}</span>
               </div>
             ))}
             {character.benefits.length === 0 && character.credits === 0 && (
-              <div style={{ color: THEME_HEX.slate }}>No benefits accumulated</div>
+              <div className="text-subtle">No benefits accumulated</div>
             )}
           </div>
         </div>
 
         {connections.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-lg font-bold text-white mb-3">Connections</h3>
+            <h3 className="text-lg font-bold text-heading mb-3 font-display">Connections</h3>
             <div className="rounded p-4 space-y-2" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
               {connections.map((conn, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span>{RELATIONSHIP_ICONS[conn.relationship || ''] || '⚪'}</span>
-                  <span className="capitalize" style={{ color: THEME_HEX.slate }}>{conn.relationship}:</span>
-                  <span className="text-white">{conn.name}</span>
-                  <span className="text-sm" style={{ color: THEME_HEX.slate }}>(Term {conn.termNumber})</span>
+                  <span>{RELATIONSHIP_ICONS[conn.relationship || ''] || <Circle className="w-4 h-4 text-subtle" />}</span>
+                  <span className="capitalize text-subtle">{conn.relationship}:</span>
+                  <span className="text-heading">{conn.name}</span>
+                  <span className="text-sm text-subtle">(Term {conn.termNumber})</span>
                 </div>
               ))}
             </div>
@@ -231,58 +372,25 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
         )}
       </GlassPanel>
 
-      <div className="flex justify-between">
-        <button
+      <div className="flex justify-between gap-4">
+        <SciFiButton
           onClick={handleBack}
-          className="px-6 py-2 rounded transition-all duration-300"
-          style={{ 
-            backgroundColor: 'transparent', 
-            color: THEME_HEX.slate,
-            border: `1px solid ${THEME_HEX.slate}40`
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = THEME_HEX.cyan;
-            e.currentTarget.style.color = THEME_HEX.cyan;
-            e.currentTarget.style.boxShadow = `0 0 12px ${THEME_HEX.cyan}20`;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = `${THEME_HEX.slate}40`;
-            e.currentTarget.style.color = THEME_HEX.slate;
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          scifiVariant="ghost"
+          theme="slate"
         >
           ← Back to Benefits
-        </button>
+        </SciFiButton>
         
-        <button
+        <SciFiButton
           onClick={handleCreateCharacter}
           disabled={isCreating || !name.trim()}
-          className="px-6 py-3 rounded font-bold transition-all duration-300"
-          style={isCreating || !name.trim() 
-            ? { 
-                backgroundColor: 'rgba(26, 31, 46, 0.6)',
-                color: THEME_HEX.slate,
-                cursor: 'not-allowed',
-              }
-            : { 
-                backgroundColor: THEME_HEX.cyan,
-                color: '#0a0d14',
-                boxShadow: `0 0 16px ${THEME_HEX.cyan}40`,
-              }
-          }
-          onMouseEnter={(e) => {
-            if (!isCreating && name.trim()) {
-              e.currentTarget.style.boxShadow = `0 0 24px ${THEME_HEX.cyan}60`;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isCreating && name.trim()) {
-              e.currentTarget.style.boxShadow = `0 0 16px ${THEME_HEX.cyan}40`;
-            }
-          }}
+          scifiVariant="primary"
+          theme="cyan"
+          glow
+          className="flex-1"
         >
           {isCreating ? 'Creating...' : 'Create Character & View Graph →'}
-        </button>
+        </SciFiButton>
       </div>
     </div>
   );

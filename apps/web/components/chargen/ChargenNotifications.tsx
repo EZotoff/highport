@@ -2,7 +2,8 @@
 
 import React, { useEffect } from 'react';
 import { useChargenNotifications, ExtendedNotification, ChargenNotificationType } from '../../lib/chargen/useChargenNotifications';
-import { X } from 'lucide-react';
+import { X, UserPlus, Dice5, Bell, Link2, CheckCircle, Calendar, Star } from 'lucide-react';
+import { SciFiButton } from '@/components/ui/scifi';
 
 interface ChargenNotificationsProps {
   className?: string;
@@ -48,8 +49,10 @@ function NotificationToast({
             <NotificationContent data={data} />
           </div>
           <button 
+            type="button"
+            aria-label="Dismiss notification"
             onClick={onDismiss}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="text-subtle hover:brightness-125 transition-colors min-w-[44px] min-h-[44px] rounded focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2"
           >
             <X size={14} />
           </button>
@@ -68,11 +71,11 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
     case 'player_joined':
       return (
         <div>
-          <div className="flex items-center gap-2 text-zinc-200 text-sm font-medium">
-            <span>👋</span>
+          <div className="flex items-center gap-2 text-default text-sm font-medium">
+            <UserPlus className="w-4 h-4" />
             <span>Player Joined</span>
           </div>
-          <p className="text-zinc-400 text-xs mt-1">
+          <p className="text-subtle text-xs mt-1">
             <span className="text-blue-400">{data.playerName}</span> has joined the session.
           </p>
         </div>
@@ -80,39 +83,39 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
     case 'character_started':
       return (
         <div>
-          <div className="flex items-center gap-2 text-zinc-200 text-sm font-medium">
-            <span>🎲</span>
+          <div className="flex items-center gap-2 text-default text-sm font-medium">
+            <Dice5 className="w-4 h-4" />
             <span>Character Started</span>
           </div>
-          <p className="text-zinc-400 text-xs mt-1">
-            <span className="text-blue-400">{data.playerName}</span> started creating <span className="text-zinc-200">"{data.characterName}"</span>.
+          <p className="text-subtle text-xs mt-1">
+            <span className="text-blue-400">{data.playerName}</span> started creating <span className="text-default">"{data.characterName}"</span>.
           </p>
         </div>
       );
     case 'entity_spawned':
       return (
         <div>
-          <div className="flex items-center gap-2 text-zinc-200 text-sm font-medium">
-            <span>🔔</span>
+          <div className="flex items-center gap-2 text-default text-sm font-medium">
+            <Bell className="w-4 h-4" />
             <span>New Entity Spawned</span>
           </div>
-          <p className="text-zinc-400 text-xs mt-1">
-            {data.creatorName} created {data.entityType}: <span className="text-zinc-200 font-medium">{data.entityName}</span>
+          <p className="text-subtle text-xs mt-1">
+            {data.creatorName} created {data.entityType}: <span className="text-default font-medium">{data.entityName}</span>
           </p>
-          <button className="mt-2 text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-2 py-1 rounded border border-zinc-800 transition-colors">
+          <SciFiButton theme="slate" scifiVariant="ghost" size="sm">
             View in Pool
-          </button>
+          </SciFiButton>
         </div>
       );
     case 'connection_requested':
       return (
         <div>
-          <div className="flex items-center gap-2 text-zinc-200 text-sm font-medium">
-            <span>🔗</span>
+          <div className="flex items-center gap-2 text-default text-sm font-medium">
+            <Link2 className="w-4 h-4" />
             <span>Connection Requested</span>
           </div>
-          <p className="text-zinc-400 text-xs mt-1">
-            <span className="text-blue-400">{data.requesterName}</span> wants to connect with <span className="text-zinc-200">{data.entityName}</span>.
+          <p className="text-subtle text-xs mt-1">
+            <span className="text-blue-400">{data.requesterName}</span> wants to connect with <span className="text-default">{data.entityName}</span>.
           </p>
         </div>
       );
@@ -120,22 +123,22 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
       return (
         <div>
           <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
-            <span>✅</span>
+            <CheckCircle className="w-4 h-4" />
             <span>Connection Approved</span>
           </div>
-          <p className="text-zinc-400 text-xs mt-1">
-            Connection established between <span className="text-zinc-200">{data.characterName}</span> and <span className="text-zinc-200">{data.entityName}</span>.
+          <p className="text-subtle text-xs mt-1">
+            Connection established between <span className="text-default">{data.characterName}</span> and <span className="text-default">{data.entityName}</span>.
           </p>
         </div>
       );
     case 'term_completed':
       return (
         <div>
-          <div className="flex items-center gap-2 text-zinc-200 text-sm font-medium">
-            <span>📅</span>
+          <div className="flex items-center gap-2 text-default text-sm font-medium">
+            <Calendar className="w-4 h-4" />
             <span>Term Completed</span>
           </div>
-          <p className="text-zinc-400 text-xs mt-1">
+          <p className="text-subtle text-xs mt-1">
             <span className="text-blue-400">{data.playerName}</span> finished Term {data.termNumber}.
           </p>
         </div>
@@ -144,11 +147,11 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
       return (
         <div>
           <div className="flex items-center gap-2 text-amber-400 text-sm font-medium">
-            <span>⭐</span>
+            <Star className="w-4 h-4" />
             <span>Character Finalized</span>
           </div>
-          <p className="text-zinc-400 text-xs mt-1">
-            <span className="text-blue-400">{data.playerName}</span> has completed their character <span className="text-zinc-200">"{data.characterName}"</span>!
+          <p className="text-subtle text-xs mt-1">
+            <span className="text-blue-400">{data.playerName}</span> has completed their character <span className="text-default">"{data.characterName}"</span>!
           </p>
         </div>
       );

@@ -14,14 +14,14 @@ interface StepNavigationProps {
 
 export default function StepNavigation({ steps, currentStep, onStepClick }: StepNavigationProps) {
   return (
-    <div className="w-full mb-8 pl-[400px]">
-      <div className="flex items-center justify-between relative">
+    <div className="flex justify-center items-center w-full pt-2 pb-4 mb-4">
+      <div className="flex items-start justify-between relative w-full max-w-5xl px-4">
         <div 
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-0.5 -z-0"
+          className="absolute left-0 top-5 sm:top-[22px] transform -translate-y-1/2 w-full h-0.5 -z-0"
           style={{ backgroundColor: 'rgba(148, 163, 184, 0.2)' }}
         />
         <div 
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 h-0.5 -z-0 transition-all duration-500"
+          className="absolute left-0 top-5 sm:top-[22px] transform -translate-y-1/2 h-0.5 -z-0 transition-all duration-500"
           style={{ 
             width: `${(currentStep / (steps.length - 1)) * 100}%`,
             background: `linear-gradient(90deg, ${THEME_HEX.cyan}, ${THEME_HEX.violet})`,
@@ -39,7 +39,9 @@ export default function StepNavigation({ steps, currentStep, onStepClick }: Step
               <button
                 onClick={() => onStepClick?.(index)}
                 disabled={isUpcoming}
-                className="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-200"
+                aria-label={`Step ${index + 1}: ${step.label}`}
+                aria-current={isCurrent ? 'step' : undefined}
+                className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 ${!isUpcoming ? 'hover:scale-110' : ''}`}
                 style={{
                   backgroundColor: isCompleted 
                     ? THEME_HEX.cyan 
@@ -48,26 +50,18 @@ export default function StepNavigation({ steps, currentStep, onStepClick }: Step
                     ? THEME_HEX.cyan 
                     : isCurrent 
                       ? THEME_HEX.violet 
-                      : 'rgba(148, 163, 184, 0.3)',
+                      : 'rgba(148, 163, 184, 0.4)',
                   color: isCompleted 
                     ? '#0a0d14' 
                     : isCurrent 
                       ? THEME_HEX.violet 
-                      : THEME_HEX.slate,
+                      : '#cbd5e1',
                   boxShadow: isCompleted 
                     ? `0 0 12px ${THEME_HEX.cyan}60`
                     : isCurrent 
                       ? `0 0 16px ${THEME_HEX.violet}50`
                       : 'none',
                   cursor: isUpcoming ? 'default' : 'pointer',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isUpcoming) {
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
                 {isCompleted ? (
@@ -80,13 +74,13 @@ export default function StepNavigation({ steps, currentStep, onStepClick }: Step
               </button>
               
               <span 
-                className="absolute top-12 text-sm font-medium whitespace-nowrap transition-colors duration-200 pointer-events-none"
+                className="hidden sm:block mt-2 text-xs sm:text-sm font-medium font-display text-center leading-tight max-w-[7rem] sm:max-w-[8rem] break-words transition-colors duration-200 pointer-events-none"
                 style={{
                   color: isCurrent 
                     ? THEME_HEX.violet 
                     : isCompleted 
                       ? THEME_HEX.cyan 
-                      : THEME_HEX.slate,
+                      : '#cbd5e1',
                 }}
               >
                 {step.label}

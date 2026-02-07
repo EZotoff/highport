@@ -1,7 +1,6 @@
-'use client';
-
 import React from 'react';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
+import { SciFiButton } from '@/components/ui/scifi';
 
 interface VerbositySelectorProps {
   value: VerbosityLevel;
@@ -36,31 +35,29 @@ export default function VerbositySelector({
   onChange,
   disabled = false,
 }: VerbositySelectorProps) {
+  const groupId = 'verbosity-selector-label';
+
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-zinc-400">
+    <div className="space-y-3">
+      <p id={groupId} className="block text-sm font-medium text-subtle">
         AI Assistance Level
-      </label>
-      <div className="flex gap-2">
+      </p>
+      <div role="radiogroup" aria-labelledby={groupId} className="flex flex-wrap sm:flex-nowrap gap-2 p-1.5 rounded-lg bg-[var(--star-metal)] border border-[var(--asteroid-dust-50)]">
         {VERBOSITY_OPTIONS.map((option) => (
-          <button
+          <SciFiButton
             key={option.value}
+            theme="violet"
+            scifiVariant={value === option.value ? 'outline' : 'ghost'}
+            size="sm"
             onClick={() => onChange(option.value)}
             disabled={disabled}
-            className={`
-              flex-1 px-3 py-2 rounded-lg border transition-all
-              ${value === option.value
-                ? 'bg-blue-600 border-blue-500 text-white'
-                : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-600'
-              }
-              ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-            `}
+            role="radio"
+            aria-checked={value === option.value}
+            aria-label={`${option.label}: ${option.description}`}
+            className="flex-1 min-w-[90px] min-h-[44px]"
           >
-            <div className="font-medium text-sm">{option.label}</div>
-            <div className={`text-xs ${value === option.value ? 'text-blue-200' : 'text-zinc-500'}`}>
-              {option.description}
-            </div>
-          </button>
+            {option.label}
+          </SciFiButton>
         ))}
       </div>
     </div>

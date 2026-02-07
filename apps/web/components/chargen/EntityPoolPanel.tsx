@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { User, MapPin, Package, Lock, HelpCircle } from 'lucide-react';
+import { SciFiButton } from '@/components/ui/scifi';
 import { useEntityPool, useAllCharacters } from '../../lib/chargen/hooks';
 import type { SharedSpawnedEntity } from '../../lib/chargen/types';
 
@@ -10,12 +12,14 @@ interface EntityPoolPanelProps {
   onViewDetails?: (entityId: string) => void;
 }
 
-const TYPE_ICONS: Record<string, string> = {
-  npc: '👤',
-  location: '📍',
-  item: '📦',
-  secret: '🔒',
+const TYPE_ICONS: Record<string, React.ReactNode> = {
+  npc: <User className="w-4 h-4" />,
+  location: <MapPin className="w-4 h-4" />,
+  item: <Package className="w-4 h-4" />,
+  secret: <Lock className="w-4 h-4" />,
 };
+
+const getTypeIcon = (type: string) => TYPE_ICONS[type] ?? <HelpCircle className="w-4 h-4" />;
 
 const RELATIONSHIP_COLORS: Record<string, string> = {
   ally: 'text-green-400',
@@ -59,32 +63,31 @@ export function EntityPoolPanel({
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden flex flex-col h-full">
       <div className="p-4 border-b border-zinc-800 bg-zinc-900/50">
-        <h2 className="text-zinc-100 font-bold text-sm uppercase tracking-wider mb-3">
+        <h2
+          className="text-heading font-bold text-sm uppercase tracking-wider mb-3"
+          data-testid="entity-pool"
+        >
           Spawned Entities
         </h2>
         
         <div className="flex flex-wrap gap-2">
           {['all', 'npc', 'location', 'item', 'secret'].map((type) => (
-            <button
+            <SciFiButton
               key={type}
               onClick={() => setFilter(type)}
-              className={`
-                px-3 py-1 text-xs rounded-full border transition-colors
-                ${filter === type 
-                  ? 'bg-zinc-100 text-zinc-900 border-zinc-100 font-medium' 
-                  : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200'
-                }
-              `}
+              size="sm"
+              theme={filter === type ? "cyan" : "slate"}
+              scifiVariant={filter === type ? "outline" : "ghost"}
             >
               {type === 'all' ? 'All' : (type.charAt(0).toUpperCase() + type.slice(1) + 's')}
-            </button>
+            </SciFiButton>
           ))}
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {filteredEntities.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-zinc-500 text-sm italic">
+          <div className="h-full flex items-center justify-center text-subtle text-sm italic">
             No entities spawned yet
           </div>
         ) : (
@@ -94,7 +97,7 @@ export function EntityPoolPanel({
             const isClaimed = entity.claimedBy.length > 0;
             const relationshipColor = relationship && RELATIONSHIP_COLORS[relationship] 
               ? RELATIONSHIP_COLORS[relationship] 
-              : 'text-zinc-400';
+              : 'text-subtle';
 
             return (
               <div 
@@ -103,13 +106,13 @@ export function EntityPoolPanel({
               >
                 <div className="flex items-start justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg" role="img" aria-label={entity.type}>
-                      {TYPE_ICONS[entity.type] || '❓'}
-                    </span>
+                    <div className="text-subtle">
+                      {getTypeIcon(entity.type)}
+                    </div>
                     <div>
-                      <h3 className="text-zinc-200 font-semibold text-sm">
+                      <h3 className="text-default font-semibold text-sm">
                         {entity.name}
-                        <span className="ml-2 text-zinc-500 text-xs font-normal capitalize">
+                        <span className="ml-2 text-subtle text-xs font-normal capitalize">
                           ({entity.type})
                         </span>
                       </h3>
@@ -123,23 +126,23 @@ export function EntityPoolPanel({
                   </div>
                 )}
 
-                <div className="text-xs text-zinc-500 mb-2">
+                <div className="text-xs text-subtle mb-2">
                   Created by: {getCreatorName(entity)} (Term {entity.createdDuring.termNumber})
                 </div>
 
                 <div className="h-px bg-zinc-800 my-2" />
 
                 {entity.description && (
-                  <p className="text-zinc-400 text-xs mb-3 line-clamp-2">
+                  <p className="text-subtle text-xs mb-3 line-clamp-2">
                     "{entity.description}"
                   </p>
                 )}
 
                 {isClaimed && (
-                  <div className="text-xs text-zinc-400 mb-3 flex flex-wrap gap-1">
+                  <div className="text-xs text-subtle mb-3 flex flex-wrap gap-1">
                     <span>Connection claimed by:</span>
                     {entity.claimedBy.map((claimerId, idx) => (
-                      <span key={claimerId} className="text-zinc-300">
+                      <span key={claimerId} className="text-label">
                         {charMap[claimerId] || 'Unknown'}
                         {claimerId === currentCharId ? ' ✓' : ''}
                         {idx < entity.claimedBy.length - 1 ? ',' : ''}
@@ -150,20 +153,24 @@ export function EntityPoolPanel({
 
                 <div className="flex gap-2 mt-2">
                   {currentCharId && !isClaimedByCurrent && onRequestConnection && (
-                    <button
+                    <SciFiButton
                       onClick={() => onRequestConnection(entity.id)}
-                      className="px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700 transition-colors"
+                      theme="violet"
+                      scifiVariant="outline"
+                      size="sm"
                     >
                       Request Connection
-                    </button>
+                    </SciFiButton>
                   )}
                   {onViewDetails && (
-                    <button
+                    <SciFiButton
                       onClick={() => onViewDetails(entity.id)}
-                      className="px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700 transition-colors"
+                      theme="slate"
+                      scifiVariant="ghost"
+                      size="sm"
                     >
                       View Details
-                    </button>
+                    </SciFiButton>
                   )}
                 </div>
               </div>

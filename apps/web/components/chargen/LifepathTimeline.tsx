@@ -22,7 +22,7 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
             className="w-6 h-6 rounded-full border-2 animate-spin"
             style={{ borderColor: `${THEME_HEX.cyan}30`, borderTopColor: THEME_HEX.cyan }}
           />
-          <span className="text-gray-400">Loading lifepath...</span>
+          <span className="text-subtle">Loading lifepath...</span>
         </div>
       </GlassPanel>
     );
@@ -38,9 +38,9 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
           borderBottom: '1px solid var(--asteroid-dust-50)'
         }}
       >
-        <h2 className="text-lg font-bold flex items-center gap-2">
+         <h2 className="text-lg font-bold flex items-center gap-2 font-display">
           <span style={{ color: THEME_HEX.cyan }} className={`${TYPOGRAPHY.subheading} text-glow-cyan chromatic-text`}>LIFEPATH:</span>
-          <span className="text-gray-100 truncate max-w-[200px] sm:max-w-md">{character.name || 'Unnamed Character'}</span>
+          <span className="text-heading truncate max-w-[200px] sm:max-w-md">{character.name || 'Unnamed Character'}</span>
         </h2>
         <div 
           className="font-mono text-sm px-3 py-1 rounded"
@@ -50,7 +50,7 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
             color: THEME_HEX.cyan 
           }}
         >
-          AGE: <span className="text-white font-bold">{character.age}</span>
+          AGE: <span className="text-heading font-bold">{character.age}</span>
         </div>
       </div>
 
@@ -111,7 +111,7 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
                     }} 
                  />
                  
-                 <div className="text-[var(--text-muted)] mb-4 group-hover:text-[var(--plasma-cyan)] transition-colors duration-500">
+                  <div className="text-subtle mb-4 group-hover:text-[var(--plasma-cyan)] transition-colors duration-500">
                    <SilkyChevron className="w-8 h-8 animate-bounce opacity-70" color={THEME_HEX.cyan} />
                  </div>
                  
@@ -119,9 +119,9 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
                    Begin Your Journey
                  </p>
                  
-                 <p className={`${TYPOGRAPHY.secondary} text-[var(--text-muted)] text-xs`}>
-                   Select a starting career to forge your destiny
-                 </p>
+                  <p className={`${TYPOGRAPHY.secondary} text-subtle text-xs`}>
+                    Select a starting career to forge your destiny
+                  </p>
                  
                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--plasma-cyan)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { SciFiButton } from '@/components/ui/scifi';
 import { getYDoc } from '../../../lib/ydoc';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
@@ -47,11 +48,9 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   const [survivalRoll, setSurvivalRoll] = useState<DiceResult | undefined>();
   const [eventRoll, setEventRoll] = useState<DiceResult | undefined>();
   const [event, setEvent] = useState<CareerEvent | undefined>();
-  const [eventChoice, setEventChoice] = useState<string | undefined>();
   const [eventAdvancementDM, setEventAdvancementDM] = useState<number>(0);
   const [mishap, setMishap] = useState<CareerMishap | undefined>();
   const [selectedTable, setSelectedTable] = useState<string | undefined>();
-  const [skillRoll, setSkillRoll] = useState<DiceResult | undefined>();
   const [skillGained, setSkillGained] = useState<{ skill: string; specialty?: string } | undefined>();
   const [advancementRoll, setAdvancementRoll] = useState<DiceResult | undefined>();
   const [advanced, setAdvanced] = useState<boolean>(false);
@@ -62,7 +61,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   const { isAvailable: narrativeAvailable } = useNarrativeAvailable();
   const { generate: generateNarrative, isLoading: narrativeLoading, error: narrativeError } = useEventNarrative();
 
-  if (!character) return <div className="text-zinc-400">Loading character...</div>;
+  if (!character) return <div className="text-subtle">Loading character...</div>;
   
   const currentTerm = character.terms[character.terms.length - 1];
   if (!currentTerm) return <div className="text-red-400">Error: No active term found.</div>;
@@ -124,23 +123,6 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     setPhase('event_choice');
   };
 
-  const handleEventChoice = (choice: string) => {
-    setEventChoice(choice);
-    
-    if (choice.includes('DM+1')) setEventAdvancementDM(prev => prev + 1);
-    if (choice.includes('DM+2')) setEventAdvancementDM(prev => prev + 2);
-
-    const doc = getYDoc();
-    const updatedTerms = [...character.terms];
-    updatedTerms[character.terms.length - 1] = {
-      ...currentTerm,
-      eventChoice: choice,
-    };
-    updateCharacterFields(doc, character.id, { terms: updatedTerms });
-    
-    setPhase('skill');
-  };
-
   const confirmEvent = () => {
      setPhase('skill');
   };
@@ -180,7 +162,6 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     if (!selectedTable) return;
     
     const roll = roll1d6();
-    setSkillRoll(roll);
     
     let table: SkillTableEntry[] = [];
     switch (selectedTable) {
@@ -279,9 +260,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
       setSurvivalRoll(undefined);
       setEventRoll(undefined);
       setEvent(undefined);
-      setEventChoice(undefined);
       setEventAdvancementDM(0);
-      setSkillRoll(undefined);
       setSkillGained(undefined);
       setAdvancementRoll(undefined);
       setAdvanced(false);
@@ -360,23 +339,24 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   const renderSurvival = () => (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-zinc-100">Phase 1: Survival</h3>
-        <span className="text-zinc-500 font-mono">
+         <h3 className="text-xl font-bold text-heading font-display">Phase 1: Survival</h3>
+        <span className="text-subtle font-mono">
           {assignment.survival.characteristic} {assignment.survival.target}+
         </span>
       </div>
       
       {!survivalRoll ? (
         <div className="text-center py-8">
-          <p className="text-zinc-400 mb-6">
+          <p className="text-subtle mb-6">
             Make a survival roll to avoid mishaps and continue your career.
           </p>
-          <button
+          <SciFiButton
+            theme="cyan"
+            glow
             onClick={handleSurvivalRoll}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-bold transition-colors"
           >
             Roll Survival
-          </button>
+          </SciFiButton>
         </div>
       ) : (
         <div className="bg-zinc-950 rounded p-4 border border-zinc-800 text-center">
@@ -385,7 +365,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                     {survivalRoll.total}
                 </span>
             </div>
-            <div className="text-sm text-zinc-500 mb-2">
+            <div className="text-sm text-subtle mb-2">
                 Roll: {survivalRoll.dice[0]} + {survivalRoll.dice[1]} + DM {survivalRoll.modifier}
             </div>
             {survivalRoll.total >= assignment.survival.target ? (
@@ -394,16 +374,16 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                 <div className="space-y-4">
                     <div className="text-red-400 font-bold">✗ MISHAP</div>
                     {mishap && (
-                        <div className="bg-red-900/20 p-4 rounded text-zinc-200">
+                        <div className="bg-red-900/20 p-4 rounded text-default">
                            {mishap.description}
                         </div>
                     )}
-                    <button
+                    <SciFiButton
                         onClick={handleForcedMusterOut}
-                        className="bg-red-900 hover:bg-red-800 text-white px-6 py-2 rounded"
+                        scifiVariant="destructive"
                     >
                         Accept Mishap & Leave Career
-                    </button>
+                    </SciFiButton>
                 </div>
             )}
         </div>
@@ -413,37 +393,40 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
 
   const renderEvent = () => (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in mt-4">
-       <h3 className="text-xl font-bold text-zinc-100 mb-4">Phase 2: Career Event</h3>
+        <h3 className="text-xl font-bold text-heading mb-4 font-display">Phase 2: Career Event</h3>
        
        {!eventRoll ? (
            <div className="text-center">
-               <button
-                 onClick={handleEventRoll}
-                 className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-bold transition-colors"
-               >
-                 Roll Event
-               </button>
+                <SciFiButton
+                  theme="cyan"
+                  glow
+                  onClick={handleEventRoll}
+                >
+                  Roll Event
+                </SciFiButton>
            </div>
        ) : (
            <div className="space-y-4">
-               <div className="flex justify-between text-zinc-500 font-mono text-sm border-b border-zinc-800 pb-2">
+               <div className="flex justify-between text-subtle font-mono text-sm border-b border-zinc-800 pb-2">
                    <span>Roll: {eventRoll.total}</span>
                </div>
-               <div className="text-zinc-100 text-lg">
+               <div className="text-heading text-lg">
                    {event?.description}
                </div>
 
                {event && narrativeAvailable && (
                  <div className="mt-4 p-4 bg-zinc-950 border border-zinc-800 rounded">
                    <div className="flex items-center justify-between mb-3">
-                     <span className="text-sm text-zinc-400">AI Description</span>
-                     <button
-                       onClick={handleGenerateDescription}
-                       disabled={narrativeLoading}
-                       className="px-4 py-1.5 text-sm bg-purple-600 hover:bg-purple-500 disabled:bg-zinc-700 text-white rounded transition-colors"
-                     >
-                       {narrativeLoading ? 'Generating...' : generatedDescription ? 'Regenerate' : 'Generate Description'}
-                     </button>
+                      <span className="text-sm text-subtle">AI Description</span>
+                      <SciFiButton
+                        onClick={handleGenerateDescription}
+                        disabled={narrativeLoading}
+                        theme="violet"
+                        scifiVariant="secondary"
+                        size="sm"
+                      >
+                        {narrativeLoading ? 'Generating...' : generatedDescription ? 'Regenerate' : 'Generate Description'}
+                      </SciFiButton>
                    </div>
                    
                    {narrativeError && (
@@ -455,18 +438,21 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                     {generatedDescription && (
                       <div className="space-y-2">
                         <textarea
+                          aria-label="Event narrative description"
                           value={generatedDescription}
                           onChange={(e) => setGeneratedDescription(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-700 rounded p-3 text-zinc-200 italic resize-y min-h-[80px] focus:outline-none focus:border-purple-500"
+                          className="w-full min-h-[80px] bg-zinc-950 border border-zinc-700 rounded p-3 text-default italic resize-y focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 focus:border-cyan-500"
                           placeholder="Generated description will appear here..."
                         />
                         <div className="flex justify-end gap-2">
-                          <button
+                          <SciFiButton
                             onClick={handleAcceptDescription}
-                            className="px-4 py-1.5 text-sm bg-green-600 hover:bg-green-500 text-white rounded transition-colors"
+                            theme="emerald"
+                            scifiVariant="secondary"
+                            size="sm"
                           >
                             Accept & Save
-                          </button>
+                          </SciFiButton>
                         </div>
                       </div>
                     )}
@@ -484,12 +470,14 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                   />
                 ) : phase === 'event_choice' && (
                     <div className="mt-4 pt-4 border-t border-zinc-800">
-                        <button
-                          onClick={confirmEvent}
-                          className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-2 rounded w-full"
-                        >
-                          Continue
-                        </button>
+                         <SciFiButton
+                           onClick={confirmEvent}
+                           theme="slate"
+                           scifiVariant="ghost"
+                           className="w-full"
+                         >
+                           Continue
+                         </SciFiButton>
                     </div>
                 )}
 
@@ -509,7 +497,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
 
   const renderSkill = () => (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in mt-4">
-        <h3 className="text-xl font-bold text-zinc-100 mb-4">Phase 3: Skill Training</h3>
+         <h3 className="text-xl font-bold text-heading mb-4 font-display">Phase 3: Skill Training</h3>
         
         {!selectedTable && !skillGained ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -520,39 +508,50 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                     { id: 'assignment', name: 'Assignment Skills' },
                     { id: 'officer', name: 'Officer Skills', officerOnly: true },
                 ].map(table => (
-                    <button
+                    <SciFiButton
                         key={table.id}
                         disabled={(table.id === 'advanced' && (character.characteristics.EDU || 0) < (table.minEdu || 0)) || (table.id === 'officer' && currentTerm.currentRank < 1)}
                         onClick={() => handleSkillTableSelect(table.id)}
-                        className="p-3 bg-zinc-800 border border-zinc-700 rounded hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                        theme="slate"
+                        scifiVariant="secondary"
+                        className="p-3 h-auto text-sm font-medium"
                     >
                         {table.name}
-                    </button>
+                    </SciFiButton>
                 ))}
             </div>
         ) : !skillGained ? (
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                     <h4 className="text-zinc-300 font-bold capitalize">{selectedTable} Table</h4>
-                     <button onClick={() => setSelectedTable(undefined)} className="text-xs text-zinc-500 hover:text-zinc-300">Change Table</button>
+                     <h4 className="text-label font-bold capitalize">{selectedTable} Table</h4>
+                      <SciFiButton
+                        onClick={() => setSelectedTable(undefined)}
+                        theme="slate"
+                        scifiVariant="ghost"
+                        size="sm"
+                        className="text-xs h-auto py-1"
+                      >
+                        Change Table
+                      </SciFiButton>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                        <button
+                        <SciFiButton
+                            theme="cyan"
+                            glow
                             onClick={handleSkillRoll}
-                            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded font-bold"
                         >
                             Roll 1d6
-                        </button>
-                        <div className="text-center text-xs text-zinc-500">OR Pick Specific Skill (House Rule)</div>
+                        </SciFiButton>
+                        <div className="text-center text-xs text-subtle">OR Pick Specific Skill (House Rule)</div>
                     </div>
                 </div>
             </div>
         ) : (
             <div className="bg-green-900/20 border border-green-800 rounded p-4 text-center">
                  <div className="text-green-400 font-bold text-lg mb-1">Skill Gained</div>
-                 <div className="text-white text-2xl capitalize">{skillGained.skill}</div>
+                 <div className="text-heading text-2xl capitalize">{skillGained.skill}</div>
             </div>
         )}
     </div>
@@ -561,36 +560,37 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   const renderAdvancement = () => (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in mt-4">
         <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold text-zinc-100">Phase 4: Advancement</h3>
-            <span className="text-zinc-500 font-mono">
+             <h3 className="text-xl font-bold text-heading font-display">Phase 4: Advancement</h3>
+            <span className="text-subtle font-mono">
                 {assignment.advancement.characteristic} {assignment.advancement.target}+
             </span>
         </div>
         
         {!advancementRoll ? (
             <div className="text-center">
-                 <p className="text-zinc-400 mb-4">Roll for promotion to the next rank.</p>
-                 <button
+                 <p className="text-subtle mb-4">Roll for promotion to the next rank.</p>
+                  <SciFiButton
+                    theme="cyan"
+                    glow
                     onClick={handleAdvancementRoll}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-bold"
-                 >
+                  >
                     Roll Advancement
-                 </button>
+                  </SciFiButton>
             </div>
         ) : (
             <div className="bg-zinc-950 rounded p-4 border border-zinc-800 text-center">
                  <div className="text-3xl font-mono font-bold mb-2">
-                    <span className={advanced ? 'text-green-400' : 'text-zinc-400'}>
+                    <span className={advanced ? 'text-green-400' : 'text-subtle'}>
                         {advancementRoll.total}
                     </span>
                  </div>
-                 <div className="text-sm text-zinc-500 mb-2">
+                 <div className="text-sm text-subtle mb-2">
                     Roll: {advancementRoll.dice[0]} + {advancementRoll.dice[1]} + DM {advancementRoll.modifier}
                  </div>
                  {advanced ? (
                      <div className="text-green-400 font-bold">✓ PROMOTED to Rank {currentTerm.currentRank}</div>
                  ) : (
-                     <div className="text-zinc-500 font-bold">NO PROMOTION</div>
+                     <div className="text-subtle font-bold">NO PROMOTION</div>
                  )}
             </div>
         )}
@@ -599,36 +599,40 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   
   const renderComplete = () => (
       <div className="mt-8 flex gap-4 justify-center animate-in slide-in-from-bottom-4">
-          <button
+          <SciFiButton
               onClick={handleContinue}
-              className="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-4 rounded-lg border border-zinc-700 flex flex-col items-center min-w-[200px]"
+              theme="violet"
+              scifiVariant="outline"
+              className="h-auto py-4 flex flex-col items-center min-w-[200px]"
           >
               <span className="font-bold text-lg">Continue Career</span>
-              <span className="text-sm text-zinc-400">Term {character.terms.length + 1}</span>
-          </button>
+              <span className="text-sm text-subtle">Term {character.terms.length + 1}</span>
+          </SciFiButton>
           
-          <button
+          <SciFiButton
               onClick={handleMusterOut}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-lg flex flex-col items-center min-w-[200px]"
+              theme="cyan"
+              glow
+              className="h-auto py-4 flex flex-col items-center min-w-[200px]"
           >
               <span className="font-bold text-lg">Muster Out</span>
               <span className="text-sm text-blue-200">End Service</span>
-          </button>
+          </SciFiButton>
       </div>
   );
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20">
-      <div className="flex justify-between items-end border-b border-zinc-800 pb-4">
-          <div>
-              <h2 className="text-2xl font-bold text-white">{career.name}</h2>
-              <div className="text-zinc-400">{assignment.name} • Term {character.terms.length}</div>
+          <div className="flex justify-between items-end border-b border-zinc-800 pb-4">
+            <div>
+               <h2 className="text-2xl font-bold text-heading font-display">{career.name}</h2>
+              <div className="text-subtle">{assignment.name} • Term {character.terms.length}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-subtle">Current Rank</div>
+              <div className="font-mono text-default">{getRankInfo(career, currentTerm.currentRank)?.title || 'Rank ' + currentTerm.currentRank}</div>
+            </div>
           </div>
-          <div className="text-right">
-              <div className="text-sm text-zinc-500">Current Rank</div>
-              <div className="font-mono text-zinc-200">{getRankInfo(career, currentTerm.currentRank)?.title || 'Rank ' + currentTerm.currentRank}</div>
-          </div>
-      </div>
 
       {renderSurvival()}
       {phase !== 'survival' && !mishap && renderEvent()}

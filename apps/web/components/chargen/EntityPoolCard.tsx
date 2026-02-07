@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { User, MapPin, Package, Lock, HelpCircle } from 'lucide-react';
+import { SciFiButton } from '@/components/ui/scifi';
 import type { SharedSpawnedEntity } from '../../lib/chargen/types';
 
 interface EntityPoolCardProps {
@@ -12,12 +14,14 @@ interface EntityPoolCardProps {
   onViewDetails?: () => void;
 }
 
-const TYPE_ICONS: Record<string, string> = {
-  npc: '👤',
-  location: '📍',
-  item: '📦',
-  secret: '🔒',
+const TYPE_ICONS: Record<string, React.ReactNode> = {
+  npc: <User className="w-4 h-4" />,
+  location: <MapPin className="w-4 h-4" />,
+  item: <Package className="w-4 h-4" />,
+  secret: <Lock className="w-4 h-4" />,
 };
+
+const getTypeIcon = (type: string) => TYPE_ICONS[type] ?? <HelpCircle className="w-4 h-4" />;
 
 const RELATIONSHIP_COLORS: Record<string, string> = {
   ally: 'text-green-400',
@@ -37,20 +41,20 @@ export default function EntityPoolCard({
   const relationship = (entity.metadata as Record<string, unknown>)?.relationship as string | undefined;
   const relationshipColor = relationship && RELATIONSHIP_COLORS[relationship]
     ? RELATIONSHIP_COLORS[relationship]
-    : 'text-zinc-400';
+    : 'text-subtle';
   const isClaimed = entity.claimedBy.length > 0;
 
   return (
     <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-3 hover:border-zinc-700 transition-colors">
       <div className="flex items-start justify-between mb-1">
         <div className="flex items-center gap-2">
-          <span className="text-lg" role="img" aria-label={entity.type}>
-            {TYPE_ICONS[entity.type] || '❓'}
-          </span>
+          <div className="text-subtle">
+            {getTypeIcon(entity.type)}
+          </div>
           <div>
-            <h3 className="text-zinc-200 font-semibold text-sm">
+            <h3 className="text-default font-semibold text-sm">
               {entity.name}
-              <span className="ml-2 text-zinc-500 text-xs font-normal capitalize">
+              <span className="ml-2 text-subtle text-xs font-normal capitalize">
                 ({entity.type})
               </span>
             </h3>
@@ -64,23 +68,23 @@ export default function EntityPoolCard({
         </div>
       )}
 
-      <div className="text-xs text-zinc-500 mb-2">
+      <div className="text-xs text-subtle mb-2">
         Created by: {creatorName} (Term {entity.createdDuring.termNumber})
       </div>
 
       <div className="h-px bg-zinc-800 my-2" />
 
       {entity.description && (
-        <p className="text-zinc-400 text-xs mb-3 line-clamp-2">
+        <p className="text-subtle text-xs mb-3 line-clamp-2">
           "{entity.description}"
         </p>
       )}
 
       {isClaimed && (
-        <div className="text-xs text-zinc-400 mb-3">
+        <div className="text-xs text-subtle mb-3">
           Connection claimed by:{' '}
           {claimerNames.map((name, idx) => (
-            <span key={idx} className="text-zinc-300">
+            <span key={idx} className="text-label">
               {name}
               {idx === claimerNames.length - 1 && isClaimedByCurrent ? ' ✓' : ''}
               {idx < claimerNames.length - 1 ? ', ' : ''}
@@ -91,20 +95,24 @@ export default function EntityPoolCard({
 
       <div className="flex gap-2 mt-2">
         {!isClaimedByCurrent && onRequestConnection && (
-          <button
+          <SciFiButton
+            theme="slate"
+            scifiVariant="secondary"
+            size="sm"
             onClick={onRequestConnection}
-            className="px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700 transition-colors"
           >
             Request Connection
-          </button>
+          </SciFiButton>
         )}
         {onViewDetails && (
-          <button
+          <SciFiButton
+            theme="slate"
+            scifiVariant="ghost"
+            size="sm"
             onClick={onViewDetails}
-            className="px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700 transition-colors"
           >
             View Details
-          </button>
+          </SciFiButton>
         )}
       </div>
     </div>

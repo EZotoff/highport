@@ -19,7 +19,7 @@ export const TimelineEvent = memo(function TimelineEvent({ event, eventDescripti
         <span className="text-xs line-clamp-2 leading-tight">{description}</span>
         
         <div 
-          className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-48 p-2 rounded text-xs text-white z-50"
+          className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-48 p-2 rounded text-xs text-heading z-50"
           style={{
             backgroundColor: '#1a1f2e',
             border: `1px solid ${THEME_HEX.red}30`,
@@ -41,7 +41,7 @@ export const TimelineEvent = memo(function TimelineEvent({ event, eventDescripti
         <span className="text-xs line-clamp-2 leading-tight">{description}</span>
         
         <div 
-          className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-48 p-2 rounded text-xs text-white z-50"
+          className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-48 p-2 rounded text-xs text-heading z-50"
           style={{
             backgroundColor: '#1a1f2e',
             border: `1px solid ${THEME_HEX.cyan}30`,

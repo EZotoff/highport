@@ -8,15 +8,17 @@ import CareerSelectionStep from './steps/CareerSelectionStep';
 import TermResolutionStep from './steps/TermResolutionStep';
 import MusteringOutStep from './steps/MusteringOutStep';
 import FinalizeStep from './steps/FinalizeStep';
+import SkillsStep from './steps/SkillsStep';
+import BenefitsStep from './steps/BenefitsStep';
 import VerbositySelector from './VerbositySelector';
 import ParticipantPanel from './ParticipantPanel';
 import { EntityPoolPanel } from './EntityPoolPanel';
 import { useCharacter } from '../../lib/chargen/hooks';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { getActiveCharacter } from '../../lib/identity';
-import { initAndWaitForPersistence } from '../../lib/sync';
+import { getSessionId, initAndWaitForPersistence } from '../../lib/sync';
 import { getYDoc } from '../../lib/ydoc';
-import { GlassPanel } from '@/components/ui/scifi';
+import { GlassPanel, SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 
 const STEPS = [
@@ -36,9 +38,23 @@ export default function ChargenWizard() {
 
   useEffect(() => {
     const doc = getYDoc();
-    initAndWaitForPersistence(doc).then(() => {
-      setIsSynced(true);
+    const sessionId = getSessionId('chargen');
+    let isMounted = true;
+    const fallbackTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsSynced(true);
+      }
+    }, 2000);
+    initAndWaitForPersistence(doc, `planeshift-chargen-${sessionId}`).then(() => {
+      if (isMounted) {
+        clearTimeout(fallbackTimer);
+        setIsSynced(true);
+      }
     });
+    return () => {
+      isMounted = false;
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -134,26 +150,16 @@ export default function ChargenWizard() {
           />
         );
       case 2:
-        return (
-          <GlassPanel theme="violet" variant="default" className="p-6 text-center">
-            <h2 className="text-xl font-bold text-gray-100 mb-2">Skills</h2>
-            <p style={{ color: THEME_HEX.slate }}>Step content coming soon...</p>
-          </GlassPanel>
-        );
+        return <SkillsStep characterId={characterId} />;
       case 3:
-        return (
-          <GlassPanel theme="violet" variant="default" className="p-6 text-center">
-            <h2 className="text-xl font-bold text-gray-100 mb-2">Benefits</h2>
-            <p style={{ color: THEME_HEX.slate }}>Step content coming soon...</p>
-          </GlassPanel>
-        );
+        return <BenefitsStep characterId={characterId} />;
       case 4:
         return <FinalizeStep characterId={characterId} />;
       default:
         return (
           <GlassPanel theme="violet" variant="default" className="p-6 text-center">
-            <h2 className="text-xl font-bold text-gray-100 mb-2">{STEPS[currentStep].label}</h2>
-            <p style={{ color: THEME_HEX.slate }}>Step content coming soon...</p>
+             <h2 className="text-xl font-bold text-heading mb-2 font-display">{STEPS[currentStep].label}</h2>
+            <p className="text-subtle">Step content coming soon...</p>
           </GlassPanel>
         );
     }
@@ -166,24 +172,27 @@ export default function ChargenWizard() {
           <div 
             className="animate-pulse mb-2 text-lg font-medium"
             style={{ color: THEME_HEX.cyan }}
+            data-testid="participant-panel"
           >
-            Loading...
+            Loading session...
           </div>
-          <p className="text-sm" style={{ color: THEME_HEX.slate }}>Syncing character data</p>
+          <p className="text-sm text-subtle">Syncing character data</p>
         </GlassPanel>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full max-w-7xl mx-auto">
-      <div className="flex items-start justify-between gap-6 mb-4">
-        <StepNavigation 
-          steps={STEPS} 
-          currentStep={currentStep} 
-          onStepClick={setCurrentStep}
-        />
-        <div className="min-w-[280px]">
+    <div className="flex flex-col h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-4 lg:gap-6 mb-6">
+        <div className="w-full lg:flex-1 lg:min-w-0">
+          <StepNavigation 
+            steps={STEPS} 
+            currentStep={currentStep} 
+            onStepClick={setCurrentStep}
+          />
+        </div>
+        <div className="w-full lg:w-[320px] lg:shrink-0">
           <VerbositySelector 
             value={verbosity} 
             onChange={setVerbosity}
@@ -191,9 +200,9 @@ export default function ChargenWizard() {
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-0 overflow-hidden">
         {/* Left sidebar: Participants */}
-        <div className="hidden lg:block lg:col-span-1 h-full overflow-hidden">
+        <div className="lg:col-span-1 h-full overflow-hidden min-w-0">
           <ParticipantPanel 
             currentUserId={characterId || undefined}
             onViewCharacter={setCharacterId}
@@ -201,7 +210,7 @@ export default function ChargenWizard() {
         </div>
 
         {/* Main content: Wizard steps */}
-        <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
+        <div className="lg:col-span-2 flex flex-col h-full overflow-hidden min-w-0 px-2 lg:px-4">
           <div className="flex-1 overflow-y-auto pr-2 pb-4">
             {renderStepContent()}
           </div>
@@ -210,74 +219,28 @@ export default function ChargenWizard() {
             className="mt-4 pt-4 flex justify-between"
             style={{ borderTop: `1px solid rgba(148, 163, 184, 0.2)` }}
           >
-            <button
+            <SciFiButton
               onClick={handleBack}
               disabled={currentStep === 0}
-              className="px-6 py-2 rounded font-medium transition-all duration-200"
-              style={currentStep === 0 
-                ? { 
-                    backgroundColor: 'rgba(26, 31, 46, 0.6)',
-                    color: THEME_HEX.slate,
-                    cursor: 'not-allowed',
-                  }
-                : { 
-                    backgroundColor: 'rgba(148, 163, 184, 0.15)',
-                    color: '#e2e8f0',
-                    border: `1px solid rgba(148, 163, 184, 0.3)`,
-                  }
-              }
-              onMouseEnter={(e) => {
-                if (currentStep !== 0) {
-                  e.currentTarget.style.backgroundColor = 'rgba(148, 163, 184, 0.25)';
-                  e.currentTarget.style.boxShadow = `0 0 12px rgba(148, 163, 184, 0.2)`;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (currentStep !== 0) {
-                  e.currentTarget.style.backgroundColor = 'rgba(148, 163, 184, 0.15)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
-              }}
+              scifiVariant="ghost"
+              theme="slate"
             >
               ← Back
-            </button>
+            </SciFiButton>
             
-            <button
+            <SciFiButton
               onClick={handleNext}
               disabled={currentStep === STEPS.length - 1 || !isStepValid()}
-              className="px-6 py-2 rounded font-medium transition-all duration-200"
-              style={currentStep === STEPS.length - 1 || !isStepValid()
-                ? { 
-                    backgroundColor: 'rgba(26, 31, 46, 0.6)',
-                    color: THEME_HEX.slate,
-                    cursor: 'not-allowed',
-                  }
-                : { 
-                    backgroundColor: THEME_HEX.cyan,
-                    color: '#0a0d14',
-                    boxShadow: `0 0 16px ${THEME_HEX.cyan}40`,
-                  }
-              }
-              onMouseEnter={(e) => {
-                if (!(currentStep === STEPS.length - 1 || !isStepValid())) {
-                  e.currentTarget.style.boxShadow = `0 0 24px ${THEME_HEX.cyan}60`;
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!(currentStep === STEPS.length - 1 || !isStepValid())) {
-                  e.currentTarget.style.boxShadow = `0 0 16px ${THEME_HEX.cyan}40`;
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }
-              }}
+              theme="cyan"
+              glow
             >
               Continue →
-            </button>
+            </SciFiButton>
           </div>
         </div>
 
         {/* Right sidebar: Character Preview + Entity Pool */}
-        <div className="hidden lg:flex lg:col-span-1 h-full flex-col gap-4 overflow-hidden">
+        <div className="lg:col-span-1 h-full flex flex-col gap-4 overflow-hidden min-w-0">
           <div className="flex-1 min-h-0 overflow-hidden">
             <CharacterPreview characterId={characterId} />
           </div>
