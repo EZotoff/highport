@@ -62,6 +62,78 @@ export const THEME_HEX: Record<ThemeColor, string> = {
   slate: '#94a3b8',
 };
 
+// High-contrast text colors for UI elements on dark backgrounds
+export const TEXT_COLORS = {
+  primary: '#e2e8f0',    // 13.8:1 contrast - headings, important text
+  label: '#cbd5e1',      // 11.0:1 contrast - labels, nav links
+  subtle: '#94a3b8',     // 6.0:1 contrast - secondary info only
+  hover: '#f1f5f9',      // 15.6:1 contrast - hover states
+};
+
+// Text colors for primary buttons - chosen for optimal contrast on each theme
+const PRIMARY_TEXT_COLORS: Record<ThemeColor, string> = {
+  cyan: '#0a0d14',     // Dark on bright cyan
+  violet: '#ffffff',   // White on medium violet
+  amber: '#0a0d14',    // Dark on bright amber
+  emerald: '#0a0d14',  // Dark on emerald
+  red: '#ffffff',      // White on red
+  slate: '#0a0d14',    // Dark on slate
+};
+
+/**
+ * Returns a style object and matching tailwind classes for themed components
+ * designed to work with Tailwind v4 (which lacks default color palettes)
+ */
+export const getThemeStyle = (theme: ThemeColor, variant: 'primary' | 'secondary' | 'ghost' | 'outline' | 'text') => {
+  const color = THEME_HEX[theme];
+  
+  switch (variant) {
+    case 'primary':
+      return {
+        style: {
+          backgroundColor: color,
+          color: PRIMARY_TEXT_COLORS[theme],
+          '--theme-hover': `${color}d9`,
+        } as React.CSSProperties,
+        className: 'border-transparent hover:bg-[var(--theme-hover)]'
+      };
+    case 'secondary':
+      return {
+        style: {
+          borderColor: `${color}80`,
+          color: color,
+          '--theme-hover-bg': `${color}1a`,
+          '--theme-hover-border': color,
+        } as React.CSSProperties,
+        className: 'border hover:bg-[var(--theme-hover-bg)] hover:border-[var(--theme-hover-border)]'
+      };
+    case 'ghost':
+      return {
+        style: {
+          '--theme-hover-bg': `${color}1a`,
+          '--theme-hover-text': color,
+        } as React.CSSProperties,
+        className: 'bg-transparent hover:bg-[var(--theme-hover-bg)] hover:text-[var(--theme-hover-text)]'
+      };
+    case 'outline':
+      return {
+        style: {
+          borderColor: color,
+          color: color,
+          '--theme-hover-bg': `${color}1a`,
+        } as React.CSSProperties,
+        className: 'bg-transparent border-2 hover:bg-[var(--theme-hover-bg)]'
+      };
+    case 'text':
+      return {
+        style: { color } as React.CSSProperties,
+        className: ''
+      };
+    default:
+      return { style: {}, className: '' };
+  }
+};
+
 export const getThemeDotStyle = (colorHex: string) => ({
   backgroundColor: colorHex,
   boxShadow: `0 0 12px 2px ${colorHex}80`

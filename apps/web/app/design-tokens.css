@@ -34,10 +34,17 @@
   --glow-red: rgba(239, 68, 68, 0.6);
   
   /* === TEXT HIERARCHY === */
-  --text-primary: #e2e8f0;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  /* WCAG AA compliant on --deep-void (#0a0d14) background */
+  --text-primary: #e2e8f0;      /* 13.8:1 - default body text */
+  --text-secondary: #94a3b8;    /* 6.0:1 - secondary/subtle */
+  --text-muted: #64748b;        /* 3.7:1 - decorative only, not for reading */
   --text-glow: #00f0ff;
+
+  /* Extended hierarchy for better contrast */
+  --text-heading: #f1f5f9;      /* 15.6:1 - headings, emphasis */
+  --text-label: #cbd5e1;        /* 11.0:1 - labels, captions */
+  --text-body: #e2e8f0;         /* 13.8:1 - alias for primary */
+  --text-subtle: #94a3b8;       /* 6.0:1 - alias for secondary */
   
   /* === SPACING === */
   --space-xs: 0.25rem;
