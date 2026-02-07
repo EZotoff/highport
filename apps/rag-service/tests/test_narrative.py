@@ -1,7 +1,6 @@
 """Tests for the narrative generation API endpoints."""
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock
 
 from schemas.narrative import (
     EventDescriptionResponse,
@@ -98,17 +97,6 @@ class MockNarrativeGenerator:
 @pytest.fixture
 def mock_generator():
     return MockNarrativeGenerator()
-
-
-@pytest.fixture
-def narrative_client(mock_generator):
-    """Client with mocked narrative generator."""
-    import pytest_asyncio
-    from httpx import AsyncClient, ASGITransport
-    from main import app
-
-    set_dependencies(generator=mock_generator)
-    return mock_generator
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,10 @@
 """OpenAI embeddings client for vector generation."""
 
 import os
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from openai import AsyncOpenAI
 
 
 class EmbeddingsClient:
@@ -25,7 +28,7 @@ class EmbeddingsClient:
         """
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self.model = model
-        self._client = None
+        self._client: "AsyncOpenAI | None" = None
 
     def _ensure_client(self):
         """Lazily initialize the OpenAI client."""
@@ -48,6 +51,8 @@ class EmbeddingsClient:
             A list of floats representing the embedding vector.
         """
         self._ensure_client()
+        if self._client is None:
+            raise RuntimeError("OpenAI client not initialized")
         response = await self._client.embeddings.create(input=text, model=self.model)
         return response.data[0].embedding
 
@@ -61,5 +66,7 @@ class EmbeddingsClient:
             A list of embedding vectors.
         """
         self._ensure_client()
+        if self._client is None:
+            raise RuntimeError("OpenAI client not initialized")
         response = await self._client.embeddings.create(input=texts, model=self.model)
         return [item.embedding for item in response.data]

@@ -19,6 +19,7 @@ export interface GraphNode {
         foundry_uuid?: string;
         tags?: string[];
         image_url?: string;
+        portrait_id?: string;
         [key: string]: unknown;
     };
     locked: boolean;

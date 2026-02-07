@@ -1,6 +1,6 @@
 import pytest
 
-from mocks.mock_embeddings import MockEmbeddings, EMBEDDING_DIM
+from mocks.mock_embeddings import EMBEDDING_DIM
 
 
 @pytest.mark.asyncio

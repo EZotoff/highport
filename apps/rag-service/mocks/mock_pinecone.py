@@ -62,7 +62,7 @@ class MockPineconeIndex:
             }
         )
         # Return canned results based on stored vectors
-        results = []
+        results: list[MockQueryResult] = []
         for key, stored in self.vectors.items():
             if namespace and stored["namespace"] != namespace:
                 continue

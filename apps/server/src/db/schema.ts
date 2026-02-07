@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, unique, customType, text, integer, check, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, timestamp, unique, customType, text, integer, check, jsonb, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Custom type for bytea since drizzle-orm/pg-core doesn't export it directly
@@ -90,3 +90,31 @@ export const conflictQueue = pgTable('conflict_queue', {
   resolution: varchar('resolution', { length: 20 }),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const portraits = pgTable('portraits', {
+  id: varchar('id', { length: 64 }).primaryKey(),
+  campaignId: varchar('campaign_id', { length: 64 }).notNull().references(() => campaigns.id),
+  subjectNodeId: varchar('subject_node_id', { length: 64 }),
+  anchorPortraitId: varchar('anchor_portrait_id', { length: 64 }),
+  sourcePortraitId: varchar('source_portrait_id', { length: 64 }),
+  familyGroupId: varchar('family_group_id', { length: 64 }),
+  protected: boolean('protected').notNull().default(false),
+  sourcePolicy: varchar('source_policy', { length: 20 }).notNull().default('campaign'),
+  tags: jsonb('tags').notNull().default(sql`'{}'::jsonb`),
+  prompt: text('prompt'),
+  promptFingerprint: text('prompt_fingerprint'),
+  modelId: text('model_id'),
+  storageKey: text('storage_key').notNull(),
+  mimeType: varchar('mime_type', { length: 100 }).notNull(),
+  sizeBytes: integer('size_bytes'),
+  width: integer('width'),
+  height: integer('height'),
+  createdByUserId: varchar('created_by_user_id', { length: 64 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  sourcePolicyCheck: check(
+    'portrait_source_policy_check',
+    sql`${table.sourcePolicy} IN ('subject_only', 'family_only', 'campaign', 'public')`,
+  ),
+}));

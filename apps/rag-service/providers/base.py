@@ -46,7 +46,9 @@ class LLMProvider(ABC):
         Yields:
             Chunks of generated text.
         """
-        pass
+        if False:
+            yield ""
+        raise NotImplementedError
 
     @abstractmethod
     async def stream_with_context(
@@ -61,4 +63,6 @@ class LLMProvider(ABC):
         Yields:
             Chunks of generated text.
         """
-        pass
+        if False:
+            yield ""
+        raise NotImplementedError

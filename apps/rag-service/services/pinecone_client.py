@@ -1,7 +1,7 @@
 """Pinecone vector database client wrapper."""
 
 import os
-from typing import Optional
+from typing import Optional, Any
 from dataclasses import dataclass
 
 
@@ -39,7 +39,7 @@ class PineconeService:
         self.api_key = api_key or os.environ.get("PINECONE_API_KEY")
         self.index_name = index_name or os.environ.get("PINECONE_INDEX_NAME")
         self.environment = environment or os.environ.get("PINECONE_ENVIRONMENT")
-        self._index = None
+        self._index: Any | None = None
 
     def _ensure_index(self):
         """Lazily initialize the Pinecone index."""
@@ -52,7 +52,7 @@ class PineconeService:
                 raise ValueError(
                     "PINECONE_INDEX_NAME not set. Provide index_name or set environment variable."
                 )
-            from pinecone import Pinecone
+            from pinecone import Pinecone  # type: ignore[import-untyped]
 
             pc = Pinecone(api_key=self.api_key)
             self._index = pc.Index(self.index_name)
@@ -73,7 +73,10 @@ class PineconeService:
             namespace: Optional namespace for organization.
         """
         self._ensure_index()
-        self._index.upsert(
+        index = self._index
+        if index is None:
+            raise RuntimeError("Pinecone index not initialized")
+        index.upsert(
             vectors=[{"id": id, "values": vector, "metadata": metadata or {}}],
             namespace=namespace,
         )
@@ -86,7 +89,10 @@ class PineconeService:
             namespace: Optional namespace for organization.
         """
         self._ensure_index()
-        self._index.upsert(vectors=vectors, namespace=namespace)
+        index = self._index
+        if index is None:
+            raise RuntimeError("Pinecone index not initialized")
+        index.upsert(vectors=vectors, namespace=namespace)
 
     async def query(
         self,
@@ -109,7 +115,10 @@ class PineconeService:
             List of QueryResult objects with id, score, and metadata.
         """
         self._ensure_index()
-        results = self._index.query(
+        index = self._index
+        if index is None:
+            raise RuntimeError("Pinecone index not initialized")
+        results = index.query(
             vector=vector,
             top_k=top_k,
             namespace=namespace,
@@ -131,7 +140,10 @@ class PineconeService:
             namespace: Optional namespace.
         """
         self._ensure_index()
-        self._index.delete(ids=ids, namespace=namespace)
+        index = self._index
+        if index is None:
+            raise RuntimeError("Pinecone index not initialized")
+        index.delete(ids=ids, namespace=namespace)
 
     async def query_by_filter(
         self, filter_dict: dict, top_k: int = 10000, namespace: str = ""
@@ -147,9 +159,12 @@ class PineconeService:
             List of matching vectors with id and metadata.
         """
         self._ensure_index()
+        index = self._index
+        if index is None:
+            raise RuntimeError("Pinecone index not initialized")
         # Use a zero vector since we're filtering, not doing similarity search
         zero_vector = [0.0] * 1536  # Standard OpenAI embedding dimension
-        results = self._index.query(
+        results = index.query(
             vector=zero_vector,
             top_k=top_k,
             namespace=namespace,
@@ -172,4 +187,7 @@ class PineconeService:
             namespace: Optional namespace.
         """
         self._ensure_index()
-        self._index.update(id=id, set_metadata=metadata, namespace=namespace)
+        index = self._index
+        if index is None:
+            raise RuntimeError("Pinecone index not initialized")
+        index.update(id=id, set_metadata=metadata, namespace=namespace)
