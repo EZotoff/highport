@@ -1,6 +1,7 @@
 """Narrative generation service for AI-powered character generation assistance."""
 
 import json
+import logging
 import re
 from typing import Optional
 
@@ -16,6 +17,8 @@ from schemas.narrative import (
     SuggestConnectionsResponse,
     ConnectionSuggestion,
 )
+
+logger = logging.getLogger(__name__)
 
 
 VERBOSITY_INSTRUCTIONS = {
@@ -251,5 +254,6 @@ Respond with a JSON object:
                 )
             else:
                 return SuggestConnectionsResponse(suggestions=[])
-        except (json.JSONDecodeError, Exception):
+        except (json.JSONDecodeError, Exception) as e:
+            logger.warning("Failed to generate connection suggestions: %s", e)
             return SuggestConnectionsResponse(suggestions=[])

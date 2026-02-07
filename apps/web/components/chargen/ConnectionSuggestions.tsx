@@ -39,6 +39,9 @@ export default function ConnectionSuggestions({
     const fetchSuggestions = async () => {
       setIsLoading(true);
       try {
+        // Use the most recent career as the context for spawned entities
+        const currentCareer = careerHistory[careerHistory.length - 1] || null;
+        
         const response = await fetch(`${RAG_SERVICE_URL}/narrative/suggest-connections`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -47,7 +50,7 @@ export default function ConnectionSuggestions({
               id: e.graphNodeId,
               name: e.name,
               type: e.type,
-              career: null,
+              career: currentCareer,
             })),
             character: {
               name: characterName,

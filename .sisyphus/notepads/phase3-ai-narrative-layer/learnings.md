@@ -93,3 +93,41 @@ WebSocket connection fails on port 3011
 ## Related Files for Reference
 - Plan: `.sisyphus/plans/phase3-ai-narrative-layer.md`
 - Evidence: `.sisyphus/evidence/phase3-ai-narrative/` (screenshot saved)
+
+## Gap 3 Fix: Entity Career Context
+
+**Problem**: ConnectionSuggestions hardcoded `career: null` for all entities (line 50).
+
+**Solution**: Extract current career from `careerHistory` prop:
+- `const currentCareer = careerHistory[careerHistory.length - 1] || null`
+- Entities spawned during a term inherit that term's career context
+- Parent component (TermResolutionStep) already passes complete career history
+
+**Pattern**: When component doesn't receive explicit current context but has history array, use the last element as "current".
+
+**File Modified**: `apps/web/components/chargen/ConnectionSuggestions.tsx`
+
+## Gap 5 Fix: Exception Logging in suggest_connections
+
+**File**: `apps/rag-service/services/narrative_generator.py`
+
+**Problem**: The `suggest_connections` method had a broad exception handler that silently swallowed all errors, returning empty suggestions without any observability.
+
+**Solution**: 
+1. Added `import logging` at module level (line 4)
+2. Created module-level logger: `logger = logging.getLogger(__name__)` (line 21)
+3. Modified exception handler to capture and log errors:
+   ```python
+   except (json.JSONDecodeError, Exception) as e:
+       logger.warning("Failed to generate connection suggestions: %s", e)
+       return SuggestConnectionsResponse(suggestions=[])
+   ```
+
+**Why This Works**:
+- Connection suggestions are optional/best-effort, so returning empty is correct behavior
+- The other two methods (`generate_event_description`, `generate_npc_details`) properly raise RuntimeError, which the router catches
+- `suggest_connections` is different because failures should not block the user, but we still need observability
+
+**Testing**: All 8 unit tests pass unchanged - the fix only adds logging, no behavior changes.
+
+**Pattern**: For optional/best-effort features, graceful degradation + logging is preferred over raising exceptions.

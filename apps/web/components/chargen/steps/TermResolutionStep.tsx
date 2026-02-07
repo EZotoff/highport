@@ -467,6 +467,9 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                     eventRoll={eventRoll.total}
                     onComplete={handleSpawnComplete}
                     onSkip={handleSpawnSkip}
+                    verbosity={verbosity}
+                    career={career.id}
+                    characterName={character.name || 'Character'}
                   />
                 ) : phase === 'event_choice' && (
                     <div className="mt-4 pt-4 border-t border-zinc-800">

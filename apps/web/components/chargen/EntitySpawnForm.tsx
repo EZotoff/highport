@@ -22,6 +22,9 @@ interface EntitySpawnFormProps {
   eventRoll: number;
   onComplete: (entity: SpawnedEntityRef) => void;
   onSkip: () => void;
+  verbosity: VerbosityLevel;
+  career: string;
+  characterName: string;
 }
 
 const SPAWN_TYPE_LABELS: Record<string, string> = {
@@ -64,6 +67,9 @@ export default function EntitySpawnForm({
   eventRoll,
   onComplete,
   onSkip,
+  verbosity,
+  career,
+  characterName,
 }: EntitySpawnFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -72,7 +78,6 @@ export default function EntitySpawnForm({
   const [portrait, setPortrait] = useState<PortraitRecord | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [remixerOpen, setRemixerOpen] = useState(false);
-  const [verbosity] = useState<VerbosityLevel>('structured');
   const { isAvailable: narrativeAvailable } = useNarrativeAvailable();
   const { generate: generateNPC, isLoading: generating, error: generateError } = useNPCNarrative();
   const { generate: generatePortrait, isLoading: generatingPortrait, error: portraitError } = usePortraitGenerator();
@@ -96,8 +101,8 @@ export default function EntitySpawnForm({
         npcType: spawn.relationship || 'contact',
         context: {
           eventText: prompt,
-          career: 'unknown',
-          characterName: 'Character',
+          career: career,
+          characterName: characterName,
         },
         existingFields: { 
           name: name || undefined,
@@ -131,8 +136,8 @@ export default function EntitySpawnForm({
         npcType: spawn.relationship || 'contact',
         context: {
           eventText: prompt,
-          career: 'unknown', // We don't have career context here
-          characterName: 'Character',
+          career: career,
+          characterName: characterName,
         },
         existingFields: name ? { name } : undefined,
         verbosity,
