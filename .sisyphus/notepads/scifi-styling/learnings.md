@@ -1,0 +1,4 @@
+- Successfully replaced standard input and textarea with SciFi-styled versions in EntitySpawnForm.tsx.
+- SciFiInput from @/components/ui/scifi was used for the name input.
+- Custom SciFi CSS classes were applied to the description textarea.
+- Verified changes with typecheck and build.

@@ -1,8 +1,11 @@
 {
-  "active_plan": null,
-  "started_at": null,
-  "session_ids": [],
-  "plan_name": null,
+  "active_plan": "/home/ezotoff/AI_projects/traveller/.sisyphus/plans/portrait-system-integration.md",
+  "started_at": "2026-02-03T11:28:37.968Z",
+  "session_ids": [
+    "ses_3e215abb6ffeUT6KZOIHzi3oSc",
+    "ses_3dcff05f4ffeP6EW2wUqjJ1UxV"
+  ],
+  "plan_name": "portrait-system-integration",
   "completed_plans": [
     {
       "plan": "/home/ezotoff/AI_projects/traveller/.sisyphus/plans/chargen-ui-polish.md",

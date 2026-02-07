@@ -1,0 +1,3 @@
+- Replaced emojis with Lucide icons in ParticipantCard.tsx for better visual consistency.
+- Replaced emojis with Lucide icons in ParticipantPanel.tsx to improve visual consistency.
+- Used Crown (amber-400) for GM and Dice5 (zinc-500) for players.

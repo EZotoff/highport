@@ -1,0 +1,2 @@
+- Used the provided example for SciFiButton replacement.
+- ConnectionRequestModal buttons updated to SciFiButton (Cancel -> slate/ghost, Submit -> cyan)

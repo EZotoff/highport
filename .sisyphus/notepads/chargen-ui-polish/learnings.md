@@ -57,3 +57,12 @@
 6. ✅ Task 6: Chromatic aberration on headings
 7. ✅ Task 7: GraphCanvas background (starfield, vignette)
 8. ✅ Task 8: LifepathTimeline layout (age ruler, empty state)
+
+- Successfully replaced standard buttons with `SciFiButton` in `GMControlPanel.tsx`.
+- `SciFiButton` correctly wraps Shadcn UI `Button` and supports `theme` and `scifiVariant` props.
+- Kept original icons (`Check`, `X`) inside `SciFiButton` to preserve visual hierarchy despite requested snippet omitting them.
+- Verified that `@/components/ui/scifi` correctly resolves for imports in `apps/web`.
+
+## Session 2026-02-02 - Chargen Typography Classes
+- Replaced Tailwind color utilities in chargen UI with typography classes (`text-heading`, `text-default`, `text-label`, `text-subtle`) to avoid missing palette generation in Tailwind v4.
+- For text inputs/textareas, prefer `text-default` on the control and drop non-functional `placeholder:text-*` color utilities when no custom placeholder class exists.

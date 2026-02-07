@@ -1,0 +1,3 @@
+- Applied button hierarchy refinements to 12 files in apps/web/components/chargen/.
+- Verified with pnpm typecheck and pnpm build.
+- Followed the SciFiButton hierarchy standards: Primary (theme="cyan" glow), Secondary (scifiVariant="outline" theme="violet"), Tertiary (scifiVariant="ghost" theme="slate"), and Destructive (scifiVariant="destructive").

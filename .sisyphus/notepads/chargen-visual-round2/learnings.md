@@ -1,0 +1,3 @@
+- Replaced 4 primary action buttons in TermResolutionStep.tsx with SciFiButton (theme='cyan', glow).
+- Verified with both typecheck and full build.
+- Successfully replaced standard buttons with SciFiButton in ConnectionRequestModal.tsx
