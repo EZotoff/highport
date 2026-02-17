@@ -94,7 +94,10 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
     setIsCreating(true);
     
     try {
+      const doc = getYDoc();
       const finalData = createCharacterNode(character);
+      updateCharacterFields(doc, character.id, { status: 'finalized' });
+      localStorage.removeItem('planeshift_active_character');
       if (portrait) {
         await attachPortraitRecord(finalData.graphNodeId, portrait.id);
         attachPortraitToNode(finalData.graphNodeId, portrait);

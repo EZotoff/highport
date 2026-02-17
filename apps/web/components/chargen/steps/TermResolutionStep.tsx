@@ -298,6 +298,19 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
         verbosity,
       });
       setGeneratedDescription(result.description);
+      
+      if (result.suggestedEntities && result.suggestedEntities.length > 0) {
+        const validRelationships = ['ally', 'contact', 'rival', 'enemy'];
+        const mapped: EventSpawn[] = result.suggestedEntities.map(e => ({
+          type: e.type,
+          relationship: e.relationship && validRelationships.includes(e.relationship) 
+            ? (e.relationship as 'ally' | 'contact' | 'rival' | 'enemy')
+            : undefined,
+          required: false,
+        }));
+        setPendingSpawns(prev => [...prev, ...mapped]);
+        setCurrentSpawnIndex(0);
+      }
     } catch (e) {
       console.error(e);
     }

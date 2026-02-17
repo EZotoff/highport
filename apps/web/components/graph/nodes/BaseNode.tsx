@@ -24,14 +24,15 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
     return '0 10px 30px rgba(0,0,0,0.4)';
   };
 
-  const getBorder = () => {
+  const getBorderStyle = () => {
+    const baseStyle = isHidden ? 'dashed' : 'solid';
     if (selected) {
-      return `2px solid ${config.themeHex}`;
+      return { borderWidth: '2px', borderColor: config.themeHex, borderStyle: baseStyle };
     }
     if (isHovered) {
-      return `1px solid ${config.themeHex}60`;
+      return { borderWidth: '1px', borderColor: `${config.themeHex}60`, borderStyle: baseStyle };
     }
-    return '1px solid var(--asteroid-dust-50)';
+    return { borderWidth: '1px', borderColor: 'var(--asteroid-dust-50)', borderStyle: baseStyle };
   };
 
   const getHandleGlow = () => {
@@ -51,10 +52,9 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
         background: 'var(--nebula-mist-90)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        border: getBorder(),
+        ...getBorderStyle(),
         boxShadow: getBoxShadow(),
         opacity: isHidden ? 0.6 : 1,
-        borderStyle: isHidden ? 'dashed' : 'solid',
         cursor: isLocked ? 'not-allowed' : 'grab',
         transform: isHovered && !selected ? 'translateY(-3px)' : 'translateY(0)',
         transition: 'all 0.3s ease-out',

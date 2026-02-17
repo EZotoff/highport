@@ -16,7 +16,7 @@ import { EntityPoolPanel } from './EntityPoolPanel';
 import { useCharacter } from '../../lib/chargen/hooks';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { getActiveCharacter } from '../../lib/identity';
-import { getSessionId, initAndWaitForPersistence } from '../../lib/sync';
+import { getSessionId, initAndWaitForPersistence, initProvider } from '../../lib/sync';
 import { getYDoc } from '../../lib/ydoc';
 import { GlassPanel, SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
@@ -38,15 +38,16 @@ export default function ChargenWizard() {
 
   useEffect(() => {
     const doc = getYDoc();
-    const sessionId = getSessionId('chargen');
+    const sessionId = getSessionId('graph');
     let isMounted = true;
     const fallbackTimer = setTimeout(() => {
       if (isMounted) {
         setIsSynced(true);
       }
     }, 2000);
-    initAndWaitForPersistence(doc, `planeshift-chargen-${sessionId}`).then(() => {
+    initAndWaitForPersistence(doc, `planeshift-graph-${sessionId}`).then(() => {
       if (isMounted) {
+        initProvider(doc, sessionId);
         clearTimeout(fallbackTimer);
         setIsSynced(true);
       }

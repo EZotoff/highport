@@ -20,6 +20,7 @@ import {
   useReactFlow,
   OnSelectionChangeParams,
   MarkerType,
+  Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import * as Y from 'yjs';
@@ -31,12 +32,14 @@ import {
   yMapToNode, 
   yMapToEdge,
   updateNodeLock,
-  updateNodeVisibility 
+  updateNodeVisibility,
+  addEdge
 } from '../../lib/yjs-helpers';
 import { getSessionId, initPersistence, initProvider, getProvider } from '../../lib/sync';
 import { initAwareness, updateCursor, updateSelection, PresenceState } from '../../lib/awareness';
 import { CursorOverlay, UserList, SelectionHalos } from './Presence';
 import { generateNodeId, GraphNode, NodeType, MockUser } from '@planeshift/shared';
+import type { GraphEdge } from '@planeshift/shared/types/graph';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
 import { ContextMenu } from './ContextMenu';
@@ -228,6 +231,23 @@ function GraphCanvasContent() {
     [setEdges]
   );
 
+  const onConnect = useCallback((connection: Connection) => {
+    if (!connection.source || !connection.target) return;
+    const doc = getYDoc();
+    const edge: GraphEdge = {
+      id: generateNodeId(),
+      source_id: connection.source,
+      target_id: connection.target,
+      relation_label: '',
+      type: 'undirected',
+      weight: 1,
+      style: 'solid',
+      color: THEME_HEX.cyan,
+      hidden: false,
+    };
+    addEdge(doc, edge);
+  }, []);
+
   const onMouseMove = useCallback((event: React.MouseEvent) => {
     const provider = getProvider();
     if (provider && provider.awareness) {
@@ -330,6 +350,7 @@ function GraphCanvasContent() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
         onSelectionChange={onSelectionChange}
         onNodeContextMenu={onNodeContextMenu}
         nodeTypes={nodeTypes}
