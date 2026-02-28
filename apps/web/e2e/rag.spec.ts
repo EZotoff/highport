@@ -7,7 +7,7 @@ test.describe('RAG Chat Interface', () => {
   });
 
   test('renders chat interface with input and placeholder', async ({ page }) => {
-    await expect(page.locator('h3:has-text("PlaneShift RAG")')).toBeVisible();
+    await expect(page.locator('h3:has-text("Highport RAG")')).toBeVisible();
     await expect(page.locator('input[placeholder="Ask a question..."]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
     await expect(page.locator('text=Ask about the universe...')).toBeVisible();

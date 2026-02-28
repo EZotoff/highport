@@ -6,7 +6,7 @@ describe('Server Example Test', () => {
   });
 
   it('should verify the test setup works', () => {
-    const serviceName = 'PlaneShift Server';
+    const serviceName = 'Highport Server';
     expect(serviceName).toContain('Server');
   });
 });

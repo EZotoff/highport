@@ -4,7 +4,7 @@ import {
   type DiceResult,
   type CareerAssignment,
   type CareerDefinition,
-} from '@planeshift/mgt2e';
+} from '@highport/mgt2e';
 import type { ChargenCharacter } from './types';
 
 export function rollSurvival(

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as Y from 'yjs';
-import type { GraphNode, GraphEdge } from '@planeshift/shared/types/graph';
+import type { GraphNode, GraphEdge } from '@highport/shared/types/graph';
 import {
   createYDoc,
   getNodesMap,

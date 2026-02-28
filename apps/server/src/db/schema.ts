@@ -71,7 +71,7 @@ export const syncState = pgTable('sync_state', {
   fieldPath: varchar('field_path', { length: 255 }).notNull(),
   currentValue: jsonb('current_value'),
   lastFoundrySync: timestamp('last_foundry_sync'),
-  lastPlaneshiftSync: timestamp('last_planeshift_sync'),
+  lastHighportSync: timestamp('last_highport_sync'),
 }, (table) => ({
   uniqueNodeField: unique().on(table.nodeId, table.fieldPath),
 }));
@@ -81,9 +81,9 @@ export const conflictQueue = pgTable('conflict_queue', {
   nodeId: varchar('node_id', { length: 64 }).notNull(),
   fieldPath: varchar('field_path', { length: 255 }).notNull(),
   foundryValue: jsonb('foundry_value'),
-  planeshiftValue: jsonb('planeshift_value'),
+  highportValue: jsonb('highport_value'),
   foundryTimestamp: timestamp('foundry_timestamp'),
-  planeshiftTimestamp: timestamp('planeshift_timestamp'),
+  highportTimestamp: timestamp('highport_timestamp'),
   status: varchar('status', { length: 20 }).default('pending'),
   resolvedBy: varchar('resolved_by', { length: 64 }),
   resolvedAt: timestamp('resolved_at'),

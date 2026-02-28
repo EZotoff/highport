@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Info, AlertTriangle } from 'lucide-react';
-import type { CareerEvent, CareerMishap } from '@planeshift/mgt2e';
+import type { CareerEvent, CareerMishap } from '@highport/mgt2e';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 
 interface TimelineEventProps {

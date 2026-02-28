@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { spawnEntity } from '../../lib/chargen/entity-spawner';
-import type { EventSpawn } from '@planeshift/mgt2e';
+import type { EventSpawn } from '@highport/mgt2e';
 import type { SpawnedEntityRef } from '../../lib/chargen/types';
 import { useNPCNarrative, useNarrativeAvailable } from '../../lib/chargen/useNarrative';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { SciFiInput, SciFiButton } from '@/components/ui/scifi';
 import { usePortraitGenerator, attachPortraitToNode, attachPortraitRecord } from '../../lib/portrait/usePortrait';
-import type { PortraitRecord, PortraitTags } from '@planeshift/shared/types/portrait';
+import type { PortraitRecord, PortraitTags } from '@highport/shared/types/portrait';
 import { useSession } from '../../lib/chargen/hooks';
 import { PortraitLibrary } from '@/components/portrait/PortraitLibrary';
 import { PortraitRemixer } from '@/components/portrait/PortraitRemixer';

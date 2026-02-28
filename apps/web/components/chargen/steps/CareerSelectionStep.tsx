@@ -10,8 +10,8 @@ import {
   getCareer, 
   roll2d6, 
   getCharacteristicModifier 
-} from '@planeshift/mgt2e';
-import type { CareerDefinition } from '@planeshift/mgt2e';
+} from '@highport/mgt2e';
+import type { CareerDefinition } from '@highport/mgt2e';
 import type { CareerTermResult } from '../../../lib/chargen/types';
 
 interface CareerSelectionStepProps {

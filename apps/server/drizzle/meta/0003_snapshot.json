@@ -119,8 +119,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "planeshift_value": {
-          "name": "planeshift_value",
+        "highport_value": {
+          "name": "highport_value",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
@@ -131,8 +131,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "planeshift_timestamp": {
-          "name": "planeshift_timestamp",
+        "highport_timestamp": {
+          "name": "highport_timestamp",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
@@ -408,8 +408,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "last_planeshift_sync": {
-          "name": "last_planeshift_sync",
+        "last_highport_sync": {
+          "name": "last_highport_sync",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false

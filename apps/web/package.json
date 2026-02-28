@@ -1,5 +1,5 @@
 {
-  "name": "@planeshift/web",
+  "name": "@highport/web",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@hocuspocus/provider": "^2.15.3",
-    "@planeshift/mgt2e": "workspace:^",
-    "@planeshift/shared": "workspace:*",
+    "@highport/mgt2e": "workspace:^",
+    "@highport/shared": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-select": "^2.2.6",

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { GraphNode } from '@planeshift/shared';
+import { GraphNode } from '@highport/shared';
 import { Edit, Trash2, Lock, Unlock, Eye, EyeOff } from 'lucide-react';
 
 interface ContextMenuProps {

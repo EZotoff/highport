@@ -1,6 +1,6 @@
-# PlaneShift Vercel Deployment Guide
+# Highport Vercel Deployment Guide
 
-This guide covers deploying the PlaneShift frontend (apps/web) to Vercel.
+This guide covers deploying the Highport frontend (apps/web) to Vercel.
 
 ## Prerequisites
 
@@ -37,14 +37,14 @@ Push to your main branch and Vercel will automatically deploy.
 
 The `vercel.json` in the project root configures:
 
-- **buildCommand**: Uses `pnpm turbo build --filter=@planeshift/web` to build only the web app while respecting dependencies on `@planeshift/shared`
+- **buildCommand**: Uses `pnpm turbo build --filter=@highport/web` to build only the web app while respecting dependencies on `@highport/shared`
 - **framework**: `nextjs` - Vercel will optimize for Next.js features
 - **outputDirectory**: `apps/web/.next` - Output location for Next.js build
 - **installCommand**: `pnpm install` - Uses pnpm (required for monorepo)
 
 ## Backend Deployment (Separate from Frontend)
 
-The PlaneShift frontend requires three backend services:
+The Highport frontend requires three backend services:
 
 ### Hocuspocus Server (WebSocket)
 - **Service**: Real-time document sync
@@ -83,7 +83,7 @@ VERCEL_BUILD_COMMAND_ENV_WHITELIST=NPM_RC_CONTENT
 
 Or manually select pnpm in project settings.
 
-### Build Fails: "@planeshift/shared not found"
+### Build Fails: "@highport/shared not found"
 
 Ensure `turbo.json` specifies `dependsOn: ["^build"]` for the web build task. This tells Turbo to build shared packages first.
 
@@ -178,4 +178,4 @@ See `.next/` configuration in `next.config.js` for advanced settings.
 For issues specific to:
 - **Vercel deployment**: Check [Vercel Docs](https://vercel.com/docs)
 - **Next.js**: See [Next.js Docs](https://nextjs.org/docs)
-- **PlaneShift integration**: See main [README.md](./README.md)
+- **Highport integration**: See main [README.md](./README.md)

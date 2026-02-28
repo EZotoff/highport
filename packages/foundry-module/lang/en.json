@@ -2,18 +2,18 @@
   "PLANE_SHIFT": {
     "Settings": {
       "ServerUrl": {
-        "Name": "PlaneShift Server URL",
-        "Hint": "The WebSocket URL of your PlaneShift server (e.g., ws://localhost:3012)"
+        "Name": "Highport Server URL",
+        "Hint": "The WebSocket URL of your Highport server (e.g., ws://localhost:3012)"
       },
       "ApiKey": {
         "Name": "API Key",
-        "Hint": "Your PlaneShift API key for authentication"
+        "Hint": "Your Highport API key for authentication"
       }
     },
     "Messages": {
-      "Initialized": "PlaneShift Bridge initialized",
-      "Connected": "Connected to PlaneShift server",
-      "Disconnected": "Disconnected from PlaneShift server",
+      "Initialized": "Highport Bridge initialized",
+      "Connected": "Connected to Highport server",
+      "Disconnected": "Disconnected from Highport server",
       "MaxReconnect": "Maximum reconnection attempts reached",
       "Reconnecting": "Attempting to reconnect..."
     }

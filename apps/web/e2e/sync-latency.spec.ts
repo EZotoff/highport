@@ -11,7 +11,7 @@ test.describe('Sync Latency', () => {
 
     await page1.goto('/graph');
     await page1.waitForSelector('.react-flow', { timeout: 30000 });
-    await page1.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await page1.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page1.reload();
     await page1.waitForSelector('.react-flow', { timeout: 30000 });
     
@@ -53,7 +53,7 @@ test.describe('Sync Latency', () => {
 
     await page1.goto('/graph');
     await page1.waitForSelector('.react-flow', { timeout: 30000 });
-    await page1.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await page1.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page1.reload();
     await page1.waitForSelector('.react-flow', { timeout: 30000 });
     
@@ -115,7 +115,7 @@ test.describe('Sync Latency', () => {
 
     await page1.goto('/reputation');
     await page1.waitForSelector('table', { timeout: 30000 });
-    await page1.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await page1.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page1.reload();
     await page1.waitForSelector('table', { timeout: 30000 });
     

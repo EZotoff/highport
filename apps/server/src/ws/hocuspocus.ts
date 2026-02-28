@@ -2,7 +2,7 @@ import { Hocuspocus } from '@hocuspocus/server';
 import { Database } from '@hocuspocus/extension-database';
 import * as Y from 'yjs';
 import { eq } from 'drizzle-orm';
-import { generateId } from '@planeshift/shared';
+import { generateId } from '@highport/shared';
 import { db } from '../db/client.js';
 import { campaigns, documents, documentUpdates } from '../db/schema.js';
 

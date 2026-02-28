@@ -1,4 +1,4 @@
-import { MockUser, generateUserId } from '@planeshift/shared';
+import { MockUser, generateUserId } from '@highport/shared';
 import { getRandomColor } from './awareness';
 
 export interface ActiveCharacter {
@@ -8,7 +8,7 @@ export interface ActiveCharacter {
 
 export function getActiveCharacter(): ActiveCharacter | null {
   if (typeof window !== 'undefined') {
-    const storedJson = localStorage.getItem('planeshift_active_character');
+    const storedJson = localStorage.getItem('highport_active_character');
     return storedJson ? JSON.parse(storedJson) : null;
   }
   return null;
@@ -24,7 +24,7 @@ export function getOrCreateUser(): MockUser {
   let user: MockUser | null = null;
   
   if (typeof window !== 'undefined') {
-    const storedJson = localStorage.getItem('planeshift_user');
+    const storedJson = localStorage.getItem('highport_user');
     user = storedJson ? JSON.parse(storedJson) : null;
   }
 
@@ -32,7 +32,7 @@ export function getOrCreateUser(): MockUser {
     if (gmPromotion && !user.isGM) {
       user.isGM = true;
       if (typeof window !== 'undefined') {
-        localStorage.setItem('planeshift_user', JSON.stringify(user));
+        localStorage.setItem('highport_user', JSON.stringify(user));
       }
     }
   } else {
@@ -43,7 +43,7 @@ export function getOrCreateUser(): MockUser {
       isGM: gmPromotion,
     };
     if (typeof window !== 'undefined') {
-      localStorage.setItem('planeshift_user', JSON.stringify(user));
+      localStorage.setItem('highport_user', JSON.stringify(user));
     }
   }
 

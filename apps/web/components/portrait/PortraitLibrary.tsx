@@ -16,7 +16,7 @@ import type {
   PortraitSearchResult,
   PortraitTags,
   PortraitEntityType,
-} from '@planeshift/shared/types/portrait';
+} from '@highport/shared/types/portrait';
 import { Search, Loader2, Image as ImageIcon } from 'lucide-react';
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3012';

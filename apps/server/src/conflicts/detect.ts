@@ -1,6 +1,6 @@
 import { db } from '../db/client.js';
 import { syncState, conflictQueue } from '../db/schema.js';
-import { generateId } from '@planeshift/shared/utils/id';
+import { generateId } from '@highport/shared/utils/id';
 import { eq, and } from 'drizzle-orm';
 import type { IncomingChange, SyncState } from './types.js';
 
@@ -15,13 +15,13 @@ export function detectConflict(
 
   const oppositeLastSync =
     incoming.source === 'foundry'
-      ? field.lastPlaneshiftSync
+      ? field.lastHighportSync
       : field.lastFoundrySync;
 
   const lastSync =
     incoming.source === 'foundry'
       ? field.lastFoundrySync
-      : field.lastPlaneshiftSync;
+      : field.lastHighportSync;
 
   return (
     oppositeLastSync > lastSync &&
@@ -37,7 +37,7 @@ export function buildSyncStateFromDb(
     fieldPath: string;
     currentValue: unknown;
     lastFoundrySync: Date | null;
-    lastPlaneshiftSync: Date | null;
+    lastHighportSync: Date | null;
   }>
 ): SyncState | null {
   if (rows.length === 0) return null;
@@ -49,7 +49,7 @@ export function buildSyncStateFromDb(
     fields[row.fieldPath] = {
       value: row.currentValue,
       lastFoundrySync: row.lastFoundrySync ?? new Date(0),
-      lastPlaneshiftSync: row.lastPlaneshiftSync ?? new Date(0),
+      lastHighportSync: row.lastHighportSync ?? new Date(0),
     };
   }
 
@@ -73,10 +73,10 @@ export async function detectConflictFromDb(
   
   const lastSync = incoming.source === 'foundry' 
     ? state[0].lastFoundrySync 
-    : state[0].lastPlaneshiftSync;
+    : state[0].lastHighportSync;
     
   const oppositeLastSync = incoming.source === 'foundry'
-    ? state[0].lastPlaneshiftSync
+    ? state[0].lastHighportSync
     : state[0].lastFoundrySync;
   
   if (!lastSync || !oppositeLastSync) return false;
@@ -91,9 +91,9 @@ export async function createConflict(
   nodeId: string,
   fieldPath: string,
   foundryValue: unknown,
-  planeshiftValue: unknown,
+  highportValue: unknown,
   foundryTimestamp: Date,
-  planeshiftTimestamp: Date
+  highportTimestamp: Date
 ): Promise<string> {
   const id = generateId('conflict');
   await db.insert(conflictQueue).values({
@@ -101,9 +101,9 @@ export async function createConflict(
     nodeId,
     fieldPath,
     foundryValue,
-    planeshiftValue,
+    highportValue,
     foundryTimestamp,
-    planeshiftTimestamp,
+    highportTimestamp,
     status: 'pending',
   });
   return id;
@@ -114,7 +114,7 @@ export async function updateSyncState(
   foundryUuid: string,
   fieldPath: string,
   value: unknown,
-  source: 'foundry' | 'planeshift'
+  source: 'foundry' | 'highport'
 ): Promise<void> {
   const id = generateId('sync');
   const now = new Date();
@@ -127,13 +127,13 @@ export async function updateSyncState(
       fieldPath,
       currentValue: value,
       lastFoundrySync: source === 'foundry' ? now : null,
-      lastPlaneshiftSync: source === 'planeshift' ? now : null,
+      lastHighportSync: source === 'highport' ? now : null,
     })
     .onConflictDoUpdate({
       target: [syncState.nodeId, syncState.fieldPath],
       set: {
         currentValue: value,
-        ...(source === 'foundry' ? { lastFoundrySync: now } : { lastPlaneshiftSync: now }),
+        ...(source === 'foundry' ? { lastFoundrySync: now } : { lastHighportSync: now }),
       },
     });
 }

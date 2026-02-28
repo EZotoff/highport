@@ -7,7 +7,7 @@
 ## STRUCTURE
 
 ```
-planeshift/
+highport/
 ├── apps/
 │   ├── web/            # Next.js 14 frontend (see apps/web/AGENTS.md)
 │   ├── server/         # Fastify + Hocuspocus backend (see apps/server/AGENTS.md)
@@ -45,7 +45,7 @@ planeshift/
 
 ## CONVENTIONS
 
-- **Package imports**: `@planeshift/shared/types`, `@planeshift/shared/utils/id`
+- **Package imports**: `@highport/shared/types`, `@highport/shared/utils/id`
 - **Yjs patterns**: Nested Y.Map for entities, transact for multi-op changes. Use `doc.getMap('name')` for attached maps.
 - **Testing**: Vitest, tests in `__tests__/` directories.
 - **Database**: Drizzle ORM, migrations in `drizzle/`.
@@ -471,7 +471,7 @@ fi
 
 ## MULTI-USER SYNC TESTING PROTOCOL
 
-PlaneShift is a **real-time collaborative** application. Multi-user sync verification is critical.
+Highport is a **real-time collaborative** application. Multi-user sync verification is critical.
 
 ### Two-Context Testing Pattern
 
@@ -484,7 +484,7 @@ page_a = context_a.new_page()
 page_b = context_b.new_page()
 
 # 2. Clear IndexedDB to ensure clean state
-await page_a.evaluate("indexedDB.deleteDatabase('planeshift-graph')")
+await page_a.evaluate("indexedDB.deleteDatabase('highport-graph')")
 
 # 3. Navigate both to same view
 await page_a.goto("/graph")
@@ -635,7 +635,7 @@ Subagents frequently claim "done" when:
 
 ## Quick Start
 
-To run a full holistic verification of PlaneShift:
+To run a full holistic verification of Highport:
 
 ```
 /verify-app
@@ -653,7 +653,7 @@ This triggers Atlas-orchestrated verification with:
 | File | Purpose |
 |------|---------|
 | `.sisyphus/verification/TEMPLATE.md` | Template for verification plans |
-| `.sisyphus/verification/planeshift-holistic.md` | PlaneShift-specific scenarios |
+| `.sisyphus/verification/highport-holistic.md` | Highport-specific scenarios |
 | `.opencode/skills/verify-app.md` | Slash command skill |
 | `.sisyphus/evidence/{plan-name}/` | Evidence output directory |
 
@@ -784,7 +784,7 @@ User: /verify-app
 ## Evidence Directory Structure
 
 ```
-.sisyphus/evidence/planeshift-holistic/
+.sisyphus/evidence/highport-holistic/
 ├── prerequisites/
 │   ├── typecheck-output.txt
 │   ├── test-output.txt
@@ -828,12 +828,12 @@ User: /verify-app
 If you prefer to run verification manually instead of `/verify-app`:
 
 ```markdown
-Run holistic verification of PlaneShift.
+Run holistic verification of Highport.
 
 1. Check services: localhost:3010, 3011, 3012
 2. Run: pnpm typecheck && pnpm test && pnpm e2e
 3. Load skill: /playwright
-4. Execute scenarios from .sisyphus/verification/planeshift-holistic.md
+4. Execute scenarios from .sisyphus/verification/highport-holistic.md
 5. Perform 15 min exploratory testing
 6. Generate REPORT.md in .sisyphus/evidence/
 ```

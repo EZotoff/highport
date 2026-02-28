@@ -31,7 +31,7 @@ function isTextField(fieldPath: string): boolean {
 
 export function resolveConflict(ctx: ConflictContext): Resolution {
   if (ctx.isGmEdit) {
-    return ctx.source === 'foundry' ? 'keep_foundry' : 'keep_planeshift';
+    return ctx.source === 'foundry' ? 'keep_foundry' : 'keep_highport';
   }
 
   if (isStatField(ctx.fieldPath) && ctx.source === 'foundry') {
@@ -48,7 +48,7 @@ export function resolveConflict(ctx: ConflictContext): Resolution {
 export function applyResolution(
   resolution: Resolution,
   ctx: ConflictContext
-): { value: unknown; source: 'foundry' | 'planeshift' } {
+): { value: unknown; source: 'foundry' | 'highport' } {
   switch (resolution) {
     case 'keep_foundry':
       return {
@@ -56,10 +56,10 @@ export function applyResolution(
         source: 'foundry',
       };
 
-    case 'keep_planeshift':
+    case 'keep_highport':
       return {
-        value: ctx.source === 'planeshift' ? ctx.incomingValue : ctx.serverValue,
-        source: 'planeshift',
+        value: ctx.source === 'highport' ? ctx.incomingValue : ctx.serverValue,
+        source: 'highport',
       };
 
     case 'lww': {
@@ -68,13 +68,13 @@ export function applyResolution(
       }
       return {
         value: ctx.serverValue,
-        source: ctx.source === 'foundry' ? 'planeshift' : 'foundry',
+        source: ctx.source === 'foundry' ? 'highport' : 'foundry',
       };
     }
 
     case 'queue':
     case 'manual':
-      return { value: ctx.serverValue, source: 'planeshift' };
+      return { value: ctx.serverValue, source: 'highport' };
 
     default:
       return { value: ctx.incomingValue, source: ctx.source };
@@ -121,9 +121,9 @@ export async function getPendingConflicts(): Promise<ConflictItem[]> {
     nodeId: r.nodeId,
     fieldPath: r.fieldPath,
     foundryValue: r.foundryValue,
-    planeshiftValue: r.planeshiftValue,
+    highportValue: r.highportValue,
     foundryTimestamp: r.foundryTimestamp!,
-    planeshiftTimestamp: r.planeshiftTimestamp!,
+    highportTimestamp: r.highportTimestamp!,
     status: r.status as 'pending',
     resolution: r.resolution as ConflictResolution | undefined,
     resolvedBy: r.resolvedBy ?? undefined,
@@ -145,9 +145,9 @@ export async function getConflictById(id: string): Promise<ConflictItem | null> 
     nodeId: r.nodeId,
     fieldPath: r.fieldPath,
     foundryValue: r.foundryValue,
-    planeshiftValue: r.planeshiftValue,
+    highportValue: r.highportValue,
     foundryTimestamp: r.foundryTimestamp!,
-    planeshiftTimestamp: r.planeshiftTimestamp!,
+    highportTimestamp: r.highportTimestamp!,
     status: r.status as 'pending' | 'resolved' | 'dismissed',
     resolution: r.resolution as ConflictResolution | undefined,
     resolvedBy: r.resolvedBy ?? undefined,

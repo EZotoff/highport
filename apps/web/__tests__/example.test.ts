@@ -6,7 +6,7 @@ describe('Example Test', () => {
   });
 
   it('should verify the test setup works', () => {
-    const greeting = 'PlaneShift';
+    const greeting = 'Highport';
     expect(greeting).toContain('Plane');
   });
 });

@@ -13,7 +13,7 @@ describe('Conflict Detection', () => {
         'hp.current': {
           value: 10,
           lastFoundrySync: new Date(now.getTime() - 10000),
-          lastPlaneshiftSync: new Date(now.getTime() - 10000),
+          lastHighportSync: new Date(now.getTime() - 10000),
         },
       },
     };
@@ -39,13 +39,13 @@ describe('Conflict Detection', () => {
     });
 
     it('returns true when opposite side changed within conflict window', () => {
-      const stateWithRecentPlaneshift: SyncState = {
+      const stateWithRecentHighport: SyncState = {
         ...baseState,
         fields: {
           'hp.current': {
             value: 10,
             lastFoundrySync: new Date(now.getTime() - 10000),
-            lastPlaneshiftSync: new Date(now.getTime() - 2000),
+            lastHighportSync: new Date(now.getTime() - 2000),
           },
         },
       };
@@ -56,7 +56,7 @@ describe('Conflict Detection', () => {
         newValue: 15,
         timestamp: now,
       };
-      expect(detectConflict(stateWithRecentPlaneshift, incoming)).toBe(true);
+      expect(detectConflict(stateWithRecentHighport, incoming)).toBe(true);
     });
   });
 
@@ -73,7 +73,7 @@ describe('Conflict Detection', () => {
           fieldPath: 'hp.current',
           currentValue: 10,
           lastFoundrySync: new Date('2025-01-01'),
-          lastPlaneshiftSync: new Date('2025-01-02'),
+          lastHighportSync: new Date('2025-01-02'),
         },
         {
           nodeId: 'node_123',
@@ -81,7 +81,7 @@ describe('Conflict Detection', () => {
           fieldPath: 'hp.max',
           currentValue: 20,
           lastFoundrySync: null,
-          lastPlaneshiftSync: new Date('2025-01-01'),
+          lastHighportSync: new Date('2025-01-01'),
         },
       ];
 
@@ -111,9 +111,9 @@ describe('Conflict Resolution Matrix', () => {
       expect(resolveConflict(ctx)).toBe('keep_foundry');
     });
 
-    it('GM edit from PlaneShift wins', () => {
-      const ctx: ConflictContext = { ...baseContext, isGmEdit: true, source: 'planeshift' };
-      expect(resolveConflict(ctx)).toBe('keep_planeshift');
+    it('GM edit from Highport wins', () => {
+      const ctx: ConflictContext = { ...baseContext, isGmEdit: true, source: 'highport' };
+      expect(resolveConflict(ctx)).toBe('keep_highport');
     });
 
     it('Foundry stats are authoritative', () => {
@@ -157,16 +157,16 @@ describe('Conflict Resolution Matrix', () => {
       const ctx: ConflictContext = {
         ...baseContext,
         fieldPath: 'custom.field',
-        source: 'planeshift',
+        source: 'highport',
       };
       expect(resolveConflict(ctx)).toBe('lww');
     });
 
-    it('Stats from PlaneShift use LWW (not authoritative)', () => {
+    it('Stats from Highport use LWW (not authoritative)', () => {
       const ctx: ConflictContext = {
         ...baseContext,
         fieldPath: 'hp.current',
-        source: 'planeshift',
+        source: 'highport',
       };
       expect(resolveConflict(ctx)).toBe('lww');
     });
@@ -180,8 +180,8 @@ describe('Conflict Resolution Matrix', () => {
       expect(result.source).toBe('foundry');
     });
 
-    it('keep_foundry returns server value when source is planeshift', () => {
-      const ctx: ConflictContext = { ...baseContext, source: 'planeshift' };
+    it('keep_foundry returns server value when source is highport', () => {
+      const ctx: ConflictContext = { ...baseContext, source: 'highport' };
       const result = applyResolution('keep_foundry', ctx);
       expect(result.value).toBe('old value');
       expect(result.source).toBe('foundry');
@@ -200,7 +200,7 @@ describe('Conflict Resolution Matrix', () => {
     it('queue returns server value (pending GM decision)', () => {
       const result = applyResolution('queue', baseContext);
       expect(result.value).toBe('old value');
-      expect(result.source).toBe('planeshift');
+      expect(result.source).toBe('highport');
     });
   });
 

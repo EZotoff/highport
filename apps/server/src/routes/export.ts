@@ -190,7 +190,7 @@ export async function registerExportRoutes(fastify: FastifyInstance): Promise<vo
       
       if (!state) {
         reply.header('Content-Type', 'application/json');
-        reply.header('Content-Disposition', 'attachment; filename="planeshift-export.json"');
+        reply.header('Content-Disposition', 'attachment; filename="highport-export.json"');
         return { actors: [] };
       }
 
@@ -199,7 +199,7 @@ export async function registerExportRoutes(fastify: FastifyInstance): Promise<vo
       const actors = actorNodes.map(nodeToFoundryActor);
 
       reply.header('Content-Type', 'application/json');
-      reply.header('Content-Disposition', 'attachment; filename="planeshift-export.json"');
+      reply.header('Content-Disposition', 'attachment; filename="highport-export.json"');
       return { actors };
     } catch (error) {
       fastify.log.error(error, 'Failed to export JSON');

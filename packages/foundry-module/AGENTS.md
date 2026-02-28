@@ -5,7 +5,7 @@
 
 ## OVERVIEW
 
-The PlaneShift Foundry VTT module acts as a bridge between the campaign management platform and the virtual tabletop. It enables bidirectional synchronization of character data (Actors) between PlaneShift and Foundry VTT, specifically designed for the **Mongoose Traveller 2e (mgt2e)** system.
+The Highport Foundry VTT module acts as a bridge between the campaign management platform and the virtual tabletop. It enables bidirectional synchronization of character data (Actors) between Highport and Foundry VTT, specifically designed for the **Mongoose Traveller 2e (mgt2e)** system.
 
 ## STRUCTURE
 
@@ -15,7 +15,7 @@ The module follows standard Foundry VTT package structure:
 - `module.json` - Manifest defining metadata, dependencies, and scripts
 - `scripts/sync.js` - Logic for detecting local changes and sending to server
 - `scripts/receive.js` - Logic for receiving server updates and applying to actors
-- `scripts/socket.js` - WebSocket client for communicating with PlaneShift server
+- `scripts/socket.js` - WebSocket client for communicating with Highport server
 - `scripts/settings.js` - Module configuration (Server URL, API Key)
 
 ## KEY MODULES
@@ -41,9 +41,9 @@ Must be performed in Foundry VTT with module enabled:
 
 - [ ] Module loads without console errors
 - [ ] Settings page renders correctly
-- [ ] WebSocket connects to PlaneShift server
-- [ ] Actor sync: PlaneShift → Foundry works
-- [ ] Actor sync: Foundry → PlaneShift works
+- [ ] WebSocket connects to Highport server
+- [ ] Actor sync: Highport → Foundry works
+- [ ] Actor sync: Foundry → Highport works
 - [ ] Conflict resolution works correctly (no echo loops)
 - [ ] Disconnect/reconnect handling works
 
@@ -54,8 +54,8 @@ Must be performed in Foundry VTT with module enabled:
 
 ## SYNC PATTERNS
 
-- **Bidirectional**: Updates flow both ways (Foundry ↔ PlaneShift).
-- **Echo Prevention**: Uses `options.planeshift` flag in `actor.update` to prevent infinite sync loops.
+- **Bidirectional**: Updates flow both ways (Foundry ↔ Highport).
+- **Echo Prevention**: Uses `options.highport` flag in `actor.update` to prevent infinite sync loops.
 - **Data Mapping**:
   - `system.hits.value` ↔ `hp.current`
   - `system.finance.cash` ↔ `credits`

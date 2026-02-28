@@ -5,18 +5,18 @@ import "./scripts/sync.js";
 let bridge = null;
 
 Hooks.once("init", () => {
-  console.log("PlaneShift Bridge: Initializing");
+  console.log("Highport Bridge: Initializing");
   registerSettings();
 });
 
 Hooks.once("ready", () => {
-  console.log("PlaneShift Bridge initialized");
+  console.log("Highport Bridge initialized");
   
   const serverUrl = getServerUrl();
   const apiKey = getApiKey();
   
   if (!serverUrl) {
-    console.warn("PlaneShift Bridge: No server URL configured");
+    console.warn("Highport Bridge: No server URL configured");
     return;
   }
   

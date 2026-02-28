@@ -9,7 +9,7 @@ The following revisions constitute the delta between the initial project scope (
 * **MVP Campaign State:** Introduction of a **Barebones Campaign State** module (Base Resources \+ Reputation Tracking) as an immediate MVP requirement, utilizing low-fidelity tabular UIs for reliability over polish.  
 * **GraphRAG Access Control:** Detailed specification of a **Role-Based \+ Character-Knowledge Gating** mechanism for the RAG pipeline. This includes metadata injection strategies (e.g., access\_scope tags) to filter vector retrieval based on user roles and in-game character knowledge states.3  
 * **Conflict Resolution Policy:** Implementation of a deterministic **Sync Conflict Policy**. This includes a "Conflict Matrix" defining rules for specific collision scenarios (e.g., GM override authority, Last-Write-Wins for scalar values, append-only for logs) and a dedicated "Conflict Queue" UI for manual resolution of edge cases.4  
-* **Manual Fallback Protocol:** A new **Manual Fallback Mode** section defining the operational runbook for importing/exporting campaign data via JSON when the automated PlaneShift-Foundry sync bridge is unavailable (specifically addressing Foundry V11+ LevelDB constraints).6  
+* **Manual Fallback Protocol:** A new **Manual Fallback Mode** section defining the operational runbook for importing/exporting campaign data via JSON when the automated Highport-Foundry sync bridge is unavailable (specifically addressing Foundry V11+ LevelDB constraints).6  
 * **Blue-Booking Preservation:** The "Minigame" mechanics (Hacking, Social maneuvering) have been moved to a **Future Extensions / Nice-to-Have** section, preserving their design logic for post-MVP iterations without blocking the critical path.  
 * **Expanded Data Models:** Detailed schema definitions for Graph Entities, Faction Reputation, and Base Resource ledgers.
 
@@ -17,13 +17,13 @@ The following revisions constitute the delta between the initial project scope (
 
 **1\. Project Overview & Vision**
 
-**PlaneShift** is an advanced campaign management ecosystem designed to bridge the functional gap between high-fidelity virtual tabletop simulation (Foundry VTT) and the abstract, narrative-driven layer of tabletop roleplaying games (TTRPGs). It operates as a "second screen" architecture for Game Masters (GMs) and players, specifically targeting the *meta-game* layers: complex faction politics, evolving character lifepaths, logistical base management, and deep lore discovery.
+**Highport** is an advanced campaign management ecosystem designed to bridge the functional gap between high-fidelity virtual tabletop simulation (Foundry VTT) and the abstract, narrative-driven layer of tabletop roleplaying games (TTRPGs). It operates as a "second screen" architecture for Game Masters (GMs) and players, specifically targeting the *meta-game* layers: complex faction politics, evolving character lifepaths, logistical base management, and deep lore discovery.
 
 ### **1.1 Context and Problem Space**
 
 Current market solutions fracture the TTRPG experience into two disconnected domains: the tactical simulation (handled by VTTs like Foundry) and the narrative management (handled by disconnected tools like Google Docs, Obsidian, or physical notebooks). This separation creates a "State Drift" where the narrative reality (e.g., "The Baron is angry at us") desynchronizes from the simulation reality (e.g., The Baron's token is still set to 'Neutral' AI). Furthermore, collaborative world-building is often hampered by single-user locking mechanisms in traditional wiki software.
 
-PlaneShift solves this by providing a unified, real-time, synchronized environment. It does not replace the VTT; it enhances it by offloading the complex, non-tactical data structures—relationship graphs, economic ledgers, and knowledge retrieval—into a specialized interface that syncs back to the VTT when necessary.
+Highport solves this by providing a unified, real-time, synchronized environment. It does not replace the VTT; it enhances it by offloading the complex, non-tactical data structures—relationship graphs, economic ledgers, and knowledge retrieval—into a specialized interface that syncs back to the VTT when necessary.
 
 ### **1.2 Core Objectives**
 
@@ -51,7 +51,7 @@ The architecture is defined by a need for real-time responsiveness and offline r
 * **Database Layer:**  
   * *Primary State:* PostgreSQL (persisting Yjs binary updates/snapshots).  
   * *Vector Store:* Pinecone or Milvus (optimized for metadata filtering).9  
-* **Integration Layer:** A custom Foundry VTT Module (plane-shift-bridge) communicating via a secured REST/Socket API.
+* **Integration Layer:** A custom Foundry VTT Module (highport-bridge) communicating via a secured REST/Socket API.
 
 ### **2.2 Data Flow & State Management \[v2\]**
 
@@ -61,7 +61,7 @@ The system operates on a **Local-First** principle. This is critical for TTRPG s
 2. **Sync Layer:** The Yjs provider propagates these changes as efficient binary deltas to other connected clients and the central server via WebSockets.  
 3. **Persistence:** The server acts as a "dumb" peer that persists these deltas to PostgreSQL. It does not perform conflict arbitration itself; the CRDT logic handles that mathematically.1  
 4. **Conflict Resolution:** Merges happen automatically via CRDT logic (see Section 4.2). Semantic conflicts (e.g., narrative contradictions that are mathematically valid but logically impossible) are flagged for GM review via a "Conflict Queue".5  
-5. **Foundry Bridge:** A specialized sync adapter polls or pushes changes between the PlaneShift server and the Foundry VTT host, converting between Foundry's Document Model (Actors, Items) and PlaneShift's Graph Schema.
+5. **Foundry Bridge:** A specialized sync adapter polls or pushes changes between the Highport server and the Foundry VTT host, converting between Foundry's Document Model (Actors, Items) and Highport's Graph Schema.
 
 ## ---
 
@@ -71,7 +71,7 @@ The system operates on a **Local-First** principle. This is critical for TTRPG s
 
 **Timeline:** Weeks 1-4
 
-The Lifepath Graph is the visual heart of PlaneShift. It represents characters, events, factions, and items as nodes in a connected web. This milestone focuses entirely on enabling a multi-user, real-time collaborative environment for editing this graph. It is the "Minimum Viable Product" for the visualization engine.
+The Lifepath Graph is the visual heart of Highport. It represents characters, events, factions, and items as nodes in a connected web. This milestone focuses entirely on enabling a multi-user, real-time collaborative environment for editing this graph. It is the "Minimum Viable Product" for the visualization engine.
 
 ### **3.1 Functional Requirements**
 
@@ -315,7 +315,7 @@ When the system cannot determine a safe merge (e.g., Scenario 5 above):
 Foundry V11+ uses LevelDB, which locks database files while the application is running.6 We cannot simply "read the file" on the disk as was possible in V10 (NeDB).
 
 * **Primary Method:** A custom Foundry Module (plan-shift-bridge) that utilizes the Foundry API game.actors, game.items to read/write data in memory.  
-* **Transport:** The module opens a WebSocket connection to the PlaneShift server.
+* **Transport:** The module opens a WebSocket connection to the Highport server.
 
 ### **7.2 Manual Fallback Mode (The "Runbook") \[v2\]**
 
@@ -323,14 +323,14 @@ If the real-time bridge fails (e.g., Firewall issues, Module bug, API mismatch),
 
 #### **7.2.1 Export from Foundry**
 
-* **Mechanism:** Use the standard "Export to JSON" feature on Folders or Compendiums (or a bulk export macro provided by PlaneShift).16  
+* **Mechanism:** Use the standard "Export to JSON" feature on Folders or Compendiums (or a bulk export macro provided by Highport).16  
 * **Format:** Standard Foundry JSON (schema\_version, name, system, items, etc.).  
 * **Operation:**  
   1. GM selects "Party Actors" folder.  
   2. Right Click \-\> Export Data.  
   3. Save party-data.json.
 
-#### **7.2.2 Import to PlaneShift**
+#### **7.2.2 Import to Highport**
 
 * **UI:** "Settings \-\> Data Management \-\> Manual Import".  
 * **Logic:**  
@@ -340,7 +340,7 @@ If the real-time bridge fails (e.g., Firewall issues, Module bug, API mismatch),
   4. **Update:** Updates mapped fields (HP, XP, Inventory).  
   5. **Log:** Displays report "Updated 4 Actors. Created 1 new Actor. Failed to match 'Goblin Slayer'."
 
-#### **7.2.3 Export from PlaneShift (to Foundry)**
+#### **7.2.3 Export from Highport (to Foundry)**
 
 * **UI:** "Export Campaign \-\> Format: Foundry JSON".  
 * **Output:** A ZIP file containing individual JSON files for Actors and Journal Entries.  
@@ -583,8 +583,8 @@ This section breaks down the handshake between the Foundry Module and the Web Ap
 ### **A3.1 The "Handshake"**
 
 1. **GM launches Foundry VTT.**  
-2. **Module Startup:** plane-shift-bridge module initializes.  
-3. **Auth:** Module sends API Key to PlaneShift Server POST /api/bridge/auth.  
+2. **Module Startup:** highport-bridge module initializes.  
+3. **Auth:** Module sends API Key to Highport Server POST /api/bridge/auth.  
 4. **Connection:** Server validates key, upgrades connection to WebSocket (separate channel from Yjs graph sync).  
 5. **State Check:**  
    * Module sends checksum of critical actors.  
@@ -610,7 +610,7 @@ Trigger: GM modifies Actor HP in Foundry.
    }
 
 4. **Transmission:** Send via WebSocket.  
-5. **Ingestion:** PlaneShift Server receives payload \-\> updates SQL DB \-\> Updates Y.Doc (if applicable) \-\> Broadcasts to web clients.
+5. **Ingestion:** Highport Server receives payload \-\> updates SQL DB \-\> Updates Y.Doc (if applicable) \-\> Broadcasts to web clients.
 
 ### **A3.3 The "Pull" (Web \-\> Foundry)**
 
@@ -635,13 +635,13 @@ Trigger: Player updates Inventory in Web App.
 
 ### **A4.1 Pre-Session Import**
 
-1. **GM Action:** Open PlaneShift Web App.  
+1. **GM Action:** Open Highport Web App.  
 2. **Navigate:** Campaign Settings \-\> **"Import from Foundry JSON"**.  
 3. **Upload:** Select the actors.json file exported from Foundry (via "Export Data" on the Actors directory).  
 4. **Processing:**  
    * System reads all Actor entries.  
    * Updates HP, AC, XP, and Inventory for any actor where name matches a Node Label.  
-   * **Safeguard:** If a Node is locked in PlaneShift, the import skips it unless "Force Overwrite" is checked.  
+   * **Safeguard:** If a Node is locked in Highport, the import skips it unless "Force Overwrite" is checked.  
 5. **Result:** Web App reflects current stats for the session start.
 
 ### **A4.2 Post-Session Export**
@@ -652,7 +652,7 @@ Trigger: Player updates Inventory in Web App.
 4. **Foundry Action:**  
    * Unzip file.  
    * Use "Adventure Importer" or drag-and-drop JSONs into a Compendium.  
-5. **Result:** Session notes and new NPCs created in PlaneShift are now available in VTT for the next session.
+5. **Result:** Session notes and new NPCs created in Highport are now available in VTT for the next session.
 
 ## **A5. Edge Case Analysis: Sync Conflicts**
 
@@ -715,7 +715,7 @@ To ensure the "Exhaustive" nature of this report, we define the scaling limits.
 
 **Note to Developers**
 
-This document (PROJECT\_BRIEF\_v2.md) serves as the authoritative source of truth for the PlaneShift engineering effort. Any deviation from the **Authoritative Decisions** (Section 1\) or **Conflict Policies** (Section 6\) requires a formal Request for Comment (RFC) and sign-off from the Lead Architect. The preservation of the "Blue-booking" features in Section 9 is intentional to guide architectural modularity, even though those features are not in the MVP build pipeline. Implement the **Lifepath Graph** first.
+This document (PROJECT\_BRIEF\_v2.md) serves as the authoritative source of truth for the Highport engineering effort. Any deviation from the **Authoritative Decisions** (Section 1\) or **Conflict Policies** (Section 6\) requires a formal Request for Comment (RFC) and sign-off from the Lead Architect. The preservation of the "Blue-booking" features in Section 9 is intentional to guide architectural modularity, even though those features are not in the MVP build pipeline. Implement the **Lifepath Graph** first.
 
 ### **References & Research Basis**
 

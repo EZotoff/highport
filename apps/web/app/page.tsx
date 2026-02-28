@@ -24,7 +24,7 @@ export default function Home() {
             textShadow: '0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(0, 240, 255, 0.3)'
           }}
         >
-          PlaneShift
+          Highport
         </h1>
         <p 
           className="text-lg md:text-xl mb-12 font-light tracking-wide"

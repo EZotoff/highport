@@ -45,7 +45,7 @@ export default function ChargenWizard() {
         setIsSynced(true);
       }
     }, 2000);
-    initAndWaitForPersistence(doc, `planeshift-graph-${sessionId}`).then(() => {
+    initAndWaitForPersistence(doc, `highport-graph-${sessionId}`).then(() => {
       if (isMounted) {
         initProvider(doc, sessionId);
         clearTimeout(fallbackTimer);
@@ -72,7 +72,7 @@ export default function ChargenWizard() {
     
     const timer = setTimeout(() => {
       if (!character) {
-        localStorage.removeItem('planeshift_active_character');
+        localStorage.removeItem('highport_active_character');
         setCharacterId(null);
       }
     }, 100);

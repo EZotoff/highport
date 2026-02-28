@@ -5,11 +5,11 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: planeshift
-      POSTGRES_PASSWORD: planeshift_dev
-      POSTGRES_DB: planeshift_test
+      POSTGRES_USER: highport
+      POSTGRES_PASSWORD: highport_dev
+      POSTGRES_DB: highport_test
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U planeshift -d planeshift_test"]
+      test: ["CMD-SHELL", "pg_isready -U highport -d highport_test"]
       interval: 5s
       timeout: 5s
       retries: 5

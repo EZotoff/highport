@@ -7,9 +7,9 @@ interface ConflictItem {
   nodeId: string;
   fieldPath: string;
   foundryValue: unknown;
-  planeshiftValue: unknown;
+  highportValue: unknown;
   foundryTimestamp: string;
-  planeshiftTimestamp: string;
+  highportTimestamp: string;
   status: 'pending' | 'resolved' | 'dismissed';
 }
 
@@ -37,7 +37,7 @@ export function ConflictQueue() {
     fetchConflicts();
   }, [fetchConflicts]);
 
-  const handleResolve = async (id: string, resolution: 'keep_foundry' | 'keep_planeshift') => {
+  const handleResolve = async (id: string, resolution: 'keep_foundry' | 'keep_highport') => {
     try {
       await fetch(`${SERVER_URL}/api/conflicts/${id}/resolve`, {
         method: 'POST',
@@ -84,10 +84,10 @@ export function ConflictQueue() {
               </div>
             </div>
             <div className="p-3 bg-green-50 rounded">
-              <div className="text-sm font-medium text-green-700">PlaneShift Value</div>
-              <pre className="text-sm mt-1 overflow-auto">{JSON.stringify(conflict.planeshiftValue, null, 2)}</pre>
+              <div className="text-sm font-medium text-green-700">Highport Value</div>
+              <pre className="text-sm mt-1 overflow-auto">{JSON.stringify(conflict.highportValue, null, 2)}</pre>
               <div className="text-xs text-gray-400 mt-2">
-                {new Date(conflict.planeshiftTimestamp).toLocaleString()}
+                {new Date(conflict.highportTimestamp).toLocaleString()}
               </div>
             </div>
           </div>
@@ -100,10 +100,10 @@ export function ConflictQueue() {
               Keep Foundry
             </button>
             <button
-              onClick={() => handleResolve(conflict.id, 'keep_planeshift')}
+              onClick={() => handleResolve(conflict.id, 'keep_highport')}
               className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
-              Keep PlaneShift
+              Keep Highport
             </button>
             <button
               onClick={() => handleDismiss(conflict.id)}

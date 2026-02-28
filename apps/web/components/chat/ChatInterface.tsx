@@ -82,7 +82,7 @@ export function ChatInterface() {
   return (
     <div className="flex flex-col h-[500px] w-full max-w-md border rounded-xl overflow-hidden bg-background shadow-lg">
       <div className="bg-card p-4 border-b">
-        <h3 className="font-semibold text-card-foreground">PlaneShift RAG</h3>
+        <h3 className="font-semibold text-card-foreground">Highport RAG</h3>
       </div>
       
       <div 

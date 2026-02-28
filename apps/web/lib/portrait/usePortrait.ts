@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PortraitRecord, PortraitSourcePolicy, PortraitTags } from '@planeshift/shared/types/portrait';
+import type { PortraitRecord, PortraitSourcePolicy, PortraitTags } from '@highport/shared/types/portrait';
 import { getOrCreateUser } from '../identity';
 import { getYDoc } from '../ydoc';
 import { updateNodeMetadata } from '../yjs-helpers';

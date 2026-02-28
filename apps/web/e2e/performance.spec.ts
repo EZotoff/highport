@@ -6,7 +6,7 @@ test.describe('Performance', () => {
   test('renders 500 nodes without major FPS drop', async ({ page }) => {
     await page.goto('/graph');
     await page.waitForSelector('.react-flow', { timeout: 30000 });
-    await page.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await page.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page.reload();
     await page.waitForSelector('.react-flow', { timeout: 30000 });
     await page.waitForTimeout(2000);
@@ -53,7 +53,7 @@ test.describe('Performance', () => {
   test('graph remains responsive with many nodes', async ({ page }) => {
     await page.goto('/graph');
     await page.waitForSelector('.react-flow', { timeout: 30000 });
-    await page.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await page.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page.reload();
     await page.waitForSelector('.react-flow', { timeout: 30000 });
     await page.waitForTimeout(1500);
@@ -108,7 +108,7 @@ test.describe('Performance', () => {
 
     await pages[0].goto('/graph');
     await pages[0].waitForSelector('.react-flow', { timeout: 30000 });
-    await pages[0].evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await pages[0].evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     
     await Promise.all(pages.map(p => p.goto('/graph')));
     await Promise.all(pages.map(p => p.waitForSelector('.react-flow', { timeout: 30000 })));

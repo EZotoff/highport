@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Upload, Download, CheckCircle, AlertCircle, FileJson } from 'lucide-react';
-import type { GraphNode } from '@planeshift/shared/types/graph';
+import type { GraphNode } from '@highport/shared/types/graph';
 import {
   parseFoundryActors,
   matchActorsToNodes,
@@ -63,7 +63,7 @@ export function ImportExport({ nodes, onImportApply }: ImportExportProps) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'planeshift-export.zip';
+      a.download = 'highport-export.zip';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

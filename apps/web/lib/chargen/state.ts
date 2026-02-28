@@ -1,6 +1,6 @@
 import * as Y from 'yjs';
-import type { CharacteristicSet } from '@planeshift/mgt2e';
-import { roll2d6, setRandomSeed, resetRandomSeed } from '@planeshift/mgt2e';
+import type { CharacteristicSet } from '@highport/mgt2e';
+import { roll2d6, setRandomSeed, resetRandomSeed } from '@highport/mgt2e';
 import { DEFAULT_SESSION_SETTINGS } from './types';
 import type {
   ChargenCharacter,

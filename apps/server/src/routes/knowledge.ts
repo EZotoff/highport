@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { characterKnowledge } from '../db/schema.js';
-import { generateId } from '@planeshift/shared/utils/id';
+import { generateId } from '@highport/shared/utils/id';
 import { assembleScope } from '../services/scope.js';
 
 interface GrantBody {

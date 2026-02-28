@@ -35,7 +35,7 @@ The architecture is composed of four primary pillars:
 * **The Datapad (Frontend):** A responsive web application built with **Next.js (React)**. This serves as the primary interface for the GM to manage factions, review AI suggestions, and for players to engage in downtime activities via mobile devices. It utilizes specialized libraries like **React Flow** for the visual Lifepath Graph and **D3.js** for interactive star maps.1  
 * **The Psychohistory Core (Backend):** A robust **FastAPI (Python)** service. Python is selected for its dominance in the AI/ML ecosystem, enabling native integration of OpenAI APIs, PyRoute (for trade simulation), and GraphRAG pipelines. This backend handles all heavy lifting, including simulation logic and AI orchestration.1  
 * **The True State (Persistence):** **Supabase (PostgreSQL)** acts as the single source of truth. It stores relational data (users, factions, assets) and vector embeddings (lore chunks, chat logs) via the **pgvector** extension. This centralization ensures that whether a player is on their phone or in the VTT, they are interacting with the same consistent, persistent world state.7  
-* **The Bridge (Integration):** The **PlaneShift API** serves as the connectivity layer, exposing Foundry VTT’s internal state via REST endpoints. This allows the Command Center to push updates (e.g., "Add 100 Credits to Player A") and pull data (e.g., "Get Chat Log for Summary") without modifying Foundry’s core code. PlaneShift runs as a module within Foundry, authenticating external requests via a secure API user.9
+* **The Bridge (Integration):** The **Highport API** serves as the connectivity layer, exposing Foundry VTT’s internal state via REST endpoints. This allows the Command Center to push updates (e.g., "Add 100 Credits to Player A") and pull data (e.g., "Get Chat Log for Summary") without modifying Foundry’s core code. Highport runs as a module within Foundry, authenticating external requests via a secure API user.9
 
 #### **2.2.2 Architectural Comparison**
 
@@ -51,9 +51,9 @@ The following table contrasts the capabilities of the traditional Foundry-native
 | **Simulation Scope** | Local tactical (Scene/Combat) | Global strategic (Sector/Economy) |
 | **Connectivity** | WebSockets (Real-time only) | REST API & WebSockets (Hybrid) |
 
-### **2.3 Integration Mechanics: The PlaneShift Bridge**
+### **2.3 Integration Mechanics: The Highport Bridge**
 
-A critical component of this architecture is the synchronization between the external "Command Center" and the internal Foundry VTT state. The **PlaneShift API** module facilitates this bridge. Unlike standard Foundry modules that operate strictly within the client, PlaneShift exposes a RESTful API that allows external applications to query and modify the VTT's data model.9
+A critical component of this architecture is the synchronization between the external "Command Center" and the internal Foundry VTT state. The **Highport API** module facilitates this bridge. Unlike standard Foundry modules that operate strictly within the client, Highport exposes a RESTful API that allows external applications to query and modify the VTT's data model.9
 
 To ensure write reliability—a concern raised in the critical review—the system employs a dedicated "API User" account within Foundry. The Command Center authenticates as this user to perform updates. This mitigates the risk of database corruption that can occur with direct file system manipulation, as all changes are routed through Foundry's own internal data validation methods.9 This "headless" interaction model allows the Python backend to push narrative updates (via Journal entries) or mechanical updates (via Actor modifications) seamlessly, ensuring the VTT remains a faithful visual representation of the simulation running in the cloud.
 
@@ -196,7 +196,7 @@ To manage data integrity, the system defines "ownership" of data based on the ca
 
 ### **5.2 The Sync Protocol**
 
-The synchronization process is orchestrated by the Python backend via the PlaneShift API.
+The synchronization process is orchestrated by the Python backend via the Highport API.
 
 #### **5.2.1 Session Start (The "Down-Sync")**
 
@@ -204,24 +204,24 @@ Before the players log into Foundry, the GM triggers a "Session Initialization" 
 
 1. **Lock State:** The Web App locks character sheets to "Read-Only" to prevent offline edits during live play.  
 2. **Push:** The Python backend compiles all "Offline" changes (XP gained, items bought, wounds healed).  
-3. **API Call:** It sends JSON payloads to the **PlaneShift API** /api/actor/{id} endpoint to update the Foundry Actors. This ensures the VTT reflects the latest character state.9  
+3. **API Call:** It sends JSON payloads to the **Highport API** /api/actor/{id} endpoint to update the Foundry Actors. This ensures the VTT reflects the latest character state.9  
 4. **Journal Update:** It pushes the latest "News Feed" and Faction Reports to Foundry Journals, making the simulation outcomes visible to players.22
 
 #### **5.2.2 Session End (The "Up-Sync")**
 
 At the conclusion of the session, the GM triggers "Session Conclusion."
 
-1. **Pull:** The Command Center queries PlaneShift for the current state of all Actors (capturing loot found, wounds taken during combat).  
+1. **Pull:** The Command Center queries Highport for the current state of all Actors (capturing loot found, wounds taken during combat).  
 2. **Log Retrieval:** It retrieves the Chat Log for the AI to summarize and archive.22  
 3. **Persist:** This data overwrites the Supabase state, ensuring the persistent database is up to date.  
 4. **Unlock:** The Web App unlocks character sheets for offline play, allowing players to engage in Blue-Booking activities.
 
-### **5.3 Addressing PlaneShift Limitations**
+### **5.3 Addressing Highport Limitations**
 
-The critical review noted concerns about "Write Reliability" with PlaneShift.1 The documentation confirms that PlaneShift requires a dedicated "APIUser" with GM-level permissions to perform writes.9
+The critical review noted concerns about "Write Reliability" with Highport.1 The documentation confirms that Highport requires a dedicated "APIUser" with GM-level permissions to perform writes.9
 
 * **Mitigation:** The architecture mandates the creation of a headless user account named Psychohistory\_Bot inside Foundry. The backend authenticates via this user.  
-* **Concurrency Safety:** To prevent database corruption (a known Foundry issue if files are touched while running), PlaneShift interacts with the *running game instance* via the API, not the file system directly. This ensures that Foundry's internal data validation logic handles the writes safely.10
+* **Concurrency Safety:** To prevent database corruption (a known Foundry issue if files are touched while running), Highport interacts with the *running game instance* via the API, not the file system directly. This ensures that Foundry's internal data validation logic handles the writes safely.10
 
 ## ---
 
@@ -269,7 +269,7 @@ To mitigate the "Complexity and Scope Risk" identified in the review 1, the deve
 
 **Goal:** Establish the data pipeline and basic connectivity. No AI or Simulation yet.
 
-* **Week 1 (Infrastructure):** Set up Supabase project, FastAPI backend shell, and Next.js frontend skeleton. Configure Docker container for Foundry VTT with PlaneShift module installed.22  
+* **Week 1 (Infrastructure):** Set up Supabase project, FastAPI backend shell, and Next.js frontend skeleton. Configure Docker container for Foundry VTT with Highport module installed.22  
 * **Week 2 (Data Sync):** Develop the "APIUser" handshake. Implement scripts to pull Actor data from Foundry and store it in Supabase (JSON schema mapping).9  
 * **Week 3 (Basic Blue-Book):** Build the "Offline Character Sheet" viewer in Next.js. Allow players to edit a text field "Journal" that syncs back to Foundry.  
 * **Week 4 (Lore Database):** Ingest the core *Pirates of Drinax* PDF text into Supabase pgvector. Implement a simple "Lore Search" (Vector RAG) for the GM.  
@@ -319,7 +319,7 @@ The implementation of such a complex system carries inherent technical and opera
 
 ### **8.3 Integration Fragility**
 
-**Risk:** Foundry VTT updates could break the PlaneShift API, or network issues could disrupt the sync.
+**Risk:** Foundry VTT updates could break the Highport API, or network issues could disrupt the sync.
 
 **Mitigation:** The architecture is designed to be **"Fail-Safe."** If the API connection to Foundry fails, the Command Center continues to function as a standalone web app. The GM can manually input data or use JSON export/import as a fallback. The foundry\_client.py module isolates the API logic, meaning only one file needs updating if the API schema changes.
 
@@ -335,7 +335,7 @@ The implementation of such a complex system carries inherent technical and opera
 
 The **Psychohistory Engine** represents a paradigm shift for running high-complexity RPG campaigns like *Pirates of Drinax*. By treating the campaign not just as a story to be told, but as a data-rich simulation to be managed, we leverage modern cloud architecture to solve the inherent problems of VTT play.
 
-The transition from a monolithic VTT setup to a **Hybrid Command Center** enables the "Parallel Narrative" vision: a world that lives and breathes even when the players are offline. The use of **GraphRAG** ensures that this automation remains faithful to the deep, interconnected lore of the *Traveller* universe, while the **PlaneShift** integration maintains the visual immersion of the tabletop experience.
+The transition from a monolithic VTT setup to a **Hybrid Command Center** enables the "Parallel Narrative" vision: a world that lives and breathes even when the players are offline. The use of **GraphRAG** ensures that this automation remains faithful to the deep, interconnected lore of the *Traveller* universe, while the **Highport** integration maintains the visual immersion of the tabletop experience.
 
 Through the proposed **12-Week Phased Rollout**, the project minimizes development risk while delivering immediate value—starting with robust data management and culminating in a fully realized AI co-pilot. This architecture transforms the GM from a busy clerk tracking spreadsheets into a true Director, orchestrating a space opera as grand and dynamic as the source material demands. The Psychohistory Engine does not just automate the game; it expands the boundaries of what is possible in a tabletop roleplaying campaign.
 
@@ -408,7 +408,7 @@ When a query arrives ("How does Lady Yjem react to Imperial ships?"):
 4. **Context Assembly:** Combine the Graph structure (the "Why") with the Vector chunks (the "What").  
 5. **Generation:** The LLM generates the final answer, citing the graph connections as reasoning.13
 
-### **A3. PlaneShift API Integration Specs**
+### **A3. Highport API Integration Specs**
 
 The connection between the Command Center and Foundry VTT is managed via REST calls.
 
@@ -442,7 +442,7 @@ The connection between the Command Center and Foundry VTT is managed via REST ca
 
 #### **A3.3 Handling Latency & Sync Conflicts**
 
-* **Latency:** The backend uses asyncio to handle multiple PlaneShift requests in parallel (e.g., updating 5 actors at once) to minimize sync time.27  
+* **Latency:** The backend uses asyncio to handle multiple Highport requests in parallel (e.g., updating 5 actors at once) to minimize sync time.27  
 * **Conflict:** If a player edits their sheet in Foundry *while* the Offline app is processing a change, the "Up-Sync" (Session End) generally takes precedence as the canonical state of the live session. A timestamp check is implemented to warn the GM if "Offline" data is older than "Live" data.
 
 #### **Works cited**
@@ -455,7 +455,7 @@ The connection between the Command Center and Foundry VTT is managed via REST ca
 6. Microsoft GraphRAG in Production : r/Rag \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/Rag/comments/1m8g4ut/microsoft\_graphrag\_in\_production/](https://www.reddit.com/r/Rag/comments/1m8g4ut/microsoft_graphrag_in_production/)  
 7. GraphRAG techniques on Postgres \+ pg\_vector : r/PostgreSQL \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/PostgreSQL/comments/1fogeez/graphrag\_techniques\_on\_postgres\_pg\_vector/](https://www.reddit.com/r/PostgreSQL/comments/1fogeez/graphrag_techniques_on_postgres_pg_vector/)  
 8. Build a RAG App With Descope, Supabase & pgvector: Part 1, accessed on January 24, 2026, [https://www.descope.com/blog/post/rag-descope-supabase-pgvector-1](https://www.descope.com/blog/post/rag-descope-supabase-pgvector-1)  
-9. cclloyd/planeshift: A REST API for FoundryVTT \- GitHub, accessed on January 24, 2026, [https://github.com/cclloyd/planeshift](https://github.com/cclloyd/planeshift)  
+9. cclloyd/highport: A REST API for FoundryVTT \- GitHub, accessed on January 24, 2026, [https://github.com/cclloyd/highport](https://github.com/cclloyd/highport)  
 10. PSA: Automated Backup/Sync Services : r/FoundryVTT \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/FoundryVTT/comments/pxdzed/psa\_automated\_backupsync\_services/](https://www.reddit.com/r/FoundryVTT/comments/pxdzed/psa_automated_backupsync_services/)  
 11. The Pirates of Drinax \- Gareth Hanrahan, accessed on January 24, 2026, [https://garhanrahan.com/2021/06/02/the-pirates-of-drinax/](https://garhanrahan.com/2021/06/02/the-pirates-of-drinax/)  
 12. Traveller Index Project – Library \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/traveller/comments/1i5fzmj/traveller\_index\_project\_library/](https://www.reddit.com/r/traveller/comments/1i5fzmj/traveller_index_project_library/)  
@@ -468,7 +468,7 @@ The connection between the Command Center and Foundry VTT is managed via REST ca
 19. The Ultimate Guide to LLM Latency Optimization: 7 Game-Changing Strategies \- Medium, accessed on January 24, 2026, [https://medium.com/@rohitworks777/the-ultimate-guide-to-llm-latency-optimization-7-game-changing-strategies-9ac747fbe315](https://medium.com/@rohitworks777/the-ultimate-guide-to-llm-latency-optimization-7-game-changing-strategies-9ac747fbe315)  
 20. RAG and It's Latency : r/Rag \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/Rag/comments/1ok0s3w/rag\_and\_its\_latency/](https://www.reddit.com/r/Rag/comments/1ok0s3w/rag_and_its_latency/)  
 21. The RAG Latency Playbook: Batching, Caching, Scope Reduction, Reranking, and Graph RAG | by varun rao | Dec, 2025 | Python in Plain English, accessed on January 24, 2026, [https://python.plainenglish.io/the-rag-latency-playbook-batching-caching-scope-reduction-reranking-and-graph-rag-b85dae5cdfb7](https://python.plainenglish.io/the-rag-latency-playbook-batching-caching-scope-reduction-reranking-and-graph-rag-b85dae5cdfb7)  
-22. Introducing PlaneShift, a REST Api for FoundryVTT. \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/FoundryVTT/comments/1m4yshx/introducing\_planeshift\_a\_rest\_api\_for\_foundryvtt/](https://www.reddit.com/r/FoundryVTT/comments/1m4yshx/introducing_planeshift_a_rest_api_for_foundryvtt/)  
+22. Introducing Highport, a REST Api for FoundryVTT. \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/FoundryVTT/comments/1m4yshx/introducing\_highport\_a\_rest\_api\_for\_foundryvtt/](https://www.reddit.com/r/FoundryVTT/comments/1m4yshx/introducing_highport_a_rest_api_for_foundryvtt/)  
 23. How to Add HTTP API for GraphRAG? \- Aident AI, accessed on January 24, 2026, [https://aident.ai/blog/how-to-add-http-api-for-graphrag](https://aident.ai/blog/how-to-add-http-api-for-graphrag)  
 24. Synchronizing or uploading FVTT local data to the FVTT server : r/FoundryVTT \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/FoundryVTT/comments/1440jv6/synchronizing\_or\_uploading\_fvtt\_local\_data\_to\_the/](https://www.reddit.com/r/FoundryVTT/comments/1440jv6/synchronizing_or_uploading_fvtt_local_data_to_the/)  
 25. Complete GraphRAG Tutorial: Combining Knowledge Graphs with Vector Search | by Vishal Mysore | Dec, 2025, accessed on January 24, 2026, [https://medium.com/@visrow/complete-graphrag-tutorial-combining-knowledge-graphs-with-vector-search-0ec20413f109](https://medium.com/@visrow/complete-graphrag-tutorial-combining-knowledge-graphs-with-vector-search-0ec20413f109)  

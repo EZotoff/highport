@@ -1,5 +1,5 @@
 /**
- * Actor Sync - Detect Foundry actor changes and send to PlaneShift server
+ * Actor Sync - Detect Foundry actor changes and send to Highport server
  */
 import { bridge } from "../module.js";
 
@@ -54,7 +54,7 @@ function buildSyncPayload(actor, changes) {
   for (const path of WHITELISTED_PATHS) {
     const value = getNestedValue(changes, path);
     if (value !== undefined) {
-      // Map to PlaneShift metadata structure
+      // Map to Highport metadata structure
       if (path === "system.hits") {
         filteredChanges["hp"] = {
           current: value.value,
@@ -89,10 +89,10 @@ function buildSyncPayload(actor, changes) {
 }
 
 /**
- * Hook: Detect actor updates and sync to PlaneShift
+ * Hook: Detect actor updates and sync to Highport
  */
 Hooks.on("updateActor", (actor, changes, options, userId) => {
-  if (options.planeshift) return;
+  if (options.highport) return;
 
   if (!actor.hasPlayerOwner) return;
 
@@ -108,7 +108,7 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
       timestamp: Date.now(),
       payload,
     });
-    console.log("PlaneShift Sync: Actor update sent", payload.actorId);
+    console.log("Highport Sync: Actor update sent", payload.actorId);
   }
 });
 

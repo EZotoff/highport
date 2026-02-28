@@ -10,7 +10,7 @@ import {
   roll1d6,
   rollCareerEvent,
   rollMishap,
-} from '@planeshift/mgt2e';
+} from '@highport/mgt2e';
 import {
   rollSurvival,
   rollAdvancement,
@@ -27,12 +27,12 @@ import type {
   SkillTableEntry,
   CharacteristicSet,
   EventSpawn
-} from '@planeshift/mgt2e';
+} from '@highport/mgt2e';
 import type { CareerTermResult, SpawnedEntityRef } from '../../../lib/chargen/types';
 import EntitySpawnForm from '../EntitySpawnForm';
 import ConnectionSuggestions from '../ConnectionSuggestions';
 import { addEdge } from '../../../lib/yjs-helpers';
-import type { GraphEdge } from '@planeshift/shared/types/graph';
+import type { GraphEdge } from '@highport/shared/types/graph';
 
 interface TermResolutionStepProps {
   characterId: string | null;

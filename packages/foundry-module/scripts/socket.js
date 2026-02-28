@@ -15,7 +15,7 @@ export class FoundryBridge {
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
-      console.log("PlaneShift Bridge: Connected");
+      console.log("Highport Bridge: Connected");
       this.reconnectAttempts = 0;
       this.send({ 
         type: "handshake", 
@@ -26,12 +26,12 @@ export class FoundryBridge {
     };
 
     this.ws.onclose = () => {
-      console.log("PlaneShift Bridge: Disconnected");
+      console.log("Highport Bridge: Disconnected");
       this.scheduleReconnect();
     };
 
     this.ws.onerror = (error) => {
-      console.error("PlaneShift Bridge: WebSocket error", error);
+      console.error("Highport Bridge: WebSocket error", error);
     };
 
     this.ws.onmessage = (event) => {
@@ -39,19 +39,19 @@ export class FoundryBridge {
         const msg = JSON.parse(event.data);
         this.handleMessage(msg);
       } catch (e) {
-        console.error("PlaneShift Bridge: Failed to parse message", e);
+        console.error("Highport Bridge: Failed to parse message", e);
       }
     };
   }
 
   scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error("PlaneShift Bridge: Max reconnect attempts reached");
+      console.error("Highport Bridge: Max reconnect attempts reached");
       return;
     }
     const delay = Math.min(this.reconnectDelay * (2 ** this.reconnectAttempts), 30000);
     this.reconnectAttempts++;
-    console.log(`PlaneShift Bridge: Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    console.log(`Highport Bridge: Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
     setTimeout(() => this.connect(), delay);
   }
 
@@ -70,11 +70,11 @@ export class FoundryBridge {
   }
 
   async handleMessage(msg) {
-    console.log("PlaneShift Bridge: Received message", msg.type);
+    console.log("Highport Bridge: Received message", msg.type);
 
     switch (msg.type) {
       case "handshake_ack":
-        console.log("PlaneShift Bridge: Handshake acknowledged");
+        console.log("Highport Bridge: Handshake acknowledged");
         break;
       case "node_update": {
         const result = await handleNodeUpdate(msg);
@@ -88,10 +88,10 @@ export class FoundryBridge {
       case "ack":
         break;
       case "error":
-        console.error("PlaneShift Bridge: Server error", msg.payload);
+        console.error("Highport Bridge: Server error", msg.payload);
         break;
       default:
-        console.log("PlaneShift Bridge: Received", msg.type);
+        console.log("Highport Bridge: Received", msg.type);
     }
   }
 }

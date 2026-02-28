@@ -1,5 +1,5 @@
 {
-  "name": "@planeshift/server",
+  "name": "@highport/server",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -22,7 +22,7 @@
     "@fastify/websocket": "^8.3.0",
     "@hocuspocus/extension-database": "^2.0.0",
     "@hocuspocus/server": "^2.0.0",
-    "@planeshift/shared": "workspace:*",
+    "@highport/shared": "workspace:*",
     "drizzle-orm": "^0.38.0",
     "fastify": "^4.26.0",
     "postgres": "^3.4.0",

@@ -135,7 +135,7 @@ describe('Export Routes', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.headers['content-type']).toContain('application/json');
-      expect(response.headers['content-disposition']).toBe('attachment; filename="planeshift-export.json"');
+      expect(response.headers['content-disposition']).toBe('attachment; filename="highport-export.json"');
     });
   });
 

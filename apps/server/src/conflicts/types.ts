@@ -1,12 +1,12 @@
-export type ConflictSource = 'foundry' | 'planeshift';
-export type ConflictResolution = 'keep_foundry' | 'keep_planeshift' | 'manual';
-export type Resolution = 'keep_foundry' | 'keep_planeshift' | 'queue' | 'lww' | 'manual';
+export type ConflictSource = 'foundry' | 'highport';
+export type ConflictResolution = 'keep_foundry' | 'keep_highport' | 'manual';
+export type Resolution = 'keep_foundry' | 'keep_highport' | 'queue' | 'lww' | 'manual';
 export type ConflictStatus = 'pending' | 'resolved' | 'dismissed';
 
 export interface SyncFieldState {
   value: unknown;
   lastFoundrySync: Date;
-  lastPlaneshiftSync: Date;
+  lastHighportSync: Date;
 }
 
 export interface SyncState {
@@ -41,9 +41,9 @@ export interface ConflictItem {
   nodeId: string;
   fieldPath: string;
   foundryValue: unknown;
-  planeshiftValue: unknown;
+  highportValue: unknown;
   foundryTimestamp: Date;
-  planeshiftTimestamp: Date;
+  highportTimestamp: Date;
   status: ConflictStatus;
   resolution?: ConflictResolution;
   resolvedBy?: string;

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { getYDoc } from '../../../lib/ydoc';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
-import { getCareer } from '@planeshift/mgt2e';
+import { getCareer } from '@highport/mgt2e';
 import { SciFiButton } from '@/components/ui/scifi';
 import { Coins, Gift } from 'lucide-react';
 import {

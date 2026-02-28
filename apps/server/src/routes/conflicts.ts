@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { conflictQueue } from '../db/schema.js';
-import { generateId } from '@planeshift/shared/utils/id';
+import { generateId } from '@highport/shared/utils/id';
 import type { ConflictResolution } from '../conflicts/types.js';
 
 interface IdParams {
@@ -36,9 +36,9 @@ export async function registerConflictRoutes(
         nodeId: c.nodeId,
         fieldPath: c.fieldPath,
         foundryValue: c.foundryValue,
-        planeshiftValue: c.planeshiftValue,
+        highportValue: c.highportValue,
         foundryTimestamp: c.foundryTimestamp?.toISOString() ?? null,
-        planeshiftTimestamp: c.planeshiftTimestamp?.toISOString() ?? null,
+        highportTimestamp: c.highportTimestamp?.toISOString() ?? null,
         status: c.status,
         createdAt: c.createdAt?.toISOString() ?? null,
       })),
@@ -63,9 +63,9 @@ export async function registerConflictRoutes(
       nodeId: conflict.nodeId,
       fieldPath: conflict.fieldPath,
       foundryValue: conflict.foundryValue,
-      planeshiftValue: conflict.planeshiftValue,
+      highportValue: conflict.highportValue,
       foundryTimestamp: conflict.foundryTimestamp?.toISOString() ?? null,
-      planeshiftTimestamp: conflict.planeshiftTimestamp?.toISOString() ?? null,
+      highportTimestamp: conflict.highportTimestamp?.toISOString() ?? null,
       status: conflict.status,
       resolution: conflict.resolution ?? null,
       resolvedBy: conflict.resolvedBy ?? null,
@@ -88,7 +88,7 @@ export async function registerConflictRoutes(
       const { id } = request.params;
       const { resolution, manualValue } = request.body;
 
-      if (!['keep_foundry', 'keep_planeshift', 'manual'].includes(resolution)) {
+      if (!['keep_foundry', 'keep_highport', 'manual'].includes(resolution)) {
         reply.code(400);
         return { error: 'Invalid resolution type' };
       }
@@ -123,7 +123,7 @@ export async function registerConflictRoutes(
           ? manualValue
           : resolution === 'keep_foundry'
             ? existing.foundryValue
-            : existing.planeshiftValue;
+            : existing.highportValue;
 
       console.log(
         `[Conflict] Resolved ${id}: ${resolution}`,
@@ -185,9 +185,9 @@ export async function queueConflict(
   nodeId: string,
   fieldPath: string,
   foundryValue: unknown,
-  planeshiftValue: unknown,
+  highportValue: unknown,
   foundryTimestamp: Date | null,
-  planeshiftTimestamp: Date | null
+  highportTimestamp: Date | null
 ): Promise<string> {
   const id = generateId('conflict');
 
@@ -196,15 +196,15 @@ export async function queueConflict(
     nodeId,
     fieldPath,
     foundryValue,
-    planeshiftValue,
+    highportValue,
     foundryTimestamp,
-    planeshiftTimestamp,
+    highportTimestamp,
     status: 'pending',
   });
 
   console.log(`[Conflict] Queued ${id}:`, fieldPath, {
     foundryValue,
-    planeshiftValue,
+    highportValue,
   });
 
   return id;

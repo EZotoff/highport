@@ -2,9 +2,9 @@ import * as Y from 'yjs';
 import { getYDoc } from '../ydoc';
 import { addNode, addEdge } from '../yjs-helpers';
 import { addEntityToPool } from './state';
-import type { GraphNode, GraphEdge, NodeType } from '@planeshift/shared/types/graph';
+import type { GraphNode, GraphEdge, NodeType } from '@highport/shared/types/graph';
 import type { SpawnedEntityRef } from './types';
-import type { EventSpawn } from '@planeshift/mgt2e';
+import type { EventSpawn } from '@highport/mgt2e';
 
 export interface SpawnEntityInput {
   spawn: EventSpawn;

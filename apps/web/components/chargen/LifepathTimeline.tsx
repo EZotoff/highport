@@ -1,6 +1,6 @@
 import React from 'react';
 import { Scroll, Wallet } from 'lucide-react';
-import { getCareer } from '@planeshift/mgt2e';
+import { getCareer } from '@highport/mgt2e';
 import { useLifepath } from '../../lib/chargen/useLifepath';
 import { TimelineTerm } from './TimelineTerm';
 import { GlassPanel, AnimatedConnection, SilkyChevron } from '@/components/ui/scifi';

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronRight, User, Coins, Calendar } from 'lucide-react';
 import { useCharacter } from '../../lib/chargen/hooks';
-import { getCharacteristicModifier, CharacteristicCode } from '@planeshift/mgt2e';
+import { getCharacteristicModifier, CharacteristicCode } from '@highport/mgt2e';
 import { LifepathTimeline } from './LifepathTimeline';
 import { GlassPanel, ProcessFlowSheen, SkillBadge } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';

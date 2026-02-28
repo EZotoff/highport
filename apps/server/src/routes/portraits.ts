@@ -6,7 +6,7 @@ import {
   remixPortrait,
   searchPortraits,
 } from '../services/portrait-service.js';
-import type { PortraitTags } from '@planeshift/shared/types/portrait';
+import type { PortraitTags } from '@highport/shared/types/portrait';
 
 interface PortraitGenerateBody {
   campaignId: string;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PortraitTags } from '@planeshift/shared/types/portrait';
+import type { PortraitTags } from '@highport/shared/types/portrait';
 import {
   calculateTagSimilarity,
   deepMerge,

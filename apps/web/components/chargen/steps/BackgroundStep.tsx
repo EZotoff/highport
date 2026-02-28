@@ -13,8 +13,8 @@ import {
 } from '../../../lib/chargen/state';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { getOrCreateUser } from '../../../lib/identity';
-import { getBackgroundSkills, getCharacteristicModifier } from '@planeshift/mgt2e';
-import type { CharacteristicCode } from '@planeshift/mgt2e';
+import { getBackgroundSkills, getCharacteristicModifier } from '@highport/mgt2e';
+import type { CharacteristicCode } from '@highport/mgt2e';
 import { GlassPanel, SciFiButton, SciFiInput, SciFiSelect } from '@/components/ui/scifi';
 import { THEME_HEX } from '../../../lib/design-system/themeUtils';
 
@@ -40,7 +40,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
     
     const newId = createCharacter(doc, user.userId);
     
-    localStorage.setItem('planeshift_active_character', JSON.stringify({
+    localStorage.setItem('highport_active_character', JSON.stringify({
       characterId: newId,
       name: 'Unnamed Character',
     }));
@@ -83,7 +83,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
     const newName = e.target.value;
     updateCharacter(doc, characterId, 'name', newName);
     
-    localStorage.setItem('planeshift_active_character', JSON.stringify({
+    localStorage.setItem('highport_active_character', JSON.stringify({
       characterId,
       name: newName || 'Unnamed Character',
     }));

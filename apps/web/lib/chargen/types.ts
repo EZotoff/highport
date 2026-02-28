@@ -1,4 +1,4 @@
-import type { CharacteristicSet, DiceResult, CareerEvent, CareerMishap } from '@planeshift/mgt2e';
+import type { CharacteristicSet, DiceResult, CareerEvent, CareerMishap } from '@highport/mgt2e';
 
 export type ChargenStatus = 'background' | 'career_selection' | 'term_resolution' | 'mustering_out' | 'finalized';
 

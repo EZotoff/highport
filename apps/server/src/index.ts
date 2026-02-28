@@ -3,7 +3,7 @@ import { startFastify, FASTIFY_PORT } from './api/index.js';
 import { startCompactionJob } from './jobs/compaction.js';
 
 async function main() {
-  console.log('[PlaneShift Server] Starting...');
+  console.log('[Highport Server] Starting...');
   
   console.log(`[Hocuspocus] Starting WebSocket server on port ${HOCUSPOCUS_PORT}...`);
   await startHocuspocus();
@@ -13,10 +13,10 @@ async function main() {
   
   startCompactionJob();
   
-  console.log('[PlaneShift Server] All servers started successfully');
+  console.log('[Highport Server] All servers started successfully');
 }
 
 main().catch((err) => {
-  console.error('[PlaneShift Server] Fatal error:', err);
+  console.error('[Highport Server] Fatal error:', err);
   process.exit(1);
 });

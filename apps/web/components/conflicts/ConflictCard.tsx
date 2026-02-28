@@ -8,15 +8,15 @@ interface ConflictData {
   nodeId: string;
   fieldPath: string;
   foundryValue: unknown;
-  planeshiftValue: unknown;
+  highportValue: unknown;
   foundryTimestamp: string | null;
-  planeshiftTimestamp: string | null;
+  highportTimestamp: string | null;
   createdAt: string | null;
 }
 
 interface ConflictCardProps {
   conflict: ConflictData;
-  onResolve: (id: string, resolution: 'keep_foundry' | 'keep_planeshift') => void;
+  onResolve: (id: string, resolution: 'keep_foundry' | 'keep_highport') => void;
   onDismiss: (id: string) => void;
   isLoading?: boolean;
 }
@@ -63,11 +63,11 @@ export function ConflictCard({ conflict, onResolve, onDismiss, isLoading }: Conf
 
         <div className="bg-emerald-950/30 border border-emerald-800/30 rounded p-3">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-emerald-400 text-xs font-semibold uppercase">PlaneShift</span>
-            <span className="text-zinc-600 text-xs">{formatTimestamp(conflict.planeshiftTimestamp)}</span>
+            <span className="text-emerald-400 text-xs font-semibold uppercase">Highport</span>
+            <span className="text-zinc-600 text-xs">{formatTimestamp(conflict.highportTimestamp)}</span>
           </div>
           <pre className="text-zinc-300 text-sm whitespace-pre-wrap font-mono overflow-auto max-h-32">
-            {formatValue(conflict.planeshiftValue)}
+            {formatValue(conflict.highportValue)}
           </pre>
         </div>
       </div>
@@ -82,12 +82,12 @@ export function ConflictCard({ conflict, onResolve, onDismiss, isLoading }: Conf
           Keep Foundry
         </button>
         <button
-          onClick={() => onResolve(conflict.id, 'keep_planeshift')}
+          onClick={() => onResolve(conflict.id, 'keep_highport')}
           disabled={isLoading}
           className="flex items-center gap-2 px-3 py-1.5 bg-emerald-900/50 hover:bg-emerald-800/50 text-emerald-300 rounded text-sm transition-colors disabled:opacity-50"
         >
           <CheckCircle size={14} />
-          Keep PlaneShift
+          Keep Highport
         </button>
         <button
           onClick={() => onDismiss(conflict.id)}

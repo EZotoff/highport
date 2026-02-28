@@ -38,8 +38,8 @@ import {
 import { getSessionId, initPersistence, initProvider, getProvider } from '../../lib/sync';
 import { initAwareness, updateCursor, updateSelection, PresenceState } from '../../lib/awareness';
 import { CursorOverlay, UserList, SelectionHalos } from './Presence';
-import { generateNodeId, GraphNode, NodeType, MockUser } from '@planeshift/shared';
-import type { GraphEdge } from '@planeshift/shared/types/graph';
+import { generateNodeId, GraphNode, NodeType, MockUser } from '@highport/shared';
+import type { GraphEdge } from '@highport/shared/types/graph';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
 import { ContextMenu } from './ContextMenu';
@@ -103,7 +103,7 @@ function GraphCanvasContent() {
   useEffect(() => {
     const doc = getYDoc();
     const sessionId = getSessionId('graph');
-    initPersistence(doc, `planeshift-graph-${sessionId}`);
+    initPersistence(doc, `highport-graph-${sessionId}`);
     const provider = initProvider(doc, sessionId);
     if (!provider.awareness) return;
 

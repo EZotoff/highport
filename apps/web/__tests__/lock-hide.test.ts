@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as Y from 'yjs';
 import { getYDoc, getNodesMap } from '../lib/ydoc';
 import { addNode, updateNodeLock, updateNodeVisibility } from '../lib/yjs-helpers';
-import { GraphNode } from '@planeshift/shared/types/graph';
+import { GraphNode } from '@highport/shared/types/graph';
 
 describe('Yjs Helpers Lock/Hide', () => {
   let doc: Y.Doc;

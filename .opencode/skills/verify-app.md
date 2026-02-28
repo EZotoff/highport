@@ -83,22 +83,22 @@ done
 
 ```bash
 # Create evidence directory
-mkdir -p .sisyphus/evidence/planeshift-holistic/prerequisites
+mkdir -p .sisyphus/evidence/highport-holistic/prerequisites
 
 # TypeCheck
-pnpm typecheck > .sisyphus/evidence/planeshift-holistic/prerequisites/typecheck-output.txt 2>&1
+pnpm typecheck > .sisyphus/evidence/highport-holistic/prerequisites/typecheck-output.txt 2>&1
 TYPECHECK_EXIT=$?
 
 # Build
-pnpm build > .sisyphus/evidence/planeshift-holistic/prerequisites/build-output.txt 2>&1
+pnpm build > .sisyphus/evidence/highport-holistic/prerequisites/build-output.txt 2>&1
 BUILD_EXIT=$?
 
 # Unit Tests
-pnpm test > .sisyphus/evidence/planeshift-holistic/prerequisites/test-output.txt 2>&1
+pnpm test > .sisyphus/evidence/highport-holistic/prerequisites/test-output.txt 2>&1
 TEST_EXIT=$?
 
 # E2E Tests
-pnpm e2e > .sisyphus/evidence/planeshift-holistic/prerequisites/e2e-output.txt 2>&1
+pnpm e2e > .sisyphus/evidence/highport-holistic/prerequisites/e2e-output.txt 2>&1
 E2E_EXIT=$?
 
 echo "TypeCheck: $TYPECHECK_EXIT, Build: $BUILD_EXIT, Test: $TEST_EXIT, E2E: $E2E_EXIT"
@@ -114,7 +114,7 @@ echo "TypeCheck: $TYPECHECK_EXIT, Build: $BUILD_EXIT, Test: $TEST_EXIT, E2E: $E2
 
 Read the verification plan:
 ```
-Read(".sisyphus/verification/planeshift-holistic.md")
+Read(".sisyphus/verification/highport-holistic.md")
 ```
 
 For each scenario category, delegate to a subagent with playwright skill:
@@ -137,8 +137,8 @@ S2: Graph Page Renders - Navigate to /graph, verify React Flow canvas
 S3: Table Page Renders - Navigate to /reputation, verify table
 
 ## EVIDENCE REQUIREMENTS
-- Screenshot each scenario: .sisyphus/evidence/planeshift-holistic/smoke/smoke-0X-*.png
-- Log console errors to: .sisyphus/evidence/planeshift-holistic/console-errors.txt
+- Screenshot each scenario: .sisyphus/evidence/highport-holistic/smoke/smoke-0X-*.png
+- Log console errors to: .sisyphus/evidence/highport-holistic/console-errors.txt
 - Return: { passed: number, failed: number, errors: string[] }
 
 ## MUST DO
@@ -176,11 +176,11 @@ F5: Edit Table Cell - Edit faction name
 F6: Add Table Row - Add faction button
 
 ## EVIDENCE REQUIREMENTS
-- Screenshot each: .sisyphus/evidence/planeshift-holistic/feature/feature-0X-*.png
+- Screenshot each: .sisyphus/evidence/highport-holistic/feature/feature-0X-*.png
 - Return: { passed: number, failed: number, details: [...] }
 
 ## IMPORTANT
-- Clear IndexedDB before graph tests: page.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'))
+- Clear IndexedDB before graph tests: page.evaluate(() => indexedDB.deleteDatabase('highport-graph'))
 - Wait for elements before interacting
 - Take before/after screenshots for mutations
 `
@@ -207,7 +207,7 @@ P2: Graph persists after browser close - New context, verify data
 P3: Table persists after reload - Edit data, reload, verify
 
 ## EVIDENCE
-- .sisyphus/evidence/planeshift-holistic/persist/persist-0X-*.png
+- .sisyphus/evidence/highport-holistic/persist/persist-0X-*.png
 `
 )
 ```
@@ -260,7 +260,7 @@ M4: Conflict Resolution - Both edit simultaneously
 
 ## MEASUREMENTS
 - Measure sync latency for each operation
-- Save to: .sisyphus/evidence/planeshift-holistic/sync/sync-latency-measurements.json
+- Save to: .sisyphus/evidence/highport-holistic/sync/sync-latency-measurements.json
 
 ## EVIDENCE
 - Screenshot both contexts: sync-0X-*-A.png, sync-0X-*-B.png
@@ -293,7 +293,7 @@ I1: Full Graph Journey - Create 3 nodes, position, delete 1, reload, verify 2 re
 I2: Navigation Flow - Graph → Reputation → Resources → Home → Graph
 
 ## EVIDENCE
-- .sisyphus/evidence/planeshift-holistic/integration/integration-0X-*.png
+- .sisyphus/evidence/highport-holistic/integration/integration-0X-*.png
 `
 )
 ```
@@ -330,7 +330,7 @@ Find bugs, edge cases, and UX issues NOT covered by structured tests.
 10. Watch console for any warnings
 
 ## EVIDENCE REQUIREMENTS
-- Create: .sisyphus/evidence/planeshift-holistic/exploratory/exploration-log.md
+- Create: .sisyphus/evidence/highport-holistic/exploratory/exploration-log.md
 - Screenshot any issues found: finding-XX-description.png
 - Document:
   - What you tried
@@ -366,7 +366,7 @@ Return a structured list of findings:
 Aggregate all results and generate REPORT.md:
 
 ```markdown
-# Verification Report: planeshift-holistic
+# Verification Report: highport-holistic
 
 **Date**: {timestamp}
 **Duration**: {total time}
@@ -398,7 +398,7 @@ Aggregate all results and generate REPORT.md:
 ...
 ```
 
-Write to: `.sisyphus/evidence/planeshift-holistic/REPORT.md`
+Write to: `.sisyphus/evidence/highport-holistic/REPORT.md`
 
 **Mark "report" as completed.**
 
@@ -424,7 +424,7 @@ fi
 ```
 === /verify-app Complete ===
 
-Plan: planeshift-holistic
+Plan: highport-holistic
 Duration: {time}
 
 Results:
@@ -444,8 +444,8 @@ Exploratory:
 
 Console Errors: 0
 
-Evidence: .sisyphus/evidence/planeshift-holistic/
-Report: .sisyphus/evidence/planeshift-holistic/REPORT.md
+Evidence: .sisyphus/evidence/highport-holistic/
+Report: .sisyphus/evidence/highport-holistic/REPORT.md
 
 OVERALL: PASS ✓
 ```
@@ -456,9 +456,9 @@ OVERALL: PASS ✓
 
 ### Files
 - **Plan Template**: `.sisyphus/verification/TEMPLATE.md`
-- **PlaneShift Plan**: `.sisyphus/verification/planeshift-holistic.md`
-- **Evidence Directory**: `.sisyphus/evidence/planeshift-holistic/`
-- **Final Report**: `.sisyphus/evidence/planeshift-holistic/REPORT.md`
+- **Highport Plan**: `.sisyphus/verification/highport-holistic.md`
+- **Evidence Directory**: `.sisyphus/evidence/highport-holistic/`
+- **Final Report**: `.sisyphus/evidence/highport-holistic/REPORT.md`
 
 ### Service Ports
 | Service | Port |

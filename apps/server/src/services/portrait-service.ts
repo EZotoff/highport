@@ -2,8 +2,8 @@ import crypto from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { portraits } from '../db/schema.js';
-import { generateId } from '@planeshift/shared/utils/id';
-import type { PortraitRecord, PortraitSearchResult, PortraitSourcePolicy, PortraitTags } from '@planeshift/shared/types/portrait';
+import { generateId } from '@highport/shared/utils/id';
+import type { PortraitRecord, PortraitSearchResult, PortraitSourcePolicy, PortraitTags } from '@highport/shared/types/portrait';
 import { LocalPortraitStorage, type PortraitStorage } from '../storage/portrait-storage.js';
 
 const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:8000';

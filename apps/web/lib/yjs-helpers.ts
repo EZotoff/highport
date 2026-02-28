@@ -1,5 +1,5 @@
 import * as Y from 'yjs';
-import type { GraphNode, GraphEdge, NodeType } from '@planeshift/shared/types/graph';
+import type { GraphNode, GraphEdge, NodeType } from '@highport/shared/types/graph';
 import { getNodesMap, getEdgesMap } from './ydoc';
 
 export function nodeToYMap(node: GraphNode): Y.Map<unknown> {

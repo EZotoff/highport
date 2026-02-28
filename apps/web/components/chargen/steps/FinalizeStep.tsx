@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getYDoc } from '../../../lib/ydoc';
 import { useCharacter, useSession } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
-import { getCharacteristicModifier, getCareer, type CharacteristicSet } from '@planeshift/mgt2e';
+import { getCharacteristicModifier, getCareer, type CharacteristicSet } from '@highport/mgt2e';
 import {
   createCharacterNode,
   formatSkillsForDisplay,
@@ -16,7 +16,7 @@ import { GlassPanel, SciFiButton, SciFiInput, SkillBadge } from '@/components/ui
 import { PortraitGenerationProgress } from '@/components/portrait/PortraitGenerationProgress';
 import { Coins, Gift, UserCheck, Users, UserX, Skull, Circle } from 'lucide-react';
 import { attachPortraitRecord, attachPortraitToNode, usePortraitGenerator } from '../../../lib/portrait/usePortrait';
-import type { PortraitCareerType, PortraitRecord, PortraitTags } from '@planeshift/shared/types/portrait';
+import type { PortraitCareerType, PortraitRecord, PortraitTags } from '@highport/shared/types/portrait';
 import { PortraitLibrary } from '@/components/portrait/PortraitLibrary';
 import { PortraitRemixer } from '@/components/portrait/PortraitRemixer';
 
@@ -97,7 +97,7 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
       const doc = getYDoc();
       const finalData = createCharacterNode(character);
       updateCharacterFields(doc, character.id, { status: 'finalized' });
-      localStorage.removeItem('planeshift_active_character');
+      localStorage.removeItem('highport_active_character');
       if (portrait) {
         await attachPortraitRecord(finalData.graphNodeId, portrait.id);
         attachPortraitToNode(finalData.graphNodeId, portrait);

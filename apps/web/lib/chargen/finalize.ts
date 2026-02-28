@@ -1,8 +1,8 @@
 import { getYDoc } from '../ydoc';
 import { addNode, addEdge } from '../yjs-helpers';
-import type { GraphNode, GraphEdge } from '@planeshift/shared/types/graph';
+import type { GraphNode, GraphEdge } from '@highport/shared/types/graph';
 import type { ChargenCharacter } from './types';
-import { getCareer, type CharacteristicSet } from '@planeshift/mgt2e';
+import { getCareer, type CharacteristicSet } from '@highport/mgt2e';
 import { getRankInfo } from './term-resolution';
 
 export interface FinalizedCharacterData {

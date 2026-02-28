@@ -18,7 +18,7 @@ import type {
   PortraitGender,
   PortraitAgeRange,
   PortraitCareerType,
-} from '@planeshift/shared/types/portrait';
+} from '@highport/shared/types/portrait';
 
 interface PortraitRemixerProps {
   open: boolean;

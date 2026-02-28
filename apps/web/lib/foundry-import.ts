@@ -1,4 +1,4 @@
-import type { GraphNode } from '@planeshift/shared/types/graph';
+import type { GraphNode } from '@highport/shared/types/graph';
 
 /**
  * Foundry VTT Actor structure for Mongoose Traveller 2e system
@@ -15,7 +15,7 @@ export interface FoundryActor {
 }
 
 /**
- * Result of matching Foundry actors to PlaneShift graph nodes
+ * Result of matching Foundry actors to Highport graph nodes
  */
 export interface ImportResult {
   matched: Array<{
@@ -40,7 +40,7 @@ export function parseFoundryActors(json: string): FoundryActor[] {
 }
 
 /**
- * Map Foundry actor data to PlaneShift node metadata format
+ * Map Foundry actor data to Highport node metadata format
  */
 export function mapActorToMetadata(actor: FoundryActor): Record<string, unknown> {
   return {
@@ -59,7 +59,7 @@ export function mapActorToMetadata(actor: FoundryActor): Record<string, unknown>
 }
 
 /**
- * Match Foundry actors to PlaneShift graph nodes by foundry_uuid or name
+ * Match Foundry actors to Highport graph nodes by foundry_uuid or name
  */
 export function matchActorsToNodes(
   actors: FoundryActor[],

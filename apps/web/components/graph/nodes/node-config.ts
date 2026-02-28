@@ -1,4 +1,4 @@
-import { NodeType } from '@planeshift/shared';
+import { NodeType } from '@highport/shared';
 import { 
   User, Users, Rocket, Globe, Flag, MapPin, 
   Calendar, Lightbulb, Grid3x3, Puzzle 

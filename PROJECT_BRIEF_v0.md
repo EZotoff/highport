@@ -12,7 +12,7 @@ The *Pirates of Drinax* campaign, with its sandbox nature and empire-building me
 
 While *Foundry VTT* is a robust platform for tactical visualization, its architecture is inherently insular, relying on local databases and client-side processing that resists external integration. To satisfy the requirement for "advanced vibe coding" (rapid, modern web development) and "heavy AI API usage," this report argues against building complex logic *inside* Foundry.
 
-Instead, we propose a **Hybrid Command Center Architecture**. The core logic, simulation engine, and narrative processors will reside in a custom, external web application (built on a modern stack like Next.js and Python/FastAPI). This "Command Center" will serve as the single source of truth for the campaign's state—tracking base construction, faction turns, and character relationships. *Foundry VTT* will be relegated to a "Viewer" role: a high-fidelity display engine for tactical combat and dungeon crawling, updated dynamically by the Command Center via the *PlaneShift* API.1
+Instead, we propose a **Hybrid Command Center Architecture**. The core logic, simulation engine, and narrative processors will reside in a custom, external web application (built on a modern stack like Next.js and Python/FastAPI). This "Command Center" will serve as the single source of truth for the campaign's state—tracking base construction, faction turns, and character relationships. *Foundry VTT* will be relegated to a "Viewer" role: a high-fidelity display engine for tactical combat and dungeon crawling, updated dynamically by the Command Center via the *Highport* API.1
 
 This separation of concerns allows for the development of rich, collaborative features—such as the "Lifepath Graph" and "Offline Text Quests"—without the constraints of the VTT’s legacy code structure. It enables a "Blue-Booking" style of play where the game continues asynchronously on mobile devices during the week, synchronizing with the VTT for the Friday night session.
 
@@ -47,18 +47,18 @@ To resolve these constraints, we propose a **Sidecar Architecture**. The "Comman
   * **Orchestration:** Calls to OpenAI/Anthropic/DeepSeek APIs.  
   * **Simulation:** Running the *Stars Without Number* faction logic.  
   * **Data Persistence:** A **Supabase (PostgreSQL)** database that stores the "True State" of the campaign.  
-* **The Bridge (API Layer):** We utilize the **PlaneShift** module for Foundry VTT. *PlaneShift* exposes a REST API that allows external applications to query and update Foundry data (Actors, Items, Journals).1
+* **The Bridge (API Layer):** We utilize the **Highport** module for Foundry VTT. *Highport* exposes a REST API that allows external applications to query and update Foundry data (Actors, Items, Journals).1
 
 **Operational Workflow:**
 
-1. **Sync Down:** When a session starts, the Command Center pushes the latest "Offline Play" results (e.g., items gained, wounds taken) to Foundry via *PlaneShift*.  
+1. **Sync Down:** When a session starts, the Command Center pushes the latest "Offline Play" results (e.g., items gained, wounds taken) to Foundry via *Highport*.  
 2. **Play Session:** Tactical combat happens in Foundry.  
 3. **Sync Up:** At the end of the session, the Command Center pulls the updated Actor data and Chat Logs from Foundry to update its internal simulation state.
 
 | Feature | Foundry VTT (Native) | Command Center (Custom Web App) | Integration Method |
 | :---- | :---- | :---- | :---- |
 | **Tactical Combat** | Primary Engine | None | N/A |
-| **Character Sheet** | Display / Rolling | Creation / Management / AI | Sync via PlaneShift API |
+| **Character Sheet** | Display / Rolling | Creation / Management / AI | Sync via Highport API |
 | **Narrative Gen** | Basic Chat Macros | Advanced RAG / LLM Co-Pilot | Injection via Chat API |
 | **Base Building** | Static Journal Entries | Interactive Dashboard | Read-Only View in Journal |
 | **Offline Play** | Impossible | Primary Interface | Asynchronous State Update |
@@ -162,7 +162,7 @@ JSON
   }  
 }
 
-The App allows export of this JSON, which is then pushed to Foundry via the Actor.create() method in the *PlaneShift* API.
+The App allows export of this JSON, which is then pushed to Foundry via the Actor.create() method in the *Highport* API.
 
 ## ---
 
@@ -346,7 +346,7 @@ To support the interconnected nature of these tools, a relational database is es
 * **Process:**  
   1. Fetch latest actors from SQL.  
   2. Loop through actors.  
-  3. Call PlaneShift API: PUT {foundry\_url}/api/actor/{foundry\_id} with updated Inventory/Bio.
+  3. Call Highport API: PUT {foundry\_url}/api/actor/{foundry\_id} with updated Inventory/Bio.
 
 ### **8.3 The AI Stack: Latency and Cost Optimization**
 
@@ -395,18 +395,18 @@ This approach transforms the "Work" of the GM—tracking economics, faction move
 1. **Week 1:** Set up the Next.js/Supabase skeleton and build the UWP Parser.  
 2. **Week 2:** Implement the "Lifepath Graph" using D3.js.  
 3. **Week 3:** Build the Python Faction Turn engine using *Stars Without Number* rules.  
-4. **Week 4:** Deploy *PlaneShift* and build the Foundry Sync bridge.
+4. **Week 4:** Deploy *Highport* and build the Foundry Sync bridge.
 
 This roadmap ensures that even as you build, you have usable tools (Character Creator, then World Map, then Simulation) ready for your campaign.
 
 #### **Works cited**
 
-1. cclloyd/planeshift: A REST API for FoundryVTT \- GitHub, accessed on January 24, 2026, [https://github.com/cclloyd/planeshift](https://github.com/cclloyd/planeshift)  
+1. cclloyd/highport: A REST API for FoundryVTT \- GitHub, accessed on January 24, 2026, [https://github.com/cclloyd/highport](https://github.com/cclloyd/highport)  
 2. Traveller for FoundryVTT \- Gaming Chronicles, accessed on January 24, 2026, [https://blog.notasnark.net/2024/07/traveller-for-foundryvtt.html](https://blog.notasnark.net/2024/07/traveller-for-foundryvtt.html)  
 3. Mongoose Traveller 2e | Foundry Virtual Tabletop, accessed on January 24, 2026, [https://foundryvtt.com/packages/mgt2e](https://foundryvtt.com/packages/mgt2e)  
 4. Mongoose Traveller 2e \- Any suggestions for modules to use? : r/FoundryVTT \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/FoundryVTT/comments/192ttds/mongoose\_traveller\_2e\_any\_suggestions\_for\_modules/](https://www.reddit.com/r/FoundryVTT/comments/192ttds/mongoose_traveller_2e_any_suggestions_for_modules/)  
 5. Are there any Tools / Workflows that push content into FoundryVTT via API? \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/FoundryVTT/comments/1msh7a9/are\_there\_any\_tools\_workflows\_that\_push\_content/](https://www.reddit.com/r/FoundryVTT/comments/1msh7a9/are_there_any_tools_workflows_that_push_content/)  
-6. Introducing PlaneShift, a REST Api for FoundryVTT. \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/FoundryVTT/comments/1m4yshx/introducing\_planeshift\_a\_rest\_api\_for\_foundryvtt/](https://www.reddit.com/r/FoundryVTT/comments/1m4yshx/introducing_planeshift_a_rest_api_for_foundryvtt/)  
+6. Introducing Highport, a REST Api for FoundryVTT. \- Reddit, accessed on January 24, 2026, [https://www.reddit.com/r/FoundryVTT/comments/1m4yshx/introducing\_highport\_a\_rest\_api\_for\_foundryvtt/](https://www.reddit.com/r/FoundryVTT/comments/1m4yshx/introducing_highport_a_rest_api_for_foundryvtt/)  
 7. From RAG to GraphRAG: Knowledge Graphs, Ontologies and Smarter AI \- GoodData, accessed on January 24, 2026, [https://www.gooddata.com/blog/from-rag-to-graphrag-knowledge-graphs-ontologies-and-smarter-ai/](https://www.gooddata.com/blog/from-rag-to-graphrag-knowledge-graphs-ontologies-and-smarter-ai/)  
 8. Enhancing RAG-based application accuracy by constructing and leveraging knowledge graphs \- LangChain Blog, accessed on January 24, 2026, [https://blog.langchain.com/enhancing-rag-based-applications-accuracy-by-constructing-and-leveraging-knowledge-graphs/](https://blog.langchain.com/enhancing-rag-based-applications-accuracy-by-constructing-and-leveraging-knowledge-graphs/)  
 9. Character Generation CheckList \- Mongoose Publishing Forum, accessed on January 24, 2026, [https://forum.mongoosepublishing.com/threads/character-generation-checklist.48749/](https://forum.mongoosepublishing.com/threads/character-generation-checklist.48749/)  

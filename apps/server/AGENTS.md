@@ -1,7 +1,7 @@
 # SERVER (Fastify + Hocuspocus)
 
 ## OVERVIEW
-Backend for PlaneShift. Handles WebSocket sync via Hocuspocus and REST API via Fastify. Persists Y.Doc state to PostgreSQL.
+Backend for Highport. Handles WebSocket sync via Hocuspocus and REST API via Fastify. Persists Y.Doc state to PostgreSQL.
 
 ## STRUCTURE
 - `src/index.ts` - Server entry point

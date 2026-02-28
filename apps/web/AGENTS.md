@@ -1,7 +1,7 @@
 # WEB (Next.js 14)
 
 ## OVERVIEW
-Frontend for PlaneShift. Uses App Router, Yjs for CRDT state, React Flow for graph visualization.
+Frontend for Highport. Uses App Router, Yjs for CRDT state, React Flow for graph visualization.
 Implements a Local-First architecture using `y-indexeddb` for offline persistence.
 
 ## COMPONENT ARCHITECTURE
@@ -115,7 +115,7 @@ After any frontend changes:
 
 - **Isolation**:
   - Tests must start with a clean slate.
-  - Use `await page.evaluate(() => indexedDB.deleteDatabase('planeshift-doc'))`.
+  - Use `await page.evaluate(() => indexedDB.deleteDatabase('highport-doc'))`.
 - **Sync Waiting**:
   - Do NOT use fixed sleeps (`waitForTimeout`).
   - Use `expect(locator).toBeVisible()` or `waitForFunction` checking the DOM.

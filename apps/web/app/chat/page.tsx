@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ChatInterface } from '../../components/chat/ChatInterface';
 
 export const metadata = {
-  title: 'Chat - PlaneShift',
+  title: 'Chat - Highport',
   description: 'Ask questions about your campaign',
 };
 

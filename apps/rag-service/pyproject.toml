@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "planeshift-rag-service"
+name = "highport-rag-service"
 version = "0.1.0"
-description = "RAG service for PlaneShift TTRPG campaign management"
-authors = ["PlaneShift Team"]
+description = "RAG service for Highport TTRPG campaign management"
+authors = ["Highport Team"]
 readme = "README.md"
 packages = [{include = "providers"}, {include = "services"}, {include = "mocks"}]
 

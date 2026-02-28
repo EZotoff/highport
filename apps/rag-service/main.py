@@ -12,7 +12,7 @@ from routers import (
 
 load_dotenv()
 
-app = FastAPI(title="PlaneShift RAG Service")
+app = FastAPI(title="Highport RAG Service")
 
 app.include_router(ingest_router)
 app.include_router(scope_router)
@@ -24,7 +24,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3010",
-        "https://planeshift.app",
+        "https://highport.app",
     ],
     allow_methods=["*"],
     allow_headers=["*"],

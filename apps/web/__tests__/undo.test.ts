@@ -3,7 +3,7 @@ import * as Y from 'yjs';
 import { getYDoc } from '../lib/ydoc';
 import { initUndoManager, undo, redo } from '../lib/undo';
 import { addNode } from '../lib/yjs-helpers';
-import { GraphNode } from '@planeshift/shared';
+import { GraphNode } from '@highport/shared';
 
 describe('UndoManager', () => {
   let doc: Y.Doc;

@@ -1,6 +1,6 @@
 /**
  * Node type enumeration for graph entities
- * Follows Traveller 2e conventions with PlaneShift extensions
+ * Follows Traveller 2e conventions with Highport extensions
  */
 export type NodeType = 'traveller' | 'npc' | 'spacecraft' | 'world' | 'faction' | 'location' | 'event' | 'clue' | 'sector' | `custom:${string}`;
 /**

@@ -4,7 +4,7 @@ test.describe('Graph CRUD', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/graph');
     await page.waitForSelector('.react-flow', { timeout: 30000 });
-    await page.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await page.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page.reload();
     await page.waitForSelector('.react-flow', { timeout: 30000 });
     await page.waitForTimeout(500);

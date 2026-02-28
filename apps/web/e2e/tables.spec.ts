@@ -4,7 +4,7 @@ test.describe('Reputation Table', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/reputation');
     await page.waitForSelector('table', { timeout: 30000 });
-    await page.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await page.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page.reload();
     await page.waitForSelector('table', { timeout: 30000 });
     await page.waitForTimeout(500);
@@ -90,7 +90,7 @@ test.describe('Two-User Table Sync', () => {
 
     await page1.goto('/reputation');
     await page1.waitForSelector('table', { timeout: 30000 });
-    await page1.evaluate(() => indexedDB.deleteDatabase('planeshift-graph'));
+    await page1.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page1.reload();
     await page1.waitForSelector('table', { timeout: 30000 });
     

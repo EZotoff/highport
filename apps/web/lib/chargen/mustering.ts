@@ -4,8 +4,8 @@ import {
   rollCashBenefit,
   rollMusteringBenefit,
   getCharacteristicModifier,
-} from '@planeshift/mgt2e';
-import type { CareerDefinition, DiceResult } from '@planeshift/mgt2e';
+} from '@highport/mgt2e';
+import type { CareerDefinition, DiceResult } from '@highport/mgt2e';
 import type { ChargenCharacter, MusteringState } from './types';
 
 export function calculateTotalBenefitRolls(character: ChargenCharacter): number {

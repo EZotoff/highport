@@ -1,4 +1,4 @@
-# PlaneShift - TTRPG Campaign Management Platform
+# Highport - TTRPG Campaign Management Platform
 
 Real-time collaborative campaign management for Mongoose Traveller 2e, serving as a "second screen" for Foundry VTT.
 
@@ -59,27 +59,27 @@ uvicorn main:app --reload
 
 ## Foundry VTT Integration
 
-PlaneShift bridges the gap between your campaign notes and the VTT.
+Highport bridges the gap between your campaign notes and the VTT.
 
 ### Installing the Bridge Module
 
 To enable the connection, you must install the local package as a Foundry module.
 
 1. Locate your Foundry VTT User Data directory.
-2. Create a symlink from `packages/foundry-module` to `Data/modules/plane-shift-bridge`.
+2. Create a symlink from `packages/foundry-module` to `Data/modules/highport-bridge`.
 
 **Linux/Mac:**
 ```bash
-ln -s "$(pwd)/packages/foundry-module" "/path/to/FoundryVTT/Data/modules/plane-shift-bridge"
+ln -s "$(pwd)/packages/foundry-module" "/path/to/FoundryVTT/Data/modules/highport-bridge"
 ```
 
 **Windows:**
 ```powershell
-mklink /D "C:\Path\To\FoundryVTT\Data\modules\plane-shift-bridge" "C:\Path\To\Repo\packages\foundry-module"
+mklink /D "C:\Path\To\FoundryVTT\Data\modules\highport-bridge" "C:\Path\To\Repo\packages\foundry-module"
 ```
 
 3. Restart Foundry VTT.
-4. Enable "PlaneShift Bridge" in your world's module settings.
+4. Enable "Highport Bridge" in your world's module settings.
 
 ### Manual Export
 
@@ -162,7 +162,7 @@ Create `.env` files in relevant apps as needed:
 
 ### apps/server/.env
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/planeshift
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/highport
 ```
 
 ### apps/rag-service/.env
@@ -184,7 +184,7 @@ PINECONE_API_KEY=your-pinecone-key
 ## Architecture
 
 ### CRDT Sync
-PlaneShift uses Yjs for conflict-free replicated data types (CRDTs). The Hocuspocus server handles WebSocket connections and persists documents to PostgreSQL.
+Highport uses Yjs for conflict-free replicated data types (CRDTs). The Hocuspocus server handles WebSocket connections and persists documents to PostgreSQL.
 
 ### Graph Visualization
 The campaign graph uses React Flow for rendering and interaction. Nodes represent campaign entities (NPCs, locations, factions, etc.) and edges represent relationships.

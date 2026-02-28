@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import type { GraphNode } from '@planeshift/shared/types/graph';
+import type { GraphNode } from '@highport/shared/types/graph';
 
 export interface FoundryActorExport {
   _id: string;

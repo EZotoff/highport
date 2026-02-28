@@ -41,7 +41,7 @@ export default function SessionJoinModal() {
     if (currentUser && participants.length > 0) {
          const myChar = participants.find(p => p.userId === currentUser.userId && !p.isGM)?.character;
          if (myChar) {
-             localStorage.setItem('planeshift_active_character', JSON.stringify({
+             localStorage.setItem('highport_active_character', JSON.stringify({
                  characterId: myChar.id,
                  name: myChar.name
              }));
@@ -93,13 +93,13 @@ export default function SessionJoinModal() {
         
         // Update user name if changed
         const updatedUser = { ...currentUser, name: playerName };
-        localStorage.setItem('planeshift_user', JSON.stringify(updatedUser));
+        localStorage.setItem('highport_user', JSON.stringify(updatedUser));
 
         // Create character
         const charId = createCharacter(doc, currentUser.userId, playerName);
         
         // Set active character
-        localStorage.setItem('planeshift_active_character', JSON.stringify({
+        localStorage.setItem('highport_active_character', JSON.stringify({
             characterId: charId,
             name: playerName
         }));

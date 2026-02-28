@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PortraitTags } from '@planeshift/shared/types/portrait';
+import type { PortraitTags } from '@highport/shared/types/portrait';
 import type { PortraitStorage, PortraitStorageResult } from '../src/storage/portrait-storage.js';
 
 type PortraitRow = {

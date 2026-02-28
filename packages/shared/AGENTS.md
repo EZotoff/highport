@@ -23,11 +23,11 @@ Shared types and utilities used by both web and server packages.
 Use subpath exports, NOT internal paths:
 ```typescript
 // ✅ CORRECT
-import { GraphNode } from '@planeshift/shared/types';
-import { generateNodeId } from '@planeshift/shared/utils/id';
+import { GraphNode } from '@highport/shared/types';
+import { generateNodeId } from '@highport/shared/utils/id';
 
 // ❌ WRONG
-import { GraphNode } from '@planeshift/shared/src/types/graph';
+import { GraphNode } from '@highport/shared/src/types/graph';
 ```
 
 ## BUILDING

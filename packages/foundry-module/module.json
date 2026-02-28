@@ -1,7 +1,7 @@
 {
-  "id": "plane-shift-bridge",
-  "title": "PlaneShift Bridge",
-  "description": "Bi-directional sync between PlaneShift and Foundry VTT",
+  "id": "highport-bridge",
+  "title": "Highport Bridge",
+  "description": "Bi-directional sync between Highport and Foundry VTT",
   "version": "1.0.0",
   "compatibility": {
     "minimum": "12",
@@ -9,7 +9,7 @@
   },
   "authors": [
     {
-      "name": "PlaneShift Team"
+      "name": "Highport Team"
     }
   ],
   "esmodules": ["module.js"],

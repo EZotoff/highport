@@ -1,5 +1,5 @@
 import * as Y from 'yjs';
-import { generateId } from '@planeshift/shared/utils/id';
+import { generateId } from '@highport/shared/utils/id';
 
 export interface ResourceChange {
   value: number;

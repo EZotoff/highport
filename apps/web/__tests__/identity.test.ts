@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getOrCreateUser } from '../lib/identity';
-import { MockUser } from '@planeshift/shared/types/identity';
+import { MockUser } from '@highport/shared/types/identity';
 
 describe('identity', () => {
   let store: Record<string, string> = {};
@@ -41,7 +41,7 @@ describe('identity', () => {
 
   it('persists user in localStorage', () => {
     const user = getOrCreateUser();
-    const stored = JSON.parse(localStorage.getItem('planeshift_user') || '{}');
+    const stored = JSON.parse(localStorage.getItem('highport_user') || '{}');
     expect(stored.userId).toBe(user.userId);
   });
 

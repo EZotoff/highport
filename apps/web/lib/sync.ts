@@ -5,7 +5,7 @@ import { HocuspocusProvider } from '@hocuspocus/provider';
 let persistence: IndexeddbPersistence | null = null;
 let provider: HocuspocusProvider | null = null;
 
-const SESSION_KEY = 'planeshift_session_id';
+const SESSION_KEY = 'highport_session_id';
 
 export function getSessionId(scope: string): string {
   if (typeof window === 'undefined') {
@@ -20,7 +20,7 @@ export function getSessionId(scope: string): string {
   return id;
 }
 
-export function initPersistence(doc: Y.Doc, name: string = 'planeshift-graph'): IndexeddbPersistence {
+export function initPersistence(doc: Y.Doc, name: string = 'highport-graph'): IndexeddbPersistence {
   if (persistence) {
     return persistence;
   }
@@ -91,7 +91,7 @@ export function waitForPersistenceSync(p: IndexeddbPersistence): Promise<void> {
 
 export async function initAndWaitForPersistence(
   doc: Y.Doc,
-  name: string = 'planeshift-graph'
+  name: string = 'highport-graph'
 ): Promise<IndexeddbPersistence> {
   const p = initPersistence(doc, name);
   await waitForPersistenceSync(p);

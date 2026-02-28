@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { GraphNode } from '@planeshift/shared/types/graph';
+import type { GraphNode } from '@highport/shared/types/graph';
 import {
   parseFoundryActors,
   matchActorsToNodes,
