@@ -21,6 +21,25 @@ build/
 .env.local
 .env.*.local
 
+# Security-sensitive files
+.env.production
+.env.*.production
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.pub
+.ssh/
+.aws/
+secrets/
+.secrets/
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+*.sql.gz
+
 # IDE
 .vscode/
 .idea/
@@ -47,3 +66,10 @@ venv/
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Security - additional sensitive files
+.env.production
+.env.staging
+credentials.json
+service-account*.json
+*-credentials.json
