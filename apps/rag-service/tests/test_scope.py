@@ -122,7 +122,6 @@ async def test_update_scope_pinecone_not_configured():
     from routers.scope import set_scope_dependencies, clear_scope_dependencies
 
     set_scope_dependencies(pinecone=None)
-    clear_scope_dependencies()
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -131,7 +130,7 @@ async def test_update_scope_pinecone_not_configured():
             json={"source_id": "doc_123", "access_scope": ["public"]},
         )
         assert response.status_code == 503
-
+    clear_scope_dependencies()
 
 @pytest.mark.asyncio
 async def test_update_scope_validates_request():

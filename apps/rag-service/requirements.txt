@@ -1,15 +1,21 @@
 fastapi>=0.109.0
 uvicorn>=0.27.0
 python-dotenv>=1.0.0
+# Cloud providers (optional)
 pinecone-client>=3.0.0
 openai>=1.10.0
-tiktoken>=0.5.0
 google-generativeai>=0.3.0
+# Local/free providers (optional)
+ollama>=0.4.0
+chromadb>=0.5.0
+# Utilities
+tiktoken>=0.5.0
 pypdf>=4.0.0
 python-multipart>=0.0.9
-pytest>=8.0.0
-pytest-asyncio>=0.23.0
 httpx>=0.26.0
 typing_extensions>=4.9.0
+# Dev/Test
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
 mypy>=1.9.0
 ruff>=0.4.0

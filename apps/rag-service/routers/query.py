@@ -7,10 +7,11 @@ from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from providers.base import LLMProvider
+from providers.llm.base import LLMProvider
+from providers.llm import get_llm_provider
 from providers.embeddings import EmbeddingsClient
-from providers.gemini import GeminiProvider
-from services.pinecone_client import PineconeService
+from providers.vectordb.base import VectorDBProvider
+from providers.vectordb import get_vectordb_provider
 
 router = APIRouter(prefix="/query", tags=["query"])
 
@@ -52,13 +53,13 @@ def _get_embeddings():
 def _get_llm() -> LLMProvider:
     if _llm_override is not None:
         return _llm_override
-    return GeminiProvider()
+    return get_llm_provider()
 
 
-def _get_pinecone() -> PineconeService:
+def _get_pinecone():
     if _pinecone_override is not None:
         return _pinecone_override
-    return PineconeService()
+    return get_vectordb_provider()
 
 
 @router.post("")

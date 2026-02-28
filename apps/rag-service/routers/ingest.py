@@ -111,18 +111,18 @@ def _get_llm() -> LLMProtocol:
     """Get LLM provider."""
     if _llm_override is not None:
         return _llm_override
-    from providers.gemini import GeminiProvider
+    from providers.llm import get_llm_provider
 
-    return GeminiProvider()
+    return get_llm_provider()
 
 
 def _get_pinecone() -> PineconeProtocol:
-    """Get Pinecone service."""
+    """Get vector DB provider."""
     if _pinecone_override is not None:
         return _pinecone_override
-    from services.pinecone_client import PineconeService
+    from providers.vectordb import get_vectordb_provider
 
-    return PineconeService()
+    return get_vectordb_provider()
 
 
 @router.post("")

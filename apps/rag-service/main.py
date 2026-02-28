@@ -33,4 +33,13 @@ app.add_middleware(
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    from providers.llm import get_llm_provider_name
+    from providers.vectordb import get_vectordb_provider_name
+
+    return {
+        "status": "ok",
+        "providers": {
+            "llm": get_llm_provider_name(),
+            "vectordb": get_vectordb_provider_name(),
+        },
+    }

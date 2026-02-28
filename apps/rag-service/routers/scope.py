@@ -38,8 +38,11 @@ class UpdateScopeResult:
     message: str = ""
 
 
+# Sentinel value to distinguish "no override" from "override set to None"
+_UNSET = object()
+
 # Dependency override for testing
-_pinecone_override: PineconeUpdateProtocol | None = None
+_pinecone_override: PineconeUpdateProtocol | None | object = _UNSET
 
 
 def set_scope_dependencies(pinecone: PineconeUpdateProtocol | None = None) -> None:
@@ -47,6 +50,7 @@ def set_scope_dependencies(pinecone: PineconeUpdateProtocol | None = None) -> No
 
     Args:
         pinecone: Pinecone service override with update capability.
+                  Pass None to simulate an unconfigured state.
     """
     global _pinecone_override
     _pinecone_override = pinecone
@@ -55,25 +59,28 @@ def set_scope_dependencies(pinecone: PineconeUpdateProtocol | None = None) -> No
 def clear_scope_dependencies() -> None:
     """Clear all dependency overrides."""
     global _pinecone_override
-    _pinecone_override = None
-
+    _pinecone_override = _UNSET
 
 def _get_pinecone() -> PineconeUpdateProtocol | None:
-    """Get Pinecone service.
+    """Get vector DB provider.
 
-    Returns None if no override is set and Pinecone is not configured.
+    Returns None if override is explicitly None or if no provider is configured.
     """
-    if _pinecone_override is not None:
-        return _pinecone_override
+    if _pinecone_override is not _UNSET:
+        return _pinecone_override  # type: ignore[return-value]
 
     import os
 
-    if not os.environ.get("PINECONE_API_KEY"):
+    vectordb_provider = os.environ.get("VECTORDB_PROVIDER", "chroma").lower()
+    if vectordb_provider == "pinecone" and not os.environ.get("PINECONE_API_KEY"):
         return None
 
-    from services.pinecone_client import PineconeService
+    from providers.vectordb import get_vectordb_provider
 
-    return PineconeService()
+    try:
+        return get_vectordb_provider()
+    except ValueError:
+        return None
 
 
 @router.post("/update-scope")
@@ -91,7 +98,7 @@ async def update_scope(request: UpdateScopeRequest) -> dict:
     """
     pinecone = _get_pinecone()
     if pinecone is None:
-        raise HTTPException(status_code=503, detail="Pinecone not configured")
+        raise HTTPException(status_code=503, detail="Vector DB not configured")
 
     # Query for vectors with this source_id
     try:
@@ -101,7 +108,7 @@ async def update_scope(request: UpdateScopeRequest) -> dict:
         )
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to query Pinecone: {str(e)}"
+            status_code=500, detail=f"Failed to query vector DB: {str(e)}"
         )
 
     if not results:
