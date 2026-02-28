@@ -1,230 +1,132 @@
-# Highport - TTRPG Campaign Management Platform
+# Highport
 
-Real-time collaborative campaign management for Mongoose Traveller 2e, serving as a "second screen" for Foundry VTT.
+> The bridge of your campaign. Real-time. Open-source. Traveller-aware.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+
+---
+
+![Screenshot](docs/screenshot.png)
 
 ## Features
 
-- **Real-time Collaboration**: Multiple users can edit simultaneously with Yjs CRDT
-- **Graph Visualization**: Interactive node graph for campaign entities (NPCs, locations, factions)
-- **Faction Reputation Tracking**: Editable tables with live sync
-- **Offline Support**: IndexedDB persistence for offline-first experience
-- **RAG-powered Queries**: AI assistant with knowledge gating based on player permissions
-- **Foundry VTT Integration**: Export actors to Foundry or sync in real-time
+- 🎮 **Real-time Collaboration** — Multiple users edit simultaneously with Yjs CRDT sync
+- 🤖 **AI-powered Research** — Ask questions about your campaign lore with knowledge gating
+- 🕸️ **Graph Visualization** — Interactive node graph for NPCs, locations, factions, and their relationships
+- 📊 **Campaign Management** — Create, manage, and organize your TTRPG campaigns
+- 💾 **Offline Support** — IndexedDB persistence works even when disconnected
+- 🔌 **Extensible Game Data** — Plugin import system with SRD fallback content
 
-## Prerequisites
-
-- Node.js 20+
-- pnpm 9+
-- Docker (for local PostgreSQL)
-- Python 3.11+ (for RAG service)
-- Foundry VTT v12+ (for VTT integration)
+---
 
 ## Quick Start
 
-### 1. Core Platform (Web + Server)
-
 ```bash
-# Install dependencies
+# 1. Clone the repository
+git clone https://github.com/ezotoff/highport.git
+cd highport
+
+# 2. Install dependencies
 pnpm install
 
-# Start local PostgreSQL
+# 3. Start PostgreSQL
 docker compose up -d
 
-# Run database migrations
+# 4. Run database migrations
 pnpm --filter server db:migrate
 
-# Start development servers (Web: 3010, Sync: 3011, API: 3012)
+# 5. Start development servers
 pnpm dev
 ```
 
-The web app will be available at `http://localhost:3010`.
+The web app is now running at `http://localhost:3010`.
 
-### 2. AI RAG Service (Optional)
+---
 
-The RAG service powers the "Ask Computer" feature.
+## AI Setup
 
-```bash
-cd apps/rag-service
+To enable the "Ask Computer" AI assistant, you'll need the RAG service running. The fastest path uses free local providers (Ollama + ChromaDB) with no API keys required.
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
+See the complete setup guide: [docs/rag-setup.md](./docs/rag-setup.md)
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Start service (Port: 8000)
-uvicorn main:app --reload
-```
-
-## Foundry VTT Integration
-
-Highport bridges the gap between your campaign notes and the VTT.
-
-### Installing the Bridge Module
-
-To enable the connection, you must install the local package as a Foundry module.
-
-1. Locate your Foundry VTT User Data directory.
-2. Create a symlink from `packages/foundry-module` to `Data/modules/highport-bridge`.
-
-**Linux/Mac:**
-
-```bash
-ln -s "$(pwd)/packages/foundry-module" "/path/to/FoundryVTT/Data/modules/highport-bridge"
-```
-
-**Windows:**
-
-```powershell
-mklink /D "C:\Path\To\FoundryVTT\Data\modules\highport-bridge" "C:\Path\To\Repo\packages\foundry-module"
-```
-
-3. Restart Foundry VTT.
-4. Enable "Highport Bridge" in your world's module settings.
-
-### Manual Export
-
-If you cannot use the bridge module, you can manually export data:
-
-1. Select nodes in the Graph view.
-2. Click the "Export to Foundry" button.
-3. A ZIP file containing JSON Actor data will download.
-4. Import these JSON files into Foundry VTT actors.
-
-## Project Structure
-
-```
-apps/
-  web/             # Next.js 14 frontend (React, Yjs, React Flow)
-  server/          # Hocuspocus + Fastify backend (WebSocket sync)
-  rag-service/     # Python FastAPI for RAG queries
-packages/
-  shared/          # Shared TypeScript types and utilities
-  foundry-module/  # Foundry VTT bridge module
-```
-
-## Development
-
-```bash
-# Run all JS/TS development servers (via Turbo)
-pnpm dev
-
-# Run linting
-pnpm lint
-
-# Type checking
-pnpm typecheck
-
-# Build all packages
-pnpm build
-```
-
-## Testing
-
-**Important**: Run `docker compose up -d` before running server tests to ensure PostgreSQL is available.
-
-### Unit & Integration Tests
-
-```bash
-# Run all unit tests
-pnpm test
-
-# Run specific app tests
-pnpm --filter web test
-pnpm --filter server test
-
-# Watch mode for web tests
-pnpm --filter web test:watch
-```
-
-### E2E Tests (Playwright)
-
-E2E tests verify critical user flows including graph CRUD, table editing, and real-time sync between users.
-
-```bash
-# Install Playwright browsers (first time only)
-npx playwright install chromium
-
-# Run E2E tests
-pnpm e2e
-
-# Run E2E tests with UI
-pnpm --filter web e2e:ui
-```
-
-E2E test coverage:
-
-- Graph node creation, selection, deletion
-- Reputation table editing and sync
-- Sync latency verification (<500ms between users)
-- Performance testing (500 nodes, 5 concurrent users)
-
-## Environment Variables
-
-Create `.env` files in relevant apps as needed:
-
-### apps/server/.env
-
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/highport
-```
-
-### apps/rag-service/.env
-
-```env
-GOOGLE_API_KEY=your-gemini-api-key
-PINECONE_API_KEY=your-pinecone-key
-```
-
-## Services
-
-| Service     | Local Port | Description           |
-| ----------- | ---------- | --------------------- |
-| Web         | 3010       | Next.js frontend      |
-| Hocuspocus  | 3011       | WebSocket sync server |
-| Fastify     | 3012       | REST API server       |
-| RAG Service | 8000       | Python FastAPI        |
-| PostgreSQL  | 5432       | Database              |
+---
 
 ## Architecture
 
-### CRDT Sync
+Highport uses a real-time CRDT sync engine powered by Yjs and Hocuspocus:
 
-Highport uses Yjs for conflict-free replicated data types (CRDTs). The Hocuspocus server handles WebSocket connections and persists documents to PostgreSQL.
-
-### Graph Visualization
-
-The campaign graph uses React Flow for rendering and interaction. Nodes represent campaign entities (NPCs, locations, factions, etc.) and edges represent relationships.
-
-### Offline Support
-
-y-indexeddb provides offline persistence. Changes made offline are automatically synced when reconnecting.
-
-## Troubleshooting
-
-### Database connection errors
-
-```bash
-# Ensure PostgreSQL is running
-docker compose up -d
-
-# Check logs
-docker compose logs postgres
+```
+┌─────────────┐     WebSocket      ┌─────────────┐     SQL       ┌─────────────┐
+│   Web App   │ ◄────────────────► │  Hocuspocus │ ◄───────────► │  PostgreSQL │
+│  (Next.js)  │      Port 3011     │   Server    │               │   Port 5432 │
+│   Port 3010 │                    │   Port 3012 │               │             │
+└──────┬──────┘                    └─────────────┘               └─────────────┘
+       │
+       │ HTTP/SSE
+       ▼
+┌─────────────┐
+│    RAG      │     LLM        ┌─────────────┐
+│  Service    │ ◄────────────► │   Ollama    │
+│  Port 8000  │   (local)      │  Port 11434 │
+└─────────────┘                └─────────────┘
 ```
 
-### Sync not working
+- **Web** (3010): Next.js 14 frontend with React Flow graph visualization
+- **Hocuspocus** (3011): Yjs WebSocket server for real-time sync
+- **Fastify** (3012): REST API for campaigns and user management
+- **RAG Service** (8000): Python FastAPI for AI queries with knowledge gating
+- **PostgreSQL** (5432): Document persistence and user data
 
-- Verify Hocuspocus server is running on port 3011
-- Check browser console for WebSocket errors
-- Clear IndexedDB if data is corrupted: Dev Tools > Application > IndexedDB > Delete database
+---
 
-### E2E tests failing
+## Game Data
 
-```bash
-# Ensure dev server is not already running, or use:
-CI=true pnpm e2e
+Highport supports custom game system data through a plugin import system. Place JSON files in the data import folder, and the system will load your custom content.
 
-# Install browsers if missing
-npx playwright install chromium
-```
+**SRD Fallback**: If no custom data is provided, the system automatically falls back to Mongoose Traveller 2e SRD content (skills, careers, equipment tables) so you can start playing immediately.
+
+---
+
+## Contributing
+
+We welcome contributions. See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions, branch naming conventions, and our pull request process.
+
+Look for issues labeled `good first issue` to get started.
+
+---
+
+## Roadmap
+
+See [ROADMAP.md](./ROADMAP.md) for what is shipping now, what is coming next, and our long-term vision. Foundry VTT integration is planned for a future release.
+
+Community input welcome. Open a GitHub Issue with the `feature-request` label to share what matters most to you.
+
+---
+
+## Services
+
+| Service     | Port | Description           |
+| ----------- | ---- | --------------------- |
+| Web         | 3010 | Next.js frontend      |
+| Hocuspocus  | 3011 | WebSocket sync server |
+| Fastify     | 3012 | REST API              |
+| RAG Service | 8000 | Python FastAPI for AI |
+| PostgreSQL  | 5432 | Database              |
+
+---
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
+
+---
+
+## Credits
+
+Built with AI-assisted engineering.
+
+---
+
+**Future home**: When we gain traction, we will consider moving to a dedicated GitHub organization. For now, development happens at `ezotoff/highport`.
