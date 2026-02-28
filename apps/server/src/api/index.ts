@@ -8,6 +8,7 @@ import { registerConflictRoutes } from '../routes/conflicts.js';
 import { registerExportRoutes } from '../routes/export.js';
 import { registerPortraitRoutes } from '../routes/portraits.js';
 import { registerCampaignRoutes } from '../routes/campaigns.js';
+import { registerAuthRoutes } from '../routes/auth.js';
 
 const FASTIFY_PORT = 3012;
 
@@ -25,6 +26,7 @@ export async function startFastify(): Promise<void> {
   await registerExportRoutes(fastify);
   await registerPortraitRoutes(fastify);
   await registerCampaignRoutes(fastify);
+  await registerAuthRoutes(fastify);
 
   fastify.get('/health', async () => {
     return { status: 'ok' };

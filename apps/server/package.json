@@ -20,9 +20,10 @@
     "@aws-sdk/s3-request-presigner": "^3.985.0",
     "@fastify/cors": "^9.0.0",
     "@fastify/websocket": "^8.3.0",
+    "@highport/shared": "workspace:*",
     "@hocuspocus/extension-database": "^2.0.0",
     "@hocuspocus/server": "^2.0.0",
-    "@highport/shared": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.38.0",
     "fastify": "^4.26.0",
     "postgres": "^3.4.0",
@@ -30,6 +31,7 @@
     "yjs": "^13.6.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20.0.0",
     "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.28.0",

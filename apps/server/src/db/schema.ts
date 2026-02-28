@@ -60,6 +60,8 @@ export const documentUpdates = pgTable('document_updates', {
 export const users = pgTable('users', {
   id: varchar('id', { length: 64 }).primaryKey(),
   name: varchar('name', { length: 255 }),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
