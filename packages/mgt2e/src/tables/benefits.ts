@@ -10,31 +10,29 @@ export interface BenefitRollResult {
 
 export function rollCashBenefit(
   career: CareerDefinition,
-  gamblingBonus: number = 0
+  gamblingBonus: number = 0,
 ): BenefitRollResult {
   const result = roll1d6(gamblingBonus);
   // Clamp to valid index (1-7 maps to index 0-6)
   const index = Math.min(Math.max(result.total, 1), career.cashBenefits.length) - 1;
   const cash = career.cashBenefits[index];
-  
+
   return { roll: result, cash };
 }
 
 export function rollMusteringBenefit(
   career: CareerDefinition,
   modifier: number = 0,
-  isHighRank: boolean = false
+  isHighRank: boolean = false,
 ): BenefitRollResult {
   const result = roll1d6(modifier);
   // Clamp to valid index (1-6 maps to index 0-5, or 1-7 to 0-6)
   const index = Math.min(Math.max(result.total, 1), career.benefitTable.length) - 1;
   const entry = career.benefitTable[index];
-  
+
   // High rank (5+) may get alternate benefit
-  const benefit = isHighRank && entry.orHighRank 
-    ? entry.orHighRank 
-    : entry.benefit;
-  
+  const benefit = isHighRank && entry.orHighRank ? entry.orHighRank : entry.benefit;
+
   return { roll: result, benefit };
 }
 

@@ -10,6 +10,7 @@
 ## Overview
 
 This phase transforms single-player character generation into a collaborative "Session Zero" experience where:
+
 1. Multiple players generate characters simultaneously in the same session
 2. Players see each other's progress in real-time
 3. Spawned NPCs/locations form a shared pool visible to all
@@ -21,92 +22,99 @@ This phase transforms single-player character generation into a collaborative "S
 ## Architecture Decisions
 
 ### Session Model
+
 - **Shared CRDT State**: All chargen data in single Y.Doc, partitioned by character ID
 - **Presence Integration**: Use existing Hocuspocus awareness for "who is where"
 - **NPC Pool**: Centralized map of all spawned entities, visible to all participants
 
 ### Real-Time Visibility
+
 - Players see a sidebar/panel showing other participants' current status
 - Entity spawns trigger notifications to all participants
 - Connection requests are visible to entity creator and GM
 
 ### Ownership Model
-| Entity Type | Default Owner | Can Transfer To |
-|-------------|---------------|-----------------|
-| Character | Creating Player | GM only |
-| Spawned NPC | GM | Any player (for crew) |
-| Spawned Location | GM | N/A |
-| Spawned Item | Creating Player | Other players |
+
+| Entity Type      | Default Owner   | Can Transfer To       |
+| ---------------- | --------------- | --------------------- |
+| Character        | Creating Player | GM only               |
+| Spawned NPC      | GM              | Any player (for crew) |
+| Spawned Location | GM              | N/A                   |
+| Spawned Item     | Creating Player | Other players         |
 
 ---
 
 ## Task Breakdown
 
 ### Task 1: Shared Chargen Session State
+
 **Effort**: Medium (2-3 hours)
 
 Extend CRDT schema to support multiple simultaneous characters.
 
 **Files to modify:**
+
 - [x] `apps/web/lib/chargen/types.ts` - Add session-level types
 - [x] `apps/web/lib/chargen/state.ts` - Add session management functions
 - [x] `apps/web/lib/chargen/hooks.ts` - Add session-aware hooks
 
 **Schema Extension:**
+
 ```typescript
 // Session-level state (in Y.Doc)
 interface ChargenSession {
   id: string;
   campaignId: string;
   createdAt: number;
-  createdBy: string;  // GM user ID
+  createdBy: string; // GM user ID
   status: 'active' | 'completed' | 'abandoned';
-  
+
   // All characters being generated
-  characters: Y.Map<string, ChargenCharacter>;  // charId → character
-  
+  characters: Y.Map<string, ChargenCharacter>; // charId → character
+
   // Shared entity pool
-  entityPool: Y.Map<string, SpawnedEntity>;  // entityId → entity
-  
+  entityPool: Y.Map<string, SpawnedEntity>; // entityId → entity
+
   // Connection requests between entities
   connectionRequests: Y.Array<ConnectionRequest>;
-  
+
   // Session settings
   settings: {
-    allowedCareers: string[];  // Which careers are enabled
+    allowedCareers: string[]; // Which careers are enabled
     aiVerbosity: 'minimal' | 'structured' | 'rich';
-    requireGMApproval: boolean;  // For entity spawns
+    requireGMApproval: boolean; // For entity spawns
   };
 }
 
 interface SpawnedEntity {
   id: string;
   type: 'npc' | 'location' | 'item' | 'secret';
-  createdBy: string;  // User ID who spawned
+  createdBy: string; // User ID who spawned
   createdFor: string; // Character ID it was spawned for
   createdDuring: { termNumber: number; eventRoll: number };
-  ownedBy: string;    // 'gm' or user ID
-  
+  ownedBy: string; // 'gm' or user ID
+
   // Entity data
   name: string;
   metadata: Record<string, unknown>;
-  
+
   // Claimed connections
-  claimedBy: string[];  // Character IDs that have claimed this entity
+  claimedBy: string[]; // Character IDs that have claimed this entity
 }
 
 interface ConnectionRequest {
   id: string;
-  requesterId: string;      // User ID requesting
-  requesterCharId: string;  // Character ID requesting
-  entityId: string;         // Entity being claimed
-  relationship: string;     // 'ally' | 'contact' | 'rival' | etc.
+  requesterId: string; // User ID requesting
+  requesterCharId: string; // Character ID requesting
+  entityId: string; // Entity being claimed
+  relationship: string; // 'ally' | 'contact' | 'rival' | etc.
   status: 'pending' | 'approved' | 'rejected';
-  note?: string;            // Player's reason for connection
+  note?: string; // Player's reason for connection
 }
 ```
 
 **Session Management Functions:**
+
 ```typescript
 // Create new chargen session
 function createSession(doc: Y.Doc, campaignId: string, gmUserId: string): string;
@@ -121,13 +129,19 @@ function getSessionCharacters(doc: Y.Doc): ChargenCharacter[];
 function getEntityPool(doc: Y.Doc): SpawnedEntity[];
 
 // Submit connection request
-function requestConnection(doc: Y.Doc, charId: string, entityId: string, relationship: string): void;
+function requestConnection(
+  doc: Y.Doc,
+  charId: string,
+  entityId: string,
+  relationship: string,
+): void;
 
 // Approve/reject connection (GM only)
 function resolveConnectionRequest(doc: Y.Doc, requestId: string, approved: boolean): void;
 ```
 
 **Acceptance criteria:**
+
 - [x] Session can be created with unique ID
 - [x] Multiple characters can exist in same session
 - [x] Entity pool shared across all participants
@@ -136,16 +150,19 @@ function resolveConnectionRequest(doc: Y.Doc, requestId: string, approved: boole
 ---
 
 ### Task 2: Participant Awareness Panel
+
 **Effort**: Medium (2-3 hours)
 
 Show real-time status of all participants in the chargen session.
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/ParticipantPanel.tsx`
 - [x] `apps/web/components/chargen/ParticipantCard.tsx`
 - [x] `apps/web/lib/chargen/useParticipants.ts`
 
 **UI Design:**
+
 ```
 ┌─ SESSION PARTICIPANTS ──────────────────────────────┐
 │                                                     │
@@ -177,6 +194,7 @@ Show real-time status of all participants in the chargen session.
 ```
 
 **Awareness Integration:**
+
 ```typescript
 // Update awareness with chargen progress
 awareness.setLocalStateField('chargen', {
@@ -190,6 +208,7 @@ awareness.setLocalStateField('chargen', {
 ```
 
 **Acceptance criteria:**
+
 - [x] Panel shows all session participants
 - [x] Real-time updates as participants progress
 - [x] GM shown with distinct indicator
@@ -199,16 +218,19 @@ awareness.setLocalStateField('chargen', {
 ---
 
 ### Task 3: Entity Pool View
+
 **Effort**: Medium (2-3 hours)
 
 Display all spawned entities from the session.
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/EntityPoolPanel.tsx`
 - [x] `apps/web/components/chargen/EntityPoolCard.tsx`
 - [x] `apps/web/lib/chargen/useEntityPool.ts`
 
 **UI Design:**
+
 ```
 ┌─ SPAWNED ENTITIES ──────────────────────────────────┐
 │  Filter: [All ▼] [NPCs] [Locations] [Items]         │
@@ -246,11 +268,13 @@ Display all spawned entities from the session.
 ```
 
 **Real-time Updates:**
+
 - New entities appear with animation/notification
 - Claimed entities show who claimed them
 - Filter by type or creator
 
 **Acceptance criteria:**
+
 - [x] All spawned entities visible to all participants
 - [x] Entities update in real-time as created
 - [x] Filter by type works correctly
@@ -260,16 +284,19 @@ Display all spawned entities from the session.
 ---
 
 ### Task 4: Connection Request Flow
+
 **Effort**: Medium (2-3 hours)
 
 Allow players to claim connections to entities spawned by others.
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/ConnectionRequestModal.tsx`
 - [x] `apps/web/components/chargen/ConnectionRequestList.tsx`
 - [x] `apps/web/lib/chargen/useConnectionRequests.ts`
 
 **Request Flow:**
+
 ```
 Player A spawns NPC "Vasquez" as their rival
            │
@@ -323,6 +350,7 @@ On approval: Edge created in graph
 ```
 
 **Acceptance criteria:**
+
 - [x] Connection request modal with relationship selector
 - [x] Request stored in CRDT state
 - [x] GM sees pending requests
@@ -333,17 +361,20 @@ On approval: Edge created in graph
 ---
 
 ### Task 5: Real-Time Notifications
+
 **Effort**: Low (1-2 hours)
 
 Notify participants of key events during the session.
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/ChargenNotifications.tsx`
 - [x] `apps/web/lib/chargen/useChargenNotifications.ts`
 
 **Notification Types:**
+
 ```typescript
-type ChargenNotification = 
+type ChargenNotification =
   | { type: 'player_joined'; playerName: string }
   | { type: 'character_started'; playerName: string; characterName: string }
   | { type: 'entity_spawned'; entityName: string; entityType: string; creatorName: string }
@@ -354,6 +385,7 @@ type ChargenNotification =
 ```
 
 **UI Design:**
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │ 🔔 Carol created NPC: Admiral Chen                  │ ← Toast
@@ -362,6 +394,7 @@ type ChargenNotification =
 ```
 
 **Acceptance criteria:**
+
 - [x] Toast notifications for entity spawns
 - [x] Notifications for player actions
 - [x] Click notification to navigate to relevant UI
@@ -371,15 +404,18 @@ type ChargenNotification =
 ---
 
 ### Task 6: GM Moderation Controls
+
 **Effort**: Medium (2-3 hours)
 
 Give GM tools to manage the chargen session.
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/GMControlPanel.tsx`
 - [x] `apps/web/lib/chargen/useGMControls.ts`
 
 **GM Controls:**
+
 ```
 ┌─ GM CONTROLS ───────────────────────────────────────┐
 │                                                     │
@@ -410,6 +446,7 @@ Give GM tools to manage the chargen session.
 ```
 
 **Acceptance criteria:**
+
 - [x] GM can toggle allowed careers
 - [x] GM can require approval for spawns
 - [x] Pending requests queue visible
@@ -419,15 +456,18 @@ Give GM tools to manage the chargen session.
 ---
 
 ### Task 7: Session Join Flow
+
 **Effort**: Low (1-2 hours)
 
 Allow players to join an existing chargen session.
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/SessionJoinModal.tsx`
 - [x] `apps/web/app/chargen/join/[sessionId]/page.tsx`
 
 **Join Flow:**
+
 1. GM creates session, gets shareable link: `/chargen/join/abc123`
 2. Players open link
 3. Join modal confirms participation
@@ -435,6 +475,7 @@ Allow players to join an existing chargen session.
 5. Player can start character generation
 
 **UI Design:**
+
 ```
 ┌─ JOIN CHARGEN SESSION ──────────────────────────────┐
 │                                                     │
@@ -453,6 +494,7 @@ Allow players to join an existing chargen session.
 ```
 
 **Acceptance criteria:**
+
 - [x] Shareable join link works
 - [x] Join modal shows session info
 - [x] Player added to participants on join
@@ -467,6 +509,7 @@ Allow players to join an existing chargen session.
 After implementation, execute multi-browser verification:
 
 #### Test 1: Multi-Player Session Creation and Join
+
 ```
 Browser A (GM):
 1. Navigate to http://localhost:3010/chargen
@@ -486,6 +529,7 @@ Browser C (Player 2):
 ```
 
 #### Test 2: Real-Time Progress Visibility
+
 ```
 Browser A (GM): Watching
 Browser B (Player 1): Creating character
@@ -515,6 +559,7 @@ In Browser A + C:
 ```
 
 #### Test 3: Entity Pool and Connection Request
+
 ```
 Browser B: Creates NPC "Vasquez" as rival
 Browser C: Requests connection to Vasquez
@@ -541,6 +586,7 @@ In Graph View (any browser):
 ```
 
 #### Test 4: GM Moderation Controls
+
 ```
 Browser A (GM):
 
@@ -571,6 +617,7 @@ In Browser B:
 ```
 
 #### Test 5: Session Completion
+
 ```
 All Browsers:
 
@@ -592,6 +639,7 @@ All Browsers:
 ### Exploratory Testing Scenarios
 
 #### Scenario A: Race Conditions
+
 ```
 Browser B and C simultaneously:
 1. Both players spawn NPCs at the same moment
@@ -604,6 +652,7 @@ Browser B and C simultaneously:
 ```
 
 #### Scenario B: Disconnection Recovery
+
 ```
 Browser B:
 1. Start character creation
@@ -616,6 +665,7 @@ Browser B:
 ```
 
 #### Scenario C: Late Joiner
+
 ```
 Browsers A, B:
 1. Create session, Browser B creates character through term 2
@@ -631,6 +681,7 @@ Browser C:
 ```
 
 #### Scenario D: Large Session (5+ participants)
+
 ```
 1. Create session with 5 browsers
 2. All create characters simultaneously
@@ -648,6 +699,7 @@ Browser C:
 ### Browser Testing Evidence Collection
 
 For each test, capture:
+
 1. **Multi-browser screenshots** - Show all browsers side-by-side
 2. **Sync verification** - Same data visible in all browsers
 3. **Timing** - Measure sync latency (should be <500ms)
@@ -679,16 +731,19 @@ After implementation, verify:
 ## Testing Strategy
 
 ### Unit Tests
+
 - [x] Session state management functions
 - [x] Connection request logic
 - [x] Entity pool filtering
 
 ### Integration Tests
+
 - [x] CRDT sync with multiple documents
 - [x] Awareness state propagation
 - [x] GM permission checks
 
 ### E2E Tests (via Browser Automation)
+
 - [x] Full multiplayer session flow
 - [x] Connection request approval flow
 - [x] GM moderation flow
@@ -706,6 +761,7 @@ After implementation, verify:
 ## Blocks
 
 Completing this phase:
+
 - Enables full "Session Zero" experience
 - Provides foundation for Phase A5 (Lifepath Visualization with shared history)
 - Prepares for future co-GM features

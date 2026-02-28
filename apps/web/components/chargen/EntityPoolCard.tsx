@@ -38,19 +38,20 @@ export default function EntityPoolCard({
   onRequestConnection,
   onViewDetails,
 }: EntityPoolCardProps) {
-  const relationship = (entity.metadata as Record<string, unknown>)?.relationship as string | undefined;
-  const relationshipColor = relationship && RELATIONSHIP_COLORS[relationship]
-    ? RELATIONSHIP_COLORS[relationship]
-    : 'text-subtle';
+  const relationship = (entity.metadata as Record<string, unknown>)?.relationship as
+    | string
+    | undefined;
+  const relationshipColor =
+    relationship && RELATIONSHIP_COLORS[relationship]
+      ? RELATIONSHIP_COLORS[relationship]
+      : 'text-subtle';
   const isClaimed = entity.claimedBy.length > 0;
 
   return (
     <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-3 hover:border-zinc-700 transition-colors">
       <div className="flex items-start justify-between mb-1">
         <div className="flex items-center gap-2">
-          <div className="text-subtle">
-            {getTypeIcon(entity.type)}
-          </div>
+          <div className="text-subtle">{getTypeIcon(entity.type)}</div>
           <div>
             <h3 className="text-default font-semibold text-sm">
               {entity.name}
@@ -75,9 +76,7 @@ export default function EntityPoolCard({
       <div className="h-px bg-zinc-800 my-2" />
 
       {entity.description && (
-        <p className="text-subtle text-xs mb-3 line-clamp-2">
-          "{entity.description}"
-        </p>
+        <p className="text-subtle text-xs mb-3 line-clamp-2">"{entity.description}"</p>
       )}
 
       {isClaimed && (
@@ -105,12 +104,7 @@ export default function EntityPoolCard({
           </SciFiButton>
         )}
         {onViewDetails && (
-          <SciFiButton
-            theme="slate"
-            scifiVariant="ghost"
-            size="sm"
-            onClick={onViewDetails}
-          >
+          <SciFiButton theme="slate" scifiVariant="ghost" size="sm" onClick={onViewDetails}>
             View Details
           </SciFiButton>
         )}

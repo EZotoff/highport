@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getYDoc } from '../ydoc';
-import { 
-  getConnectionRequests, 
+import {
+  getConnectionRequests,
   getConnectionRequestsArray,
   requestConnection,
   resolveConnectionRequest,
-  getEntityPool 
+  getEntityPool,
 } from './state';
 import type { ConnectionRequest, ConnectionRelationship, SharedSpawnedEntity } from './types';
 
@@ -24,13 +24,8 @@ export interface ConnectionRequestWithMeta extends ConnectionRequest {
 }
 
 export function useConnectionRequests(options: UseConnectionRequestsOptions = {}) {
-  const { 
-    filterPending = false, 
-    filterApprovable = false,
-    currentUserId,
-    isGM = false 
-  } = options;
-  
+  const { filterPending = false, filterApprovable = false, currentUserId, isGM = false } = options;
+
   const [requests, setRequests] = useState<ConnectionRequest[]>([]);
   const [entityPool, setEntityPool] = useState<SharedSpawnedEntity[]>([]);
 
@@ -69,7 +64,7 @@ export function useConnectionRequests(options: UseConnectionRequestsOptions = {}
   const enrichedRequests = useMemo((): ConnectionRequestWithMeta[] => {
     return requests.map((req) => {
       const entity = entityPool.find((e) => e.id === req.entityId);
-      
+
       let canApprove = false;
       if (currentUserId && req.status === 'pending') {
         if (isGM) {
@@ -101,36 +96,55 @@ export function useConnectionRequests(options: UseConnectionRequestsOptions = {}
     return result;
   }, [enrichedRequests, filterPending, filterApprovable, currentUserId]);
 
-  const submitRequest = useCallback((
-    charId: string,
-    entityId: string,
-    relationship: ConnectionRelationship,
-    note?: string,
-    userId?: string
-  ): string => {
-    const doc = getYDoc();
-    return requestConnection(doc, charId, entityId, relationship, note, userId || currentUserId || '');
-  }, [currentUserId]);
+  const submitRequest = useCallback(
+    (
+      charId: string,
+      entityId: string,
+      relationship: ConnectionRelationship,
+      note?: string,
+      userId?: string,
+    ): string => {
+      const doc = getYDoc();
+      return requestConnection(
+        doc,
+        charId,
+        entityId,
+        relationship,
+        note,
+        userId || currentUserId || '',
+      );
+    },
+    [currentUserId],
+  );
 
-  const approveRequest = useCallback((requestId: string): void => {
-    if (!currentUserId) return;
-    const doc = getYDoc();
-    resolveConnectionRequest(doc, requestId, true, currentUserId);
-  }, [currentUserId]);
+  const approveRequest = useCallback(
+    (requestId: string): void => {
+      if (!currentUserId) return;
+      const doc = getYDoc();
+      resolveConnectionRequest(doc, requestId, true, currentUserId);
+    },
+    [currentUserId],
+  );
 
-  const rejectRequest = useCallback((requestId: string): void => {
-    if (!currentUserId) return;
-    const doc = getYDoc();
-    resolveConnectionRequest(doc, requestId, false, currentUserId);
-  }, [currentUserId]);
+  const rejectRequest = useCallback(
+    (requestId: string): void => {
+      if (!currentUserId) return;
+      const doc = getYDoc();
+      resolveConnectionRequest(doc, requestId, false, currentUserId);
+    },
+    [currentUserId],
+  );
 
-  const stats = useMemo(() => ({
-    total: requests.length,
-    pending: requests.filter((r) => r.status === 'pending').length,
-    approved: requests.filter((r) => r.status === 'approved').length,
-    rejected: requests.filter((r) => r.status === 'rejected').length,
-    approvableByMe: enrichedRequests.filter((r) => r.canApprove).length,
-  }), [requests, enrichedRequests]);
+  const stats = useMemo(
+    () => ({
+      total: requests.length,
+      pending: requests.filter((r) => r.status === 'pending').length,
+      approved: requests.filter((r) => r.status === 'approved').length,
+      rejected: requests.filter((r) => r.status === 'rejected').length,
+      approvableByMe: enrichedRequests.filter((r) => r.canApprove).length,
+    }),
+    [requests, enrichedRequests],
+  );
 
   return {
     requests: filteredRequests,

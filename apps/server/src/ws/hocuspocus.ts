@@ -14,7 +14,8 @@ async function ensureDocumentExists(docId: string): Promise<void> {
   const campaignId = parts[0] || DEFAULT_CAMPAIGN_ID;
   const docType = parts[1] || 'unknown';
 
-  await db.insert(campaigns)
+  await db
+    .insert(campaigns)
     .values({
       id: campaignId,
       name: campaignId === DEFAULT_CAMPAIGN_ID ? 'Default Campaign' : 'Unnamed Campaign',
@@ -23,7 +24,8 @@ async function ensureDocumentExists(docId: string): Promise<void> {
     })
     .onConflictDoNothing();
 
-  await db.insert(documents)
+  await db
+    .insert(documents)
     .values({
       id: docId,
       campaignId,
@@ -51,11 +53,11 @@ export async function fetchDocumentState(docId: string): Promise<Uint8Array | nu
   }
 
   const yDoc = new Y.Doc();
-  
+
   if (doc?.yjsState) {
     Y.applyUpdate(yDoc, doc.yjsState);
   }
-  
+
   for (const update of updates) {
     Y.applyUpdate(yDoc, update.updateData);
   }
@@ -65,7 +67,7 @@ export async function fetchDocumentState(docId: string): Promise<Uint8Array | nu
 
 export const hocuspocus = new Hocuspocus({
   port: HOCUSPOCUS_PORT,
-  
+
   extensions: [
     new Database({
       async fetch({ documentName }) {
@@ -86,12 +88,12 @@ export const hocuspocus = new Hocuspocus({
       response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     }
   },
-  
+
   async onChange({ documentName, update }) {
     if (!update) return;
-    
+
     await ensureDocumentExists(documentName);
-    
+
     await db.insert(documentUpdates).values({
       id: generateId('update'),
       docId: documentName,

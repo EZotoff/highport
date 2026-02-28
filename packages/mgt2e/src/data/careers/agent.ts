@@ -4,13 +4,13 @@ export const AGENT: CareerDefinition = {
   id: 'agent',
   name: 'Agent',
   description: 'Members of a law enforcement agency or intelligence service.',
-  
+
   qualification: {
     characteristic: 'INT',
     target: 6,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'law-enforcement',
@@ -58,7 +58,7 @@ export const AGENT: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: 'guncombat' },
@@ -85,7 +85,7 @@ export const AGENT: CareerDefinition = {
       { roll: 6, skill: 'electronics' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Agent' },
     { rank: 1, title: 'Agent', skill: 'deception', skillLevel: 1 },
@@ -95,9 +95,9 @@ export const AGENT: CareerDefinition = {
     { rank: 5, title: 'Assistant Director' },
     { rank: 6, title: 'Director' },
   ],
-  
+
   cashBenefits: [1000, 2000, 5000, 7500, 10000, 25000, 50000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Scientific Equipment' },
     { roll: 2, benefit: '+1 INT' },
@@ -106,7 +106,7 @@ export const AGENT: CareerDefinition = {
     { roll: 5, benefit: 'Combat Implant' },
     { roll: 6, benefit: '+1 SOC', orHighRank: 'TAS Membership' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -162,7 +162,9 @@ export const AGENT: CareerDefinition = {
         {
           id: 'undercover-skill',
           description: 'Gain one of Deception, Stealth, Streetwise, or Electronics',
-          effects: [{ type: 'skill', target: 'deception|stealth|streetwise|electronics', value: 1 }],
+          effects: [
+            { type: 'skill', target: 'deception|stealth|streetwise|electronics', value: 1 },
+          ],
         },
       ],
     },
@@ -193,17 +195,16 @@ export const AGENT: CareerDefinition = {
     {
       roll: 12,
       description: 'You uncover a major conspiracy. You are automatically promoted.',
-      spawns: [
-        { type: 'secret', required: true, template: 'major_conspiracy' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'major_conspiracy' }],
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
-      description: 'Severely injured in action. Roll twice on the Injury table and take the lower result.',
+      description:
+        'Severely injured in action. Roll twice on the Injury table and take the lower result.',
       injury: true,
       forced: true,
       effects: [{ type: 'special', target: 'injury', value: 'severe' }],

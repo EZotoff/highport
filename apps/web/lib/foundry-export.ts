@@ -15,9 +15,7 @@ export interface FoundryActorExport {
 export function generateFoundryActorJson(node: GraphNode): FoundryActorExport {
   const metadata = node.metadata as Record<string, unknown>;
   const hp = metadata?.hp as { current?: number; max?: number } | undefined;
-  const characteristics = metadata?.characteristics as
-    | Record<string, number>
-    | undefined;
+  const characteristics = metadata?.characteristics as Record<string, number> | undefined;
   const credits = metadata?.credits as number | undefined;
 
   return {
@@ -31,10 +29,7 @@ export function generateFoundryActorJson(node: GraphNode): FoundryActorExport {
       },
       characteristics: characteristics
         ? Object.fromEntries(
-            Object.entries(characteristics).map(([key, val]) => [
-              key,
-              { value: val },
-            ])
+            Object.entries(characteristics).map(([key, val]) => [key, { value: val }]),
           )
         : undefined,
       finance: {
@@ -54,10 +49,7 @@ export async function exportNodesToZip(nodes: GraphNode[]): Promise<Blob> {
   for (const node of nodes) {
     if (node.type === 'traveller') {
       const json = generateFoundryActorJson(node);
-      zip.file(
-        `actors/${sanitizeFilename(node.label)}.json`,
-        JSON.stringify(json, null, 2)
-      );
+      zip.file(`actors/${sanitizeFilename(node.label)}.json`, JSON.stringify(json, null, 2));
     }
   }
 

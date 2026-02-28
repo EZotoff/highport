@@ -5,6 +5,7 @@
 ## 2026-02-06 Verified Implementation Status
 
 ### Phase 1 (Foundation) - 100% COMPLETE
+
 - portraits table migration: `apps/server/drizzle/0004_tired_blue_blade.sql`
 - PortraitTags TypeScript types: `packages/shared/src/types/portrait.ts` (122 lines)
 - Pydantic models: `apps/rag-service/schemas/portrait.py` (268 lines)
@@ -16,37 +17,43 @@
 - All 5 Fastify routes: `apps/server/src/routes/portraits.ts`
 
 ### Phase 2 (Integration) - 100% COMPLETE
+
 - Generate Portrait button in EntitySpawnForm
 - usePortrait hook: `apps/web/lib/portrait/usePortrait.ts`
 - Portrait in FinalizeStep.tsx
 - PC portraits marked protected
 
 ### Phase 3-4 Backend - COMPLETE, Frontend - MISSING
+
 - calculateTagSimilarity, searchPortraits, enforceRemixPolicy all exist
 - MISSING: PortraitLibrary, PortraitRemixer, portrait picker modal
 
 ### Compilation Status
+
 - All typechecks pass, all 203 tests pass (66 server + 137 web)
 
 ### Key Patterns
+
 - Use THEME_HEX for colors (Tailwind v4 no defaults)
 - SciFiButton/SciFiInput from @/components/ui/scifi
 - Dialog from @radix-ui/react-dialog via @/components/ui/dialog
 - SERVER_URL: process.env.NEXT_PUBLIC_SERVER_URL || http://localhost:3012
 
-
 # Portrait Remix Implementation Learnings
 
 ## UI & Design System
+
 - **Tailwind v4 Colors**: Avoid default color classes like `text-cyan-400`. Use `THEME_HEX` from `@/lib/design-system/themeUtils` for inline styles to ensure visibility.
 - **SciFi Components**: Prefer using `SciFiButton`, `SciFiSelect`, and `SciFiBadge` for a cohesive sci-fi aesthetic.
 - **Dialog Layout**: A `max-w-4xl` dialog works well for side-by-side comparison of source and remixed portraits.
 
 ## Portrait System
+
 - **Remix Hook**: `usePortraitGenerator().remix()` is the standard way to call the remix API. It handles loading and error states.
 - **Image Normalization**: Always normalize portrait URLs using the `SERVER_URL` prefix if they are relative paths (starting with `/api`).
 - **Policy Enforcement**: Be aware that portraits can be `protected` and have `source_policy` (e.g., `subject_only`), which may limit remixing options on the server side.
 - **Lineage**: Displaying `anchor_portrait_id` and `source_portrait_id` helps users understand the history of a portrait.
+
 ## Portrait System Integration Learnings
 
 - Successfully integrated `PortraitLibrary` and `PortraitRemixer` into the character generation finalization step.
@@ -59,23 +66,26 @@
 - Used THEME_HEX for inline styles to avoid Tailwind v4 color class issues.
 - Ensured SciFiButton usage matches existing patterns for consistency.
 - Verified with typecheck.
+
 ## HTTP Caching Implementation
 
 ### Changes to portrait image endpoint (GET /api/portraits/:portraitId/image)
+
 - Added ETag header based on portraitId (immutable content per ID)
 - Added Cache-Control: public, max-age=31536000, immutable (1 year cache)
 - Implemented If-None-Match handling for 304 Not Modified responses
 - Preserved existing Content-Type header
 
 ### Rationale
+
 - Portraits are immutable once generated (remix creates a NEW portrait with NEW ID)
 - Aggressive caching is safe and reduces bandwidth + server load
 - ETag enables efficient revalidation via 304 responses
 - Aligns with HTTP best practices for immutable resources
 
 ### Verification
-- Typecheck passes (exit 0)
 
+- Typecheck passes (exit 0)
 
 ## 2026-02-06 S3 Portrait Storage Adapter
 
@@ -86,6 +96,7 @@
 - Lazy import keeps local-storage runtime path independent from S3 implementation wiring while still supporting AWS SDK dependencies when explicitly enabled.
 
 ## IntersectionObserver Lazy Loading
+
 - Implemented a local `LazyPortraitImage` component to optimize the portrait gallery.
 - Used `rootMargin: '200px'` to preload images slightly before they enter the viewport.
 - Combined `IntersectionObserver` for visibility detection with CSS transitions for smooth fade-in.
@@ -93,6 +104,7 @@
 - Native `loading="lazy"` kept as a secondary fallback.
 
 ## Portrait Generation Progress Indicators
+
 - Implemented a multi-stage thematic progress indicator for portrait generation.
 - Stages are time-based: Analyzing (3s), Generating (7s), Finishing (until complete).
 - Uses Sci-Fi aesthetic with scanning line animation and pulsing rings.
@@ -108,6 +120,7 @@
 - Mocked Drizzle `eq/and` in tests to produce predictable filter conditions for in-memory query evaluation.
 
 ## 2026-02-07 E2E Portrait Chargen Coverage
+
 - Added `apps/web/e2e/portrait-chargen.spec.ts` with focused chargen + portrait smoke coverage and direct API checks.
 - Used resilient chargen assertions (`/chargen` shell, step navigation, character initialization) without attempting full wizard completion.
 - Added conditional `test.skip` guards for portrait UI actions (`Generate Portrait`, `Browse Library`) when portrait-enabled state is not reachable in baseline E2E setup.

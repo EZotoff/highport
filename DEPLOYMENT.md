@@ -47,18 +47,21 @@ The `vercel.json` in the project root configures:
 The Highport frontend requires three backend services:
 
 ### Hocuspocus Server (WebSocket)
+
 - **Service**: Real-time document sync
 - **Recommended**: Render, Railway, Fly.io, AWS EC2
 - **Environment**: Node.js 20+
 - **Command**: `pnpm dev --filter server`
 
 ### Fastify API Server
+
 - **Service**: REST API endpoints
 - **Recommended**: Same host as Hocuspocus
 - **Environment**: Node.js 20+
 - **Port**: 3012 locally (configure via environment)
 
 ### RAG Service (Optional)
+
 - **Service**: AI chat and knowledge queries
 - **Recommended**: Railway, Fly.io, AWS Lambda
 - **Environment**: Python 3.11+
@@ -66,17 +69,18 @@ The Highport frontend requires three backend services:
 
 ## Environment Variable Reference
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
+| Variable                     | Purpose                               | Example                  |
+| ---------------------------- | ------------------------------------- | ------------------------ |
 | `NEXT_PUBLIC_HOCUSPOCUS_URL` | WebSocket endpoint for real-time sync | `https://sync.myapp.com` |
-| `NEXT_PUBLIC_API_URL` | REST API base URL | `https://api.myapp.com` |
-| `NEXT_PUBLIC_RAG_URL` | RAG service endpoint (optional) | `https://rag.myapp.com` |
+| `NEXT_PUBLIC_API_URL`        | REST API base URL                     | `https://api.myapp.com`  |
+| `NEXT_PUBLIC_RAG_URL`        | RAG service endpoint (optional)       | `https://rag.myapp.com`  |
 
 ## Troubleshooting
 
 ### Build Fails: "Command 'pnpm' not found"
 
 Vercel should auto-install pnpm. If not, add to Environment Variables:
+
 ```
 VERCEL_BUILD_COMMAND_ENV_WHITELIST=NPM_RC_CONTENT
 ```
@@ -90,12 +94,14 @@ Ensure `turbo.json` specifies `dependsOn: ["^build"]` for the web build task. Th
 ### Frontend can't connect to backend
 
 Check:
+
 1. Environment variables are set correctly in Vercel project settings
 2. Backend services are deployed and responding
 3. CORS is configured on backend to allow requests from your Vercel domain
 4. WebSocket connections are not blocked by firewall/proxy
 
 Example CORS header for Hocuspocus:
+
 ```
 Access-Control-Allow-Origin: https://your-vercel-domain.vercel.app
 ```
@@ -109,6 +115,7 @@ Access-Control-Allow-Origin: https://your-vercel-domain.vercel.app
 ## Monitoring & Logs
 
 In Vercel dashboard:
+
 - **Deployments**: View build logs and deployment history
 - **Functions**: Monitor API routes if using Next.js API routes
 - **Analytics**: Track performance metrics
@@ -128,7 +135,7 @@ Use Vercel's environment feature to have different settings for Preview vs Produ
 ```json
 {
   "env": {
-    "NEXT_PUBLIC_API_URL": "@api_url_prod"  // Preview gets "@api_url_preview"
+    "NEXT_PUBLIC_API_URL": "@api_url_prod" // Preview gets "@api_url_preview"
   }
 }
 ```
@@ -138,6 +145,7 @@ Then in project settings, create secrets for each environment.
 ## Git Workflow
 
 The `vercel.json` includes:
+
 ```json
 {
   "git": {
@@ -149,6 +157,7 @@ The `vercel.json` includes:
 ```
 
 This means:
+
 - Main branch → automatically deploys to Production
 - Other branches → automatically create Preview deployments
 - Disable auto-deploy in settings if needed
@@ -157,7 +166,7 @@ This means:
 
 - **Never commit secrets** to `.env` files in the repository
 - **Use Vercel's environment variables** for all secrets
-- **NEXT_PUBLIC_* variables are visible in browser** - only use for non-sensitive data
+- **NEXT*PUBLIC*\* variables are visible in browser** - only use for non-sensitive data
 - For sensitive backend URLs, consider:
   - Using a reverse proxy
   - Authentication tokens (passed separately)
@@ -166,6 +175,7 @@ This means:
 ## Performance Optimization
 
 The Next.js app benefits from Vercel's optimizations:
+
 - **Edge Caching**: Static pages cached globally
 - **ISR (Incremental Static Regeneration)**: Regenerate pages on-demand
 - **Image Optimization**: Automatic image processing
@@ -176,6 +186,7 @@ See `.next/` configuration in `next.config.js` for advanced settings.
 ## Support
 
 For issues specific to:
+
 - **Vercel deployment**: Check [Vercel Docs](https://vercel.com/docs)
 - **Next.js**: See [Next.js Docs](https://nextjs.org/docs)
 - **Highport integration**: See main [README.md](./README.md)

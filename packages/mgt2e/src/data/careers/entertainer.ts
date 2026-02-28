@@ -4,13 +4,13 @@ export const ENTERTAINER: CareerDefinition = {
   id: 'entertainer',
   name: 'Entertainer',
   description: 'Artists, performers, and celebrities who entertain the masses.',
-  
+
   qualification: {
     characteristic: 'INT',
     target: 5,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'artist',
@@ -58,7 +58,7 @@ export const ENTERTAINER: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 DEX' },
@@ -85,7 +85,7 @@ export const ENTERTAINER: CareerDefinition = {
       { roll: 6, skill: 'art' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Entertainer' },
     { rank: 1, title: 'Entertainer', skill: 'art', skillLevel: 1 },
@@ -95,9 +95,9 @@ export const ENTERTAINER: CareerDefinition = {
     { rank: 5, title: 'Famous Entertainer', skill: '+1 SOC' },
     { rank: 6, title: 'Famous Entertainer' },
   ],
-  
+
   cashBenefits: [0, 0, 10000, 10000, 40000, 40000, 80000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Contact' },
     { roll: 2, benefit: '+1 SOC' },
@@ -106,7 +106,7 @@ export const ENTERTAINER: CareerDefinition = {
     { roll: 5, benefit: '+1 INT' },
     { roll: 6, benefit: 'Ship Share', orHighRank: 'Yacht' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -167,9 +167,7 @@ export const ENTERTAINER: CareerDefinition = {
     {
       roll: 8,
       description: 'You gain a celebrity friend or lover.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'celebrity_friend' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'celebrity_friend' }],
       effects: [{ type: 'special', target: 'fame', value: '+1' }],
     },
     {
@@ -180,9 +178,7 @@ export const ENTERTAINER: CareerDefinition = {
     {
       roll: 10,
       description: 'You are caught in a scandal or your work is criticised.',
-      spawns: [
-        { type: 'npc', relationship: 'rival', required: false, template: 'critic' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'rival', required: false, template: 'critic' }],
       choices: [
         {
           id: 'scandal-respond',
@@ -194,9 +190,7 @@ export const ENTERTAINER: CareerDefinition = {
     {
       roll: 11,
       description: 'You are approached by a powerful patron.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'powerful_patron' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'powerful_patron' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
@@ -205,7 +199,7 @@ export const ENTERTAINER: CareerDefinition = {
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
@@ -228,9 +222,7 @@ export const ENTERTAINER: CareerDefinition = {
       description: 'You have no idea what happened to you – Loss of memory.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'secret', required: true, template: 'lost_memory' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'lost_memory' }],
     },
     {
       roll: 4,
@@ -244,9 +236,7 @@ export const ENTERTAINER: CareerDefinition = {
       description: 'Public scandal or personal problems force you from your career.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'secret', required: false, template: 'public_scandal' },
-      ],
+      spawns: [{ type: 'secret', required: false, template: 'public_scandal' }],
     },
     {
       roll: 6,

@@ -42,7 +42,11 @@ export default function VerbositySelector({
       <p id={groupId} className="block text-sm font-medium text-subtle">
         AI Assistance Level
       </p>
-      <div role="radiogroup" aria-labelledby={groupId} className="flex flex-wrap sm:flex-nowrap gap-2 p-1.5 rounded-lg bg-[var(--star-metal)] border border-[var(--asteroid-dust-50)]">
+      <div
+        role="radiogroup"
+        aria-labelledby={groupId}
+        className="flex flex-wrap sm:flex-nowrap gap-2 p-1.5 rounded-lg bg-[var(--star-metal)] border border-[var(--asteroid-dust-50)]"
+      >
         {VERBOSITY_OPTIONS.map((option) => (
           <SciFiButton
             key={option.value}

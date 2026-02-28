@@ -27,23 +27,23 @@ export function useSelectedLifepath(selectedNodeId: string | null): UseSelectedL
     const doc = getYDoc();
     const nodesMap = getNodesMap(doc);
     const nodeData = nodesMap.get(selectedNodeId);
-    
+
     if (!nodeData) return null;
-    
+
     const nodeMap = nodeData as Y.Map<unknown>;
     const type = nodeMap.get('type') as string;
     const isCharacterType = type === 'traveller' || type === 'npc';
-    
+
     if (!isCharacterType) return null;
 
-    const byId = allCharacters.find(c => c.id === selectedNodeId);
+    const byId = allCharacters.find((c) => c.id === selectedNodeId);
     if (byId) return byId;
 
     const metadata = nodeMap.get('metadata') as Record<string, unknown> | undefined;
     const linkedCharId = metadata?.characterId as string | undefined;
-    
+
     if (linkedCharId) {
-      return allCharacters.find(c => c.id === linkedCharId) || null;
+      return allCharacters.find((c) => c.id === linkedCharId) || null;
     }
 
     return null;
@@ -63,6 +63,6 @@ export function useSelectedLifepath(selectedNodeId: string | null): UseSelectedL
     character: character || null,
     terms: character?.terms || [],
     isOpen,
-    setIsOpen
+    setIsOpen,
   };
 }

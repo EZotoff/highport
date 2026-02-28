@@ -49,7 +49,7 @@ export function calculateLifepathLayout({
   const edges: LifepathEdge[] = [];
 
   const careerGroups: { [key: string]: CareerTermResult[] } = {};
-  
+
   character.terms.forEach((term) => {
     const key = `${term.careerId}-${term.assignmentId}`;
     if (!careerGroups[key]) {
@@ -60,17 +60,17 @@ export function calculateLifepathLayout({
 
   const clusters = Object.values(careerGroups);
   const totalClustersWidth = clusters.reduce((acc, terms) => {
-    return acc + (terms.length * (TERM_WIDTH + TERM_GAP)) + (CLUSTER_PADDING * 2) + 50;
+    return acc + terms.length * (TERM_WIDTH + TERM_GAP) + CLUSTER_PADDING * 2 + 50;
   }, 0);
-  
-  let currentX = characterNodePosition.x - (totalClustersWidth / 2);
+
+  let currentX = characterNodePosition.x - totalClustersWidth / 2;
   const clusterY = characterNodePosition.y - 400;
 
   clusters.forEach((terms, index) => {
     const firstTerm = terms[0];
     const clusterId = `cluster-${index}`;
-    const clusterWidth = (terms.length * (TERM_WIDTH + TERM_GAP)) + (CLUSTER_PADDING * 2);
-    const clusterHeight = TERM_HEIGHT + (CLUSTER_PADDING * 2) + 40;
+    const clusterWidth = terms.length * (TERM_WIDTH + TERM_GAP) + CLUSTER_PADDING * 2;
+    const clusterHeight = TERM_HEIGHT + CLUSTER_PADDING * 2 + 40;
 
     nodes.push({
       id: clusterId,
@@ -88,13 +88,13 @@ export function calculateLifepathLayout({
 
     terms.forEach((term, termIndex) => {
       const termNodeId = `term-${term.termNumber}`;
-      
+
       nodes.push({
         id: termNodeId,
         type: 'term',
-        position: { 
-          x: CLUSTER_PADDING + (termIndex * (TERM_WIDTH + TERM_GAP)), 
-          y: CLUSTER_PADDING + 40 
+        position: {
+          x: CLUSTER_PADDING + termIndex * (TERM_WIDTH + TERM_GAP),
+          y: CLUSTER_PADDING + 40,
         },
         data: {
           termNumber: term.termNumber,
@@ -103,7 +103,7 @@ export function calculateLifepathLayout({
           survived: term.survived,
           advanced: term.advanced,
           rankGained: term.rankGained,
-          spawnedEntityIds: term.spawnedEntities?.map(e => e.graphNodeId) || [],
+          spawnedEntityIds: term.spawnedEntities?.map((e) => e.graphNodeId) || [],
         },
         parentId: clusterId,
         extent: 'parent',
@@ -119,17 +119,17 @@ export function calculateLifepathLayout({
           style: { stroke: '#4b5563', strokeDasharray: '5 5' },
         });
       }
-      
+
       if (term.spawnedEntities) {
-         term.spawnedEntities.forEach(entity => {
-            edges.push({
-                id: `spawn-${termNodeId}-${entity.graphNodeId}`,
-                source: termNodeId,
-                target: entity.graphNodeId,
-                type: 'default',
-                style: { stroke: '#8b5cf6', strokeWidth: 2 },
-            });
-         });
+        term.spawnedEntities.forEach((entity) => {
+          edges.push({
+            id: `spawn-${termNodeId}-${entity.graphNodeId}`,
+            source: termNodeId,
+            target: entity.graphNodeId,
+            type: 'default',
+            style: { stroke: '#8b5cf6', strokeWidth: 2 },
+          });
+        });
       }
     });
 

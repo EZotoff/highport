@@ -10,6 +10,7 @@
 ## Overview
 
 This plan implements the single-player character generation flow for Mongoose Traveller 2e. The chargen wizard:
+
 1. Uses CRDT state for real-time sync (foundation for Phase A4 multiplayer)
 2. Auto-rolls dice with seedable randomness
 3. Spawns graph entities (NPCs, locations) from career events
@@ -20,16 +21,19 @@ This plan implements the single-player character generation flow for Mongoose Tr
 ## Architecture Decisions
 
 ### State Management
+
 - Chargen state stored in Yjs Y.Map within the campaign document
 - Separate from main graph but in same Y.Doc for atomic updates
 - Structure allows multiple characters in same session (Phase A4 prep)
 
 ### UI Location
+
 - New route: `/app/campaigns/[id]/chargen`
 - Wizard-style UI with step navigation
 - Character preview panel on right side
 
 ### Integration Points
+
 - `@planeshift/mgt2e` package for career/skill data
 - Existing graph CRDT for entity spawning
 - Existing presence system for future multiplayer
@@ -39,6 +43,7 @@ This plan implements the single-player character generation flow for Mongoose Tr
 ## Task Breakdown
 
 ### Task 1: Chargen Route and Layout
+
 **Effort**: Low (1-2 hours)
 
 Create the chargen page structure:
@@ -54,12 +59,14 @@ apps/web/app/campaigns/[id]/chargen/
 ```
 
 **Files to create:**
+
 - [x] `apps/web/app/chargen/page.tsx` (created at `/chargen` route instead)
 - [x] `apps/web/components/chargen/ChargenWizard.tsx`
 - [x] `apps/web/components/chargen/CharacterPreview.tsx`
 - [x] `apps/web/components/chargen/StepNavigation.tsx`
 
 **Acceptance criteria:**
+
 - [x] Route `/chargen` renders wizard shell
 - [x] Preview panel shows live character data
 - [x] Step navigation shows 5 steps: Background, Careers, Skills, Benefits, Finalize
@@ -67,16 +74,19 @@ apps/web/app/campaigns/[id]/chargen/
 ---
 
 ### Task 2: Chargen CRDT State Schema
+
 **Effort**: Medium (2-3 hours)
 
 Define the CRDT structure for character generation:
 
 **Files to create:**
+
 - [x] `apps/web/lib/chargen/types.ts` - TypeScript interfaces
 - [x] `apps/web/lib/chargen/state.ts` - CRDT state management
 - [x] `apps/web/lib/chargen/hooks.ts` - React hooks for chargen state
 
 **Schema (in types.ts):**
+
 ```typescript
 export interface ChargenSession {
   id: string;
@@ -90,23 +100,23 @@ export interface ChargenCharacter {
   id: string;
   playerId: string;
   name: string;
-  
+
   // Step 1: Background
   homeworld?: string;
   characteristics: CharacteristicSet;
-  backgroundSkills: string[];  // 3 skills at level 0
-  
+  backgroundSkills: string[]; // 3 skills at level 0
+
   // Step 2: Career history
   terms: CareerTermResult[];
   currentTermIndex: number;
   status: 'background' | 'career_selection' | 'term_resolution' | 'mustering_out' | 'finalized';
-  
+
   // Accumulated from terms
   skills: Record<string, number>;
   benefits: string[];
   credits: number;
   age: number;
-  
+
   // Spawned entities (references to graph nodes)
   spawnedEntityIds: string[];
 }
@@ -116,23 +126,23 @@ export interface CareerTermResult {
   careerId: string;
   assignmentId: string;
   startAge: number;
-  
+
   // Rolls made
   survivalRoll: DiceResult;
   survived: boolean;
-  
+
   eventRoll?: DiceResult;
   event?: CareerEvent;
-  eventChoice?: string;  // If event had choices
-  
+  eventChoice?: string; // If event had choices
+
   advancementRoll?: DiceResult;
   advanced: boolean;
   rankGained?: number;
-  
+
   // What was gained this term
   skillsGained: Array<{ skill: string; specialty?: string; level: number }>;
-  benefitRolls?: number;  // Mustering out rolls earned
-  
+  benefitRolls?: number; // Mustering out rolls earned
+
   // Entities spawned from event
   spawnedEntities: SpawnedEntityRef[];
 }
@@ -146,6 +156,7 @@ export interface SpawnedEntityRef {
 ```
 
 **CRDT integration (in state.ts):**
+
 ```typescript
 export function getChargenState(doc: Y.Doc): Y.Map<string, unknown> {
   return doc.getMap('chargen');
@@ -175,6 +186,7 @@ export function createCharacter(doc: Y.Doc, playerId: string): string {
 ```
 
 **Acceptance criteria:**
+
 - [x] Chargen state persists in Y.Doc
 - [x] Character creation adds entry to chargen map
 - [x] State updates sync between browser tabs
@@ -182,18 +194,22 @@ export function createCharacter(doc: Y.Doc, playerId: string): string {
 ---
 
 ### Task 3: Characteristics Generation (Background Step)
+
 **Effort**: Low (1-2 hours)
 
 Implement the background phase:
+
 1. Roll 2d6 for each of 6 characteristics
 2. Display results with option to swap two values
 3. Select 3 background skills at level 0
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/steps/BackgroundStep.tsx`
 - [x] Characteristics logic integrated in state.ts
 
 **BackgroundStep UI:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  BACKGROUND                                                 │
@@ -219,6 +235,7 @@ Implement the background phase:
 ```
 
 **Acceptance criteria:**
+
 - [x] Characteristics rolled with 2d6 each
 - [x] Modifiers calculated and displayed correctly
 - [x] Can swap any two characteristic values
@@ -228,15 +245,18 @@ Implement the background phase:
 ---
 
 ### Task 4: Career Selection UI
+
 **Effort**: Medium (2-3 hours)
 
 Show available careers and handle qualification:
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/steps/CareerSelectionStep.tsx`
 - [x] Qualification logic integrated in CareerSelectionStep.tsx
 
 **CareerSelectionStep UI:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  CAREER SELECTION - Term 1 (Age 18)                         │
@@ -264,11 +284,13 @@ Show available careers and handle qualification:
 ```
 
 **On career selection:**
+
 1. Auto-roll qualification (2d6 + characteristic DM - previous careers penalty)
 2. If pass: proceed to assignment selection
 3. If fail: offer Draft or Drifter
 
 **Assignment selection sub-step:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  NAVY - Choose Assignment                                   │
@@ -298,6 +320,7 @@ Show available careers and handle qualification:
 ```
 
 **Acceptance criteria:**
+
 - [x] All 12 CRB careers displayed with qualification requirements
 - [x] DM calculated from character's characteristics
 - [x] Qualification roll auto-performed with result displayed
@@ -307,15 +330,18 @@ Show available careers and handle qualification:
 ---
 
 ### Task 5: Term Resolution Flow
+
 **Effort**: High (4-6 hours)
 
 The core term resolution loop:
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/steps/TermResolutionStep.tsx`
 - [x] `apps/web/lib/chargen/term-resolution.ts`
 
 **Term flow:**
+
 ```
 1. Survival Roll
    └─ Success → Continue
@@ -342,6 +368,7 @@ The core term resolution loop:
 ```
 
 **TermResolutionStep UI:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  NAVY (Line/Crew) - Term 1 (Age 18-22)                      │
@@ -392,6 +419,7 @@ The core term resolution loop:
 ```
 
 **Acceptance criteria:**
+
 - [x] Survival roll auto-performed with result display
 - [x] Mishap triggered on survival failure
 - [x] Event rolled and displayed from career event table
@@ -403,15 +431,18 @@ The core term resolution loop:
 ---
 
 ### Task 6: Entity Spawning from Events
+
 **Effort**: High (3-4 hours)
 
 When events spawn NPCs/locations, create graph nodes:
 
 **Files to create:**
+
 - [x] `apps/web/lib/chargen/entity-spawner.ts`
 - [x] `apps/web/components/chargen/EntitySpawnForm.tsx`
 
 **Entity spawning flow:**
+
 1. Event indicates spawn required (from `event.spawns[]`)
 2. Show spawn form with fields based on entity type
 3. Player provides name + brief description
@@ -419,17 +450,19 @@ When events spawn NPCs/locations, create graph nodes:
 5. Store reference in `CareerTermResult.spawnedEntities`
 
 **EntitySpawnForm UI:**
+
 ```typescript
 interface SpawnFormProps {
   type: 'npc' | 'location' | 'item' | 'secret';
   relationship?: 'ally' | 'contact' | 'rival' | 'enemy';
-  template?: string;  // For future AI assistance
+  template?: string; // For future AI assistance
   onComplete: (entity: SpawnedEntityRef) => void;
   onSkip: () => void;
 }
 ```
 
 **NPC spawn creates:**
+
 ```typescript
 // Graph node
 {
@@ -459,6 +492,7 @@ interface SpawnFormProps {
 ```
 
 **Acceptance criteria:**
+
 - [x] Events with `spawns` array trigger EntitySpawnForm
 - [x] NPC spawn creates graph node + edge to character
 - [x] Location spawn creates location-type node
@@ -468,21 +502,25 @@ interface SpawnFormProps {
 ---
 
 ### Task 7: Benefits/Mustering Out
+
 **Effort**: Medium (2-3 hours)
 
 Resolve mustering out benefits:
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/steps/MusteringOutStep.tsx`
 - [x] `apps/web/lib/chargen/mustering.ts`
 
 **Benefit roll calculation:**
+
 1. Base rolls: 1 per term served
 2. +1 per rank (enlisted or officer)
 3. +1 if rank 5 or 6
 4. Maximum 3 rolls on cash table
 
 **MusteringOutStep UI:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  MUSTERING OUT                                              │
@@ -514,6 +552,7 @@ Resolve mustering out benefits:
 ```
 
 **Acceptance criteria:**
+
 - [x] Correct number of benefit rolls calculated
 - [x] Cash table limited to 3 rolls
 - [x] Benefits accumulated and displayed
@@ -523,15 +562,18 @@ Resolve mustering out benefits:
 ---
 
 ### Task 8: Final Character Node Creation
+
 **Effort**: Medium (2-3 hours)
 
 Create the final character graph node with full metadata:
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/steps/FinalizeStep.tsx`
 - [x] `apps/web/lib/chargen/finalize.ts`
 
 **FinalizeStep UI:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  FINALIZE CHARACTER                                         │
@@ -564,12 +606,14 @@ Create the final character graph node with full metadata:
 ```
 
 **On finalize:**
+
 1. Create character graph node with full metadata
 2. Create edges from character to all spawned entities
 3. Mark chargen session as completed
 4. Navigate to graph view centered on new character
 
 **Character node metadata:**
+
 ```typescript
 {
   id: uuid(),
@@ -593,6 +637,7 @@ Create the final character graph node with full metadata:
 ```
 
 **Acceptance criteria:**
+
 - [x] Character summary displays all accumulated data
 - [x] Name can be set/changed before finalizing
 - [x] Create button generates character graph node
@@ -618,6 +663,7 @@ After implementation, verify:
 ## Testing Strategy
 
 ### Unit Tests
+
 - [ ] Characteristic roll generation (pending - future work)
 - [ ] Qualification DM calculation (pending - future work)
 - [ ] Term resolution logic (survival, advancement) (pending - future work)
@@ -625,11 +671,13 @@ After implementation, verify:
 - [ ] Skill accumulation (pending - future work)
 
 ### Integration Tests
+
 - [ ] CRDT state sync between tabs (pending - future work)
 - [ ] Graph node creation from entity spawns (pending - future work)
 - [ ] Full chargen flow completion (pending - future work)
 
 ### E2E Tests
+
 - [ ] Complete single character generation (pending - future work)
 - [ ] Event entity spawning creates visible graph nodes (pending - future work)
 - [ ] Character appears in graph after finalization (pending - future work)
@@ -647,6 +695,7 @@ After implementation, verify:
 ## Blocks
 
 Completing this phase unblocks:
+
 - **Phase A3**: AI Narrative Layer (needs event resolution flow)
 - **Phase A4**: Multiplayer Chargen (needs single-player flow working)
 - **Phase A5**: Lifepath Visualization (needs career term data)

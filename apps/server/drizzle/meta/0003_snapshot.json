@@ -214,12 +214,8 @@
           "name": "document_updates_doc_id_documents_id_fk",
           "tableFrom": "document_updates",
           "tableTo": "documents",
-          "columnsFrom": [
-            "doc_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["doc_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -272,12 +268,8 @@
           "name": "documents_campaign_id_campaigns_id_fk",
           "tableFrom": "documents",
           "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -287,10 +279,7 @@
         "documents_campaign_id_doc_type_unique": {
           "name": "documents_campaign_id_doc_type_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "campaign_id",
-            "doc_type"
-          ]
+          "columns": ["campaign_id", "doc_type"]
         }
       },
       "policies": {},
@@ -352,12 +341,8 @@
           "name": "ingested_documents_campaign_id_campaigns_id_fk",
           "tableFrom": "ingested_documents",
           "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -422,10 +407,7 @@
         "sync_state_node_id_field_path_unique": {
           "name": "sync_state_node_id_field_path_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "node_id",
-            "field_path"
-          ]
+          "columns": ["node_id", "field_path"]
         }
       },
       "policies": {},

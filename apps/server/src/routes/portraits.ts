@@ -83,24 +83,24 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
       });
 
       return result;
-    }
+    },
   );
 
   fastify.get<{ Params: PortraitIdParams }>(
     '/api/portraits/:portraitId/image',
     async (request, reply) => {
       const { portraitId } = request.params;
-      
+
       // Generate ETag from portraitId (immutable content per ID)
       const etag = `"${portraitId}"`;
-      
+
       // Handle If-None-Match for 304 Not Modified
       const clientEtag = request.headers['if-none-match'];
       if (clientEtag === etag) {
         reply.code(304);
         return;
       }
-      
+
       const result = await getPortraitImage(portraitId);
 
       if (!result) {
@@ -112,9 +112,9 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
       reply.header('Content-Type', result.mimeType);
       reply.header('Cache-Control', 'public, max-age=31536000, immutable');
       reply.header('ETag', etag);
-      
+
       return result.data;
-    }
+    },
   );
 
   fastify.get<{ Querystring: PortraitSearchQuery }>(
@@ -144,7 +144,7 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
       });
 
       return results;
-    }
+    },
   );
 
   fastify.post<{ Params: PortraitIdParams; Body: PortraitRemixBody }>(
@@ -181,7 +181,7 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
         reply.code(400);
         return { error: error instanceof Error ? error.message : 'Remix failed' };
       }
-    }
+    },
   );
 
   fastify.post<{ Params: NodePortraitParams; Body: NodePortraitBody }>(
@@ -202,6 +202,6 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
 
       await attachPortrait(portraitId, nodeId);
       return { status: 'attached' };
-    }
+    },
   );
 }

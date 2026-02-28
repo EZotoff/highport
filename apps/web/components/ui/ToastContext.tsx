@@ -51,10 +51,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             className={`
               pointer-events-auto flex items-center gap-3 px-4 py-3 rounded shadow-lg border backdrop-blur-md transform transition-all duration-300 animate-in slide-in-from-right-full
               ${
-                toast.type === 'error' ? 'bg-red-900/80 border-red-800 text-red-100' :
-                toast.type === 'success' ? 'bg-green-900/80 border-green-800 text-green-100' :
-                toast.type === 'warning' ? 'bg-amber-900/80 border-amber-800 text-amber-100' :
-                'bg-zinc-800/80 border-zinc-700 text-zinc-100'
+                toast.type === 'error'
+                  ? 'bg-red-900/80 border-red-800 text-red-100'
+                  : toast.type === 'success'
+                    ? 'bg-green-900/80 border-green-800 text-green-100'
+                    : toast.type === 'warning'
+                      ? 'bg-amber-900/80 border-amber-800 text-amber-100'
+                      : 'bg-zinc-800/80 border-zinc-700 text-zinc-100'
               }
             `}
           >
@@ -62,10 +65,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             {toast.type === 'success' && <CheckCircle size={18} />}
             {toast.type === 'warning' && <AlertTriangle size={18} />}
             {toast.type === 'info' && <Info size={18} />}
-            
+
             <span className="text-sm font-medium">{toast.message}</span>
-            
-            <button 
+
+            <button
               onClick={() => removeToast(toast.id)}
               className="ml-2 opacity-70 hover:opacity-100 transition-opacity"
             >

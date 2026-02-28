@@ -11,7 +11,7 @@ function hashDocIdToInt(docId: string): number {
   let hash = 0;
   for (let i = 0; i < docId.length; i++) {
     const char = docId.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return Math.abs(hash);
@@ -19,12 +19,12 @@ function hashDocIdToInt(docId: string): number {
 
 export async function compactDocument(docId: string): Promise<void> {
   const lockId = hashDocIdToInt(docId);
-  
+
   await sql`SELECT pg_advisory_lock(${lockId})`;
-  
+
   try {
     const now = new Date();
-    
+
     const snapshot = await db.query.documents.findFirst({
       where: eq(documents.id, docId),
     });
@@ -39,11 +39,11 @@ export async function compactDocument(docId: string): Promise<void> {
     }
 
     const yDoc = new Y.Doc();
-    
+
     if (snapshot?.yjsState) {
       Y.applyUpdate(yDoc, snapshot.yjsState);
     }
-    
+
     for (const update of updates) {
       Y.applyUpdate(yDoc, update.updateData);
     }
@@ -55,7 +55,7 @@ export async function compactDocument(docId: string): Promise<void> {
       .set({ yjsState: mergedState, updatedAt: now })
       .where(eq(documents.id, docId));
 
-    const updateIds = updates.map(u => u.id);
+    const updateIds = updates.map((u) => u.id);
     for (const updateId of updateIds) {
       await db.delete(documentUpdates).where(eq(documentUpdates.id, updateId));
     }
@@ -94,7 +94,7 @@ export function startCompactionJob(): void {
   }
 
   compactionTimer = setInterval(() => {
-    runCompactionCycle().catch(err => {
+    runCompactionCycle().catch((err) => {
       console.error('[Compaction] Cycle error:', err);
     });
   }, COMPACTION_INTERVAL_MS);

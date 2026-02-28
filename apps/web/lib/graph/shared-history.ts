@@ -19,29 +19,32 @@ export interface SharedHistoryConnection {
  * @returns Array of SharedHistoryConnection objects
  */
 export function findSharedHistory(characters: ChargenCharacter[]): SharedHistoryConnection[] {
-  const entityRefs = new Map<string, Array<{ 
-    charId: string; 
-    charName: string; 
-    ref: SpawnedEntityRef 
-  }>>();
+  const entityRefs = new Map<
+    string,
+    Array<{
+      charId: string;
+      charName: string;
+      ref: SpawnedEntityRef;
+    }>
+  >();
 
   for (const char of characters) {
     if (!char.terms) continue;
-    
+
     for (const term of char.terms) {
       if (!term.spawnedEntities) continue;
-      
+
       for (const entity of term.spawnedEntities) {
         if (!entity.graphNodeId) continue;
-        
+
         if (!entityRefs.has(entity.graphNodeId)) {
           entityRefs.set(entity.graphNodeId, []);
         }
-        
+
         entityRefs.get(entity.graphNodeId)!.push({
           charId: char.id,
           charName: char.name,
-          ref: entity
+          ref: entity,
         });
       }
     }
@@ -50,12 +53,12 @@ export function findSharedHistory(characters: ChargenCharacter[]): SharedHistory
   const connections: SharedHistoryConnection[] = [];
 
   for (const [entityId, refs] of entityRefs.entries()) {
-    const charsInvolved = new Set(refs.map(r => r.charId));
-    
+    const charsInvolved = new Set(refs.map((r) => r.charId));
+
     if (charsInvolved.size < 2) continue;
 
-    const uniqueRefs = Array.from(charsInvolved).map(id => refs.find(r => r.charId === id)!);
-    
+    const uniqueRefs = Array.from(charsInvolved).map((id) => refs.find((r) => r.charId === id)!);
+
     for (let i = 0; i < uniqueRefs.length; i++) {
       for (let j = i + 1; j < uniqueRefs.length; j++) {
         const refA = uniqueRefs[i];
@@ -103,8 +106,8 @@ export function generateSharedHistoryEdges(connections: SharedHistoryConnection[
         entityName: conn.entityName,
         relationshipA: conn.relationshipA,
         relationshipB: conn.relationshipB,
-        description: conn.description
-      }
+        description: conn.description,
+      },
     });
 
     edges.push({
@@ -119,8 +122,8 @@ export function generateSharedHistoryEdges(connections: SharedHistoryConnection[
         entityName: conn.entityName,
         relationshipA: conn.relationshipB,
         relationshipB: conn.relationshipA,
-        description: conn.description
-      }
+        description: conn.description,
+      },
     });
   }
 

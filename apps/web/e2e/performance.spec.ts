@@ -104,14 +104,14 @@ test.describe('Performance', () => {
       browser.newContext(),
     ]);
 
-    const pages = await Promise.all(contexts.map(ctx => ctx.newPage()));
+    const pages = await Promise.all(contexts.map((ctx) => ctx.newPage()));
 
     await pages[0].goto('/graph');
     await pages[0].waitForSelector('.react-flow', { timeout: 30000 });
     await pages[0].evaluate(() => indexedDB.deleteDatabase('highport-graph'));
-    
-    await Promise.all(pages.map(p => p.goto('/graph')));
-    await Promise.all(pages.map(p => p.waitForSelector('.react-flow', { timeout: 30000 })));
+
+    await Promise.all(pages.map((p) => p.goto('/graph')));
+    await Promise.all(pages.map((p) => p.waitForSelector('.react-flow', { timeout: 30000 })));
     await pages[0].waitForTimeout(2000);
 
     for (let i = 0; i < 20; i++) {
@@ -127,6 +127,6 @@ test.describe('Performance', () => {
       expect(nodeCount).toBeGreaterThanOrEqual(5);
     }
 
-    await Promise.all(contexts.map(ctx => ctx.close()));
+    await Promise.all(contexts.map((ctx) => ctx.close()));
   });
 });

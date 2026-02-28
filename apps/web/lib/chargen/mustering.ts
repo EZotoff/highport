@@ -12,11 +12,11 @@ export function calculateTotalBenefitRolls(character: ChargenCharacter): number 
   const terms = character.terms.length;
   const finalTerm = character.terms[character.terms.length - 1];
   const finalRank = finalTerm?.currentRank || 0;
-  
+
   let rolls = terms;
   rolls += finalRank;
   if (finalRank >= 5) rolls += 1;
-  
+
   return rolls;
 }
 
@@ -40,11 +40,11 @@ export interface BenefitRollResult {
 
 export function rollBenefit(
   character: ChargenCharacter,
-  type: 'cash' | 'benefit'
+  type: 'cash' | 'benefit',
 ): BenefitRollResult {
   const career = getCareer(character.terms[character.terms.length - 1]?.careerId || '');
   if (!career) throw new Error('Career not found');
-  
+
   if (type === 'cash') {
     const gamblingBonus = getGamblingBonus(character);
     const result = rollCashBenefit(career, gamblingBonus);
@@ -75,17 +75,18 @@ export function parseBenefit(benefit: string): {
   if (charMatch) {
     return { type: 'characteristic', value: `${charMatch[2]} +${charMatch[1]}` };
   }
-  
+
   // Ship shares
   if (benefit.includes('Ship Share')) {
     const shareMatch = benefit.match(/(\d+)\s*Ship\s*Share/i);
     return { type: 'shares', value: shareMatch ? parseInt(shareMatch[1]) : 1 };
   }
-  
+
   // Common benefits
   if (benefit.includes('TAS')) return { type: 'membership', value: 'TAS Membership' };
   if (benefit.includes('Weapon')) return { type: 'weapon', value: benefit };
-  if (benefit.includes('Vehicle') || benefit.includes('Yacht')) return { type: 'vehicle', value: benefit };
-  
+  if (benefit.includes('Vehicle') || benefit.includes('Yacht'))
+    return { type: 'vehicle', value: benefit };
+
   return { type: 'other', value: benefit };
 }

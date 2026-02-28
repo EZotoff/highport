@@ -14,9 +14,7 @@ interface ResolveBody {
   manualValue?: unknown;
 }
 
-export async function registerConflictRoutes(
-  fastify: FastifyInstance
-): Promise<void> {
+export async function registerConflictRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get('/api/conflicts', async (request, reply) => {
     const isGm = request.headers['x-is-gm'] === 'true';
 
@@ -48,10 +46,7 @@ export async function registerConflictRoutes(
   fastify.get<{ Params: IdParams }>('/api/conflicts/:id', async (request, reply) => {
     const { id } = request.params;
 
-    const [conflict] = await db
-      .select()
-      .from(conflictQueue)
-      .where(eq(conflictQueue.id, id));
+    const [conflict] = await db.select().from(conflictQueue).where(eq(conflictQueue.id, id));
 
     if (!conflict) {
       reply.code(404);
@@ -93,10 +88,7 @@ export async function registerConflictRoutes(
         return { error: 'Invalid resolution type' };
       }
 
-      const [existing] = await db
-        .select()
-        .from(conflictQueue)
-        .where(eq(conflictQueue.id, id));
+      const [existing] = await db.select().from(conflictQueue).where(eq(conflictQueue.id, id));
 
       if (!existing) {
         reply.code(404);
@@ -129,7 +121,7 @@ export async function registerConflictRoutes(
         `[Conflict] Resolved ${id}: ${resolution}`,
         existing.fieldPath,
         '→',
-        resolvedValue
+        resolvedValue,
       );
 
       return {
@@ -139,46 +131,40 @@ export async function registerConflictRoutes(
         nodeId: existing.nodeId,
         fieldPath: existing.fieldPath,
       };
-    }
+    },
   );
 
-  fastify.delete<{ Params: IdParams }>(
-    '/api/conflicts/:id',
-    async (request, reply) => {
-      const isGm = request.headers['x-is-gm'] === 'true';
-      const userId = request.headers['x-user-id'] as string;
+  fastify.delete<{ Params: IdParams }>('/api/conflicts/:id', async (request, reply) => {
+    const isGm = request.headers['x-is-gm'] === 'true';
+    const userId = request.headers['x-user-id'] as string;
 
-      if (!isGm) {
-        reply.code(403);
-        return { error: 'Only GM can dismiss conflicts' };
-      }
-
-      const { id } = request.params;
-
-      const [existing] = await db
-        .select()
-        .from(conflictQueue)
-        .where(eq(conflictQueue.id, id));
-
-      if (!existing) {
-        reply.code(404);
-        return { error: 'Conflict not found' };
-      }
-
-      await db
-        .update(conflictQueue)
-        .set({
-          status: 'dismissed',
-          resolvedBy: userId,
-          resolvedAt: new Date(),
-        })
-        .where(eq(conflictQueue.id, id));
-
-      console.log(`[Conflict] Dismissed ${id}:`, existing.fieldPath);
-
-      return { status: 'dismissed' };
+    if (!isGm) {
+      reply.code(403);
+      return { error: 'Only GM can dismiss conflicts' };
     }
-  );
+
+    const { id } = request.params;
+
+    const [existing] = await db.select().from(conflictQueue).where(eq(conflictQueue.id, id));
+
+    if (!existing) {
+      reply.code(404);
+      return { error: 'Conflict not found' };
+    }
+
+    await db
+      .update(conflictQueue)
+      .set({
+        status: 'dismissed',
+        resolvedBy: userId,
+        resolvedAt: new Date(),
+      })
+      .where(eq(conflictQueue.id, id));
+
+    console.log(`[Conflict] Dismissed ${id}:`, existing.fieldPath);
+
+    return { status: 'dismissed' };
+  });
 }
 
 export async function queueConflict(
@@ -187,7 +173,7 @@ export async function queueConflict(
   foundryValue: unknown,
   highportValue: unknown,
   foundryTimestamp: Date | null,
-  highportTimestamp: Date | null
+  highportTimestamp: Date | null,
 ): Promise<string> {
   const id = generateId('conflict');
 

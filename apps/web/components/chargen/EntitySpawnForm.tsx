@@ -7,7 +7,11 @@ import type { SpawnedEntityRef } from '../../lib/chargen/types';
 import { useNPCNarrative, useNarrativeAvailable } from '../../lib/chargen/useNarrative';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { SciFiInput, SciFiButton } from '@/components/ui/scifi';
-import { usePortraitGenerator, attachPortraitToNode, attachPortraitRecord } from '../../lib/portrait/usePortrait';
+import {
+  usePortraitGenerator,
+  attachPortraitToNode,
+  attachPortraitRecord,
+} from '../../lib/portrait/usePortrait';
 import type { PortraitRecord, PortraitTags } from '@highport/shared/types/portrait';
 import { useSession } from '../../lib/chargen/hooks';
 import { PortraitLibrary } from '@/components/portrait/PortraitLibrary';
@@ -80,22 +84,25 @@ export default function EntitySpawnForm({
   const [remixerOpen, setRemixerOpen] = useState(false);
   const { isAvailable: narrativeAvailable } = useNarrativeAvailable();
   const { generate: generateNPC, isLoading: generating, error: generateError } = useNPCNarrative();
-  const { generate: generatePortrait, isLoading: generatingPortrait, error: portraitError } = usePortraitGenerator();
+  const {
+    generate: generatePortrait,
+    isLoading: generatingPortrait,
+    error: portraitError,
+  } = usePortraitGenerator();
   const session = useSession();
 
   const typeLabel = SPAWN_TYPE_LABELS[spawn.type] || spawn.type;
-  const relationLabel = spawn.relationship 
-    ? RELATIONSHIP_LABELS[spawn.relationship] 
-    : null;
-  
+  const relationLabel = spawn.relationship ? RELATIONSHIP_LABELS[spawn.relationship] : null;
+
   const prompts = SPAWN_PROMPTS[spawn.type] || SPAWN_PROMPTS.npc;
-  const prompt = spawn.relationship && prompts[spawn.relationship] 
-    ? prompts[spawn.relationship] 
-    : prompts.default;
+  const prompt =
+    spawn.relationship && prompts[spawn.relationship]
+      ? prompts[spawn.relationship]
+      : prompts.default;
 
   const handleGenerateField = async (field: 'name' | 'motivation' | 'personality') => {
     if (spawn.type !== 'npc') return;
-    
+
     try {
       const result = await generateNPC({
         npcType: spawn.relationship || 'contact',
@@ -104,14 +111,14 @@ export default function EntitySpawnForm({
           career: career,
           characterName: characterName,
         },
-        existingFields: { 
+        existingFields: {
           name: name || undefined,
           motivation: motivation || undefined,
           personality: personality || undefined,
         },
         verbosity: 'minimal',
       });
-      
+
       switch (field) {
         case 'name':
           if (result.name) setName(result.name);
@@ -130,7 +137,7 @@ export default function EntitySpawnForm({
 
   const handleGenerateAll = async () => {
     if (spawn.type !== 'npc') return;
-    
+
     try {
       const result = await generateNPC({
         npcType: spawn.relationship || 'contact',
@@ -142,7 +149,7 @@ export default function EntitySpawnForm({
         existingFields: name ? { name } : undefined,
         verbosity,
       });
-      
+
       if (result.name && !name) setName(result.name);
       if (result.motivation) setMotivation(result.motivation);
       if (result.personality) setPersonality(result.personality);
@@ -156,7 +163,7 @@ export default function EntitySpawnForm({
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
-    
+
     const entity = spawnEntity({
       spawn,
       name: name.trim(),
@@ -174,7 +181,7 @@ export default function EntitySpawnForm({
         console.error('Failed to attach portrait:', error);
       }
     }
-    
+
     onComplete(entity);
   };
 
@@ -211,26 +218,31 @@ export default function EntitySpawnForm({
     rival: 'text-amber-400 bg-amber-900/30 border-amber-800',
     enemy: 'text-red-400 bg-red-900/30 border-red-800',
   };
-  
-  const relationColor = (spawn.relationship && relationColorMap[spawn.relationship]) || 'text-subtle bg-zinc-900/30 border-zinc-800';
+
+  const relationColor =
+    (spawn.relationship && relationColorMap[spawn.relationship]) ||
+    'text-subtle bg-zinc-900/30 border-zinc-800';
 
   return (
     <div className={`border rounded-lg p-4 mt-4 ${relationColor}`}>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-lg font-bold">
-          ⚠️ SPAWN {relationLabel ? `${relationLabel} ` : ''}{typeLabel}
+          ⚠️ SPAWN {relationLabel ? `${relationLabel} ` : ''}
+          {typeLabel}
         </span>
         {spawn.required && (
           <span className="text-xs px-2 py-0.5 bg-zinc-800 rounded">Required</span>
         )}
       </div>
-      
+
       <p className="text-sm mb-4 opacity-80">{prompt}</p>
-      
+
       <div className="space-y-4">
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="spawn-entity-name" className="text-sm font-medium">Name *</label>
+            <label htmlFor="spawn-entity-name" className="text-sm font-medium">
+              Name *
+            </label>
             {spawn.type === 'npc' && narrativeAvailable && (
               <SciFiButton
                 onClick={() => handleGenerateField('name')}
@@ -244,19 +256,21 @@ export default function EntitySpawnForm({
               </SciFiButton>
             )}
           </div>
-            <SciFiInput
-              id="spawn-entity-name"
-              type="text"
-              value={name}
+          <SciFiInput
+            id="spawn-entity-name"
+            type="text"
+            value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={spawn.type === 'npc' ? 'e.g., Lt. Vasquez' : 'Enter name...'}
             theme="cyan"
           />
         </div>
-        
+
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="spawn-entity-description" className="text-sm font-medium">Brief Description (optional)</label>
+            <label htmlFor="spawn-entity-description" className="text-sm font-medium">
+              Brief Description (optional)
+            </label>
             {spawn.type === 'npc' && narrativeAvailable && (
               <div className="flex gap-1">
                 <SciFiButton
@@ -292,7 +306,7 @@ export default function EntitySpawnForm({
             className="w-full min-h-[44px] bg-[var(--star-metal)] border border-[var(--asteroid-dust-50)] text-default rounded-lg p-2 focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 focus:border-cyan-500/50 outline-none resize-none"
           />
         </div>
-        
+
         {spawn.type === 'npc' && narrativeAvailable && (
           <div className="pt-2">
             <SciFiButton
@@ -309,15 +323,10 @@ export default function EntitySpawnForm({
             )}
           </div>
         )}
-        
+
         <div className="flex gap-3 pt-2">
           {!spawn.required && (
-            <SciFiButton
-              onClick={onSkip}
-              theme="slate"
-              scifiVariant="ghost"
-              type="button"
-            >
+            <SciFiButton onClick={onSkip} theme="slate" scifiVariant="ghost" type="button">
               Skip Entity
             </SciFiButton>
           )}
@@ -338,7 +347,9 @@ export default function EntitySpawnForm({
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm font-medium">Portrait</div>
               {portrait && (
-                <span className="text-xs" style={{ color: THEME_HEX.emerald }}>Generated</span>
+                <span className="text-xs" style={{ color: THEME_HEX.emerald }}>
+                  Generated
+                </span>
               )}
             </div>
 
@@ -406,10 +417,14 @@ export default function EntitySpawnForm({
             )}
 
             {portraitError && (
-              <div className="text-xs mt-2" style={{ color: THEME_HEX.red }}>{portraitError.message}</div>
+              <div className="text-xs mt-2" style={{ color: THEME_HEX.red }}>
+                {portraitError.message}
+              </div>
             )}
             {!session?.campaignId && (
-              <div className="text-xs mt-2" style={{ color: THEME_HEX.amber }}>Portraits require an active session.</div>
+              <div className="text-xs mt-2" style={{ color: THEME_HEX.amber }}>
+                Portraits require an active session.
+              </div>
             )}
 
             {session?.campaignId && (
@@ -426,7 +441,7 @@ export default function EntitySpawnForm({
                     story: {
                       entity_type: 'npc',
                       relationship_type: spawn.relationship as any,
-                    }
+                    },
                   }}
                 />
                 {portrait && (

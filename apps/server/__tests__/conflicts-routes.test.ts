@@ -32,7 +32,7 @@ const mockConflict = {
   createdAt: new Date('2025-01-01T08:00:00Z'),
 };
 
-let mockConflicts: typeof mockConflict[] = [];
+let mockConflicts: (typeof mockConflict)[] = [];
 
 vi.mock('../src/db/client.js', () => ({
   db: {
@@ -41,7 +41,9 @@ vi.mock('../src/db/client.js', () => ({
         const tableName = getTableName(table);
         if (tableName === 'conflict_queue') {
           return {
-            where: vi.fn(() => Promise.resolve(mockConflicts.filter(c => c.status === 'pending'))),
+            where: vi.fn(() =>
+              Promise.resolve(mockConflicts.filter((c) => c.status === 'pending')),
+            ),
           };
         }
         return { where: vi.fn(() => Promise.resolve([])) };

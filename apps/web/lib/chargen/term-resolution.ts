@@ -9,7 +9,7 @@ import type { ChargenCharacter } from './types';
 
 export function rollSurvival(
   character: ChargenCharacter,
-  assignment: CareerAssignment
+  assignment: CareerAssignment,
 ): DiceResult {
   const stat = assignment.survival.characteristic;
   const statValue = character.characteristics[stat] || 0;
@@ -20,7 +20,7 @@ export function rollSurvival(
 export function rollAdvancement(
   character: ChargenCharacter,
   assignment: CareerAssignment,
-  eventBonus: number = 0
+  eventBonus: number = 0,
 ): DiceResult {
   const stat = assignment.advancement.characteristic;
   const statValue = character.characteristics[stat] || 0;
@@ -31,7 +31,7 @@ export function rollAdvancement(
 export function applySkillGain(
   currentSkills: Record<string, number>,
   skill: string,
-  specialty?: string
+  specialty?: string,
 ): Record<string, number> {
   const skillKey = specialty ? `${skill}.${specialty}` : skill;
   const newSkills = { ...currentSkills };
@@ -46,11 +46,11 @@ export function applySkillGain(
 export function getRankInfo(
   career: CareerDefinition,
   rankLevel: number,
-  isOfficer: boolean = false
+  isOfficer: boolean = false,
 ): { title: string; skill?: string; skillLevel?: number } | null {
   const ranks = isOfficer ? career.officerRanks : career.ranks;
   if (!ranks) return null;
-  return ranks.find(r => r.rank === rankLevel) || null;
+  return ranks.find((r) => r.rank === rankLevel) || null;
 }
 
 export function parseCharacteristicBonus(skill: string): { stat: string; value: number } | null {

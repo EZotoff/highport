@@ -15,7 +15,7 @@ describe('identity', () => {
     },
     removeItem: (key: string) => {
       delete store[key];
-    }
+    },
   };
 
   beforeEach(() => {

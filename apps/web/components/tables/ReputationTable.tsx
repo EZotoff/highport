@@ -3,12 +3,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../../components/ui/ToastContext';
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  ColumnDef,
-} from '@tanstack/react-table';
+import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from '@tanstack/react-table';
 import * as Y from 'yjs';
 import { Plus, Link as LinkIcon, Unlink, ExternalLink, AlertTriangle } from 'lucide-react';
 import { getYDoc, getNodesMap } from '../../lib/ydoc';
@@ -75,7 +70,10 @@ const EditableCell = ({
     return (
       <div className="flex items-center gap-2 group cursor-pointer" onClick={onClick}>
         <span className={`${className} hover:underline`}>{value}</span>
-        <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-400" />
+        <ExternalLink
+          size={12}
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-400"
+        />
       </div>
     );
   }
@@ -131,12 +129,12 @@ export function ReputationTable() {
     updateNodes();
 
     const observer = () => {
-        updateData();
+      updateData();
     };
 
     const nodesObserver = () => {
-        updateNodes();
-    }
+      updateNodes();
+    };
 
     factionsMap.observeDeep(observer);
     nodesMap.observeDeep(nodesObserver);
@@ -147,13 +145,10 @@ export function ReputationTable() {
     };
   }, []);
 
-  const handleUpdate = useCallback(
-    (id: string, field: string, value: any) => {
-      const doc = getYDoc();
-      updateFactionField(doc, id, field, value);
-    },
-    []
-  );
+  const handleUpdate = useCallback((id: string, field: string, value: any) => {
+    const doc = getYDoc();
+    updateFactionField(doc, id, field, value);
+  }, []);
 
   const handleAddFaction = useCallback(() => {
     const doc = getYDoc();
@@ -161,24 +156,27 @@ export function ReputationTable() {
   }, []);
 
   const handleLinkNode = useCallback((factionId: string, nodeId: string | null) => {
-      const doc = getYDoc();
-      updateFactionField(doc, factionId, 'factionNodeId', nodeId);
-      setIsNodePickerOpen(null);
+    const doc = getYDoc();
+    updateFactionField(doc, factionId, 'factionNodeId', nodeId);
+    setIsNodePickerOpen(null);
   }, []);
 
-  const handleNameClick = useCallback((faction: Faction) => {
-    if (faction.factionNodeId) {
-      // Check if node exists
-      const nodeExists = nodes.some(n => n.id === faction.factionNodeId);
-      if (nodeExists) {
-        router.push(`/graph?focusNode=${faction.factionNodeId}`);
+  const handleNameClick = useCallback(
+    (faction: Faction) => {
+      if (faction.factionNodeId) {
+        // Check if node exists
+        const nodeExists = nodes.some((n) => n.id === faction.factionNodeId);
+        if (nodeExists) {
+          router.push(`/graph?focusNode=${faction.factionNodeId}`);
+        } else {
+          showToast('Linked node not found in graph', 'warning');
+        }
       } else {
-        showToast('Linked node not found in graph', 'warning');
+        showToast('This faction is not linked to any graph node', 'info');
       }
-    } else {
-      showToast('This faction is not linked to any graph node', 'info');
-    }
-  }, [nodes, router, showToast]);
+    },
+    [nodes, router, showToast],
+  );
 
   const columns = useMemo<ColumnDef<Faction>[]>(
     () => [
@@ -241,10 +239,7 @@ export function ReputationTable() {
               className="w-16 text-right"
             />
             <div className="w-24 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                <div 
-                    className="h-full bg-orange-500" 
-                    style={{ width: `${getValue() as number}%` }}
-                />
+              <div className="h-full bg-orange-500" style={{ width: `${getValue() as number}%` }} />
             </div>
           </div>
         ),
@@ -261,13 +256,15 @@ export function ReputationTable() {
             <div className="relative">
               {isNodePickerOpen === faction.id ? (
                 <div className="absolute z-10 top-0 left-0 w-64 bg-zinc-800 border border-zinc-700 rounded shadow-lg p-2">
-                  <div className="mb-2 text-xs text-zinc-400 font-bold uppercase tracking-wider">Select Node</div>
+                  <div className="mb-2 text-xs text-zinc-400 font-bold uppercase tracking-wider">
+                    Select Node
+                  </div>
                   <div className="max-h-48 overflow-y-auto space-y-1">
                     <button
-                        onClick={() => handleLinkNode(faction.id, null)}
-                        className="w-full text-left px-2 py-1 rounded hover:bg-zinc-700 text-red-400 text-sm flex items-center gap-2"
+                      onClick={() => handleLinkNode(faction.id, null)}
+                      className="w-full text-left px-2 py-1 rounded hover:bg-zinc-700 text-red-400 text-sm flex items-center gap-2"
                     >
-                        <Unlink size={14} /> Unlink
+                      <Unlink size={14} /> Unlink
                     </button>
                     {nodes.map((node) => (
                       <button
@@ -279,7 +276,7 @@ export function ReputationTable() {
                       </button>
                     ))}
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsNodePickerOpen(null)}
                     className="mt-2 w-full text-center text-xs text-zinc-500 hover:text-zinc-300 py-1"
                   >
@@ -290,7 +287,7 @@ export function ReputationTable() {
                 <button
                   onClick={() => setIsNodePickerOpen(faction.id)}
                   className={`flex items-center gap-2 px-2 py-1 rounded text-sm transition-colors ${
-                    isMissing 
+                    isMissing
                       ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-800/50'
                       : linkedNode
                         ? 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/50 border border-blue-800/50'
@@ -306,7 +303,7 @@ export function ReputationTable() {
         },
       },
     ],
-    [handleUpdate, nodes, isNodePickerOpen, handleLinkNode, handleNameClick]
+    [handleUpdate, nodes, isNodePickerOpen, handleLinkNode, handleNameClick],
   );
 
   const table = useReactTable({
@@ -327,17 +324,16 @@ export function ReputationTable() {
         </button>
       </div>
 
-      <div className="overflow-x-visible pb-32"> {/* Allow popup to overflow */}
+      <div className="overflow-x-visible pb-32">
+        {' '}
+        {/* Allow popup to overflow */}
         <table className="w-full text-left text-sm text-zinc-400">
           <thead className="bg-zinc-800/50 text-zinc-200 uppercase">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th key={header.id} className="px-4 py-3 font-medium">
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
               </tr>
@@ -346,19 +342,13 @@ export function ReputationTable() {
           <tbody className="divide-y divide-zinc-800">
             {table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-8 text-center text-zinc-600"
-                >
+                <td colSpan={columns.length} className="px-4 py-8 text-center text-zinc-600">
                   No factions defined.
                 </td>
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-zinc-800/30 transition-colors group"
-                >
+                <tr key={row.id} className="hover:bg-zinc-800/30 transition-colors group">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-2">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

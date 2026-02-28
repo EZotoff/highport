@@ -4,13 +4,13 @@ export const DRIFTER: CareerDefinition = {
   id: 'drifter',
   name: 'Drifter',
   description: 'Those who wander the stars, taking odd jobs and living by their wits.',
-  
+
   // No qualification roll - Drifters automatically qualify
   qualification: {
     characteristic: 'INT',
-    target: 0,  // Auto-qualify
+    target: 0, // Auto-qualify
   },
-  
+
   assignments: [
     {
       id: 'barbarian',
@@ -58,7 +58,7 @@ export const DRIFTER: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 STR' },
@@ -85,7 +85,7 @@ export const DRIFTER: CareerDefinition = {
       { roll: 6, skill: 'guncombat' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Drifter' },
     { rank: 1, title: 'Drifter', skill: 'survival', skillLevel: 1 },
@@ -95,9 +95,9 @@ export const DRIFTER: CareerDefinition = {
     { rank: 5, title: 'Drifter' },
     { rank: 6, title: 'Drifter' },
   ],
-  
+
   cashBenefits: [0, 0, 1000, 2000, 3000, 4000, 8000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Contact' },
     { roll: 2, benefit: 'Weapon' },
@@ -106,7 +106,7 @@ export const DRIFTER: CareerDefinition = {
     { roll: 5, benefit: '+1 EDU' },
     { roll: 6, benefit: 'Ship Share' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -132,9 +132,7 @@ export const DRIFTER: CareerDefinition = {
     {
       roll: 5,
       description: 'You are attacked by enemies.',
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: false, template: 'random_enemy' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: false, template: 'random_enemy' }],
       effects: [{ type: 'special', target: 'roll', value: 'Melee or Gun Combat 8+' }],
     },
     {
@@ -161,9 +159,7 @@ export const DRIFTER: CareerDefinition = {
     {
       roll: 8,
       description: 'You manage to get along with local law enforcement.',
-      spawns: [
-        { type: 'npc', relationship: 'contact', required: false, template: 'law_contact' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'contact', required: false, template: 'law_contact' }],
       effects: [{ type: 'skill', target: 'streetwise', value: 1 }],
     },
     {
@@ -188,17 +184,16 @@ export const DRIFTER: CareerDefinition = {
     {
       roll: 11,
       description: 'You save the life of someone important.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'grateful_ally' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'grateful_ally' }],
     },
     {
       roll: 12,
-      description: 'You are offered a proper job. You may automatically qualify for any one career (except Scholar, Psion, or Nobility) next term.',
+      description:
+        'You are offered a proper job. You may automatically qualify for any one career (except Scholar, Psion, or Nobility) next term.',
       effects: [{ type: 'special', target: 'auto_qualify', value: 'next_term' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
@@ -212,9 +207,7 @@ export const DRIFTER: CareerDefinition = {
       description: 'You run afoul of a criminal gang or crime lord.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'crime_lord' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'crime_lord' }],
     },
     {
       roll: 3,
@@ -224,7 +217,8 @@ export const DRIFTER: CareerDefinition = {
     },
     {
       roll: 4,
-      description: 'You are arrested and charged. Roll Streetwise or Advocate 8+ to avoid imprisonment.',
+      description:
+        'You are arrested and charged. Roll Streetwise or Advocate 8+ to avoid imprisonment.',
       forced: false,
       injury: false,
       effects: [{ type: 'special', target: 'check', value: 'Streetwise or Advocate 8+' }],
@@ -234,9 +228,7 @@ export const DRIFTER: CareerDefinition = {
       description: 'You are betrayed by a friend.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'betrayer' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'betrayer' }],
     },
     {
       roll: 6,

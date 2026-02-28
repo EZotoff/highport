@@ -71,10 +71,10 @@ const DOC_TYPE = 'graph';
 function extractNodesFromYDoc(state: Uint8Array): GraphNode[] {
   const doc = new Y.Doc();
   Y.applyUpdate(doc, state);
-  
+
   const nodesMap = doc.getMap('nodes') as Y.Map<Y.Map<unknown>>;
   const nodes: GraphNode[] = [];
-  
+
   nodesMap.forEach((ymap) => {
     nodes.push({
       id: ymap.get('id') as string,
@@ -88,7 +88,7 @@ function extractNodesFromYDoc(state: Uint8Array): GraphNode[] {
       created_by: ymap.get('created_by') as string,
     });
   });
-  
+
   return nodes;
 }
 
@@ -106,7 +106,7 @@ function nodeToFoundryActor(node: GraphNode): FoundryActorExport {
       hits: hp ? { value: hp.current, max: hp.max } : undefined,
       characteristics: characteristics
         ? Object.fromEntries(
-            Object.entries(characteristics).map(([key, val]) => [key, { value: val }])
+            Object.entries(characteristics).map(([key, val]) => [key, { value: val }]),
           )
         : undefined,
       finance: credits !== undefined ? { cash: credits } : undefined,
@@ -122,17 +122,14 @@ function mapActorToMetadata(actor: FoundryActor): Record<string, unknown> {
     },
     characteristics: actor.system.characteristics
       ? Object.fromEntries(
-          Object.entries(actor.system.characteristics).map(([key, val]) => [key, val.value])
+          Object.entries(actor.system.characteristics).map(([key, val]) => [key, val.value]),
         )
       : undefined,
     credits: actor.system.finance?.cash,
   };
 }
 
-function matchActorsToNodes(
-  actors: FoundryActor[],
-  nodes: GraphNode[]
-): ImportResult {
+function matchActorsToNodes(actors: FoundryActor[], nodes: GraphNode[]): ImportResult {
   const matched: ImportResult['matched'] = [];
   const unmatched: ImportResult['unmatched'] = [];
 
@@ -140,7 +137,7 @@ function matchActorsToNodes(
     const node = nodes.find(
       (n) =>
         n.metadata?.foundry_uuid === `Actor.${actor._id}` ||
-        n.label.toLowerCase() === actor.name.toLowerCase()
+        n.label.toLowerCase() === actor.name.toLowerCase(),
     );
 
     if (node) {
@@ -162,7 +159,7 @@ export async function registerExportRoutes(fastify: FastifyInstance): Promise<vo
 
     try {
       const state = await fetchDocumentState(docId);
-      
+
       if (!state) {
         return { actors: [], count: 0 };
       }
@@ -187,7 +184,7 @@ export async function registerExportRoutes(fastify: FastifyInstance): Promise<vo
 
     try {
       const state = await fetchDocumentState(docId);
-      
+
       if (!state) {
         reply.header('Content-Type', 'application/json');
         reply.header('Content-Disposition', 'attachment; filename="highport-export.json"');
@@ -221,7 +218,7 @@ export async function registerExportRoutes(fastify: FastifyInstance): Promise<vo
 
     try {
       const state = await fetchDocumentState(docId);
-      
+
       if (!state) {
         const response: ImportResponse = {
           matched: [],
@@ -239,9 +236,7 @@ export async function registerExportRoutes(fastify: FastifyInstance): Promise<vo
         unmatched: result.unmatched,
         updated: result.updated,
         changes: actors
-          .filter((actor) =>
-            result.matched.some((m) => m.name === actor.name)
-          )
+          .filter((actor) => result.matched.some((m) => m.name === actor.name))
           .map((actor) => {
             const match = result.matched.find((m) => m.name === actor.name);
             return {

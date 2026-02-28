@@ -12,10 +12,18 @@
   },
   "typesVersions": {
     "*": {
-      "*": ["./dist/*"],
-      "types/*": ["./dist/types/*"],
-      "data/*": ["./dist/data/*"],
-      "tables/*": ["./dist/tables/*"]
+      "*": [
+        "./dist/*"
+      ],
+      "types/*": [
+        "./dist/types/*"
+      ],
+      "data/*": [
+        "./dist/data/*"
+      ],
+      "tables/*": [
+        "./dist/tables/*"
+      ]
     }
   },
   "scripts": {

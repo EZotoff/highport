@@ -8,14 +8,14 @@
 
 ## Test Summary
 
-| Test ID | Test Name | Expected | Actual | Status | Evidence |
-|---------|-----------|----------|--------|--------|----------|
-| F1 | Create Graph Node | Node appears on canvas | ✅ Node created successfully | **PASS** | feature-01-create-node.png |
-| F2 | Select Graph Node | Node shows selected state | ✅ Node marked [active] | **PASS** | feature-02-select-node.png |
-| F3 | Delete Graph Node | Node removed from canvas | ✅ Node deleted, count reduced | **PASS** | feature-03-delete-node.png |
-| F4 | Drag Graph Node | Node position changes | ✅ Node dragged 200px right, 150px down | **PASS** | feature-04-drag-node.png |
-| F5 | Edit Table Cell | Value saved after blur | ✅ "New Faction" → "Test Faction" | **PASS** | feature-05-edit-cell.png |
-| F6 | Add Table Row | New editable row appears | ✅ Second faction row created | **PASS** | feature-06-add-row.png |
+| Test ID | Test Name         | Expected                  | Actual                                  | Status   | Evidence                   |
+| ------- | ----------------- | ------------------------- | --------------------------------------- | -------- | -------------------------- |
+| F1      | Create Graph Node | Node appears on canvas    | ✅ Node created successfully            | **PASS** | feature-01-create-node.png |
+| F2      | Select Graph Node | Node shows selected state | ✅ Node marked [active]                 | **PASS** | feature-02-select-node.png |
+| F3      | Delete Graph Node | Node removed from canvas  | ✅ Node deleted, count reduced          | **PASS** | feature-03-delete-node.png |
+| F4      | Drag Graph Node   | Node position changes     | ✅ Node dragged 200px right, 150px down | **PASS** | feature-04-drag-node.png   |
+| F5      | Edit Table Cell   | Value saved after blur    | ✅ "New Faction" → "Test Faction"       | **PASS** | feature-05-edit-cell.png   |
+| F6      | Add Table Row     | New editable row appears  | ✅ Second faction row created           | **PASS** | feature-06-add-row.png     |
 
 ---
 
@@ -24,6 +24,7 @@
 ### F1: Create Graph Node ✅ PASS
 
 **Scenario**:
+
 ```gherkin
 GIVEN user is on /graph with empty canvas
 WHEN user clicks "Add Node" button
@@ -32,6 +33,7 @@ AND the node count increases by 1
 ```
 
 **Execution**:
+
 - ✅ Navigated to http://localhost:3000/graph
 - ✅ Clicked "Add Node" button (ref=e32)
 - ✅ New node appeared with title "New Faction" and subtitle "New node"
@@ -46,6 +48,7 @@ AND the node count increases by 1
 ### F2: Select Graph Node ✅ PASS
 
 **Scenario**:
+
 ```gherkin
 GIVEN a graph with at least one node
 WHEN user clicks on a node
@@ -53,6 +56,7 @@ THEN the node shows selected state (visual indicator)
 ```
 
 **Execution**:
+
 - ✅ Selected existing node by clicking on it (ref=e40)
 - ✅ Node group became [active] state (ref=e37 → [active])
 - ✅ Visual feedback appears in DOM indicating selection
@@ -66,6 +70,7 @@ THEN the node shows selected state (visual indicator)
 ### F3: Delete Graph Node ✅ PASS
 
 **Scenario**:
+
 ```gherkin
 GIVEN a graph with at least one node
 WHEN user right-clicks on a node
@@ -74,6 +79,7 @@ THEN the node is removed from canvas
 ```
 
 **Execution**:
+
 - ✅ Created second node to test deletion (total: 2 nodes)
 - ✅ Right-clicked on first node (ref=e40)
 - ✅ Context menu appeared with "Edit" and "Delete" buttons
@@ -90,6 +96,7 @@ THEN the node is removed from canvas
 ### F4: Drag Graph Node ✅ PASS
 
 **Scenario**:
+
 ```gherkin
 GIVEN a graph with at least one node at position (X1, Y1)
 WHEN user drags the node to position (X2, Y2)
@@ -97,6 +104,7 @@ THEN the node moves to the new position
 ```
 
 **Execution**:
+
 - ✅ Identified node SVG element at bounding box: {x: 395.6, y: 623.8, width: 120, height: 120}
 - ✅ Moved mouse to node center
 - ✅ Performed drag operation: +200px X, +150px Y
@@ -113,6 +121,7 @@ THEN the node moves to the new position
 ### F5: Edit Table Cell ✅ PASS
 
 **Scenario**:
+
 ```gherkin
 GIVEN user is on /reputation with at least one faction
 WHEN user clicks on a faction name cell
@@ -122,6 +131,7 @@ THEN the new name is saved
 ```
 
 **Execution**:
+
 - ✅ Navigated to http://localhost:3000/reputation
 - ✅ Clicked "Add Faction" button to create default entry
 - ✅ Located faction name textbox (ref=e24) with text "New Faction"
@@ -139,6 +149,7 @@ THEN the new name is saved
 ### F6: Add Table Row ✅ PASS
 
 **Scenario**:
+
 ```gherkin
 GIVEN user is on /reputation
 WHEN user clicks "Add Faction" button
@@ -147,6 +158,7 @@ AND the row is editable
 ```
 
 **Execution**:
+
 - ✅ Started with 1 faction ("Test Faction")
 - ✅ Clicked "Add Faction" button (ref=e7)
 - ✅ New row appeared with "New Faction" default text (ref=e40)
@@ -171,9 +183,11 @@ AND the row is editable
 ## Test Coverage
 
 ✅ Graph Operations: 100% (4/4 tests passed)
+
 - Create, Select, Delete, Drag
 
 ✅ Table Operations: 100% (2/2 tests passed)
+
 - Edit Cell, Add Row
 
 ---
@@ -183,6 +197,7 @@ AND the row is editable
 **Status**: ✅ **ALL TESTS PASSED**
 
 All six feature tests executed successfully without critical failures. The PlaneShift application demonstrates:
+
 - ✅ Functional graph node management
 - ✅ Proper CRDT sync for node operations
 - ✅ Functional table-based faction management

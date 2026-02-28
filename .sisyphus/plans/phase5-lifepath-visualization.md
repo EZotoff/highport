@@ -10,6 +10,7 @@
 ## Overview
 
 This phase creates a visual representation of a character's lifepath - their career history displayed as both:
+
 1. **Timeline View**: Horizontal progression showing terms, events, and key moments
 2. **Graph Integration**: Career terms as node clusters, with connections to spawned entities
 
@@ -20,15 +21,18 @@ The visualization helps players understand their character's journey and see how
 ## Architecture Decisions
 
 ### Dual View Approach
+
 - **Timeline**: D3.js or pure React-based horizontal timeline component
 - **Graph**: Extension of existing React Flow graph with career-themed grouping
 
 ### Data Source
+
 - Read from chargen CRDT state (character's `terms` array)
 - Also read from finalized character graph nodes (post-chargen)
 - Support both in-progress and completed characters
 
 ### Layout Strategy
+
 - Timeline: Horizontal scroll, one column per term
 - Graph: Cluster nodes around character node, organized by career
 - Connections: Lines from character → spawned entities, styled by relationship
@@ -38,17 +42,20 @@ The visualization helps players understand their character's journey and see how
 ## Task Breakdown
 
 ### Task 1: Timeline View Component
+
 **Effort**: Medium (3-4 hours)
 
 Create the horizontal timeline showing career progression.
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/LifepathTimeline.tsx`
 - [x] `apps/web/components/chargen/TimelineTerm.tsx`
 - [x] `apps/web/components/chargen/TimelineEvent.tsx`
 - [x] `apps/web/lib/chargen/useLifepath.ts`
 
 **UI Design:**
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │  LIFEPATH: Commander Sarah Chen                                         Age: 34 │
@@ -80,6 +87,7 @@ Create the horizontal timeline showing career progression.
 ```
 
 **Timeline Features:**
+
 - Horizontal scroll for long careers
 - Click term to expand details
 - Click entity to jump to graph node
@@ -87,6 +95,7 @@ Create the horizontal timeline showing career progression.
 - Color-coded by survival/advancement results
 
 **Acceptance criteria:**
+
 - [x] Timeline renders career terms horizontally
 - [x] Each term shows key info (age, event, entities)
 - [x] Clicking entity scrolls to/highlights graph node
@@ -96,14 +105,17 @@ Create the horizontal timeline showing career progression.
 ---
 
 ### Task 2: Term Detail Card
+
 **Effort**: Low (1-2 hours)
 
 Expandable detail view for individual terms.
 
 **Files to create:**
+
 - [x] `apps/web/components/chargen/TermDetailCard.tsx`
 
 **UI Design (Expanded):**
+
 ```
 ┌─ TERM 1: NAVY (Line/Crew) ─────────────────────────────────────────────────┐
 │                                                                             │
@@ -137,6 +149,7 @@ Expandable detail view for individual terms.
 ```
 
 **Acceptance criteria:**
+
 - [x] Card shows all term details
 - [x] Dice roll breakdowns visible
 - [x] Event description displayed
@@ -146,16 +159,19 @@ Expandable detail view for individual terms.
 ---
 
 ### Task 3: Graph Cluster Visualization
+
 **Effort**: High (4-5 hours)
 
 Integrate lifepath into the React Flow graph view.
 
 **Files to create:**
+
 - [x] `apps/web/components/graph/LifepathCluster.tsx`
 - [x] `apps/web/components/graph/CareerNode.tsx`
 - [x] `apps/web/lib/graph/lifepath-layout.ts`
 
 **Graph Layout:**
+
 ```
                     ┌───────────────────────────────────────────────────────┐
                     │                   NAVY CLUSTER                        │
@@ -182,6 +198,7 @@ Integrate lifepath into the React Flow graph view.
 ```
 
 **Layout Algorithm:**
+
 1. Character node at center
 2. Career cluster(s) above character
 3. Term nodes arranged horizontally within cluster
@@ -189,6 +206,7 @@ Integrate lifepath into the React Flow graph view.
 5. Edges styled by relationship type
 
 **Node Types:**
+
 ```typescript
 // New node types for lifepath
 type CareerClusterNode = {
@@ -216,6 +234,7 @@ type TermNode = {
 ```
 
 **Acceptance criteria:**
+
 - [x] Career clusters group term nodes
 - [x] Edges connect terms to spawned entities
 - [x] Clicking term shows detail popup
@@ -225,19 +244,22 @@ type TermNode = {
 ---
 
 ### Task 4: Shared History Connections (Multi-Character)
+
 **Effort**: Medium (2-3 hours)
 
 Show connections between characters from the same session.
 
 **Files to create:**
+
 - [x] `apps/web/components/graph/SharedHistoryEdge.tsx`
 - [x] `apps/web/lib/graph/shared-history.ts`
 
 **Shared History Types:**
+
 ```typescript
 interface SharedHistoryConnection {
-  characterA: string;  // Character ID
-  characterB: string;  // Character ID
+  characterA: string; // Character ID
+  characterB: string; // Character ID
   sharedEntity: string; // Entity ID they both connect to
   relationshipA: string; // A's relationship to entity
   relationshipB: string; // B's relationship to entity
@@ -246,6 +268,7 @@ interface SharedHistoryConnection {
 ```
 
 **Visual Representation:**
+
 ```
      Marcus Chen                              Zara Okonkwo
           │                                        │
@@ -263,12 +286,14 @@ interface SharedHistoryConnection {
 ```
 
 **Edge Styling:**
+
 - Dashed lines for shared history
 - Tooltip shows how characters connect
 - Color-coded by relationship type
 - Click to see full connection story
 
 **Acceptance criteria:**
+
 - [x] Shared entities highlighted when multiple characters connect
 - [x] Visual indicator of shared history
 - [x] Tooltip explains connection
@@ -277,15 +302,18 @@ interface SharedHistoryConnection {
 ---
 
 ### Task 5: Lifepath Panel (Collapsible Sidebar)
+
 **Effort**: Low (1-2 hours)
 
 Add a collapsible panel to the main graph view showing selected character's lifepath.
 
 **Files to create:**
+
 - [x] `apps/web/components/graph/LifepathPanel.tsx`
 - [x] `apps/web/lib/graph/useSelectedLifepath.ts`
 
 **UI Design:**
+
 ```
 ┌─ GRAPH VIEW ───────────────────────────────────────────────────────────────────┐
 │                                                                                │
@@ -313,12 +341,14 @@ Add a collapsible panel to the main graph view showing selected character's life
 ```
 
 **Features:**
+
 - Opens when character node selected
 - Collapsible to maximize graph space
 - Compact term summaries
 - "View Full" opens detailed timeline modal
 
 **Acceptance criteria:**
+
 - [x] Panel appears on character selection
 - [x] Shows compact lifepath summary
 - [x] Collapsible with smooth animation
@@ -327,14 +357,17 @@ Add a collapsible panel to the main graph view showing selected character's life
 ---
 
 ### Task 6: Lifepath Export
+
 **Effort**: Low (1 hour)
 
 Export lifepath as formatted text or image.
 
 **Files to create:**
+
 - [x] `apps/web/lib/chargen/lifepath-export.ts`
 
 **Export Formats:**
+
 ```typescript
 // Text export
 function exportLifepathAsText(character: ChargenCharacter): string;
@@ -347,6 +380,7 @@ function exportLifepathAsImage(timelineRef: HTMLElement): Promise<Blob>;
 ```
 
 **Text Output Example:**
+
 ```
 LIFEPATH: Commander Sarah Chen
 Age: 34
@@ -379,6 +413,7 @@ CONNECTIONS
 ```
 
 **Acceptance criteria:**
+
 - [x] Text export produces readable format
 - [x] Markdown export suitable for sharing
 - [x] Image export captures timeline visually
@@ -393,6 +428,7 @@ CONNECTIONS
 After implementation, execute browser-based verification:
 
 #### Test 1: Timeline View for Single Character
+
 ```
 1. Navigate to http://localhost:3010/chargen
 2. Create a character with 3+ terms:
@@ -413,11 +449,12 @@ After implementation, execute browser-based verification:
    - Verify event description shown
    - Click on spawned entity
    - Verify navigation to graph/entity
-   
+
 5. Take screenshot of full timeline
 ```
 
 #### Test 2: Graph Cluster Visualization
+
 ```
 1. Navigate to http://localhost:3010/graph
 2. Select the character created in Test 1
@@ -436,6 +473,7 @@ After implementation, execute browser-based verification:
 ```
 
 #### Test 3: Term Detail Card
+
 ```
 1. From timeline view, click on a term with:
    - Event that spawned an entity
@@ -454,6 +492,7 @@ After implementation, execute browser-based verification:
 ```
 
 #### Test 4: Lifepath Panel in Graph
+
 ```
 1. Navigate to http://localhost:3010/graph
 2. Click on character node
@@ -472,6 +511,7 @@ After implementation, execute browser-based verification:
 ```
 
 #### Test 5: Export Functionality
+
 ```
 1. Open lifepath timeline for a character
 2. Click "Export as Text"
@@ -491,6 +531,7 @@ After implementation, execute browser-based verification:
 ### Exploratory Testing Scenarios
 
 #### Scenario A: Multi-Career Character
+
 ```
 1. Create character with 2 different careers:
    - Navy for 2 terms
@@ -508,6 +549,7 @@ After implementation, execute browser-based verification:
 ```
 
 #### Scenario B: Mishap and Forced Departure
+
 ```
 1. Create character where mishap occurs:
    - Start Navy career
@@ -523,6 +565,7 @@ After implementation, execute browser-based verification:
 ```
 
 #### Scenario C: Multiple Characters (Shared History)
+
 ```
 1. Create 2 characters in same session
 2. Have both connect to same NPC (e.g., Admiral Chen)
@@ -539,6 +582,7 @@ After implementation, execute browser-based verification:
 ```
 
 #### Scenario D: Long Career (7+ Terms)
+
 ```
 1. Create character with 7 terms (use test data if needed)
 2. View timeline:
@@ -554,6 +598,7 @@ After implementation, execute browser-based verification:
 ```
 
 #### Scenario E: Empty/Minimal Character
+
 ```
 1. Create character with just 1 term, no spawned entities
 2. View timeline:
@@ -570,6 +615,7 @@ After implementation, execute browser-based verification:
 ### Browser Testing Evidence Collection
 
 For each test, capture:
+
 1. **Timeline screenshots** - Full timeline view
 2. **Graph screenshots** - Cluster layout
 3. **Interaction screenshots** - Expanded cards, tooltips
@@ -601,16 +647,19 @@ After implementation, verify:
 ## Testing Strategy
 
 ### Unit Tests
+
 - [x] Lifepath data extraction from character
 - [x] Timeline layout calculations
 - [x] Export format generation
 
 ### Integration Tests
+
 - [x] Graph cluster positioning (lifepath-layout.ts provides positioning)
 - [x] Entity edge connections (SharedHistoryEdge + shared-history.ts)
 - [x] Panel state with graph selection (useSelectedLifepath hook)
 
 ### E2E Tests (via Browser Automation)
+
 - [ ] Full lifepath viewing flow (requires running dev server)
 - [ ] Export functionality (requires browser download verification)
 - [ ] Multi-character shared history (requires visual verification)
@@ -628,6 +677,7 @@ After implementation, verify:
 ## Blocks
 
 Completing this phase:
+
 - Enables "Lifepath Comparison" for party view
 - Provides foundation for "Session Recap" feature
 - Supports character sheet generation with visual history

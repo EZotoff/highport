@@ -1,9 +1,11 @@
 # Chargen Visual Update Round 2
 
 ## Goal
+
 Update remaining chargen components to use SciFi primitives (buttons, inputs, selects, icons).
 
 ## Context
+
 - All tasks use `ui-quick` agent category with `["frontend-ui-ux"]` skills
 - Import path: `@/components/ui/scifi`
 - Available components: `SciFiButton`, `SciFiInput`, `SciFiSelect`, `SciFiBadge`, `GlassPanel`, `SciFiCard`
@@ -11,6 +13,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - Lucide icons replace emojis: Crown, Hourglass, Dice5, User, MapPin, Package, Lock, etc.
 
 ## Constraints
+
 - ONE file per task
 - ONE type of change per task
 - Checkboxes styled as-is (skip)
@@ -22,12 +25,14 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 ## Wave 1 (Parallel - No Dependencies)
 
 ### Task 1.1: TermResolutionStep - Replace primary action buttons
+
 - [x] **File:** `apps/web/components/chargen/steps/TermResolutionStep.tsx`
 - **Change:** Replace 4 main `bg-blue-600` buttons with `<SciFiButton theme="cyan">`
 - **Buttons:** Roll Survival (L375-379), Roll Event (L421-425), Roll 1d6 (L543-548), Roll Advancement (L574-579)
 - **Import:** `SciFiButton` already imported from `@/components/ui/scifi`
 
 ### Task 1.2: GMControlPanel - Replace approve/reject buttons
+
 - [x] **File:** `apps/web/components/chargen/GMControlPanel.tsx`
 - **Change:** Replace Approve/Reject buttons (L156-167) with `<SciFiButton>`
 - **Approve:** `theme="emerald" scifiVariant="secondary" size="sm"`
@@ -35,23 +40,27 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `import { SciFiButton } from '@/components/ui/scifi';`
 
 ### Task 1.3: ConnectionRequestModal - Replace input and select
+
 - [x] **File:** `apps/web/components/chargen/ConnectionRequestModal.tsx`
 - **Change:** Replace `<select>` (L107-124) with `<SciFiSelect>` and `<input>` (L132-139) with `<SciFiInput>`
 - **Select options:** Map RELATIONSHIP_OPTIONS to SciFiSelect format
 - **Import:** Add `import { SciFiInput, SciFiSelect } from '@/components/ui/scifi';`
 
 ### Task 1.4: EntitySpawnForm - Replace input and textarea
+
 - [x] **File:** `apps/web/components/chargen/EntitySpawnForm.tsx`
 - **Change:** Replace `<input>` (L191-197) with `<SciFiInput theme="cyan">`
 - **Change:** Update `<textarea>` (L224-230) with SciFi CSS: `bg-[var(--star-metal)] border-[var(--asteroid-dust-50)] text-gray-100 focus:ring-cyan-500/50`
 - **Import:** Add `import { SciFiInput } from '@/components/ui/scifi';`
 
 ### Task 1.5: SessionJoinModal - Replace input
+
 - [x] **File:** `apps/web/components/chargen/SessionJoinModal.tsx`
 - **Change:** Replace `<input>` (L187-194) with `<SciFiInput theme="cyan">`
 - **Import:** Add `import { SciFiInput } from '@/components/ui/scifi';`
 
 ### Task 1.6: ParticipantCard - Replace emojis with Lucide icons
+
 - [x] **File:** `apps/web/components/chargen/ParticipantCard.tsx`
 - **Change:** Replace emojis with Lucide icons:
   - L38: `👑` → `<Crown className="w-4 h-4 text-amber-400" />`
@@ -60,6 +69,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `import { Crown, Hourglass, Dice5 } from 'lucide-react';`
 
 ### Task 1.7: ParticipantPanel - Replace emojis with Lucide icons
+
 - [x] **File:** `apps/web/components/chargen/ParticipantPanel.tsx`
 - **Change:** Replace emojis with Lucide icons:
   - L45: `👑` → `<Crown className="w-4 h-4 text-amber-400" />`
@@ -67,6 +77,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `import { Crown, Dice5 } from 'lucide-react';`
 
 ### Task 1.8: EntityPoolPanel - Replace emojis with Lucide icons
+
 - [x] **File:** `apps/web/components/chargen/EntityPoolPanel.tsx`
 - **Change:** Replace TYPE_ICONS object (L13-18) from emojis to Lucide components:
   - `npc: '👤'` → Render `<User className="w-4 h-4" />`
@@ -77,6 +88,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `import { User, MapPin, Package, Lock, HelpCircle } from 'lucide-react';`
 
 ### Task 1.9: EntityPoolCard - Replace emojis with Lucide icons
+
 - [x] **File:** `apps/web/components/chargen/EntityPoolCard.tsx`
 - **Change:** Replace TYPE_ICONS object (L15-20) from emojis to Lucide components:
   - `npc: '👤'` → Render `<User className="w-4 h-4" />`
@@ -91,6 +103,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 ## Wave 2 (Some depend on Wave 1)
 
 ### Task 2.1: TermResolutionStep - Replace secondary/action buttons
+
 - [x] **File:** `apps/web/components/chargen/steps/TermResolutionStep.tsx`
 - **Depends on:** Task 1.1
 - **Change:** Replace remaining buttons:
@@ -103,6 +116,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
   - L603-618: Continue Career + Muster Out → `<SciFiButton theme="slate/cyan">`
 
 ### Task 2.2: GMControlPanel - Replace footer buttons
+
 - [x] **File:** `apps/web/components/chargen/GMControlPanel.tsx`
 - **Depends on:** Task 1.2
 - **Change:** Replace footer buttons:
@@ -110,6 +124,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
   - L182-191: `End Session` → `<SciFiButton theme="red" scifiVariant="outline">`
 
 ### Task 2.3: ConnectionRequestModal - Replace buttons
+
 - [x] **File:** `apps/web/components/chargen/ConnectionRequestModal.tsx`
 - **Depends on:** Task 1.3
 - **Change:** Replace buttons:
@@ -118,6 +133,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `SciFiButton` to existing import
 
 ### Task 2.4: ConnectionSuggestions - Replace buttons
+
 - [x] **File:** `apps/web/components/chargen/ConnectionSuggestions.tsx`
 - **Change:** Replace buttons:
   - L115-119: `Add Connection` → `<SciFiButton theme="violet" size="sm">`
@@ -125,6 +141,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `import { SciFiButton } from '@/components/ui/scifi';`
 
 ### Task 2.5: ConnectionRequestList - Replace buttons
+
 - [x] **File:** `apps/web/components/chargen/ConnectionRequestList.tsx`
 - **Change:** Replace buttons:
   - L128-132: `Approve` → `<SciFiButton theme="emerald" size="sm">`
@@ -132,6 +149,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `import { SciFiButton } from '@/components/ui/scifi';`
 
 ### Task 2.6: EntitySpawnForm - Replace buttons
+
 - [x] **File:** `apps/web/components/chargen/EntitySpawnForm.tsx`
 - **Depends on:** Task 1.4
 - **Change:** Replace buttons:
@@ -142,6 +160,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `SciFiButton` to existing import
 
 ### Task 2.7: SessionJoinModal - Replace buttons
+
 - [x] **File:** `apps/web/components/chargen/SessionJoinModal.tsx`
 - **Depends on:** Task 1.5
 - **Change:** Replace buttons:
@@ -155,6 +174,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 ## Wave 3 (Depends on earlier waves)
 
 ### Task 3.1: EntityPoolPanel - Replace filter buttons
+
 - [x] **File:** `apps/web/components/chargen/EntityPoolPanel.tsx`
 - **Depends on:** Task 1.8
 - **Change:** Replace filter buttons (L68-81) with `<SciFiButton>`:
@@ -164,6 +184,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `SciFiButton` to existing import
 
 ### Task 3.2: EntityPoolPanel - Replace action buttons
+
 - [x] **File:** `apps/web/components/chargen/EntityPoolPanel.tsx`
 - **Depends on:** Task 3.1
 - **Change:** Replace action buttons (L153-166):
@@ -171,6 +192,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
   - `View Details` → `<SciFiButton theme="slate" scifiVariant="ghost" size="sm">`
 
 ### Task 3.3: EntityPoolCard - Replace action buttons
+
 - [x] **File:** `apps/web/components/chargen/EntityPoolCard.tsx`
 - **Depends on:** Task 1.9
 - **Change:** Replace action buttons (L94-107):
@@ -179,6 +201,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `import { SciFiButton } from '@/components/ui/scifi';`
 
 ### Task 3.4: ChargenNotifications - Replace emojis with Lucide icons
+
 - [x] **File:** `apps/web/components/chargen/ChargenNotifications.tsx`
 - **Change:** Replace emojis with Lucide icons:
   - L72: `👋` → `<UserPlus className="w-4 h-4" />`
@@ -191,6 +214,7 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 - **Import:** Add `import { UserPlus, Dice5, Bell, Link2, CheckCircle, Calendar, Star } from 'lucide-react';`
 
 ### Task 3.5: ChargenNotifications - Replace View in Pool button
+
 - [x] **File:** `apps/web/components/chargen/ChargenNotifications.tsx`
 - **Depends on:** Task 3.4
 - **Change:** Replace button (L102-104):
@@ -202,15 +226,16 @@ Update remaining chargen components to use SciFi primitives (buttons, inputs, se
 ## Verification
 
 After each wave:
+
 1. Run `pnpm --filter web typecheck`
 2. Run `pnpm --filter web build`
 3. Visual verification via Playwright if needed
 
 ## Summary
 
-| Wave | Tasks | Files Touched |
-|------|-------|---------------|
-| 1 | 9 | 9 unique files |
-| 2 | 7 | 7 files (some overlap with Wave 1) |
-| 3 | 5 | 4 unique files |
-| **Total** | **21** | **12 unique files** |
+| Wave      | Tasks  | Files Touched                      |
+| --------- | ------ | ---------------------------------- |
+| 1         | 9      | 9 unique files                     |
+| 2         | 7      | 7 files (some overlap with Wave 1) |
+| 3         | 5      | 4 unique files                     |
+| **Total** | **21** | **12 unique files**                |

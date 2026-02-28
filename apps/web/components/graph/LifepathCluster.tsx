@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react';
-import { 
-  ReactFlow, 
-  Background, 
-  Controls, 
-  NodeProps, 
-  Handle, 
-  Position, 
-  useNodesState, 
-  useEdgesState, 
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  NodeProps,
+  Handle,
+  Position,
+  useNodesState,
+  useEdgesState,
   Node,
-  Edge
+  Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { ChargenCharacter } from '../../lib/chargen/types';
@@ -23,22 +23,24 @@ interface LifepathClusterProps {
 
 const TermNode = ({ data }: NodeProps<Node<TermNodeData>>) => {
   const { termNumber, age, eventSummary, survived, advanced, rankGained } = data;
-  
-  const statusColor = !survived 
-    ? 'border-red-500/50 bg-red-900/20' 
-    : advanced 
-      ? 'border-amber-500/50 bg-amber-900/20' 
+
+  const statusColor = !survived
+    ? 'border-red-500/50 bg-red-900/20'
+    : advanced
+      ? 'border-amber-500/50 bg-amber-900/20'
       : 'border-emerald-500/50 bg-emerald-900/20';
 
   return (
-    <div className={`relative w-[180px] p-3 rounded-lg border backdrop-blur-sm ${statusColor} group hover:scale-105 transition-transform`}>
+    <div
+      className={`relative w-[180px] p-3 rounded-lg border backdrop-blur-sm ${statusColor} group hover:scale-105 transition-transform`}
+    >
       <Handle type="target" position={Position.Left} className="!bg-slate-500 !w-2 !h-2" />
-      
+
       <div className="flex justify-between items-start mb-2">
         <span className="text-[10px] font-mono text-slate-400">TERM {termNumber}</span>
         <span className="text-[10px] font-mono text-slate-400">AGE {age}</span>
       </div>
-      
+
       <div className="text-xs font-medium text-slate-200 line-clamp-3 mb-2 min-h-[40px]">
         {eventSummary}
       </div>
@@ -63,12 +65,12 @@ const TermNode = ({ data }: NodeProps<Node<TermNodeData>>) => {
       </div>
 
       <Handle type="source" position={Position.Right} className="!bg-slate-500 !w-2 !h-2" />
-      
-      <Handle 
-        type="source" 
-        position={Position.Bottom} 
+
+      <Handle
+        type="source"
+        position={Position.Bottom}
         id="spawn-source"
-        className="!bg-purple-500 !w-2 !h-2 left-1/2 -translate-x-1/2 top-auto bottom-[-5px]" 
+        className="!bg-purple-500 !w-2 !h-2 left-1/2 -translate-x-1/2 top-auto bottom-[-5px]"
       />
     </div>
   );
@@ -85,8 +87,8 @@ const CharacterNode = ({ data }: NodeProps) => (
 
 const nodeTypes = {
   'career-cluster': CareerNode,
-  'term': TermNode,
-  'character': CharacterNode,
+  term: TermNode,
+  character: CharacterNode,
 };
 
 export default function LifepathCluster({ character }: LifepathClusterProps) {
@@ -106,9 +108,9 @@ export default function LifepathCluster({ character }: LifepathClusterProps) {
       id: 'character-root',
       type: 'character',
       position: center,
-      data: { 
+      data: {
         label: character.name,
-        subLabel: `${character.age} y/o`
+        subLabel: `${character.age} y/o`,
       },
     };
 

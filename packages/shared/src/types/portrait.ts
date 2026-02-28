@@ -7,16 +7,39 @@ export type PortraitAgeRange = 'child' | 'teen' | 'young_adult' | 'adult' | 'mid
 export type PortraitSkinTone = 'very_fair' | 'fair' | 'medium' | 'olive' | 'brown' | 'dark';
 export type PortraitEyeColor = 'brown' | 'hazel' | 'green' | 'blue' | 'gray' | 'amber';
 export type PortraitHairColor = 'black' | 'brown' | 'blonde' | 'red' | 'gray' | 'white' | 'dyed';
-export type PortraitHairStyle = 'buzzcut' | 'short' | 'medium' | 'long' | 'bald' | 'ponytail' | 'braids' | 'afro' | 'wavy' | 'curly';
+export type PortraitHairStyle =
+  | 'buzzcut'
+  | 'short'
+  | 'medium'
+  | 'long'
+  | 'bald'
+  | 'ponytail'
+  | 'braids'
+  | 'afro'
+  | 'wavy'
+  | 'curly';
 export type PortraitBuild = 'slim' | 'average' | 'athletic' | 'stocky' | 'heavy';
 export type PortraitHeight = 'short' | 'average' | 'tall';
 export type PortraitRankLevel = 'low' | 'mid' | 'high';
 export type PortraitCareerStyle = 'uniformed' | 'civilian' | 'corporate' | 'street' | 'formal';
 export type PortraitDemeanor = 'calm' | 'stern' | 'friendly' | 'aloof' | 'nervous' | 'aggressive';
 export type PortraitVibe = 'trustworthy' | 'menacing' | 'mysterious' | 'eccentric' | 'professional';
-export type PortraitHomeworldType = 'high_tech' | 'industrial' | 'frontier' | 'agricultural' | 'underclass' | 'rich_core';
+export type PortraitHomeworldType =
+  | 'high_tech'
+  | 'industrial'
+  | 'frontier'
+  | 'agricultural'
+  | 'underclass'
+  | 'rich_core';
 export type PortraitSocialClass = 'low' | 'middle' | 'upper' | 'noble';
-export type PortraitRelationshipType = 'ally' | 'enemy' | 'neutral' | 'patron' | 'contact' | 'family' | 'rival';
+export type PortraitRelationshipType =
+  | 'ally'
+  | 'enemy'
+  | 'neutral'
+  | 'patron'
+  | 'contact'
+  | 'family'
+  | 'rival';
 export type PortraitImportanceLevel = 'extra' | 'supporting' | 'key';
 export type PortraitRenderStyle = 'realistic' | 'painterly' | 'cinematic' | 'comic';
 export type PortraitFraming = 'headshot' | 'bust' | 'full_body';

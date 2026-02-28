@@ -27,25 +27,28 @@ export default {
       },
       animation: {
         'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
-        'dash': 'dash 2s linear infinite',
-        'sheen': 'sheen 3s ease-in-out infinite',
-        'float': 'float 4s ease-in-out infinite',
+        dash: 'dash 2s linear infinite',
+        sheen: 'sheen 3s ease-in-out infinite',
+        float: 'float 4s ease-in-out infinite',
         'spin-slow': 'spin 20s linear infinite',
       },
       keyframes: {
         'pulse-glow': {
           '0%, 100%': { boxShadow: '0 0 20px var(--glow-color, rgba(0, 240, 255, 0.3))' },
-          '50%': { boxShadow: '0 0 40px var(--glow-color, rgba(0, 240, 255, 0.5)), 0 0 60px var(--glow-color, rgba(0, 240, 255, 0.3))' },
+          '50%': {
+            boxShadow:
+              '0 0 40px var(--glow-color, rgba(0, 240, 255, 0.5)), 0 0 60px var(--glow-color, rgba(0, 240, 255, 0.3))',
+          },
         },
-        'dash': {
+        dash: {
           from: { strokeDashoffset: '20' },
           to: { strokeDashoffset: '0' },
         },
-        'sheen': {
+        sheen: {
           '0%': { transform: 'translateX(-100%) skewX(-20deg)' },
           '100%': { transform: 'translateX(200%) skewX(-20deg)' },
         },
-        'float': {
+        float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-5px)' },
         },
@@ -60,4 +63,4 @@ export default {
     },
   },
   plugins: [],
-}
+};

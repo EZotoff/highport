@@ -29,18 +29,18 @@
 
 PlaneShift should NOT replicate functionality that MGT2e already provides. Instead:
 
-| Domain | Owner | Rationale |
-|--------|-------|-----------|
-| **Dice Rolling & Skill Checks** | Foundry | Complete 2d6 engine with Boon/Bane, Effect calculation |
-| **Combat Resolution** | Foundry | Damage chains, weapon traits, criticals |
-| **Trade Mechanics** | Foundry | Price fluctuation, trade codes, 6-parsec limit |
-| **Spacecraft Systems** | Foundry | Power, fuel, combat, critical tables |
-| **Character Generation** | Foundry | Career terms, aging, mishaps |
-| **Character Relationships** | PlaneShift | Graph-based faction/NPC connections |
-| **Narrative & Biography** | PlaneShift | Backstory, notes, secrets |
-| **Session History** | PlaneShift | Timeline, events, campaign arc |
-| **Lifepath Visualization** | PlaneShift | Graph of connections and history |
-| **RAG Queries** | PlaneShift | AI-powered knowledge with permission gating |
+| Domain                          | Owner      | Rationale                                              |
+| ------------------------------- | ---------- | ------------------------------------------------------ |
+| **Dice Rolling & Skill Checks** | Foundry    | Complete 2d6 engine with Boon/Bane, Effect calculation |
+| **Combat Resolution**           | Foundry    | Damage chains, weapon traits, criticals                |
+| **Trade Mechanics**             | Foundry    | Price fluctuation, trade codes, 6-parsec limit         |
+| **Spacecraft Systems**          | Foundry    | Power, fuel, combat, critical tables                   |
+| **Character Generation**        | Foundry    | Career terms, aging, mishaps                           |
+| **Character Relationships**     | PlaneShift | Graph-based faction/NPC connections                    |
+| **Narrative & Biography**       | PlaneShift | Backstory, notes, secrets                              |
+| **Session History**             | PlaneShift | Timeline, events, campaign arc                         |
+| **Lifepath Visualization**      | PlaneShift | Graph of connections and history                       |
+| **RAG Queries**                 | PlaneShift | AI-powered knowledge with permission gating            |
 
 ### Key Architectural Decisions
 
@@ -56,21 +56,24 @@ PlaneShift should NOT replicate functionality that MGT2e already provides. Inste
 ### PlaneShift Implementation (As Of Jan 2026)
 
 #### Foundry Bridge Module
+
 - **Location**: `packages/foundry-module/`
 - **Protocol**: Native WebSocket to PlaneShift server (`/foundry` endpoint)
 - **Echo Prevention**: Uses `options.planeshift` flag in `actor.update()`
 
 #### Currently Synced Fields
-| PlaneShift Field | Foundry Path | Direction |
-|------------------|--------------|-----------|
-| `hp.current` | `system.hits.value` | Bidirectional |
-| `hp.max` | `system.hits.max` | Bidirectional |
-| `characteristics.*` | `system.characteristics.*.value` | Bidirectional |
-| `credits` | `system.finance.cash` | Bidirectional |
-| `label` | `name` | Bidirectional |
-| `foundry_uuid` | Actor UUID | Link identifier |
+
+| PlaneShift Field    | Foundry Path                     | Direction       |
+| ------------------- | -------------------------------- | --------------- |
+| `hp.current`        | `system.hits.value`              | Bidirectional   |
+| `hp.max`            | `system.hits.max`                | Bidirectional   |
+| `characteristics.*` | `system.characteristics.*.value` | Bidirectional   |
+| `credits`           | `system.finance.cash`            | Bidirectional   |
+| `label`             | `name`                           | Bidirectional   |
+| `foundry_uuid`      | Actor UUID                       | Link identifier |
 
 #### Current Limitations
+
 - **No Skills**: Not synced or stored
 - **No Items**: Inventory not tracked
 - **No Career Terms**: Character history not preserved
@@ -83,6 +86,7 @@ PlaneShift should NOT replicate functionality that MGT2e already provides. Inste
 ## MGT2e System Reference
 
 ### Repository Information
+
 - **URL**: https://github.com/Mongoose-Publishing/traveller-foundryvtt
 - **Author**: Samuel Penn (NotASnark) / Mongoose Publishing
 - **Compatibility**: Foundry VTT v12, v13
@@ -90,51 +94,51 @@ PlaneShift should NOT replicate functionality that MGT2e already provides. Inste
 
 ### Actor Types (Complete Reference)
 
-| Type | Description | Key Data Structures |
-|------|-------------|---------------------|
-| **traveller** | Player Character | characteristics, skills, finance, sophont, terms |
-| **npc** | Non-Player Character | Streamlined traveller, same core fields |
-| **spacecraft** | Starships | dtons, power, fuel, drives (M/J/R), mounts, crew, computer |
-| **vehicle** | Ground/Air Vehicles | chassis, speed, agility, shipping tonnage |
-| **world** | Planets/Systems | UWP, trade codes, bases, starport, travel zone |
-| **creature** | Animals/Monsters | behavior, diet, traits, attacks |
-| **swarm** | Grouped Enemies | count, individual stats, swarm behavior |
-| **container** | Storage/Cargo | capacity, contents, lock status |
+| Type           | Description          | Key Data Structures                                        |
+| -------------- | -------------------- | ---------------------------------------------------------- |
+| **traveller**  | Player Character     | characteristics, skills, finance, sophont, terms           |
+| **npc**        | Non-Player Character | Streamlined traveller, same core fields                    |
+| **spacecraft** | Starships            | dtons, power, fuel, drives (M/J/R), mounts, crew, computer |
+| **vehicle**    | Ground/Air Vehicles  | chassis, speed, agility, shipping tonnage                  |
+| **world**      | Planets/Systems      | UWP, trade codes, bases, starport, travel zone             |
+| **creature**   | Animals/Monsters     | behavior, diet, traits, attacks                            |
+| **swarm**      | Grouped Enemies      | count, individual stats, swarm behavior                    |
+| **container**  | Storage/Cargo        | capacity, contents, lock status                            |
 
 ### Item Types (Complete Reference)
 
-| Type | Description | Key Fields |
-|------|-------------|------------|
-| **weapon** | Weapons | damage, magazine, traits, skill, characteristic |
-| **armour** | Armor | protection, rad, archaic, layered, powered |
-| **cargo** | Trade Goods | price, availability, purchaseDM, saleDM, tons, illegal |
-| **term** | Career Term | number, termLength, assignment, randomTerm |
-| **hardware** | Ship Components | system, tons, power, rating, mount |
-| **software** | Programs | class, type, bandwidth, interface |
-| **associate** | Contacts/Rivals | affinity, enmity, power, influence |
-| **augment** | Cybernetics | bonus, slot, power consumption |
-| **role** | Crew Position | skill requirements, station |
-| **skill** | Skill Item | level, specialties |
-| **junk** | Misc Items | weight, value, description |
+| Type          | Description     | Key Fields                                             |
+| ------------- | --------------- | ------------------------------------------------------ |
+| **weapon**    | Weapons         | damage, magazine, traits, skill, characteristic        |
+| **armour**    | Armor           | protection, rad, archaic, layered, powered             |
+| **cargo**     | Trade Goods     | price, availability, purchaseDM, saleDM, tons, illegal |
+| **term**      | Career Term     | number, termLength, assignment, randomTerm             |
+| **hardware**  | Ship Components | system, tons, power, rating, mount                     |
+| **software**  | Programs        | class, type, bandwidth, interface                      |
+| **associate** | Contacts/Rivals | affinity, enmity, power, influence                     |
+| **augment**   | Cybernetics     | bonus, slot, power consumption                         |
+| **role**      | Crew Position   | skill requirements, station                            |
+| **skill**     | Skill Item      | level, specialties                                     |
+| **junk**      | Misc Items      | weight, value, description                             |
 
 ### Characteristics System
 
 MGT2e uses the Universal Personality Profile (UPP):
 
-| Characteristic | Code | DM Calculation |
-|----------------|------|----------------|
-| **Strength** | STR | `Math.floor((value - 7) / 3)` |
-| **Dexterity** | DEX | Same formula |
-| **Endurance** | END | Same formula |
-| **Intelligence** | INT | Same formula |
-| **Education** | EDU | Same formula |
-| **Social Standing** | SOC | Same formula |
-| **Psionic Strength** | PSI | Optional, same formula |
-| **Charisma** | CHA | Alternative to SOC |
-| **Territory** | TER | Creature-specific |
-| **Wealth** | WLT | Alternative economic stat |
-| **Luck** | LCK | House rule support |
-| **Morale** | MRL | NPC-specific |
+| Characteristic       | Code | DM Calculation                |
+| -------------------- | ---- | ----------------------------- |
+| **Strength**         | STR  | `Math.floor((value - 7) / 3)` |
+| **Dexterity**        | DEX  | Same formula                  |
+| **Endurance**        | END  | Same formula                  |
+| **Intelligence**     | INT  | Same formula                  |
+| **Education**        | EDU  | Same formula                  |
+| **Social Standing**  | SOC  | Same formula                  |
+| **Psionic Strength** | PSI  | Optional, same formula        |
+| **Charisma**         | CHA  | Alternative to SOC            |
+| **Territory**        | TER  | Creature-specific             |
+| **Wealth**           | WLT  | Alternative economic stat     |
+| **Luck**             | LCK  | House rule support            |
+| **Morale**           | MRL  | NPC-specific                  |
 
 ### Skills System
 
@@ -143,33 +147,33 @@ MGT2e has ~60 skills, many with specialties:
 ```javascript
 // Example from config.mjs
 MGT2.SKILLS = {
-  "admin": { "default": "INT" },
-  "advocate": { "default": "EDU" },
-  "animals": { 
-    "default": "INT",
-    "specialities": { 
-      "handling": {}, 
-      "vetinary": {}, 
-      "training": {} 
-    } 
+  admin: { default: 'INT' },
+  advocate: { default: 'EDU' },
+  animals: {
+    default: 'INT',
+    specialities: {
+      handling: {},
+      vetinary: {},
+      training: {},
+    },
   },
-  "athletics": {
-    "default": "DEX",
-    "specialities": {
-      "dexterity": { "default": "DEX" },
-      "endurance": { "default": "END" },
-      "strength": { "default": "STR" }
-    }
+  athletics: {
+    default: 'DEX',
+    specialities: {
+      dexterity: { default: 'DEX' },
+      endurance: { default: 'END' },
+      strength: { default: 'STR' },
+    },
   },
-  "engineer": {
-    "default": "EDU",
-    "requires": "INT",
-    "specialities": {
-      "mDrive": {},
-      "jDrive": {},
-      "lifeSupport": {},
-      "power": {}
-    }
+  engineer: {
+    default: 'EDU',
+    requires: 'INT',
+    specialities: {
+      mDrive: {},
+      jDrive: {},
+      lifeSupport: {},
+      power: {},
+    },
   },
   // ... 55+ more skills
 };
@@ -263,10 +267,10 @@ game.mgt2e = {
   // Dice rolling
   rollSkillMacro(skillName, options),    // Skill check with all modifiers
   rollAttackMacro(itemName),             // Attack roll with weapon traits
-  
+
   // Generation
   generateNpc(actor, options),           // NPC generator
-  
+
   // Utilities
   getCharacteristic(actor, char),        // Get characteristic value
   getCharacteristicDM(actor, char),      // Get DM for characteristic
@@ -400,56 +404,56 @@ Hooks.on("updateJournalEntry", (journal, changes, options, userId) => {});
 
 ### Field-Level Authority Table
 
-| Data Category | Field Path | Authority (MVP) | Authority (Future) | Notes |
-|---------------|------------|-----------------|-------------------|-------|
-| **Identity** |||||
-| Name | `name` | Bidirectional | Bidirectional | Last-write-wins |
-| Actor Type | `type` | Foundry | Foundry | Cannot change after creation |
-| **Characteristics** |||||
-| STR/DEX/END/INT/EDU/SOC | `system.characteristics.*.value` | Foundry | Bidirectional | Future: PlaneShift events affect |
-| DM Values | `system.characteristics.*.dm` | Derived | Derived | Never sync, always calculate |
-| **Combat Stats** |||||
-| HP Current | `system.hits.value` | Foundry | Bidirectional | Future: Blue-booking damage |
-| HP Max | `system.hits.max` | Foundry | Foundry | Foundry handles endurance calcs |
-| **Finance** |||||
-| Credits | `system.finance.cash` | Foundry | Bidirectional | Future: PlaneShift purchases |
-| Ship Shares | `system.finance.shares` | Foundry | Foundry | Part of character creation |
-| **Skills** |||||
-| Skill Levels | `system.skills.*` | Foundry | Foundry | Complex interdependencies |
-| **Inventory** |||||
-| Items Array | `items[]` | Foundry | Bidirectional | Future: PlaneShift item creation |
-| Item Quantities | `items[].system.quantity` | Foundry | Bidirectional | |
-| **Career History** |||||
-| Career Terms | `items[type=term]` | Foundry | Foundry | Created during chargen |
-| Associates | `items[type=associate]` | Merged | Merged | Both can add contacts |
-| **Narrative** |||||
-| Biography | `system.details.bio` | PlaneShift | PlaneShift | Narrative authority |
-| Notes | `system.details.notes` | PlaneShift | PlaneShift | GM/Player notes |
-| Description | `metadata.description` | PlaneShift | PlaneShift | Graph node description |
-| Tags | `metadata.tags` | PlaneShift | PlaneShift | PlaneShift-only |
-| **Relationships** |||||
-| Faction Standing | N/A | PlaneShift | PlaneShift | Not in Foundry |
-| Graph Edges | N/A | PlaneShift | PlaneShift | Not in Foundry |
+| Data Category           | Field Path                       | Authority (MVP) | Authority (Future) | Notes                            |
+| ----------------------- | -------------------------------- | --------------- | ------------------ | -------------------------------- |
+| **Identity**            |                                  |                 |                    |                                  |
+| Name                    | `name`                           | Bidirectional   | Bidirectional      | Last-write-wins                  |
+| Actor Type              | `type`                           | Foundry         | Foundry            | Cannot change after creation     |
+| **Characteristics**     |                                  |                 |                    |                                  |
+| STR/DEX/END/INT/EDU/SOC | `system.characteristics.*.value` | Foundry         | Bidirectional      | Future: PlaneShift events affect |
+| DM Values               | `system.characteristics.*.dm`    | Derived         | Derived            | Never sync, always calculate     |
+| **Combat Stats**        |                                  |                 |                    |                                  |
+| HP Current              | `system.hits.value`              | Foundry         | Bidirectional      | Future: Blue-booking damage      |
+| HP Max                  | `system.hits.max`                | Foundry         | Foundry            | Foundry handles endurance calcs  |
+| **Finance**             |                                  |                 |                    |                                  |
+| Credits                 | `system.finance.cash`            | Foundry         | Bidirectional      | Future: PlaneShift purchases     |
+| Ship Shares             | `system.finance.shares`          | Foundry         | Foundry            | Part of character creation       |
+| **Skills**              |                                  |                 |                    |                                  |
+| Skill Levels            | `system.skills.*`                | Foundry         | Foundry            | Complex interdependencies        |
+| **Inventory**           |                                  |                 |                    |                                  |
+| Items Array             | `items[]`                        | Foundry         | Bidirectional      | Future: PlaneShift item creation |
+| Item Quantities         | `items[].system.quantity`        | Foundry         | Bidirectional      |                                  |
+| **Career History**      |                                  |                 |                    |                                  |
+| Career Terms            | `items[type=term]`               | Foundry         | Foundry            | Created during chargen           |
+| Associates              | `items[type=associate]`          | Merged          | Merged             | Both can add contacts            |
+| **Narrative**           |                                  |                 |                    |                                  |
+| Biography               | `system.details.bio`             | PlaneShift      | PlaneShift         | Narrative authority              |
+| Notes                   | `system.details.notes`           | PlaneShift      | PlaneShift         | GM/Player notes                  |
+| Description             | `metadata.description`           | PlaneShift      | PlaneShift         | Graph node description           |
+| Tags                    | `metadata.tags`                  | PlaneShift      | PlaneShift         | PlaneShift-only                  |
+| **Relationships**       |                                  |                 |                    |                                  |
+| Faction Standing        | N/A                              | PlaneShift      | PlaneShift         | Not in Foundry                   |
+| Graph Edges             | N/A                              | PlaneShift      | PlaneShift         | Not in Foundry                   |
 
 ### Conflict Resolution Strategies
 
-| Strategy | When Used | Behavior |
-|----------|-----------|----------|
-| **Last-Write-Wins (LWW)** | Name, runtime stats | Most recent timestamp wins |
-| **Foundry-Authoritative** | Skills, career, computed values | Foundry always wins |
-| **PlaneShift-Authoritative** | Biography, narrative | PlaneShift always wins |
-| **Merge** | Associates, items (future) | Union of both, per-item LWW |
-| **Queue for Manual** | Conflicting substantial edits | GM decides in conflict UI |
+| Strategy                     | When Used                       | Behavior                    |
+| ---------------------------- | ------------------------------- | --------------------------- |
+| **Last-Write-Wins (LWW)**    | Name, runtime stats             | Most recent timestamp wins  |
+| **Foundry-Authoritative**    | Skills, career, computed values | Foundry always wins         |
+| **PlaneShift-Authoritative** | Biography, narrative            | PlaneShift always wins      |
+| **Merge**                    | Associates, items (future)      | Union of both, per-item LWW |
+| **Queue for Manual**         | Conflicting substantial edits   | GM decides in conflict UI   |
 
 ### Session Boundary Rules
 
-| Scenario | Behavior |
-|----------|----------|
-| **Foundry session active** | Foundry-authoritative for combat stats |
-| **No Foundry connection** | PlaneShift operates independently, queues sync |
-| **Reconnection** | PlaneShift pulls latest Foundry state for Foundry-auth fields |
-| **"Start Session" action** | Push all PlaneShift changes to Foundry |
-| **"End Session" action** | Pull final Foundry state, archive session |
+| Scenario                   | Behavior                                                      |
+| -------------------------- | ------------------------------------------------------------- |
+| **Foundry session active** | Foundry-authoritative for combat stats                        |
+| **No Foundry connection**  | PlaneShift operates independently, queues sync                |
+| **Reconnection**           | PlaneShift pulls latest Foundry state for Foundry-auth fields |
+| **"Start Session" action** | Push all PlaneShift changes to Foundry                        |
+| **"End Session" action**   | Pull final Foundry state, archive session                     |
 
 ---
 
@@ -458,6 +462,7 @@ Hooks.on("updateJournalEntry", (journal, changes, options, userId) => {});
 ### Message Types
 
 #### `actor_update` (Foundry → Server)
+
 ```typescript
 {
   type: "actor_update",
@@ -483,6 +488,7 @@ Hooks.on("updateJournalEntry", (journal, changes, options, userId) => {});
 ```
 
 #### `node_update` (Server → Foundry)
+
 ```typescript
 {
   type: "node_update",
@@ -500,6 +506,7 @@ Hooks.on("updateJournalEntry", (journal, changes, options, userId) => {});
 ```
 
 #### `create_actor` (Server → Foundry)
+
 ```typescript
 {
   type: "create_actor",
@@ -516,6 +523,7 @@ Hooks.on("updateJournalEntry", (journal, changes, options, userId) => {});
 ```
 
 #### `actor_created` (Foundry → Server)
+
 ```typescript
 {
   type: "actor_created",
@@ -537,20 +545,20 @@ CREATE TABLE sync_state (
   node_id VARCHAR(255) NOT NULL,
   foundry_uuid VARCHAR(255) NOT NULL,
   field_path VARCHAR(255) NOT NULL,
-  
+
   -- Values from each source
   planeshift_value JSONB,
   foundry_value JSONB,
-  
+
   -- Timestamps for conflict detection
   planeshift_timestamp TIMESTAMP,
   foundry_timestamp TIMESTAMP,
   last_sync TIMESTAMP,
-  
+
   -- Conflict handling
   conflict_status VARCHAR(50),  -- NULL, 'pending', 'resolved'
   resolution VARCHAR(50),       -- 'keep_foundry', 'keep_planeshift', 'manual'
-  
+
   UNIQUE(campaign_id, node_id, field_path)
 );
 
@@ -561,13 +569,13 @@ CREATE TABLE item_sync_state (
   actor_node_id VARCHAR(255) NOT NULL,
   item_id VARCHAR(255) NOT NULL,
   foundry_item_id VARCHAR(255),
-  
+
   planeshift_data JSONB,
   foundry_data JSONB,
-  
+
   last_sync TIMESTAMP,
   sync_direction VARCHAR(50),  -- 'foundry_to_ps', 'ps_to_foundry', 'bidirectional'
-  
+
   UNIQUE(campaign_id, actor_node_id, item_id)
 );
 ```
@@ -583,7 +591,7 @@ CREATE TABLE item_sync_state (
 
 export interface Mgt2eCharacteristic {
   value: number;
-  dm: number;  // Derived, do not sync
+  dm: number; // Derived, do not sync
 }
 
 export interface Mgt2eCharacteristics {
@@ -594,7 +602,7 @@ export interface Mgt2eCharacteristics {
   edu: Mgt2eCharacteristic;
   soc: Mgt2eCharacteristic;
   psi?: Mgt2eCharacteristic;
-  cha?: Mgt2eCharacteristic;  // Alternative to SOC
+  cha?: Mgt2eCharacteristic; // Alternative to SOC
 }
 
 export type CharacteristicCode = 'str' | 'dex' | 'end' | 'int' | 'edu' | 'soc' | 'psi' | 'cha';
@@ -619,30 +627,63 @@ export type Mgt2eSkills = Record<string, Mgt2eSkill>;
 
 // Complete skill list from MGT2e config.mjs
 export const MGT2E_SKILL_LIST = [
-  'admin', 'advocate', 'animals', 'art', 'astrogation', 'athletics',
-  'broker', 'carouse', 'deception', 'diplomat', 'drive', 'electronics',
-  'engineer', 'explosives', 'flyer', 'gambler', 'gunCombat', 'gunnery',
-  'heavyWeapons', 'independence', 'investigate', 'jackofalltrades',
-  'language', 'leadership', 'mechanic', 'medic', 'melee', 'navigation',
-  'persuade', 'pilot', 'profession', 'recon', 'science', 'seafarer',
-  'stealth', 'steward', 'streetwise', 'survival', 'tactics', 'vaccSuit'
+  'admin',
+  'advocate',
+  'animals',
+  'art',
+  'astrogation',
+  'athletics',
+  'broker',
+  'carouse',
+  'deception',
+  'diplomat',
+  'drive',
+  'electronics',
+  'engineer',
+  'explosives',
+  'flyer',
+  'gambler',
+  'gunCombat',
+  'gunnery',
+  'heavyWeapons',
+  'independence',
+  'investigate',
+  'jackofalltrades',
+  'language',
+  'leadership',
+  'mechanic',
+  'medic',
+  'melee',
+  'navigation',
+  'persuade',
+  'pilot',
+  'profession',
+  'recon',
+  'science',
+  'seafarer',
+  'stealth',
+  'steward',
+  'streetwise',
+  'survival',
+  'tactics',
+  'vaccSuit',
 ] as const;
 ```
 
 ```typescript
 // packages/shared/src/types/mgt2e/items.ts
 
-export type Mgt2eItemType = 
-  | 'weapon' 
-  | 'armour' 
-  | 'cargo' 
-  | 'term' 
-  | 'hardware' 
-  | 'software' 
-  | 'associate' 
-  | 'augment' 
-  | 'role' 
-  | 'skill' 
+export type Mgt2eItemType =
+  | 'weapon'
+  | 'armour'
+  | 'cargo'
+  | 'term'
+  | 'hardware'
+  | 'software'
+  | 'associate'
+  | 'augment'
+  | 'role'
+  | 'skill'
   | 'junk';
 
 export interface Mgt2eItemBase {
@@ -656,13 +697,13 @@ export interface Mgt2eItemBase {
 export interface Mgt2eWeaponItem extends Mgt2eItemBase {
   type: 'weapon';
   system: {
-    damage: string;           // e.g., "3D6"
+    damage: string; // e.g., "3D6"
     magazine: number;
-    traits: string[];         // e.g., ["ap", "auto2"]
-    skill: string;            // e.g., "gunCombat"
+    traits: string[]; // e.g., ["ap", "auto2"]
+    skill: string; // e.g., "gunCombat"
     characteristic: CharacteristicCode;
-    range: string;            // e.g., "ranged"
-    scale: string;            // e.g., "personal", "vehicle", "spacecraft"
+    range: string; // e.g., "ranged"
+    scale: string; // e.g., "personal", "vehicle", "spacecraft"
   };
 }
 
@@ -684,7 +725,7 @@ export interface Mgt2eCargoItem extends Mgt2eItemBase {
     availability: string;
     purchaseDM: string;
     saleDM: string;
-    tons: string;             // Can be formula like "2D6 * 10"
+    tons: string; // Can be formula like "2D6 * 10"
     illegal: boolean;
   };
 }
@@ -704,11 +745,11 @@ export interface Mgt2eTermItem extends Mgt2eItemBase {
 export interface Mgt2eAssociateItem extends Mgt2eItemBase {
   type: 'associate';
   system: {
-    affinity: number;         // -2 to +2
-    enmity: number;           // -2 to +2
-    power: number;            // Influence level
+    affinity: number; // -2 to +2
+    enmity: number; // -2 to +2
+    power: number; // Influence level
     influence: number;
-    relationship: string;     // "contact", "ally", "rival", "enemy"
+    relationship: string; // "contact", "ally", "rival", "enemy"
   };
 }
 ```
@@ -776,17 +817,17 @@ export interface Mgt2eWorldActor {
 }
 
 export interface Mgt2eUWP {
-  port: string;               // A-E, X
-  size: number;               // 0-F
-  atmosphere: number;         // 0-F
-  hydrographics: number;      // 0-A
-  population: number;         // 0-C
-  government: number;         // 0-F
-  lawLevel: number;           // 0-J
-  techLevel: number;          // 0-F+
+  port: string; // A-E, X
+  size: number; // 0-F
+  atmosphere: number; // 0-F
+  hydrographics: number; // 0-A
+  population: number; // 0-C
+  government: number; // 0-F
+  lawLevel: number; // 0-J
+  techLevel: number; // 0-F+
   zone: 'green' | 'amber' | 'red' | null;
-  bases: string;              // N, S, R, T, etc.
-  codes: string;              // Calculated trade codes
+  bases: string; // N, S, R, T, etc.
+  codes: string; // Calculated trade codes
 }
 
 export interface Mgt2eSpacecraftActor {
@@ -826,7 +867,7 @@ export interface Mgt2eSpacecraftActor {
       current: number;
     };
   };
-  items: Mgt2eItemBase[];  // Hardware, software, weapons
+  items: Mgt2eItemBase[]; // Hardware, software, weapons
 }
 ```
 
@@ -838,7 +879,7 @@ export interface Mgt2eSpacecraftActor {
 export interface TravellerMetadata {
   // Foundry link
   foundry_uuid?: string;
-  
+
   // MGT2e data (mirrored from Foundry)
   characteristics?: Record<CharacteristicCode, number>;
   skills?: Record<string, number | Record<string, number>>;
@@ -846,7 +887,7 @@ export interface TravellerMetadata {
   credits?: number;
   age?: number;
   species?: string;
-  
+
   // Items (simplified for PlaneShift, full data in Foundry)
   items?: Array<{
     id: string;
@@ -855,62 +896,62 @@ export interface TravellerMetadata {
     type: Mgt2eItemType;
     quantity?: number;
   }>;
-  
+
   // Career history
   careers?: Array<{
     name: string;
     terms: number;
     assignment?: string;
   }>;
-  
+
   // Associates (may differ from Foundry)
   associates?: Array<{
     name: string;
     relationship: 'contact' | 'ally' | 'rival' | 'enemy';
     affinity: number;
     enmity: number;
-    linkedNodeId?: string;  // Link to another graph node
+    linkedNodeId?: string; // Link to another graph node
   }>;
-  
+
   // PlaneShift-only narrative
   description?: string;
   tags?: string[];
   image_url?: string;
-  hidden_notes?: string;   // GM-only
+  hidden_notes?: string; // GM-only
 }
 
 export interface WorldMetadata {
   foundry_uuid?: string;
-  
+
   // UWP (mirrored from Foundry)
   uwp?: Mgt2eUWP;
-  
+
   // Derived (calculated, don't sync)
   tradeCodes?: string[];
-  
+
   // Sector location
   sector?: string;
   subsector?: string;
   hex?: string;
-  
+
   // PlaneShift narrative
   description?: string;
-  controllingFaction?: string;  // Link to faction node
-  factionStanding?: Record<string, number>;  // Per-faction standing on this world
+  controllingFaction?: string; // Link to faction node
+  factionStanding?: Record<string, number>; // Per-faction standing on this world
   tags?: string[];
 }
 
 export interface SpacecraftMetadata {
   foundry_uuid?: string;
-  
+
   // Ship identity (for reference, not full sync)
   shipClass?: string;
   tonnage?: number;
   jumpRating?: number;
-  
+
   // Ownership
-  ownerNodeId?: string;    // Link to traveller/faction who owns it
-  
+  ownerNodeId?: string; // Link to traveller/faction who owns it
+
   // PlaneShift narrative
   description?: string;
   tags?: string[];
@@ -922,15 +963,19 @@ export interface SpacecraftMetadata {
 ## Implementation Phases
 
 ### Phase 0: Foundation (Current State)
+
 **Status**: Complete
+
 - Basic actor sync (HP, characteristics, credits)
 - Echo prevention
 - WebSocket bridge
 
 ### Phase 1: Core Expansion
+
 **Scope**: Extend sync to cover essential character data
+
 - [ ] Add Skills sync (read-only from Foundry)
-- [ ] Add Items sync (read-only from Foundry)  
+- [ ] Add Items sync (read-only from Foundry)
 - [ ] Add Career Terms sync (read-only)
 - [ ] Add Associates sync (bidirectional merge)
 - [ ] TypeScript conversion of foundry-module
@@ -938,35 +983,45 @@ export interface SpacecraftMetadata {
 - [ ] Character panel UI to display synced data
 
 ### Phase 2: World Integration
+
 **Scope**: World actors and sector data
+
 - [ ] World actor sync (UWP, trade codes)
 - [ ] World metadata schema in PlaneShift
 - [ ] World node auto-linking
 - [ ] Sector visualization enhancements
 
 ### Phase 3: Character Creation Flow
+
 **Scope**: PlaneShift → Foundry actor creation
+
 - [ ] "Push to Foundry" button
 - [ ] Actor creation message handler
 - [ ] UUID linking ceremony
 - [ ] Initial data population
 
 ### Phase 4: Journal Integration
+
 **Scope**: Bidirectional journal sync
+
 - [ ] JournalEntry hooks in bridge module
 - [ ] Journal node type or edge attachment
 - [ ] News feed push to Foundry
 - [ ] Session notes sync
 
 ### Phase 5: Full Bidirectional
+
 **Scope**: PlaneShift can modify Foundry-authoritative fields
+
 - [ ] HP/stats modification from PlaneShift
 - [ ] Item creation from PlaneShift
 - [ ] Conflict resolution UI
 - [ ] Blue-booking workflow
 
 ### Phase 6: Spacecraft & Beyond
+
 **Scope**: Additional actor types
+
 - [ ] Spacecraft actor sync
 - [ ] Ship ownership tracking
 - [ ] Vehicle actors (if needed)
@@ -978,27 +1033,27 @@ export interface SpacecraftMetadata {
 
 ### NEVER Implement in PlaneShift
 
-| Exclusion | Rationale |
-|-----------|-----------|
-| **Dice Rolling Engine** | MGT2e has complete 2d6 with Boon/Bane, Effect, chain bonuses |
-| **Combat Resolution** | Damage chains (END→STR→DEX), weapon traits, criticals |
-| **Trade Price Calculation** | Purchase/sale DMs from trade codes, price fluctuation |
-| **Spacecraft Combat** | Power management, critical tables, salvo calculations |
-| **Character Generation Mechanics** | Career paths, mishaps, events, aging tables |
-| **NPC Stat Generation** | Table-driven generation with skill allocation |
-| **Skill Check Automation** | Untrained penalties, specialty handling |
-| **UWP Calculations** | Trade code derivation from atmospheric conditions |
+| Exclusion                          | Rationale                                                    |
+| ---------------------------------- | ------------------------------------------------------------ |
+| **Dice Rolling Engine**            | MGT2e has complete 2d6 with Boon/Bane, Effect, chain bonuses |
+| **Combat Resolution**              | Damage chains (END→STR→DEX), weapon traits, criticals        |
+| **Trade Price Calculation**        | Purchase/sale DMs from trade codes, price fluctuation        |
+| **Spacecraft Combat**              | Power management, critical tables, salvo calculations        |
+| **Character Generation Mechanics** | Career paths, mishaps, events, aging tables                  |
+| **NPC Stat Generation**            | Table-driven generation with skill allocation                |
+| **Skill Check Automation**         | Untrained penalties, specialty handling                      |
+| **UWP Calculations**               | Trade code derivation from atmospheric conditions            |
 
 ### Deferred (Not MVP)
 
-| Item | Reason to Defer |
-|------|-----------------|
-| Vehicle actors | Less common, similar to spacecraft |
-| Creature actors | Monster management is Foundry's strength |
-| Swarm actors | Combat-specific, Foundry handles |
-| Container actors | Inventory edge case |
-| Multi-world support | Single campaign assumption for MVP |
-| Compendium sync | Read-only in Foundry, complexity |
+| Item                | Reason to Defer                          |
+| ------------------- | ---------------------------------------- |
+| Vehicle actors      | Less common, similar to spacecraft       |
+| Creature actors     | Monster management is Foundry's strength |
+| Swarm actors        | Combat-specific, Foundry handles         |
+| Container actors    | Inventory edge case                      |
+| Multi-world support | Single campaign assumption for MVP       |
+| Compendium sync     | Read-only in Foundry, complexity         |
 
 ---
 
@@ -1006,42 +1061,42 @@ export interface SpacecraftMetadata {
 
 ### Data Integrity
 
-| Edge Case | Handling |
-|-----------|----------|
-| **Duplicate foundry_uuid** | Validation prevents; if occurs, warn user and refuse sync |
-| **Deleted Foundry actor** | Mark PlaneShift node as "unlinked", preserve data |
-| **Actor renamed in Foundry** | Update PlaneShift label (name is bidirectional LWW) |
-| **Actor type mismatch** | Warn user; cannot change type after creation |
-| **Non-MGT2e actor** | Ignore gracefully; only sync mgt2e system actors |
+| Edge Case                    | Handling                                                  |
+| ---------------------------- | --------------------------------------------------------- |
+| **Duplicate foundry_uuid**   | Validation prevents; if occurs, warn user and refuse sync |
+| **Deleted Foundry actor**    | Mark PlaneShift node as "unlinked", preserve data         |
+| **Actor renamed in Foundry** | Update PlaneShift label (name is bidirectional LWW)       |
+| **Actor type mismatch**      | Warn user; cannot change type after creation              |
+| **Non-MGT2e actor**          | Ignore gracefully; only sync mgt2e system actors          |
 
 ### Sync Timing
 
-| Edge Case | Handling |
-|-----------|----------|
-| **Bulk import (50 actors)** | Queue with rate limiting (10/second max) |
-| **Rapid updates (slider drag)** | Debounce 500ms before sending |
-| **Reconnection storm** | Server queues updates, processes in timestamp order |
-| **Offline PlaneShift edits** | CRDT handles; on reconnect, resolve per authority rules |
+| Edge Case                             | Handling                                                 |
+| ------------------------------------- | -------------------------------------------------------- |
+| **Bulk import (50 actors)**           | Queue with rate limiting (10/second max)                 |
+| **Rapid updates (slider drag)**       | Debounce 500ms before sending                            |
+| **Reconnection storm**                | Server queues updates, processes in timestamp order      |
+| **Offline PlaneShift edits**          | CRDT handles; on reconnect, resolve per authority rules  |
 | **Foundry offline, PlaneShift edits** | PlaneShift is source; on Foundry reconnect, push changes |
 
 ### Permission Edge Cases
 
-| Edge Case | Handling |
-|-----------|----------|
+| Edge Case                         | Handling                                             |
+| --------------------------------- | ---------------------------------------------------- |
 | **Ownership transfer in Foundry** | Sync ownership change to PlaneShift node permissions |
-| **GM-only fields** | Sync all data; PlaneShift handles visibility gating |
-| **Limited permission actor** | Sync metadata only (no system data access) |
-| **Player edits unowned actor** | Block at Foundry level; never reaches PlaneShift |
+| **GM-only fields**                | Sync all data; PlaneShift handles visibility gating  |
+| **Limited permission actor**      | Sync metadata only (no system data access)           |
+| **Player edits unowned actor**    | Block at Foundry level; never reaches PlaneShift     |
 
 ### Error States
 
-| Error | Recovery |
-|-------|----------|
-| **WebSocket disconnect** | Exponential backoff reconnect (1s, 2s, 4s, 8s, max 30s) |
-| **Sync message parse fail** | Log error, skip message, continue |
-| **Actor.update() fails in Foundry** | Return error to PlaneShift, show toast, retry option |
-| **Conflict detection** | Queue to conflict resolution UI, notify GM |
-| **Schema version mismatch** | Warn user, attempt best-effort mapping, log issues |
+| Error                               | Recovery                                                |
+| ----------------------------------- | ------------------------------------------------------- |
+| **WebSocket disconnect**            | Exponential backoff reconnect (1s, 2s, 4s, 8s, max 30s) |
+| **Sync message parse fail**         | Log error, skip message, continue                       |
+| **Actor.update() fails in Foundry** | Return error to PlaneShift, show toast, retry option    |
+| **Conflict detection**              | Queue to conflict resolution UI, notify GM              |
+| **Schema version mismatch**         | Warn user, attempt best-effort mapping, log issues      |
 
 ---
 
@@ -1084,17 +1139,17 @@ export interface SpacecraftMetadata {
 
 For future implementation, these are the key config locations in the MGT2e repo:
 
-| Data | File Path | Lines |
-|------|-----------|-------|
-| Characteristics | `mgt2e/module/helpers/config.mjs` | 1-50 |
-| Skills List | `mgt2e/module/helpers/config.mjs` | 554-828 |
-| Weapon Traits | `mgt2e/module/helpers/config.mjs` | 200-300 |
-| Spacecraft Criticals | `mgt2e/module/helpers/config.mjs` | 400-500 |
-| Trade Codes | `mgt2e/module/helpers/utils/world-utils.mjs` | 234-310 |
-| Starport Facilities | `mgt2e/module/helpers/config.mjs` | 1003-1011 |
-| Dice Roll Logic | `mgt2e/module/helpers/dice-rolls.mjs` | 1-1200 |
-| Actor Sheet | `mgt2e/module/sheets/actor-sheet.mjs` | Full file |
-| Template Schema | `mgt2e/template.json` | Full file |
+| Data                 | File Path                                    | Lines     |
+| -------------------- | -------------------------------------------- | --------- |
+| Characteristics      | `mgt2e/module/helpers/config.mjs`            | 1-50      |
+| Skills List          | `mgt2e/module/helpers/config.mjs`            | 554-828   |
+| Weapon Traits        | `mgt2e/module/helpers/config.mjs`            | 200-300   |
+| Spacecraft Criticals | `mgt2e/module/helpers/config.mjs`            | 400-500   |
+| Trade Codes          | `mgt2e/module/helpers/utils/world-utils.mjs` | 234-310   |
+| Starport Facilities  | `mgt2e/module/helpers/config.mjs`            | 1003-1011 |
+| Dice Roll Logic      | `mgt2e/module/helpers/dice-rolls.mjs`        | 1-1200    |
+| Actor Sheet          | `mgt2e/module/sheets/actor-sheet.mjs`        | Full file |
+| Template Schema      | `mgt2e/template.json`                        | Full file |
 
 ---
 
@@ -1104,32 +1159,35 @@ For future implementation, these are the key config locations in the MGT2e repo:
 
 ```javascript
 // Creation
-Hooks.on("preCreateActor", (actor, data, options, userId) => {});
-Hooks.on("createActor", (actor, options, userId) => {});
+Hooks.on('preCreateActor', (actor, data, options, userId) => {});
+Hooks.on('createActor', (actor, options, userId) => {});
 
 // Update
-Hooks.on("preUpdateActor", (actor, changes, options, userId) => {});
-Hooks.on("updateActor", (actor, changes, options, userId) => {});
+Hooks.on('preUpdateActor', (actor, changes, options, userId) => {});
+Hooks.on('updateActor', (actor, changes, options, userId) => {});
 
 // Deletion
-Hooks.on("preDeleteActor", (actor, options, userId) => {});
-Hooks.on("deleteActor", (actor, options, userId) => {});
+Hooks.on('preDeleteActor', (actor, options, userId) => {});
+Hooks.on('deleteActor', (actor, options, userId) => {});
 
 // Items (embedded)
-Hooks.on("createItem", (item, options, userId) => {});
-Hooks.on("updateItem", (item, changes, options, userId) => {});
-Hooks.on("deleteItem", (item, options, userId) => {});
+Hooks.on('createItem', (item, options, userId) => {});
+Hooks.on('updateItem', (item, changes, options, userId) => {});
+Hooks.on('deleteItem', (item, options, userId) => {});
 ```
 
 ### Actor Update Pattern
 
 ```javascript
 // Differential update (only send changed fields)
-await actor.update({
-  "name": "New Name",
-  "system.hits.value": 15,
-  "system.finance.cash": 50000
-}, { planeshift: true });  // Custom flag for echo prevention
+await actor.update(
+  {
+    name: 'New Name',
+    'system.hits.value': 15,
+    'system.finance.cash': 50000,
+  },
+  { planeshift: true },
+); // Custom flag for echo prevention
 ```
 
 ### Socket Communication
@@ -1153,11 +1211,11 @@ game.socket.on("module.plane-shift-bridge", (data) => {
 
 ## Appendix C: Decision Log
 
-| Date | Decision | Rationale |
-|------|----------|-----------|
-| 2026-01-27 | Field-level authority for MVP | Simpler conflict resolution |
-| 2026-01-27 | PlaneShift → Foundry primary flow | PlaneShift is chargen tool |
-| 2026-01-27 | Public APIs only | No MGT2e code modifications |
-| 2026-01-27 | Core actors (traveller, npc, world) for MVP | Most common use cases |
-| 2026-01-27 | Spacecraft linking MVP+, not full sync | Reference existing ships |
-| 2026-01-27 | Journal sync bidirectional | News feeds + GM notes |
+| Date       | Decision                                    | Rationale                   |
+| ---------- | ------------------------------------------- | --------------------------- |
+| 2026-01-27 | Field-level authority for MVP               | Simpler conflict resolution |
+| 2026-01-27 | PlaneShift → Foundry primary flow           | PlaneShift is chargen tool  |
+| 2026-01-27 | Public APIs only                            | No MGT2e code modifications |
+| 2026-01-27 | Core actors (traveller, npc, world) for MVP | Most common use cases       |
+| 2026-01-27 | Spacecraft linking MVP+, not full sync      | Reference existing ships    |
+| 2026-01-27 | Journal sync bidirectional                  | News feeds + GM notes       |

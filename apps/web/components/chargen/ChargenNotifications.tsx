@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useChargenNotifications, ExtendedNotification, ChargenNotificationType } from '../../lib/chargen/useChargenNotifications';
+import {
+  useChargenNotifications,
+  ExtendedNotification,
+  ChargenNotificationType,
+} from '../../lib/chargen/useChargenNotifications';
 import { X, UserPlus, Dice5, Bell, Link2, CheckCircle, Calendar, Star } from 'lucide-react';
 import { SciFiButton } from '@/components/ui/scifi';
 
@@ -13,24 +17,26 @@ export default function ChargenNotifications({ className }: ChargenNotifications
   const { notifications, dismissNotification } = useChargenNotifications();
 
   return (
-    <div className={`fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none ${className}`}>
+    <div
+      className={`fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none ${className}`}
+    >
       {notifications.map((notification) => (
-        <NotificationToast 
-          key={notification.id} 
-          notification={notification} 
-          onDismiss={() => dismissNotification(notification.id)} 
+        <NotificationToast
+          key={notification.id}
+          notification={notification}
+          onDismiss={() => dismissNotification(notification.id)}
         />
       ))}
     </div>
   );
 }
 
-function NotificationToast({ 
-  notification, 
-  onDismiss 
-}: { 
-  notification: ExtendedNotification; 
-  onDismiss: () => void; 
+function NotificationToast({
+  notification,
+  onDismiss,
+}: {
+  notification: ExtendedNotification;
+  onDismiss: () => void;
 }) {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -48,7 +54,7 @@ function NotificationToast({
           <div className="flex-1">
             <NotificationContent data={data} />
           </div>
-          <button 
+          <button
             type="button"
             aria-label="Dismiss notification"
             onClick={onDismiss}
@@ -58,9 +64,9 @@ function NotificationToast({
           </button>
         </div>
       </div>
-      
+
       <div className="h-0.5 w-full bg-zinc-900">
-         <div className="h-full bg-blue-500/50 animate-[shrink_5s_linear_forwards] origin-left" />
+        <div className="h-full bg-blue-500/50 animate-[shrink_5s_linear_forwards] origin-left" />
       </div>
     </div>
   );
@@ -88,7 +94,8 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
             <span>Character Started</span>
           </div>
           <p className="text-subtle text-xs mt-1">
-            <span className="text-blue-400">{data.playerName}</span> started creating <span className="text-default">"{data.characterName}"</span>.
+            <span className="text-blue-400">{data.playerName}</span> started creating{' '}
+            <span className="text-default">"{data.characterName}"</span>.
           </p>
         </div>
       );
@@ -100,7 +107,8 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
             <span>New Entity Spawned</span>
           </div>
           <p className="text-subtle text-xs mt-1">
-            {data.creatorName} created {data.entityType}: <span className="text-default font-medium">{data.entityName}</span>
+            {data.creatorName} created {data.entityType}:{' '}
+            <span className="text-default font-medium">{data.entityName}</span>
           </p>
           <SciFiButton theme="slate" scifiVariant="ghost" size="sm">
             View in Pool
@@ -115,7 +123,8 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
             <span>Connection Requested</span>
           </div>
           <p className="text-subtle text-xs mt-1">
-            <span className="text-blue-400">{data.requesterName}</span> wants to connect with <span className="text-default">{data.entityName}</span>.
+            <span className="text-blue-400">{data.requesterName}</span> wants to connect with{' '}
+            <span className="text-default">{data.entityName}</span>.
           </p>
         </div>
       );
@@ -127,7 +136,9 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
             <span>Connection Approved</span>
           </div>
           <p className="text-subtle text-xs mt-1">
-            Connection established between <span className="text-default">{data.characterName}</span> and <span className="text-default">{data.entityName}</span>.
+            Connection established between{' '}
+            <span className="text-default">{data.characterName}</span> and{' '}
+            <span className="text-default">{data.entityName}</span>.
           </p>
         </div>
       );
@@ -139,7 +150,8 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
             <span>Term Completed</span>
           </div>
           <p className="text-subtle text-xs mt-1">
-            <span className="text-blue-400">{data.playerName}</span> finished Term {data.termNumber}.
+            <span className="text-blue-400">{data.playerName}</span> finished Term {data.termNumber}
+            .
           </p>
         </div>
       );
@@ -151,7 +163,8 @@ function NotificationContent({ data }: { data: ChargenNotificationType }) {
             <span>Character Finalized</span>
           </div>
           <p className="text-subtle text-xs mt-1">
-            <span className="text-blue-400">{data.playerName}</span> has completed their character <span className="text-default">"{data.characterName}"</span>!
+            <span className="text-blue-400">{data.playerName}</span> has completed their character{' '}
+            <span className="text-default">"{data.characterName}"</span>!
           </p>
         </div>
       );

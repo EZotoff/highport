@@ -8,19 +8,21 @@
 
 ## Test Summary
 
-| Scenario | Status | Details |
-|----------|--------|---------|
-| **S1: Application Loads** | ✅ PASS | Homepage loads, title visible, navigation functional |
-| **S2: Graph Page Renders** | ✅ PASS | React Flow canvas renders, controls visible, Add Node button present |
+| Scenario                   | Status  | Details                                                               |
+| -------------------------- | ------- | --------------------------------------------------------------------- |
+| **S1: Application Loads**  | ✅ PASS | Homepage loads, title visible, navigation functional                  |
+| **S2: Graph Page Renders** | ✅ PASS | React Flow canvas renders, controls visible, Add Node button present  |
 | **S3: Table Page Renders** | ✅ PASS | Reputation table renders, headers visible, Add Faction button present |
-| **Console Errors** | ✅ PASS | Only React DevTools info message (expected, not an error) |
+| **Console Errors**         | ✅ PASS | Only React DevTools info message (expected, not an error)             |
 
 ---
 
 ## Scenario Details
 
 ### S1: Application Loads
+
 **Gherkin:**
+
 ```gherkin
 GIVEN a fresh browser session
 WHEN user navigates to http://localhost:3000
@@ -30,6 +32,7 @@ AND no console errors appear
 ```
 
 **Verification:**
+
 - ✅ Page loaded successfully to http://localhost:3000/
 - ✅ Heading "PlaneShift" [h1] found
 - ✅ Navigation links present:
@@ -44,7 +47,9 @@ AND no console errors appear
 ---
 
 ### S2: Graph Page Renders
+
 **Gherkin:**
+
 ```gherkin
 GIVEN user is on the home page
 WHEN user navigates to /graph
@@ -55,6 +60,7 @@ AND no console errors appear
 ```
 
 **Verification:**
+
 - ✅ Page navigated to http://localhost:3000/graph
 - ✅ React Flow canvas rendered (application[role] with react-flow components)
 - ✅ Control Panel visible with buttons:
@@ -73,7 +79,9 @@ AND no console errors appear
 ---
 
 ### S3: Table Page Renders
+
 **Gherkin:**
+
 ```gherkin
 GIVEN user is on the home page
 WHEN user navigates to /reputation
@@ -83,6 +91,7 @@ AND no console errors appear
 ```
 
 **Verification:**
+
 - ✅ Page navigated to http://localhost:3000/reputation
 - ✅ Heading "Faction Reputation" [h1] found
 - ✅ Subheading "Factions & Reputation" [h2] found
@@ -106,13 +115,15 @@ AND no console errors appear
 **File**: `console-errors.txt`
 
 **Content:**
+
 ```
-[INFO] %cDownload the React DevTools for a better development experience: 
-https://reactjs.org/link/react-devtools 
+[INFO] %cDownload the React DevTools for a better development experience:
+https://reactjs.org/link/react-devtools
 font-weight:bold @ webpack-internal:///...
 ```
 
 **Analysis**:
+
 - ✅ Only 1 message detected: React DevTools advertisement
 - ✅ Level: INFO (not ERROR or WARNING)
 - ✅ This is standard React development warning, not an application error
@@ -157,7 +168,7 @@ smoke/
 ## Next Steps
 
 Following successful smoke tests (Level 1), proceed with:
+
 1. **Level 2**: Unit/Integration tests (`pnpm test`)
 2. **Level 3**: E2E tests (`pnpm e2e`)
 3. **Level 4**: Agentic acceptance scenario testing (if task-specific)
-

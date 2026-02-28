@@ -6,32 +6,32 @@
 Prometheus (plans) → Atlas (orchestrates) → Sisyphus (executes)
 ```
 
-| Agent | Role | Writes Code? |
-|-------|------|--------------|
-| **Prometheus** | Strategic planner | No |
-| **Atlas** | Orchestrator, delegates all work | No |
-| **Sisyphus** | Executor, hands-on + can delegate | Yes |
+| Agent          | Role                              | Writes Code? |
+| -------------- | --------------------------------- | ------------ |
+| **Prometheus** | Strategic planner                 | No           |
+| **Atlas**      | Orchestrator, delegates all work  | No           |
+| **Sisyphus**   | Executor, hands-on + can delegate | Yes          |
 
 ---
 
 ## Loop Commands
 
-| Command | Use When |
-|---------|----------|
-| `/sisyphus-work` | Complex multi-module projects with a Prometheus plan |
-| `/ulw-loop` | Continuous execution of understood work, no plan needed |
-| `/ralph-loop` | Iterative refinement until completion |
+| Command          | Use When                                                |
+| ---------------- | ------------------------------------------------------- |
+| `/sisyphus-work` | Complex multi-module projects with a Prometheus plan    |
+| `/ulw-loop`      | Continuous execution of understood work, no plan needed |
+| `/ralph-loop`    | Iterative refinement until completion                   |
 
 ---
 
 ## `/sisyphus-work` vs `/ulw-loop`
 
-| Aspect | `/sisyphus-work` | `/ulw-loop` |
-|--------|------------------|-------------|
-| Requires plan file | ✅ Yes | ❌ No |
-| Orchestrator | Atlas | Sisyphus |
-| Cross-session memory | Notepad system | Session only |
-| Best for | Multi-module, days/weeks | Single session, focused |
+| Aspect               | `/sisyphus-work`         | `/ulw-loop`             |
+| -------------------- | ------------------------ | ----------------------- |
+| Requires plan file   | ✅ Yes                   | ❌ No                   |
+| Orchestrator         | Atlas                    | Sisyphus                |
+| Cross-session memory | Notepad system           | Session only            |
+| Best for             | Multi-module, days/weeks | Single session, focused |
 
 ---
 
@@ -42,6 +42,7 @@ Prometheus (plans) → Atlas (orchestrates) → Sisyphus (executes)
 ### How to Invoke
 
 Simply describe your project. Prometheus will:
+
 1. **Interview you** — ask clarifying questions
 2. **Research** — explore codebase and docs via agents
 3. **Generate plan** — save to `.sisyphus/plans/{name}.md`
@@ -62,10 +63,10 @@ Tech stack: [languages, frameworks]
 
 ### Explicit Triggers (optional)
 
-| Phrase | Effect |
-|--------|--------|
-| "Create the work plan" | Skip to plan generation |
-| "High accuracy mode" | Enable Momus review loop |
+| Phrase                 | Effect                   |
+| ---------------------- | ------------------------ |
+| "Create the work plan" | Skip to plan generation  |
+| "High accuracy mode"   | Enable Momus review loop |
 
 ---
 
@@ -83,7 +84,7 @@ Requirements:
 Tech stack: [languages, frameworks]
 ```
 
-*(Prometheus interviews, then outputs to `.sisyphus/plans/{name}.md`)*
+_(Prometheus interviews, then outputs to `.sisyphus/plans/{name}.md`)_
 
 ### Step 2: Execute Plan (Atlas)
 
@@ -117,36 +118,36 @@ Build [WHAT YOU WANT]:
 
 Pass via `load_skills=["skill-name"]` in delegations.
 
-| Skill | When Required |
-|-------|---------------|
-| `playwright` | Any browser tasks |
-| `frontend-ui-ux` | UI/UX design work |
-| `git-master` | Any git operations |
+| Skill            | When Required      |
+| ---------------- | ------------------ |
+| `playwright`     | Any browser tasks  |
+| `frontend-ui-ux` | UI/UX design work  |
+| `git-master`     | Any git operations |
 
 ---
 
 ## Categories (for `delegate_task`)
 
-| Category | Domain |
-|----------|--------|
-| `visual-engineering` | Frontend, UI/UX, styling |
-| `ultrabrain` | Complex architecture, deep reasoning |
-| `quick` | Trivial single-file changes |
-| `unspecified-low` | Low-effort misc tasks |
-| `unspecified-high` | High-effort misc tasks |
-| `writing` | Documentation, prose |
-| `artistry` | Creative/artistic tasks |
+| Category             | Domain                               |
+| -------------------- | ------------------------------------ |
+| `visual-engineering` | Frontend, UI/UX, styling             |
+| `ultrabrain`         | Complex architecture, deep reasoning |
+| `quick`              | Trivial single-file changes          |
+| `unspecified-low`    | Low-effort misc tasks                |
+| `unspecified-high`   | High-effort misc tasks               |
+| `writing`            | Documentation, prose                 |
+| `artistry`           | Creative/artistic tasks              |
 
 ---
 
 ## Specialized Agents
 
-| Agent | Purpose |
-|-------|---------|
-| `oracle` | Read-only consultation, high-IQ reasoning |
-| `librarian` | Docs, GitHub, external references |
-| `explore` | Codebase grep/search |
-| `momus` | Expert reviewer for plan quality |
+| Agent       | Purpose                                   |
+| ----------- | ----------------------------------------- |
+| `oracle`    | Read-only consultation, high-IQ reasoning |
+| `librarian` | Docs, GitHub, external references         |
+| `explore`   | Codebase grep/search                      |
+| `momus`     | Expert reviewer for plan quality          |
 
 ---
 
@@ -163,23 +164,24 @@ HIGH ACCURACY: Prometheus → Draft → Momus reviews → Fix → Re-review → 
 
 ### Review Criteria
 
-| Momus Checks For |
-|------------------|
-| Clarity — Are tasks unambiguous? |
-| Verifiability — Can completion be proven? |
+| Momus Checks For                             |
+| -------------------------------------------- |
+| Clarity — Are tasks unambiguous?             |
+| Verifiability — Can completion be proven?    |
 | Completeness — Are all requirements covered? |
 
 ### When to Use
 
-| Use High Accuracy | Skip It |
-|-------------------|---------|
-| Critical/production systems | Quick prototypes |
-| Complex multi-module plans | Simple tasks |
-| Unfamiliar domain | Well-understood work |
+| Use High Accuracy           | Skip It              |
+| --------------------------- | -------------------- |
+| Critical/production systems | Quick prototypes     |
+| Complex multi-module plans  | Simple tasks         |
+| Unfamiliar domain           | Well-understood work |
 
 ### How to Enable
 
 Add to your Prometheus prompt:
+
 ```
 High accuracy mode.
 ```

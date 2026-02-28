@@ -113,7 +113,7 @@ describe('Chargen Integration Tests', () => {
         entityId,
         'ally',
         'Want to connect',
-        'user-2'
+        'user-2',
       );
 
       // Verify doc2 received the request
@@ -141,14 +141,7 @@ describe('Chargen Integration Tests', () => {
         claimedBy: [],
       });
 
-      const requestId = requestConnection(
-        doc1,
-        'char-3',
-        entityId,
-        'contact',
-        undefined,
-        'user-3'
-      );
+      const requestId = requestConnection(doc1, 'char-3', entityId, 'contact', undefined, 'user-3');
 
       // Approve in doc1
       resolveConnectionRequest(doc1, requestId, true, 'gm-user');
@@ -321,14 +314,7 @@ describe('Chargen Integration Tests', () => {
         claimedBy: [],
       });
 
-      const requestId = requestConnection(
-        doc,
-        'char-2',
-        entityId,
-        'ally',
-        undefined,
-        'user-2'
-      );
+      const requestId = requestConnection(doc, 'char-2', entityId, 'ally', undefined, 'user-2');
 
       // GM approves
       resolveConnectionRequest(doc, requestId, true, 'gm-user');
@@ -353,14 +339,7 @@ describe('Chargen Integration Tests', () => {
         claimedBy: [],
       });
 
-      const requestId = requestConnection(
-        doc,
-        'char-2',
-        entityId,
-        'contact',
-        undefined,
-        'user-2'
-      );
+      const requestId = requestConnection(doc, 'char-2', entityId, 'contact', undefined, 'user-2');
 
       // Entity owner (user-1) approves
       resolveConnectionRequest(doc, requestId, true, 'user-1');
@@ -426,14 +405,7 @@ describe('Chargen Integration Tests', () => {
         claimedBy: [],
       });
 
-      const requestId = requestConnection(
-        doc,
-        'char-2',
-        entityId,
-        'enemy',
-        undefined,
-        'user-2'
-      );
+      const requestId = requestConnection(doc, 'char-2', entityId, 'enemy', undefined, 'user-2');
 
       // GM rejects
       resolveConnectionRequest(doc, requestId, false, 'gm-user');

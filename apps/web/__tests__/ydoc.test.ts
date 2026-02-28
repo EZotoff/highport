@@ -1,11 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as Y from 'yjs';
 import type { GraphNode, GraphEdge } from '@highport/shared/types/graph';
-import {
-  createYDoc,
-  getNodesMap,
-  getEdgesMap,
-} from '../lib/ydoc';
+import { createYDoc, getNodesMap, getEdgesMap } from '../lib/ydoc';
 import {
   yMapToNode,
   yMapToEdge,

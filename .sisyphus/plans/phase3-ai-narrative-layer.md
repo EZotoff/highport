@@ -12,6 +12,7 @@
 ## Overview
 
 This phase adds AI-powered narrative assistance to the character generation flow. The AI:
+
 1. Generates thematic event descriptions based on career context
 2. Creates NPC personalities, motivations, and appearances
 3. Suggests connections between spawned entities
@@ -22,18 +23,21 @@ This phase adds AI-powered narrative assistance to the character generation flow
 ## Architecture Decisions
 
 ### AI Model Selection
+
 - **Creative generation** (event prose, NPC backstories): **Gemini 2.0 Flash** or configurable
 - **Structured extraction** (parsing, classification): **GPT-4o-mini** or configurable
 - All AI calls go through the existing `apps/rag-service/` Python backend
 
 ### Verbosity Levels
-| Level | Description | Use Case |
-|-------|-------------|----------|
-| **Minimal** | Just names and types | Player writes everything |
-| **Structured** | Key fields filled (name, motivation, 1-liner) | Quick generation |
-| **Rich** | Full prose descriptions, personality traits, appearance | Immersive experience |
+
+| Level          | Description                                             | Use Case                 |
+| -------------- | ------------------------------------------------------- | ------------------------ |
+| **Minimal**    | Just names and types                                    | Player writes everything |
+| **Structured** | Key fields filled (name, motivation, 1-liner)           | Quick generation         |
+| **Rich**       | Full prose descriptions, personality traits, appearance | Immersive experience     |
 
 ### Integration Points
+
 - New API endpoint in `apps/rag-service/` for narrative generation
 - Frontend calls via fetch from chargen components
 - Caching of generated content in CRDT state
@@ -43,16 +47,19 @@ This phase adds AI-powered narrative assistance to the character generation flow
 ## Task Breakdown
 
 ### Task 1: Narrative Generation API Endpoint
+
 **Effort**: Medium (2-3 hours)
 
 Create the backend API for AI-powered narrative generation.
 
 **Files to create:**
+
 - [x] `apps/rag-service/routers/narrative.py` - FastAPI router
 - [x] `apps/rag-service/services/narrative_generator.py` - Core generation logic
 - [x] `apps/rag-service/schemas/narrative.py` - Pydantic models
 
 **API Endpoints:**
+
 ```python
 # POST /api/narrative/event-description
 # Generates thematic description for a career event
@@ -114,6 +121,7 @@ Create the backend API for AI-powered narrative generation.
 ```
 
 **Acceptance criteria:**
+
 - [x] `/api/narrative/event-description` endpoint working
 - [x] `/api/narrative/npc-details` endpoint working
 - [x] Verbosity levels produce different output lengths
@@ -122,15 +130,18 @@ Create the backend API for AI-powered narrative generation.
 ---
 
 ### Task 2: Frontend Narrative Hooks
+
 **Effort**: Low (1-2 hours)
 
 Create React hooks for calling the narrative API.
 
 **Files to create:**
+
 - [x] `apps/web/lib/chargen/narrative.ts` - API client functions
 - [x] `apps/web/lib/chargen/useNarrative.ts` - React hook with loading/error states
 
 **Hook interface:**
+
 ```typescript
 interface UseNarrativeOptions {
   verbosity: 'minimal' | 'structured' | 'rich';
@@ -144,7 +155,7 @@ interface NarrativeResult {
 function useEventNarrative(
   event: CareerEvent,
   context: CharacterContext,
-  options: UseNarrativeOptions
+  options: UseNarrativeOptions,
 ): {
   generate: () => Promise<NarrativeResult>;
   result: NarrativeResult | null;
@@ -155,7 +166,7 @@ function useEventNarrative(
 function useNPCDetails(
   npcType: string,
   context: NPCContext,
-  options: UseNarrativeOptions
+  options: UseNarrativeOptions,
 ): {
   generate: () => Promise<NPCDetails>;
   result: NPCDetails | null;
@@ -165,6 +176,7 @@ function useNPCDetails(
 ```
 
 **Acceptance criteria:**
+
 - [x] `useEventNarrative` hook working with loading states
 - [x] `useNPCDetails` hook working with loading states
 - [x] Errors displayed to user appropriately
@@ -173,15 +185,18 @@ function useNPCDetails(
 ---
 
 ### Task 3: Verbosity Control UI
+
 **Effort**: Low (1 hour)
 
 Add verbosity selector to the chargen interface.
 
 **Files to modify:**
+
 - [x] `apps/web/components/chargen/ChargenWizard.tsx` - Add verbosity state
 - [x] `apps/web/components/chargen/VerbositySelector.tsx` - New component
 
 **UI Design:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  AI Assistance Level                                         │
@@ -195,6 +210,7 @@ Add verbosity selector to the chargen interface.
 ```
 
 **Acceptance criteria:**
+
 - [x] Verbosity selector visible in chargen wizard
 - [x] Selection persists across steps
 - [x] Verbosity passed to narrative hooks
@@ -202,14 +218,17 @@ Add verbosity selector to the chargen interface.
 ---
 
 ### Task 4: Event Description Integration
+
 **Effort**: Medium (2-3 hours)
 
 Integrate AI event descriptions into the term resolution step.
 
 **Files to modify:**
+
 - [x] `apps/web/components/chargen/steps/TermResolutionStep.tsx`
 
 **UI Enhancement:**
+
 ```
 ┌─ EVENT ────────────────────────────────────────────┐
 │  Roll: 2d6 = 7                                     │
@@ -229,6 +248,7 @@ Integrate AI event descriptions into the term resolution step.
 ```
 
 **Behavior:**
+
 1. Event rolls as before (auto-roll)
 2. "Generate Description" button appears
 3. Clicking generates AI prose at selected verbosity
@@ -236,6 +256,7 @@ Integrate AI event descriptions into the term resolution step.
 5. Accepted description stored in term result
 
 **Acceptance criteria:**
+
 - [x] "Generate Description" button visible after event roll
 - [x] AI generates description based on event and context
 - [x] User can edit generated text
@@ -245,14 +266,17 @@ Integrate AI event descriptions into the term resolution step.
 ---
 
 ### Task 5: NPC Generation Integration
+
 **Effort**: Medium (2-3 hours)
 
 Enhance EntitySpawnForm with AI-generated NPC details.
 
 **Files to modify:**
+
 - [x] `apps/web/components/chargen/EntitySpawnForm.tsx`
 
 **UI Enhancement:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  NEW ENTITY: Rival (NPC)                                     │
@@ -283,6 +307,7 @@ Enhance EntitySpawnForm with AI-generated NPC details.
 ```
 
 **Behavior:**
+
 1. Name field has "AI Suggest" button for name generation
 2. Each field (motivation, personality, appearance) has individual generate buttons
 3. "Generate All" fills all empty fields at once
@@ -290,6 +315,7 @@ Enhance EntitySpawnForm with AI-generated NPC details.
 5. "Skip Details" allows minimal creation (name only)
 
 **Acceptance criteria:**
+
 - [x] Individual field generation buttons working
 - [x] "Generate All" fills all fields appropriately
 - [x] Generated content respects verbosity setting
@@ -299,15 +325,18 @@ Enhance EntitySpawnForm with AI-generated NPC details.
 ---
 
 ### Task 6: Connection Suggestion Engine
+
 **Effort**: Medium (2-3 hours)
 
 Suggest connections between spawned entities.
 
 **Files to create:**
+
 - [x] `apps/rag-service/services/connection_suggester.py`
 - [x] `apps/web/components/chargen/ConnectionSuggestions.tsx`
 
 **API Endpoint:**
+
 ```python
 # POST /api/narrative/suggest-connections
 # Suggests how entities might be connected
@@ -330,7 +359,7 @@ Suggest connections between spawned entities.
   "suggestions": [
     {
       "source": "npc1",
-      "target": "npc2", 
+      "target": "npc2",
       "relationship": "subordinate_of",
       "description": "Vasquez serves under Admiral Chen, creating tension..."
     },
@@ -345,6 +374,7 @@ Suggest connections between spawned entities.
 ```
 
 **UI Component:**
+
 ```
 ┌─ SUGGESTED CONNECTIONS ────────────────────────────┐
 │                                                    │
@@ -362,6 +392,7 @@ Suggest connections between spawned entities.
 ```
 
 **Acceptance criteria:**
+
 - [x] Connection suggestions generated from spawned entities
 - [x] User can accept or dismiss suggestions
 - [x] Accepted connections create graph edges
@@ -376,6 +407,7 @@ Suggest connections between spawned entities.
 After implementation, execute the following browser-based verification:
 
 #### Test 1: Event Description Generation
+
 ```
 1. Navigate to http://localhost:3010/chargen
 2. Complete background step (roll characteristics, pick 3 skills, enter name)
@@ -391,6 +423,7 @@ After implementation, execute the following browser-based verification:
 ```
 
 #### Test 2: NPC Detail Generation
+
 ```
 1. Continue from Test 1 or start fresh chargen
 2. When an event spawns an NPC (rival/ally/contact):
@@ -405,6 +438,7 @@ After implementation, execute the following browser-based verification:
 ```
 
 #### Test 3: Verbosity Levels
+
 ```
 1. Start new chargen session
 2. Set verbosity to "Minimal"
@@ -419,6 +453,7 @@ After implementation, execute the following browser-based verification:
 ```
 
 #### Test 4: Error Handling
+
 ```
 1. Temporarily disable RAG service (stop apps/rag-service)
 2. Navigate to chargen and reach event step
@@ -432,6 +467,7 @@ After implementation, execute the following browser-based verification:
 ### Exploratory Testing Scenarios
 
 #### Scenario A: Rapid Generation
+
 ```
 1. Generate multiple events in sequence
 2. Use "Generate All" for each spawned entity
@@ -442,6 +478,7 @@ After implementation, execute the following browser-based verification:
 ```
 
 #### Scenario B: Edit Flow
+
 ```
 1. Generate content at "Rich" verbosity
 2. Edit substantial portions of the text
@@ -451,6 +488,7 @@ After implementation, execute the following browser-based verification:
 ```
 
 #### Scenario C: Context Awareness
+
 ```
 1. Create character "Admiral Zara"
 2. Complete 3 terms in Navy
@@ -462,6 +500,7 @@ After implementation, execute the following browser-based verification:
 ```
 
 #### Scenario D: Mixed Usage
+
 ```
 1. Use AI for some events, skip for others
 2. Use "Generate All" for some NPCs, manual for others
@@ -472,6 +511,7 @@ After implementation, execute the following browser-based verification:
 ### Browser Testing Evidence Collection
 
 For each test, capture:
+
 1. **Screenshot before action** - Initial state
 2. **Screenshot during action** - Loading state or modal
 3. **Screenshot after action** - Result state
@@ -497,6 +537,7 @@ After implementation, verify:
 - [x] Browser tests pass with evidence captured
 
 ### Browser Test Evidence (2026-02-01)
+
 - VerbositySelector UI visible and buttons toggle correctly
 - Generate Description button appears in event phase
 - Error message displayed gracefully when GEMINI_API_KEY missing
@@ -505,6 +546,7 @@ After implementation, verify:
 - Manual entry works without AI generation
 
 ### AI Generation Verified (2026-02-01)
+
 - **API Key loaded**: Fixed `load_dotenv()` call in `main.py`
 - **Model updated**: Changed from deprecated `gemini-pro` to `models/gemini-2.0-flash`
 - **Event Description**: Tested via curl AND browser - returns rich prose with suggested entities
@@ -517,16 +559,19 @@ After implementation, verify:
 ## Testing Strategy
 
 ### Unit Tests
+
 - [x] Narrative API response parsing
 - [x] Verbosity level output length validation
 - [x] Error handling in narrative hooks
 
 ### Integration Tests
+
 - [x] Frontend → RAG service → AI model flow
 - [x] Generated content storage in CRDT
 - [x] Connection suggestion accuracy
 
 ### E2E Tests (via Browser Automation)
+
 - [x] Complete chargen with AI assistance
 - [x] Verbosity switching mid-session
 - [x] Error recovery scenarios
@@ -545,6 +590,7 @@ After implementation, verify:
 ## Blocks
 
 Completing this phase:
+
 - Enhances Phase A4 (Multiplayer) with richer shared content
 - Enables future "AI GM" features
 - Provides foundation for AI-powered world-building tools

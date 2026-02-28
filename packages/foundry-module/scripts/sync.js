@@ -1,15 +1,10 @@
 /**
  * Actor Sync - Detect Foundry actor changes and send to Highport server
  */
-import { bridge } from "../module.js";
+import { bridge } from '../module.js';
 
 // Whitelisted paths that trigger sync
-const WHITELISTED_PATHS = [
-  "system.hits",
-  "system.characteristics",
-  "system.finance.cash",
-  "name",
-];
+const WHITELISTED_PATHS = ['system.hits', 'system.characteristics', 'system.finance.cash', 'name'];
 
 /**
  * Extract nested value from object using dot-notation path
@@ -18,7 +13,7 @@ const WHITELISTED_PATHS = [
  * @returns {*} Value at path or undefined
  */
 function getNestedValue(obj, path) {
-  const parts = path.split(".");
+  const parts = path.split('.');
   let current = obj;
   for (const part of parts) {
     if (current === undefined || current === null) return undefined;
@@ -55,22 +50,22 @@ function buildSyncPayload(actor, changes) {
     const value = getNestedValue(changes, path);
     if (value !== undefined) {
       // Map to Highport metadata structure
-      if (path === "system.hits") {
-        filteredChanges["hp"] = {
+      if (path === 'system.hits') {
+        filteredChanges['hp'] = {
           current: value.value,
           max: value.max,
         };
-      } else if (path === "system.characteristics") {
-        filteredChanges["characteristics"] = {};
+      } else if (path === 'system.characteristics') {
+        filteredChanges['characteristics'] = {};
         for (const [key, char] of Object.entries(value)) {
-          if (char && typeof char === "object" && "value" in char) {
-            filteredChanges["characteristics"][key] = char.value;
+          if (char && typeof char === 'object' && 'value' in char) {
+            filteredChanges['characteristics'][key] = char.value;
           }
         }
-      } else if (path === "system.finance.cash") {
-        filteredChanges["credits"] = value;
-      } else if (path === "name") {
-        filteredChanges["label"] = value;
+      } else if (path === 'system.finance.cash') {
+        filteredChanges['credits'] = value;
+      } else if (path === 'name') {
+        filteredChanges['label'] = value;
       }
     }
   }
@@ -91,7 +86,7 @@ function buildSyncPayload(actor, changes) {
 /**
  * Hook: Detect actor updates and sync to Highport
  */
-Hooks.on("updateActor", (actor, changes, options, userId) => {
+Hooks.on('updateActor', (actor, changes, options, userId) => {
   if (options.highport) return;
 
   if (!actor.hasPlayerOwner) return;
@@ -103,12 +98,12 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
   const payload = buildSyncPayload(actor, changes);
   if (payload && bridge) {
     bridge.send({
-      type: "actor_update",
+      type: 'actor_update',
       requestId: `sync-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
       payload,
     });
-    console.log("Highport Sync: Actor update sent", payload.actorId);
+    console.log('Highport Sync: Actor update sent', payload.actorId);
   }
 });
 

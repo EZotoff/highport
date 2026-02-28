@@ -35,6 +35,7 @@ AND no console errors appear
 ```
 
 **Verification Steps**:
+
 1. Navigate to http://localhost:3000
 2. Wait for page to fully load
 3. Check console for errors
@@ -60,6 +61,7 @@ AND no console errors appear
 ```
 
 **Verification Steps**:
+
 1. Navigate to /graph
 2. Wait for `.react-flow` selector
 3. Verify `.react-flow__controls` visible
@@ -84,6 +86,7 @@ AND no console errors appear
 ```
 
 **Verification Steps**:
+
 1. Navigate to /reputation
 2. Wait for `table` selector
 3. Verify headers visible
@@ -109,6 +112,7 @@ AND no console errors appear
 ```
 
 **Verification Steps**:
+
 1. Navigate to /graph
 2. Clear IndexedDB: `indexedDB.deleteDatabase('planeshift-graph')`
 3. Reload page
@@ -134,6 +138,7 @@ AND the node has 'selected' class
 ```
 
 **Verification Steps**:
+
 1. Ensure at least one node exists
 2. Click on the node
 3. Verify selected class applied
@@ -157,6 +162,7 @@ AND the node count decreases by 1
 ```
 
 **Verification Steps**:
+
 1. Ensure at least one node exists
 2. Right-click on node
 3. Click "Delete" in context menu
@@ -180,6 +186,7 @@ AND the position change persists
 ```
 
 **Verification Steps**:
+
 1. Get initial node position
 2. Drag node to new location
 3. Verify position changed
@@ -205,6 +212,7 @@ AND the change persists after reload
 ```
 
 **Verification Steps**:
+
 1. Navigate to /reputation
 2. Click on faction name cell
 3. Type new value
@@ -229,6 +237,7 @@ AND the row is editable
 ```
 
 **Verification Steps**:
+
 1. Count initial rows
 2. Click "Add Faction"
 3. Verify row count increased
@@ -255,6 +264,7 @@ AND no data is lost
 ```
 
 **Verification Steps**:
+
 1. Create 3 nodes with distinct positions
 2. Note node IDs and positions
 3. Reload page
@@ -279,6 +289,7 @@ THEN all nodes are still visible (from server sync)
 ```
 
 **Verification Steps**:
+
 1. Create nodes in Context A
 2. Close Context A
 3. Open new Context B
@@ -302,6 +313,7 @@ THEN all faction data is preserved
 ```
 
 **Verification Steps**:
+
 1. Edit faction data
 2. Reload page
 3. Verify data unchanged
@@ -328,6 +340,7 @@ AND the node has the same ID in both contexts
 ```
 
 **Verification Steps**:
+
 1. Open Context A, navigate to /graph
 2. Open Context B, navigate to /graph
 3. Wait 3s for WebSocket sync
@@ -356,6 +369,7 @@ AND the movement appears within 500ms
 ```
 
 **Verification Steps**:
+
 1. Setup: Both contexts viewing same node
 2. Get initial position in Context B
 3. User A: Drag node
@@ -379,6 +393,7 @@ THEN User B sees the node disappear within 500ms
 ```
 
 **Verification Steps**:
+
 1. Ensure both contexts see the same nodes
 2. User A: Delete node via context menu
 3. User B: Verify node disappears
@@ -403,6 +418,7 @@ AND no data is lost
 ```
 
 **Verification Steps**:
+
 1. Both users select same node
 2. Simultaneously drag in different directions
 3. Wait for sync to settle
@@ -474,6 +490,7 @@ AND no data is lost
 ```
 
 **Verification Steps**:
+
 1. Navigate to /graph, verify sync active
 2. Disable network (context.setOffline(true))
 3. Create node (should work locally)
@@ -505,6 +522,7 @@ AND no data is lost
 ## Exploratory Testing
 
 ### Exploration Goals
+
 - [ ] Find edge cases not covered by structured tests
 - [ ] Discover visual/UX issues
 - [ ] Test unexpected user flows
@@ -525,13 +543,15 @@ AND no data is lost
 10. **Console Hunting**: "Just use the app normally and watch for any console warnings"
 
 ### Exploration Time Budget
+
 - **Minimum**: 15 minutes of free exploration
-- **Focus Areas**: 
+- **Focus Areas**:
   - Graph interactions (most complex)
   - Multi-user sync (most fragile)
   - Edge node counts (performance)
 
 ### Exploration Evidence
+
 - Document ALL unexpected behaviors in `exploration-log.md`
 - Screenshot anything that looks wrong
 - Record console errors
@@ -587,14 +607,14 @@ AND no data is lost
 
 ## Success Criteria
 
-| Category | Required | Notes |
-|----------|----------|-------|
-| Smoke Tests | 100% pass | Blocking |
-| Feature Tests | 100% pass | Blocking |
-| Persistence Tests | 100% pass | Blocking |
-| Multi-User Sync Tests | 75% pass | M4 (conflict) may be flaky |
-| Integration Tests | 100% pass | Blocking |
-| Error Handling | 50% pass | Nice-to-have |
-| Exploratory | Documented | No new Critical/High issues |
+| Category              | Required   | Notes                       |
+| --------------------- | ---------- | --------------------------- |
+| Smoke Tests           | 100% pass  | Blocking                    |
+| Feature Tests         | 100% pass  | Blocking                    |
+| Persistence Tests     | 100% pass  | Blocking                    |
+| Multi-User Sync Tests | 75% pass   | M4 (conflict) may be flaky  |
+| Integration Tests     | 100% pass  | Blocking                    |
+| Error Handling        | 50% pass   | Nice-to-have                |
+| Exploratory           | Documented | No new Critical/High issues |
 
 **Overall PASS requires**: All blocking categories green + no Critical issues from exploration.

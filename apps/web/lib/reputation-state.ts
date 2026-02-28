@@ -3,11 +3,11 @@ import { generateId } from '@highport/shared/utils/id';
 
 export interface Faction {
   id: string;
-  factionNodeId: string | null;  // Link to graph node
+  factionNodeId: string | null; // Link to graph node
   name: string;
-  standing: number;  // -100 to +100
-  tier: string;      // Computed
-  heat: number;      // 0-100 (law enforcement attention)
+  standing: number; // -100 to +100
+  tier: string; // Computed
+  heat: number; // 0-100 (law enforcement attention)
   lastChange: number; // timestamp
 }
 
@@ -36,7 +36,7 @@ export function getReputationMap(doc: Y.Doc): Y.Map<Y.Map<unknown>> {
 export function addFaction(doc: Y.Doc, name: string): string {
   const factions = getReputationMap(doc);
   const id = generateId('faction');
-  
+
   doc.transact(() => {
     const factionMap = new Y.Map();
     factions.set(id, factionMap);
@@ -47,7 +47,7 @@ export function addFaction(doc: Y.Doc, name: string): string {
     factionMap.set('heat', 0);
     factionMap.set('lastChange', Date.now());
   });
-  
+
   return id;
 }
 

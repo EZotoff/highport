@@ -5,12 +5,12 @@ import type { ChargenCharacter, CareerTermResult, SpawnedEntityRef } from './typ
  */
 export function exportLifepathAsText(character: ChargenCharacter): string {
   const lines: string[] = [];
-  
+
   // Header
   lines.push(`LIFEPATH: ${character.name}`);
   lines.push(`Age: ${character.age}`);
   lines.push('');
-  
+
   // Career summary
   const careersGrouped = groupTermsByCareerId(character.terms);
   const careerSummary = Object.entries(careersGrouped)
@@ -18,17 +18,17 @@ export function exportLifepathAsText(character: ChargenCharacter): string {
     .join(', ');
   lines.push(`CAREER: ${careerSummary}`);
   lines.push('');
-  
+
   // Term-by-term breakdown
   for (const term of character.terms) {
     const endAge = term.startAge + 4;
     lines.push(`Term ${term.termNumber} (Age ${term.startAge}-${endAge})`);
     lines.push(`- Career: ${term.careerId} (${term.assignmentId})`);
     lines.push(`- Survived: ${term.survived ? 'Yes' : 'No'}`);
-    
+
     if (term.eventDescription) {
       lines.push(`- Event: ${term.eventDescription}`);
-      
+
       // Spawned entities from this event
       if (term.spawnedEntities.length > 0) {
         for (const entity of term.spawnedEntities) {
@@ -36,30 +36,32 @@ export function exportLifepathAsText(character: ChargenCharacter): string {
         }
       }
     }
-    
+
     if (term.survived) {
-      lines.push(`- Advanced: ${term.advanced ? 'Yes' : 'No'}${term.advanced ? ` → Rank ${term.currentRank}` : ''}`);
-      
+      lines.push(
+        `- Advanced: ${term.advanced ? 'Yes' : 'No'}${term.advanced ? ` → Rank ${term.currentRank}` : ''}`,
+      );
+
       if (term.skillsGained.length > 0) {
         const skillStr = term.skillsGained
-          .map(s => `${s.skill}${s.specialty ? ` (${s.specialty})` : ''}-${s.level}`)
+          .map((s) => `${s.skill}${s.specialty ? ` (${s.specialty})` : ''}-${s.level}`)
           .join(', ');
         lines.push(`- Skills: ${skillStr}`);
       }
     } else if (term.mishap) {
       lines.push(`- Mishap: Career ended`);
     }
-    
+
     lines.push('');
   }
-  
+
   // Final Stats
   lines.push('FINAL STATS');
   const chars = character.characteristics;
   lines.push(`STR: ${chars.STR}  DEX: ${chars.DEX}  END: ${chars.END}`);
   lines.push(`INT: ${chars.INT}  EDU: ${chars.EDU}  SOC: ${chars.SOC}`);
   lines.push('');
-  
+
   // Skills
   lines.push('SKILLS');
   const skillEntries = Object.entries(character.skills)
@@ -71,7 +73,7 @@ export function exportLifepathAsText(character: ChargenCharacter): string {
     lines.push('None');
   }
   lines.push('');
-  
+
   // Benefits
   lines.push('BENEFITS');
   if (character.benefits.length > 0) {
@@ -84,19 +86,19 @@ export function exportLifepathAsText(character: ChargenCharacter): string {
     lines.push('None');
   }
   lines.push('');
-  
+
   // Connections (spawned entities)
-  const allConnections = character.terms.flatMap(t => 
-    t.spawnedEntities.map(e => ({ ...e, term: t.termNumber }))
+  const allConnections = character.terms.flatMap((t) =>
+    t.spawnedEntities.map((e) => ({ ...e, term: t.termNumber })),
   );
-  
+
   if (allConnections.length > 0) {
     lines.push('CONNECTIONS');
     for (const conn of allConnections) {
       lines.push(`- ${conn.name} (${conn.relationship || conn.type}) - Term ${conn.term}`);
     }
   }
-  
+
   return lines.join('\n');
 }
 
@@ -105,13 +107,13 @@ export function exportLifepathAsText(character: ChargenCharacter): string {
  */
 export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
   const lines: string[] = [];
-  
+
   // Header
   lines.push(`# Lifepath: ${character.name}`);
   lines.push('');
   lines.push(`**Age:** ${character.age}`);
   lines.push('');
-  
+
   // Career summary
   const careersGrouped = groupTermsByCareerId(character.terms);
   const careerSummary = Object.entries(careersGrouped)
@@ -119,7 +121,7 @@ export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
     .join(', ');
   lines.push(`## Career: ${careerSummary}`);
   lines.push('');
-  
+
   // Term-by-term breakdown
   for (const term of character.terms) {
     const endAge = term.startAge + 4;
@@ -127,10 +129,10 @@ export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
     lines.push('');
     lines.push(`- **Career:** ${term.careerId} (${term.assignmentId})`);
     lines.push(`- **Survived:** ${term.survived ? '✓' : '✗'}`);
-    
+
     if (term.eventDescription) {
       lines.push(`- **Event:** ${term.eventDescription}`);
-      
+
       // Spawned entities from this event
       if (term.spawnedEntities.length > 0) {
         for (const entity of term.spawnedEntities) {
@@ -138,37 +140,40 @@ export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
         }
       }
     }
-    
+
     if (term.survived) {
-      lines.push(`- **Advanced:** ${term.advanced ? '✓' : '✗'}${term.advanced ? ` → Rank ${term.currentRank}` : ''}`);
-      
+      lines.push(
+        `- **Advanced:** ${term.advanced ? '✓' : '✗'}${term.advanced ? ` → Rank ${term.currentRank}` : ''}`,
+      );
+
       if (term.skillsGained.length > 0) {
         const skillStr = term.skillsGained
-          .map(s => `${s.skill}${s.specialty ? ` (${s.specialty})` : ''}-${s.level}`)
+          .map((s) => `${s.skill}${s.specialty ? ` (${s.specialty})` : ''}-${s.level}`)
           .join(', ');
         lines.push(`- **Skills:** ${skillStr}`);
       }
     } else if (term.mishap) {
       lines.push(`- **Mishap:** Career ended`);
     }
-    
+
     lines.push('');
   }
-  
+
   // Final Stats
   lines.push('## Final Stats');
   lines.push('');
   lines.push('| STR | DEX | END | INT | EDU | SOC |');
   lines.push('|-----|-----|-----|-----|-----|-----|');
   const chars = character.characteristics;
-  lines.push(`| ${chars.STR} | ${chars.DEX} | ${chars.END} | ${chars.INT} | ${chars.EDU} | ${chars.SOC} |`);
+  lines.push(
+    `| ${chars.STR} | ${chars.DEX} | ${chars.END} | ${chars.INT} | ${chars.EDU} | ${chars.SOC} |`,
+  );
   lines.push('');
-  
+
   // Skills
   lines.push('## Skills');
   lines.push('');
-  const skillEntries = Object.entries(character.skills)
-    .sort((a, b) => b[1] - a[1]); // Sort by level desc
+  const skillEntries = Object.entries(character.skills).sort((a, b) => b[1] - a[1]); // Sort by level desc
   if (skillEntries.length > 0) {
     for (const [skill, level] of skillEntries) {
       lines.push(`- ${skill}-${level}`);
@@ -177,7 +182,7 @@ export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
     lines.push('*None*');
   }
   lines.push('');
-  
+
   // Benefits
   lines.push('## Benefits');
   lines.push('');
@@ -193,12 +198,12 @@ export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
     lines.push('*None*');
   }
   lines.push('');
-  
+
   // Connections (spawned entities)
-  const allConnections = character.terms.flatMap(t => 
-    t.spawnedEntities.map(e => ({ ...e, term: t.termNumber }))
+  const allConnections = character.terms.flatMap((t) =>
+    t.spawnedEntities.map((e) => ({ ...e, term: t.termNumber })),
   );
-  
+
   if (allConnections.length > 0) {
     lines.push('## Connections');
     lines.push('');
@@ -209,14 +214,14 @@ export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
     }
     lines.push('');
   }
-  
+
   return lines.join('\n');
 }
 
 /**
  * Capture an HTML element as a PNG image blob
  * Uses html-to-image library
- * 
+ *
  * Note: html-to-image is NOT currently installed.
  * To use this function, install it first:
  *   pnpm add html-to-image --filter web
@@ -224,10 +229,10 @@ export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
 export async function exportLifepathAsImage(element: HTMLElement): Promise<Blob> {
   throw new Error(
     'Image export requires html-to-image library.\n' +
-    'Install it with: pnpm add html-to-image --filter web\n' +
-    'Then uncomment the implementation below.'
+      'Install it with: pnpm add html-to-image --filter web\n' +
+      'Then uncomment the implementation below.',
   );
-  
+
   // Uncomment when html-to-image is installed:
   /*
   const { toPng } = await import('html-to-image');
@@ -274,11 +279,14 @@ export function downloadText(content: string, filename: string, mimeType = 'text
  * Group terms by career ID for summary
  */
 function groupTermsByCareerId(terms: CareerTermResult[]): Record<string, CareerTermResult[]> {
-  return terms.reduce((acc, term) => {
-    if (!acc[term.careerId]) {
-      acc[term.careerId] = [];
-    }
-    acc[term.careerId].push(term);
-    return acc;
-  }, {} as Record<string, CareerTermResult[]>);
+  return terms.reduce(
+    (acc, term) => {
+      if (!acc[term.careerId]) {
+        acc[term.careerId] = [];
+      }
+      acc[term.careerId].push(term);
+      return acc;
+    },
+    {} as Record<string, CareerTermResult[]>,
+  );
 }

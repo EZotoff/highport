@@ -8,11 +8,11 @@
 ## Plan Metadata
 
 ```yaml
-name: "{plan-name}"
-version: "{semver}"
-generated: "{ISO-8601 timestamp}"
-trigger: "{what triggered this verification - release, PR, feature complete}"
-scope: "{full | partial | regression}"
+name: '{plan-name}'
+version: '{semver}'
+generated: '{ISO-8601 timestamp}'
+trigger: '{what triggered this verification - release, PR, feature complete}'
+scope: '{full | partial | regression}'
 ```
 
 ---
@@ -42,7 +42,7 @@ Before agentic verification begins, these MUST pass:
 
 Each scenario follows this format:
 
-```markdown
+````markdown
 ### Scenario {N}: {Descriptive Name}
 
 **Priority**: {Critical | High | Medium | Low}
@@ -57,14 +57,17 @@ AND {additional action if needed}
 THEN {expected outcome - what user sees}
 AND {additional expectation if needed}
 ```
+````
 
 **Verification Steps**:
+
 1. {Specific Playwright action}
 2. {Assertion to make}
 3. {Screenshot to capture}
 
 **Evidence**: `{screenshot-name}.png`
-```
+
+````
 
 ### Scenario Categories
 
@@ -108,7 +111,7 @@ After structured scenarios, agents perform exploratory testing:
 - Screenshot anything that looks wrong
 - Record console errors
 - Note performance issues
-```
+````
 
 ---
 
@@ -143,6 +146,7 @@ All verification MUST produce evidence in:
 **Agent**: {agent identifier}
 
 ## Summary
+
 - **Structured Scenarios**: {X}/{Y} passed
 - **Exploratory Findings**: {N} issues found
 - **Console Errors**: {count}
@@ -150,21 +154,24 @@ All verification MUST produce evidence in:
 
 ## Scenario Results
 
-| # | Scenario | Status | Notes |
-|---|----------|--------|-------|
-| 1 | {name} | PASS/FAIL | {brief note} |
+| #   | Scenario | Status    | Notes        |
+| --- | -------- | --------- | ------------ |
+| 1   | {name}   | PASS/FAIL | {brief note} |
 
 ## Exploratory Findings
 
 ### Finding 1: {Title}
+
 - **Severity**: {Critical | High | Medium | Low}
 - **Reproduction**: {steps}
 - **Evidence**: `exploratory/finding-01-*.png`
 
 ## Recommendations
+
 - {List any issues that need fixing}
 
 ## Appendix
+
 - Full console log: console-errors.txt
 - Sync measurements: sync-latency-measurements.json
 ```

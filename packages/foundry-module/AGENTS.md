@@ -20,12 +20,12 @@ The module follows standard Foundry VTT package structure:
 
 ## KEY MODULES
 
-| File | Role | Key Functions |
-|------|------|---------------|
-| `socket.js` | Comms Layer | `FoundryBridge`, `connect()`, `handleMessage()` |
-| `sync.js` | Outbound Sync | `buildSyncPayload`, `Hooks.on("updateActor")` |
-| `receive.js` | Inbound Sync | `handleNodeUpdate`, `mapToFoundryPaths` |
-| `module.js` | Lifecycle | `Hooks.once("init")`, `Hooks.once("ready")` |
+| File         | Role          | Key Functions                                   |
+| ------------ | ------------- | ----------------------------------------------- |
+| `socket.js`  | Comms Layer   | `FoundryBridge`, `connect()`, `handleMessage()` |
+| `sync.js`    | Outbound Sync | `buildSyncPayload`, `Hooks.on("updateActor")`   |
+| `receive.js` | Inbound Sync  | `handleNodeUpdate`, `mapToFoundryPaths`         |
+| `module.js`  | Lifecycle     | `Hooks.once("init")`, `Hooks.once("ready")`     |
 
 ## FOUNDRY VERIFICATION PROTOCOL
 
@@ -33,10 +33,12 @@ The module follows standard Foundry VTT package structure:
 Manual testing in Foundry VTT is REQUIRED.
 
 ### Level 1: Static Gates
+
 - JavaScript syntax check (ESLint if configured)
 - module.json valid JSON
 
 ### Level 2: Manual Testing Checklist
+
 Must be performed in Foundry VTT with module enabled:
 
 - [ ] Module loads without console errors
@@ -48,6 +50,7 @@ Must be performed in Foundry VTT with module enabled:
 - [ ] Disconnect/reconnect handling works
 
 ### Evidence Requirements
+
 - Screenshot of Foundry console (no errors)
 - Screenshot of synced actor data
 - Document any discrepancies

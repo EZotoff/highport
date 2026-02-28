@@ -49,10 +49,7 @@ export function mapActorToMetadata(actor: FoundryActor): Record<string, unknown>
       max: actor.system.hits?.max,
     },
     characteristics: Object.fromEntries(
-      Object.entries(actor.system.characteristics || {}).map(([key, val]) => [
-        key,
-        val.value,
-      ])
+      Object.entries(actor.system.characteristics || {}).map(([key, val]) => [key, val.value]),
     ),
     credits: actor.system.finance?.cash,
   };
@@ -61,17 +58,14 @@ export function mapActorToMetadata(actor: FoundryActor): Record<string, unknown>
 /**
  * Match Foundry actors to Highport graph nodes by foundry_uuid or name
  */
-export function matchActorsToNodes(
-  actors: FoundryActor[],
-  nodes: GraphNode[]
-): ImportResult {
+export function matchActorsToNodes(actors: FoundryActor[], nodes: GraphNode[]): ImportResult {
   const result: ImportResult = { matched: [], unmatched: [] };
 
   for (const actor of actors) {
     const node = nodes.find(
       (n) =>
         n.metadata?.foundry_uuid === `Actor.${actor._id}` ||
-        n.label.toLowerCase() === actor.name.toLowerCase()
+        n.label.toLowerCase() === actor.name.toLowerCase(),
     );
 
     if (node) {

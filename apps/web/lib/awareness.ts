@@ -9,8 +9,16 @@ export interface PresenceState {
 }
 
 const COLORS = [
-  '#f87171', '#fb923c', '#fbbf24', '#a3e635', '#34d399', 
-  '#22d3ee', '#818cf8', '#c084fc', '#f472b6', '#fb7185'
+  '#f87171',
+  '#fb923c',
+  '#fbbf24',
+  '#a3e635',
+  '#34d399',
+  '#22d3ee',
+  '#818cf8',
+  '#c084fc',
+  '#f472b6',
+  '#fb7185',
 ];
 
 export function getRandomColor(): string {

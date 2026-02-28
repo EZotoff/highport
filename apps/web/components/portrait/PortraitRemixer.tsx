@@ -79,31 +79,31 @@ export function PortraitRemixer({
   const [ageRange, setAgeRange] = useState<string>('none');
   const [careerType, setCareerType] = useState<string>('none');
   const [remixedPortrait, setRemixedPortrait] = useState<PortraitRecord | null>(null);
-  
+
   const { remix, isLoading, error } = usePortraitGenerator();
 
   const handleRemix = async () => {
     try {
       const tagsPatch: Partial<PortraitTags> = {};
-      
+
       if (gender !== 'none') {
-        tagsPatch.demographics = { 
-          ...tagsPatch.demographics, 
-          gender: gender as PortraitGender 
+        tagsPatch.demographics = {
+          ...tagsPatch.demographics,
+          gender: gender as PortraitGender,
         };
       }
-      
+
       if (ageRange !== 'none') {
-        tagsPatch.demographics = { 
-          ...tagsPatch.demographics, 
-          age_range: ageRange as PortraitAgeRange 
+        tagsPatch.demographics = {
+          ...tagsPatch.demographics,
+          age_range: ageRange as PortraitAgeRange,
         };
       }
-      
+
       if (careerType !== 'none') {
-        tagsPatch.career = { 
-          ...tagsPatch.career, 
-          career_type: careerType as PortraitCareerType 
+        tagsPatch.career = {
+          ...tagsPatch.career,
+          career_type: careerType as PortraitCareerType,
         };
       }
 
@@ -140,7 +140,10 @@ export function PortraitRemixer({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl bg-zinc-900 border-zinc-800 text-slate-200">
         <DialogHeader>
-          <DialogTitle style={{ color: THEME_HEX.cyan }} className="font-['Orbitron'] tracking-wider">
+          <DialogTitle
+            style={{ color: THEME_HEX.cyan }}
+            className="font-['Orbitron'] tracking-wider"
+          >
             PORTRAIT REMIXER
           </DialogTitle>
         </DialogHeader>
@@ -148,8 +151,8 @@ export function PortraitRemixer({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
           <div className="space-y-4">
             <div>
-              <label 
-                className="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold" 
+              <label
+                className="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold"
                 style={{ color: THEME_HEX.slate }}
               >
                 Source Portrait
@@ -162,9 +165,16 @@ export function PortraitRemixer({
                 />
                 <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
                   {sourcePortrait.protected && (
-                    <SciFiBadge theme="amber" variant="glow" size="sm">PROTECTED</SciFiBadge>
+                    <SciFiBadge theme="amber" variant="glow" size="sm">
+                      PROTECTED
+                    </SciFiBadge>
                   )}
-                  <SciFiBadge theme="slate" variant="outline" size="sm" className="bg-black/50 backdrop-blur-sm">
+                  <SciFiBadge
+                    theme="slate"
+                    variant="outline"
+                    size="sm"
+                    className="bg-black/50 backdrop-blur-sm"
+                  >
                     {sourcePortrait.source_policy}
                   </SciFiBadge>
                 </div>
@@ -189,21 +199,23 @@ export function PortraitRemixer({
 
             <div className="space-y-4 pt-2 border-t border-zinc-800">
               <div>
-                <label 
-                  className="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold" 
+                <label
+                  className="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold"
                   style={{ color: THEME_HEX.cyan }}
                 >
                   Prompt Delta
                 </label>
                 <textarea
                   className={cn(
-                    "w-full h-24 bg-zinc-950 border rounded-lg p-3 text-sm",
-                    "focus:outline-none focus:ring-1 transition-all duration-200 resize-none"
+                    'w-full h-24 bg-zinc-950 border rounded-lg p-3 text-sm',
+                    'focus:outline-none focus:ring-1 transition-all duration-200 resize-none',
                   )}
-                  style={{
-                    borderColor: THEME_HEX.cyan + '40',
-                    '--tw-ring-color': THEME_HEX.cyan + '80',
-                  } as React.CSSProperties}
+                  style={
+                    {
+                      borderColor: THEME_HEX.cyan + '40',
+                      '--tw-ring-color': THEME_HEX.cyan + '80',
+                    } as React.CSSProperties
+                  }
                   placeholder="Describe changes: e.g., 'add a cybernetic eye implant', 'make them 10 years older', 'dressed in formal diplomatic attire'"
                   value={promptDelta}
                   onChange={(e) => setPromptDelta(e.target.value)}
@@ -217,7 +229,9 @@ export function PortraitRemixer({
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] opacity-50 block font-bold">Tag Overrides</label>
+                <label className="text-[10px] uppercase tracking-[0.2em] opacity-50 block font-bold">
+                  Tag Overrides
+                </label>
                 <div className="grid grid-cols-1 gap-2">
                   <div className="grid grid-cols-3 gap-2">
                     <SciFiSelect
@@ -257,8 +271,8 @@ export function PortraitRemixer({
           </div>
 
           <div className="flex flex-col h-full border-l border-zinc-800 pl-6">
-            <label 
-              className="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold" 
+            <label
+              className="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold"
               style={{ color: THEME_HEX.emerald }}
             >
               Remix Result
@@ -274,29 +288,41 @@ export function PortraitRemixer({
                 <div className="text-zinc-600 text-sm flex flex-col items-center gap-3">
                   {isLoading ? (
                     <div className="flex flex-col items-center gap-2">
-                      <div 
-                        className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" 
+                      <div
+                        className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
                         style={{ borderColor: THEME_HEX.cyan, borderTopColor: 'transparent' }}
                       />
-                      <span className="animate-pulse tracking-widest text-xs uppercase" style={{ color: THEME_HEX.cyan }}>Synthesizing...</span>
+                      <span
+                        className="animate-pulse tracking-widest text-xs uppercase"
+                        style={{ color: THEME_HEX.cyan }}
+                      >
+                        Synthesizing...
+                      </span>
                     </div>
                   ) : (
                     <>
                       <div className="w-12 h-12 rounded-full border border-zinc-800 flex items-center justify-center">
                         <span className="text-xl">✨</span>
                       </div>
-                      <span className="uppercase tracking-[0.2em] text-[10px]">Awaiting Instructions</span>
+                      <span className="uppercase tracking-[0.2em] text-[10px]">
+                        Awaiting Instructions
+                      </span>
                     </>
                   )}
                 </div>
               )}
 
               {error && (
-                <div 
+                <div
                   className="absolute inset-x-0 bottom-0 bg-red-950/90 p-4 text-xs border-t"
                   style={{ borderTopColor: THEME_HEX.red + '80' }}
                 >
-                  <div style={{ color: THEME_HEX.red }} className="font-bold uppercase tracking-widest mb-1">Error</div>
+                  <div
+                    style={{ color: THEME_HEX.red }}
+                    className="font-bold uppercase tracking-widest mb-1"
+                  >
+                    Error
+                  </div>
                   <div className="text-red-200 opacity-90">{error.message}</div>
                 </div>
               )}

@@ -11,7 +11,7 @@ async function waitForServer(url: string, timeout: number): Promise<void> {
     } catch {
       // Server not ready, retry
     }
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
   throw new Error(`Server at ${url} not ready after ${timeout}ms`);
 }

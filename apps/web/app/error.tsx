@@ -20,13 +20,11 @@ export default function Error({
         <div className="rounded-full bg-red-900/20 p-3">
           <AlertTriangle className="h-8 w-8 text-red-500" />
         </div>
-        
-        <h2 className="text-xl font-semibold text-red-100">
-          Something went wrong!
-        </h2>
-        
+
+        <h2 className="text-xl font-semibold text-red-100">Something went wrong!</h2>
+
         <p className="text-sm text-zinc-400">
-          {error.message || "An unexpected error occurred. Please try again."}
+          {error.message || 'An unexpected error occurred. Please try again.'}
         </p>
 
         <button

@@ -3,18 +3,12 @@
 import { useState, useRef } from 'react';
 import { Upload, Download, CheckCircle, AlertCircle, FileJson } from 'lucide-react';
 import type { GraphNode } from '@highport/shared/types/graph';
-import {
-  parseFoundryActors,
-  matchActorsToNodes,
-  type ImportResult,
-} from '@/lib/foundry-import';
+import { parseFoundryActors, matchActorsToNodes, type ImportResult } from '@/lib/foundry-import';
 import { exportNodesToZip } from '@/lib/foundry-export';
 
 interface ImportExportProps {
   nodes: GraphNode[];
-  onImportApply?: (
-    matches: ImportResult['matched']
-  ) => void;
+  onImportApply?: (matches: ImportResult['matched']) => void;
 }
 
 export function ImportExport({ nodes, onImportApply }: ImportExportProps) {
@@ -85,8 +79,8 @@ export function ImportExport({ nodes, onImportApply }: ImportExportProps) {
           <h3 className="text-zinc-100 font-semibold">Import from Foundry</h3>
         </div>
         <p className="text-zinc-500 text-sm mb-4">
-          Upload actors.json exported from Foundry VTT. Actors will be matched
-          to existing nodes by UUID or name.
+          Upload actors.json exported from Foundry VTT. Actors will be matched to existing nodes by
+          UUID or name.
         </p>
         <input
           ref={fileInputRef}
@@ -173,8 +167,7 @@ export function ImportExport({ nodes, onImportApply }: ImportExportProps) {
         </div>
         <p className="text-zinc-500 text-sm mb-4">
           Export {travellerNodeCount} traveller node
-          {travellerNodeCount !== 1 ? 's' : ''} as Foundry-compatible JSON files
-          in a ZIP archive.
+          {travellerNodeCount !== 1 ? 's' : ''} as Foundry-compatible JSON files in a ZIP archive.
         </p>
         <button
           onClick={handleExport}

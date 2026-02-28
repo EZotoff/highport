@@ -1,9 +1,9 @@
-
 ## Feature Tests F1-F6 (2025-01-27)
 
 ### Execution Insights
 
 **Graph Node Operations**
+
 - React Flow nodes use SVG elements for rendering and interaction
 - Node state tracking via DOM [active] attribute works correctly
 - Context menu appears on right-click with proper event handling
@@ -11,6 +11,7 @@
 - Node deletion is atomic - DOM updates immediately reflect removal
 
 **Table Operations**
+
 - Faction rows use textbox inputs for editable cells
 - blur() event triggers save (no explicit save button needed)
 - Row addition uses "Add Faction" button with immediate DOM insertion
@@ -18,6 +19,7 @@
 - Spinner buttons for numeric fields work via spinbutton role
 
 **Playwright MCP Observations**
+
 - `browser_snapshot` provides accurate accessibility tree for element location
 - `browser_run_code` is best for complex interactions (drag, mouse movements)
 - Refs from snapshots are reliable across page state changes
@@ -25,6 +27,7 @@
 - Mouse drag requires explicit steps parameter for smooth motion
 
 **Testing Patterns**
+
 - Clean state: Reload page to clear IndexedDB
 - Selection: Check for [active] attribute in DOM
 - Deletion: Count elements before/after

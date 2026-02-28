@@ -1,8 +1,4 @@
-import {
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl as getS3SignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
   extensionFromMime,
@@ -17,13 +13,15 @@ export class S3CompatibleStorageAdapter implements SignedUrlPortraitStorage {
   private client: S3Client;
   private bucket: string;
 
-  constructor(options: {
-    bucket?: string;
-    region?: string;
-    endpoint?: string;
-    accessKeyId?: string;
-    secretAccessKey?: string;
-  } = {}) {
+  constructor(
+    options: {
+      bucket?: string;
+      region?: string;
+      endpoint?: string;
+      accessKeyId?: string;
+      secretAccessKey?: string;
+    } = {},
+  ) {
     this.bucket = options.bucket ?? readRequiredEnv('PORTRAIT_S3_BUCKET');
     const region = options.region ?? process.env.PORTRAIT_S3_REGION ?? DEFAULT_S3_REGION;
     const endpoint = options.endpoint ?? process.env.PORTRAIT_S3_ENDPOINT;
@@ -33,34 +31,43 @@ export class S3CompatibleStorageAdapter implements SignedUrlPortraitStorage {
     this.client = new S3Client({
       region,
       endpoint,
-      credentials: accessKeyId && secretAccessKey
-        ? {
-            accessKeyId,
-            secretAccessKey,
-          }
-        : undefined,
+      credentials:
+        accessKeyId && secretAccessKey
+          ? {
+              accessKeyId,
+              secretAccessKey,
+            }
+          : undefined,
     });
   }
 
-  async savePortrait(data: Buffer, mimeType: string, portraitId: string): Promise<PortraitStorageResult> {
+  async savePortrait(
+    data: Buffer,
+    mimeType: string,
+    portraitId: string,
+  ): Promise<PortraitStorageResult> {
     const extension = extensionFromMime(mimeType);
     const storageKey = `${portraitId}.${extension}`;
 
-    await this.client.send(new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: storageKey,
-      Body: data,
-      ContentType: mimeType,
-    }));
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: storageKey,
+        Body: data,
+        ContentType: mimeType,
+      }),
+    );
 
     return { storageKey, sizeBytes: data.length };
   }
 
   async loadPortrait(storageKey: string): Promise<Buffer> {
-    const response = await this.client.send(new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: storageKey,
-    }));
+    const response = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: storageKey,
+      }),
+    );
 
     if (!response.Body) {
       throw new Error(`Portrait not found in object storage: ${storageKey}`);
@@ -70,7 +77,10 @@ export class S3CompatibleStorageAdapter implements SignedUrlPortraitStorage {
     return Buffer.from(bytes);
   }
 
-  async getSignedUrl(storageKey: string, expiresInSeconds = DEFAULT_SIGNED_URL_EXPIRY_SECONDS): Promise<string> {
+  async getSignedUrl(
+    storageKey: string,
+    expiresInSeconds = DEFAULT_SIGNED_URL_EXPIRY_SECONDS,
+  ): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: storageKey,

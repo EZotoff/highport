@@ -6,7 +6,7 @@ export async function streamQuery(
   query: string,
   onChunk: (text: string) => void,
   onDone: () => void,
-  onError: (error: Error) => void
+  onError: (error: Error) => void,
 ): Promise<void> {
   const user = getOrCreateUser();
   const char = getActiveCharacter();
@@ -25,11 +25,11 @@ export async function streamQuery(
     });
 
     if (!response.ok) {
-        throw new Error(`Query failed: ${response.status}`);
+      throw new Error(`Query failed: ${response.status}`);
     }
 
     if (!response.body) {
-        throw new Error('No response body');
+      throw new Error('No response body');
     }
 
     const reader = response.body.getReader();
@@ -49,16 +49,16 @@ export async function streamQuery(
           return;
         }
         try {
-            const data = JSON.parse(payload);
-            if (data.text) {
-                onChunk(data.text);
-            }
-            if (data.error) {
-                onError(new Error(data.error));
-                return;
-            }
+          const data = JSON.parse(payload);
+          if (data.text) {
+            onChunk(data.text);
+          }
+          if (data.error) {
+            onError(new Error(data.error));
+            return;
+          }
         } catch (e) {
-            console.error("Failed to parse SSE payload:", payload, e);
+          console.error('Failed to parse SSE payload:', payload, e);
         }
       }
     }

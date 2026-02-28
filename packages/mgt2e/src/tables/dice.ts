@@ -8,11 +8,11 @@ export interface DiceResult {
 }
 
 function mulberry32(seed: number): () => number {
-  return function() {
-    let t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  return function () {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
@@ -35,17 +35,17 @@ export function roll(dice: string, modifier: number = 0, target?: number): DiceR
   if (!match) {
     throw new Error(`Invalid dice notation: ${dice}`);
   }
-  
+
   const count = parseInt(match[1] || '1', 10);
   const sides = parseInt(match[2], 10);
-  
+
   const rolls: number[] = [];
   for (let i = 0; i < count; i++) {
     rolls.push(rollDie(sides));
   }
-  
+
   const total = rolls.reduce((a, b) => a + b, 0) + modifier;
-  
+
   return {
     dice,
     rolls,

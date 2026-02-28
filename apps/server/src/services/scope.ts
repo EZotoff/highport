@@ -5,7 +5,7 @@ import { characterKnowledge } from '../db/schema.js';
 export async function assembleScope(
   _userId: string,
   characterId: string | null,
-  isGM: boolean
+  isGM: boolean,
 ): Promise<string[]> {
   const scope: string[] = ['public'];
 

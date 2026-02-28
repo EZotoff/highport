@@ -17,28 +17,39 @@ interface EntityHoverPreviewProps {
   disabled?: boolean;
 }
 
-export function EntityHoverPreview({ entity, children, disabled = false }: EntityHoverPreviewProps) {
+export function EntityHoverPreview({
+  entity,
+  children,
+  disabled = false,
+}: EntityHoverPreviewProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isHostile = entity.relationship === 'rival' || entity.relationship === 'enemy';
-  const themeColor = isHostile ? 'red' : entity.type === 'npc' ? 'violet' : entity.type === 'location' ? 'cyan' : 'amber';
+  const themeColor = isHostile
+    ? 'red'
+    : entity.type === 'npc'
+      ? 'violet'
+      : entity.type === 'location'
+        ? 'cyan'
+        : 'amber';
   const themeHex = THEME_HEX[themeColor];
 
-  const Icon = {
-    npc: User,
-    location: MapPin,
-    item: Box,
-    secret: Key
-  }[entity.type] || User;
+  const Icon =
+    {
+      npc: User,
+      location: MapPin,
+      item: Box,
+      secret: Key,
+    }[entity.type] || User;
 
   const handleMouseEnter = (e: React.MouseEvent) => {
     if (disabled) return;
-    
+
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    
+
     timeoutRef.current = setTimeout(() => {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (rect) {
@@ -70,7 +81,7 @@ export function EntityHoverPreview({ entity, children, disabled = false }: Entit
       className="inline-block"
     >
       {children}
-      
+
       {isVisible && (
         <div
           className="fixed z-[100] pointer-events-none"
@@ -87,7 +98,7 @@ export function EntityHoverPreview({ entity, children, disabled = false }: Entit
             className="p-3 min-w-[200px] max-w-[280px] animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-start gap-3">
-              <div 
+              <div
                 className="p-2 rounded-lg shrink-0"
                 style={{
                   background: `${themeHex}20`,
@@ -96,14 +107,12 @@ export function EntityHoverPreview({ entity, children, disabled = false }: Entit
               >
                 <Icon className="w-4 h-4" />
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-gray-100 truncate">
-                    {entity.name}
-                  </span>
+                  <span className="font-bold text-sm text-gray-100 truncate">{entity.name}</span>
                   {entity.relationship && (
-                    <span 
+                    <span
                       className="text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold shrink-0"
                       style={{
                         background: `${themeHex}20`,
@@ -114,14 +123,14 @@ export function EntityHoverPreview({ entity, children, disabled = false }: Entit
                     </span>
                   )}
                 </div>
-                
-                <div 
+
+                <div
                   className="text-[10px] uppercase tracking-wider mt-0.5"
                   style={{ color: themeHex }}
                 >
                   {entity.type}
                 </div>
-                
+
                 {entity.description && (
                   <p className="text-xs text-gray-400 mt-2 line-clamp-3 leading-relaxed">
                     {entity.description}
@@ -129,8 +138,8 @@ export function EntityHoverPreview({ entity, children, disabled = false }: Entit
                 )}
               </div>
             </div>
-            
-            <div 
+
+            <div
               className="absolute bottom-0 left-1/2 w-2 h-2 -translate-x-1/2 translate-y-1/2 rotate-45"
               style={{
                 background: 'var(--nebula-mist-90)',

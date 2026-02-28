@@ -1,15 +1,15 @@
 import React from 'react';
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Briefcase, 
-  User, 
-  MapPin, 
-  Box, 
-  Key, 
-  CheckCircle2, 
-  XCircle, 
-  ArrowRight
+import {
+  ChevronRight,
+  ChevronLeft,
+  Briefcase,
+  User,
+  MapPin,
+  Box,
+  Key,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
 } from 'lucide-react';
 import { useSelectedLifepath } from '../../lib/graph/useSelectedLifepath';
 import type { CareerTermResult, SpawnedEntityRef } from '../../lib/chargen/types';
@@ -26,7 +26,7 @@ export function LifepathPanel({ selectedNodeId, onViewFull, onEntityClick }: Lif
   if (!character && !isOpen) return null;
 
   return (
-    <div 
+    <div
       className={`fixed right-0 top-0 h-full w-80 bg-gray-900/95 backdrop-blur-sm border-l border-gray-800 shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
@@ -34,9 +34,18 @@ export function LifepathPanel({ selectedNodeId, onViewFull, onEntityClick }: Lif
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="absolute top-20 left-0 -translate-x-full bg-gray-900 border border-gray-800 border-r-0 rounded-l-lg p-2 text-gray-400 hover:text-white transition-colors shadow-lg"
-        aria-label={isOpen ? "Close lifepath panel" : "Open lifepath panel"}
+        aria-label={isOpen ? 'Close lifepath panel' : 'Open lifepath panel'}
       >
-        {isOpen ? <ChevronRight size={20} /> : <div className="flex items-center gap-2 px-1"><span className="text-xs font-bold uppercase tracking-wider hidden sm:inline">Lifepath</span><ChevronLeft size={20} /></div>}
+        {isOpen ? (
+          <ChevronRight size={20} />
+        ) : (
+          <div className="flex items-center gap-2 px-1">
+            <span className="text-xs font-bold uppercase tracking-wider hidden sm:inline">
+              Lifepath
+            </span>
+            <ChevronLeft size={20} />
+          </div>
+        )}
       </button>
 
       {character && (
@@ -48,7 +57,7 @@ export function LifepathPanel({ selectedNodeId, onViewFull, onEntityClick }: Lif
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {terms.map((term, index) => (
-              <CompactTermCard 
+              <CompactTermCard
                 key={`${term.careerId}-${term.termNumber}-${index}`}
                 term={term}
                 onEntityClick={onEntityClick}
@@ -71,7 +80,13 @@ export function LifepathPanel({ selectedNodeId, onViewFull, onEntityClick }: Lif
   );
 }
 
-function CompactTermCard({ term, onEntityClick }: { term: CareerTermResult; onEntityClick?: (id: string) => void }) {
+function CompactTermCard({
+  term,
+  onEntityClick,
+}: {
+  term: CareerTermResult;
+  onEntityClick?: (id: string) => void;
+}) {
   const careerName = term.careerId.charAt(0).toUpperCase() + term.careerId.slice(1);
 
   return (
@@ -93,7 +108,7 @@ function CompactTermCard({ term, onEntityClick }: { term: CareerTermResult; onEn
       </div>
 
       <div className="text-xs text-gray-400 leading-relaxed line-clamp-2 mb-3">
-        {term.eventDescription || term.eventChoice || "No event details."}
+        {term.eventDescription || term.eventChoice || 'No event details.'}
       </div>
 
       {term.spawnedEntities.length > 0 && (
@@ -118,10 +133,15 @@ function CompactTermCard({ term, onEntityClick }: { term: CareerTermResult; onEn
 
 function EntityIcon({ type }: { type: string }) {
   switch (type) {
-    case 'npc': return <User className="w-3 h-3 text-blue-400" />;
-    case 'location': return <MapPin className="w-3 h-3 text-emerald-400" />;
-    case 'item': return <Box className="w-3 h-3 text-amber-400" />;
-    case 'secret': return <Key className="w-3 h-3 text-purple-400" />;
-    default: return <User className="w-3 h-3 text-gray-400" />;
+    case 'npc':
+      return <User className="w-3 h-3 text-blue-400" />;
+    case 'location':
+      return <MapPin className="w-3 h-3 text-emerald-400" />;
+    case 'item':
+      return <Box className="w-3 h-3 text-amber-400" />;
+    case 'secret':
+      return <Key className="w-3 h-3 text-purple-400" />;
+    default:
+      return <User className="w-3 h-3 text-gray-400" />;
   }
 }

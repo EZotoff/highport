@@ -4,13 +4,13 @@ export const ARMY: CareerDefinition = {
   id: 'army',
   name: 'Army',
   description: 'Members of a planetary armed fighting force trained to fight on the ground.',
-  
+
   qualification: {
     characteristic: 'END',
     target: 5,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'support',
@@ -58,7 +58,7 @@ export const ARMY: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 STR' },
@@ -93,7 +93,7 @@ export const ARMY: CareerDefinition = {
       { roll: 6, skill: 'admin' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Private' },
     { rank: 1, title: 'Lance Corporal', skill: 'guncombat', skillLevel: 1 },
@@ -103,7 +103,7 @@ export const ARMY: CareerDefinition = {
     { rank: 5, title: 'Gunnery Sergeant', skill: '+1 END' },
     { rank: 6, title: 'Sergeant Major' },
   ],
-  
+
   officerRanks: [
     { rank: 0, title: 'Lieutenant', skill: 'leadership', skillLevel: 1 },
     { rank: 1, title: 'Captain' },
@@ -113,9 +113,9 @@ export const ARMY: CareerDefinition = {
     { rank: 5, title: 'General', skill: '+1 SOC' },
     { rank: 6, title: 'Commander-in-Chief' },
   ],
-  
+
   cashBenefits: [2000, 5000, 10000, 10000, 20000, 30000, 40000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Combat Implant' },
     { roll: 2, benefit: '+1 INT' },
@@ -124,7 +124,7 @@ export const ARMY: CareerDefinition = {
     { roll: 5, benefit: 'Armour' },
     { roll: 6, benefit: '+1 END', orHighRank: '+1 SOC' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -161,12 +161,8 @@ export const ARMY: CareerDefinition = {
     {
       roll: 6,
       description: 'You are thrown into a brutal ground war.',
-      spawns: [
-        { type: 'location', required: false, template: 'ground_war' },
-      ],
-      effects: [
-        { type: 'special', target: 'roll', value: 'END 8+ or suffer injury' },
-      ],
+      spawns: [{ type: 'location', required: false, template: 'ground_war' }],
+      effects: [{ type: 'special', target: 'roll', value: 'END 8+ or suffer injury' }],
       choices: [
         {
           id: 'ground-war-skill',
@@ -191,14 +187,14 @@ export const ARMY: CareerDefinition = {
     {
       roll: 9,
       description: 'You are on the front lines of a planetary assault and occupation.',
-      spawns: [
-        { type: 'location', required: false, template: 'occupation_zone' },
-      ],
+      spawns: [{ type: 'location', required: false, template: 'occupation_zone' }],
       choices: [
         {
           id: 'occupation',
           description: 'Gain one of Gun Combat, Recon, Leadership, or Electronics (comms)',
-          effects: [{ type: 'skill', target: 'guncombat|recon|leadership|electronics.comms', value: 1 }],
+          effects: [
+            { type: 'skill', target: 'guncombat|recon|leadership|electronics.comms', value: 1 },
+          ],
         },
       ],
     },
@@ -208,19 +204,13 @@ export const ARMY: CareerDefinition = {
       spawns: [
         { type: 'npc', relationship: 'ally', required: false, template: 'loyal_subordinate' },
       ],
-      effects: [
-        { type: 'special', target: 'advancement', value: 'dm+2' },
-      ],
+      effects: [{ type: 'special', target: 'advancement', value: 'dm+2' }],
     },
     {
       roll: 11,
       description: 'Your commanding officer takes an interest in your career.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'mentor_officer' },
-      ],
-      effects: [
-        { type: 'special', target: 'advancement', value: 'dm+4' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'mentor_officer' }],
+      effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
       roll: 12,
@@ -231,23 +221,23 @@ export const ARMY: CareerDefinition = {
       ],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
-      description: 'Severely injured in action. Roll twice on the Injury table and take the lower result.',
+      description:
+        'Severely injured in action. Roll twice on the Injury table and take the lower result.',
       injury: true,
       forced: true,
       effects: [{ type: 'special', target: 'injury', value: 'severe' }],
     },
     {
       roll: 2,
-      description: 'Your unit is slaughtered in a disastrous battle, where you are the only survivor.',
+      description:
+        'Your unit is slaughtered in a disastrous battle, where you are the only survivor.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'secret', required: true, template: 'sole_survivor' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'sole_survivor' }],
       effects: [{ type: 'special', target: 'trauma', value: 'survivor_guilt' }],
     },
     {
@@ -272,9 +262,7 @@ export const ARMY: CareerDefinition = {
       description: 'You are tormented by a senior officer or NCO.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'cruel_officer' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'cruel_officer' }],
     },
     {
       roll: 6,

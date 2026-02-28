@@ -13,23 +13,34 @@ interface ParticipantPanelProps {
 function calculateProgress(character: ChargenCharacter): number {
   // background = 0-20%, career_selection = 20-30%, term_resolution = 30-80%, mustering_out = 80-95%, finalized = 100%
   switch (character.status) {
-    case 'background': return character.backgroundSkills.length > 0 ? 15 : 5;
-    case 'career_selection': return 25;
-    case 'term_resolution': return 30 + (character.currentTermIndex * 10);
-    case 'mustering_out': return 90;
-    case 'finalized': return 100;
-    default: return 0;
+    case 'background':
+      return character.backgroundSkills.length > 0 ? 15 : 5;
+    case 'career_selection':
+      return 25;
+    case 'term_resolution':
+      return 30 + character.currentTermIndex * 10;
+    case 'mustering_out':
+      return 90;
+    case 'finalized':
+      return 100;
+    default:
+      return 0;
   }
 }
 
-export default function ParticipantPanel({ currentUserId, onViewCharacter }: ParticipantPanelProps) {
+export default function ParticipantPanel({
+  currentUserId,
+  onViewCharacter,
+}: ParticipantPanelProps) {
   const characters = useAllCharacters();
   const session = useSession();
 
   if (!session) {
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 h-full flex items-center justify-center">
-        <span className="text-subtle text-sm" data-testid="participant-panel">Loading session...</span>
+        <span className="text-subtle text-sm" data-testid="participant-panel">
+          Loading session...
+        </span>
       </div>
     );
   }
@@ -37,7 +48,10 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg flex flex-col h-full overflow-hidden">
       <div className="p-4 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
-        <h3 className="text-sm font-bold text-subtle uppercase tracking-wider" data-testid="participant-panel">
+        <h3
+          className="text-sm font-bold text-subtle uppercase tracking-wider"
+          data-testid="participant-panel"
+        >
           Session Participants
         </h3>
       </div>
@@ -57,9 +71,9 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
           const progress = calculateProgress(char);
           const isCurrentUser = currentUserId === char.playerId;
           const currentTerm = char.terms.length > 0 ? char.terms[char.terms.length - 1] : null;
-          
+
           return (
-            <div 
+            <div
               key={char.id}
               onClick={() => onViewCharacter?.(char.id)}
               role={onViewCharacter ? 'button' : undefined}
@@ -86,8 +100,8 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
                     </span>
                   </div>
                   <div className="text-subtle text-xs ml-5 mt-0.5">
-                    {currentTerm 
-                      ? `${currentTerm.careerId} (Term ${currentTerm.termNumber})` 
+                    {currentTerm
+                      ? `${currentTerm.careerId} (Term ${currentTerm.termNumber})`
                       : 'Not started'}
                   </div>
                 </div>
@@ -95,7 +109,7 @@ export default function ParticipantPanel({ currentUserId, onViewCharacter }: Par
 
               <div className="ml-5">
                 <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden mb-1">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-500"
                     style={{ width: `${progress}%` }}
                   />

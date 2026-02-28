@@ -1,4 +1,3 @@
-
 export const CHART_DEFAULTS = {
   width: 280,
   height: 100,
@@ -13,20 +12,20 @@ export const ANIMATION_TIMING = {
   CHART_DRAW: 1500,
   CHART_FADE_DELAY_BASE: 0.5,
   CHART_FADE_STAGGER: 0.1, // seconds
-  
+
   // Sequence / Loop Timings
   SEQUENCE_FAST: 1500,
   SEQUENCE_NORMAL: 3000,
   SEQUENCE_SLOW: 4500,
-  
+
   // Specific Component Cycles
   // [OffDuration, OnDuration] -> 3s wait, 9s hold
   MOCKUP_CYCLE: [3000, 9000],
   TABLE_DATA_CYCLE: [3000, 9000],
-  
+
   GUARDIAN_CYCLE: 3500,
   SHEEN_DURATION: 3, // seconds (CSS animation)
-  
+
   // Traveller-Specific Timings
   TERM_CARD_ENTER: 800,
   EDGE_FLOW_CYCLE: 2500,

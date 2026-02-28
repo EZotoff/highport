@@ -49,12 +49,16 @@ export function ConnectionRequestModal({
     if (!modalRef.current) return;
     const container = modalRef.current;
     const selectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    const focusables = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(el => !el.hasAttribute('disabled'));
+    const focusables = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(
+      (el) => !el.hasAttribute('disabled'),
+    );
     focusables[0]?.focus();
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
-      const items = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(el => !el.hasAttribute('disabled'));
+      const items = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(
+        (el) => !el.hasAttribute('disabled'),
+      );
       if (items.length === 0) return;
       const first = items[0];
       const last = items[items.length - 1];
@@ -74,22 +78,22 @@ export function ConnectionRequestModal({
 
   const handleSubmit = () => {
     if (isSubmitting) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const doc = getYDoc();
       const finalRelationship = relationship === 'custom' ? customRelationship : relationship;
-      
+
       const requestId = requestConnection(
         doc,
         currentCharId,
         entity.id,
         finalRelationship as ConnectionRelationship,
         note,
-        currentUserId
+        currentUserId,
       );
-      
+
       if (onSubmit) {
         onSubmit(requestId);
       }
@@ -102,24 +106,29 @@ export function ConnectionRequestModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
-      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="connection-request-title" className="relative w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl overflow-hidden">
-        
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="connection-request-title"
+        className="relative w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl overflow-hidden"
+      >
         <div className="px-6 py-4 border-b border-zinc-800 bg-zinc-900/50">
-           <h2 id="connection-request-title" className="text-lg font-semibold text-heading uppercase tracking-wide text-sm font-display">
+          <h2
+            id="connection-request-title"
+            className="text-lg font-semibold text-heading uppercase tracking-wide text-sm font-display"
+          >
             Request Connection
           </h2>
         </div>
 
         <div className="p-6 space-y-6">
-          
           <div className="space-y-1">
             <p className="text-label">
-              <span className="text-subtle">Connect to:</span> <span className="font-medium text-heading">{entity.name}</span>
+              <span className="text-subtle">Connect to:</span>{' '}
+              <span className="font-medium text-heading">{entity.name}</span>
             </p>
             {originalOwnerName && (
               <p className="text-sm text-subtle">
@@ -172,15 +181,10 @@ export function ConnectionRequestModal({
               className="w-full min-h-[44px] bg-zinc-950 border border-zinc-700 text-default text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 resize-none"
             />
           </div>
-
         </div>
 
         <div className="px-6 py-4 bg-zinc-900 border-t border-zinc-800 flex justify-end gap-3">
-          <SciFiButton
-            onClick={onClose}
-            theme="slate"
-            scifiVariant="ghost"
-          >
+          <SciFiButton onClick={onClose} theme="slate" scifiVariant="ghost">
             Cancel
           </SciFiButton>
           <SciFiButton
@@ -192,7 +196,6 @@ export function ConnectionRequestModal({
             {isSubmitting ? 'Sending...' : 'Submit Request'}
           </SciFiButton>
         </div>
-
       </div>
     </div>
   );

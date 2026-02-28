@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 // Map our ThemeColor to shadcn-compatible class variants
 export const SCIFI_VARIANT_MAP = {
   cyan: 'primary',
-  violet: 'secondary', 
+  violet: 'secondary',
   amber: 'warning',
   emerald: 'success',
   red: 'destructive',

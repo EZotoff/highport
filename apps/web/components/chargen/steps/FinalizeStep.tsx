@@ -15,8 +15,16 @@ import { getRankInfo } from '../../../lib/chargen/term-resolution';
 import { GlassPanel, SciFiButton, SciFiInput, SkillBadge } from '@/components/ui/scifi';
 import { PortraitGenerationProgress } from '@/components/portrait/PortraitGenerationProgress';
 import { Coins, Gift, UserCheck, Users, UserX, Skull, Circle } from 'lucide-react';
-import { attachPortraitRecord, attachPortraitToNode, usePortraitGenerator } from '../../../lib/portrait/usePortrait';
-import type { PortraitCareerType, PortraitRecord, PortraitTags } from '@highport/shared/types/portrait';
+import {
+  attachPortraitRecord,
+  attachPortraitToNode,
+  usePortraitGenerator,
+} from '../../../lib/portrait/usePortrait';
+import type {
+  PortraitCareerType,
+  PortraitRecord,
+  PortraitTags,
+} from '@highport/shared/types/portrait';
 import { PortraitLibrary } from '@/components/portrait/PortraitLibrary';
 import { PortraitRemixer } from '@/components/portrait/PortraitRemixer';
 
@@ -24,7 +32,14 @@ interface FinalizeStepProps {
   characterId: string | null;
 }
 
-const CHARACTERISTIC_ORDER: (keyof CharacteristicSet)[] = ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC'];
+const CHARACTERISTIC_ORDER: (keyof CharacteristicSet)[] = [
+  'STR',
+  'DEX',
+  'END',
+  'INT',
+  'EDU',
+  'SOC',
+];
 
 const RELATIONSHIP_ICONS: Record<string, React.ReactNode> = {
   ally: <UserCheck className="w-4 h-4 text-emerald-400" />,
@@ -59,7 +74,11 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
   const [portrait, setPortrait] = useState<PortraitRecord | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [remixerOpen, setRemixerOpen] = useState(false);
-  const { generate: generatePortrait, isLoading: generatingPortrait, error: portraitError } = usePortraitGenerator();
+  const {
+    generate: generatePortrait,
+    isLoading: generatingPortrait,
+    error: portraitError,
+  } = usePortraitGenerator();
 
   if (character && !hasInitialized) {
     setName(character.name || '');
@@ -71,12 +90,12 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
   const finalTerm = character.terms[character.terms.length - 1];
   const career = getCareer(finalTerm?.careerId || '');
   const rankInfo = career ? getRankInfo(career, finalTerm?.currentRank || 0) : null;
-  
-  const connections = character.terms.flatMap((term, termIndex) => 
-    term.spawnedEntities.map(e => ({
+
+  const connections = character.terms.flatMap((term, termIndex) =>
+    term.spawnedEntities.map((e) => ({
       ...e,
       termNumber: termIndex + 1,
-    }))
+    })),
   );
 
   const handleNameChange = (newName: string) => {
@@ -90,9 +109,9 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
       alert('Please enter a character name');
       return;
     }
-    
+
     setIsCreating(true);
-    
+
     try {
       const doc = getYDoc();
       const finalData = createCharacterNode(character);
@@ -113,9 +132,8 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
     if (!session?.campaignId) return;
 
     const candidateCareer = finalTerm?.careerId as PortraitCareerType | undefined;
-    const careerType = candidateCareer && CAREER_TYPES.includes(candidateCareer)
-      ? candidateCareer
-      : undefined;
+    const careerType =
+      candidateCareer && CAREER_TYPES.includes(candidateCareer) ? candidateCareer : undefined;
 
     const tags: Partial<PortraitTags> = {
       story: {
@@ -151,12 +169,11 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
       <GlassPanel theme="cyan" variant="default" className="p-6">
         <h2 className="text-2xl font-bold text-heading mb-6 font-display">Character Complete</h2>
 
-        <div 
-          className="rounded-lg p-4 mb-6"
-          style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
-        >
+        <div className="rounded-lg p-4 mb-6" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
           <div className="mb-4">
-            <label htmlFor="finalize-character-name" className="block text-sm mb-1 text-subtle">Character Name</label>
+            <label htmlFor="finalize-character-name" className="block text-sm mb-1 text-subtle">
+              Character Name
+            </label>
             <SciFiInput
               id="finalize-character-name"
               value={name}
@@ -166,12 +183,14 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
               className="text-xl font-bold"
             />
           </div>
-          
+
           <div className="flex justify-between text-label">
-            <span>Age: <span className="text-heading">{character.age}</span></span>
             <span>
-              {career?.name} ({character.terms.length} term{character.terms.length !== 1 ? 's' : ''})
-              {rankInfo && <span className="text-subtle"> • {rankInfo.title}</span>}
+              Age: <span className="text-heading">{character.age}</span>
+            </span>
+            <span>
+              {career?.name} ({character.terms.length} term{character.terms.length !== 1 ? 's' : ''}
+              ){rankInfo && <span className="text-subtle"> • {rankInfo.title}</span>}
             </span>
           </div>
         </div>
@@ -236,7 +255,9 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
               <div className="text-red-400 text-xs mt-2">{portraitError.message}</div>
             )}
             {!session?.campaignId && (
-              <div className="text-amber-300 text-xs mt-2">Portraits require an active session.</div>
+              <div className="text-amber-300 text-xs mt-2">
+                Portraits require an active session.
+              </div>
             )}
           </div>
         </div>
@@ -247,9 +268,12 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
               open={libraryOpen}
               onOpenChange={setLibraryOpen}
               campaignId={session.campaignId}
-              onSelect={(p) => { setPortrait(p); setLibraryOpen(false); }}
+              onSelect={(p) => {
+                setPortrait(p);
+                setLibraryOpen(false);
+              }}
               filterTags={{
-                story: { entity_type: 'traveller', importance_level: 'key' }
+                story: { entity_type: 'traveller', importance_level: 'key' },
               }}
             />
             {portrait && (
@@ -258,7 +282,10 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
                 onOpenChange={setRemixerOpen}
                 sourcePortrait={portrait}
                 campaignId={session.campaignId}
-                onRemixed={(p) => { setPortrait(p); setRemixerOpen(false); }}
+                onRemixed={(p) => {
+                  setPortrait(p);
+                  setRemixerOpen(false);
+                }}
               />
             )}
           </>
@@ -267,22 +294,20 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
         <div className="mb-6">
           <h3 className="text-lg font-bold text-heading mb-3 font-display">Characteristics</h3>
           <div className="grid grid-cols-3 gap-3">
-            {CHARACTERISTIC_ORDER.map(stat => {
+            {CHARACTERISTIC_ORDER.map((stat) => {
               const value = character.characteristics[stat] || 0;
               const dm = getCharacteristicModifier(value);
               return (
-                <div 
-                  key={stat} 
+                <div
+                  key={stat}
                   className="rounded p-3 text-center"
                   style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
                 >
                   <div className="text-xs mb-1 text-subtle">{stat}</div>
                   <div className="text-2xl font-bold text-heading">{value}</div>
-                  <div 
-                    style={{ color: dm >= 0 ? '#22d3ee' : '#f87171' }}
-                    className="text-sm"
-                  >
-                    {dm >= 0 ? '+' : ''}{dm}
+                  <div style={{ color: dm >= 0 ? '#22d3ee' : '#f87171' }} className="text-sm">
+                    {dm >= 0 ? '+' : ''}
+                    {dm}
                   </div>
                 </div>
               );
@@ -296,42 +321,32 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
             {trainedSkills.length > 0 ? (
               <div className="flex flex-wrap gap-2 mb-3">
                 {trainedSkills.map((skillStr, i) => {
-                   const lastSpaceIndex = skillStr.lastIndexOf(' ');
-                   let skillName = skillStr;
-                   let skillLevel = 0;
-                   if (lastSpaceIndex !== -1) {
-                     const levelPart = skillStr.substring(lastSpaceIndex + 1);
-                     if (!isNaN(parseInt(levelPart))) {
-                       skillName = skillStr.substring(0, lastSpaceIndex);
-                       skillLevel = parseInt(levelPart);
-                     }
-                   }
-                   
-                   return (
-                    <SkillBadge 
-                      key={i}
-                      skill={skillName} 
-                      level={skillLevel} 
-                      theme="emerald" 
-                    />
-                   );
+                  const lastSpaceIndex = skillStr.lastIndexOf(' ');
+                  let skillName = skillStr;
+                  let skillLevel = 0;
+                  if (lastSpaceIndex !== -1) {
+                    const levelPart = skillStr.substring(lastSpaceIndex + 1);
+                    if (!isNaN(parseInt(levelPart))) {
+                      skillName = skillStr.substring(0, lastSpaceIndex);
+                      skillLevel = parseInt(levelPart);
+                    }
+                  }
+
+                  return (
+                    <SkillBadge key={i} skill={skillName} level={skillLevel} theme="emerald" />
+                  );
                 })}
               </div>
             ) : (
               <div className="mb-3 text-subtle">No trained skills</div>
             )}
-            
+
             {level0Skills.length > 0 && (
               <div>
                 <div className="text-xs mb-2 text-subtle">Level 0:</div>
                 <div className="flex flex-wrap gap-2">
                   {level0Skills.map((skill, i) => (
-                    <SkillBadge 
-                      key={i}
-                      skill={skill} 
-                      level={0} 
-                      theme="slate" 
-                    />
+                    <SkillBadge key={i} skill={skill} level={0} theme="slate" />
                   ))}
                 </div>
               </div>
@@ -341,7 +356,10 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
 
         <div className="mb-6">
           <h3 className="text-lg font-bold text-heading mb-3 font-display">Benefits</h3>
-          <div className="rounded p-4 space-y-2" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
+          <div
+            className="rounded p-4 space-y-2"
+            style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
+          >
             <div className="flex items-center gap-2">
               <Coins className="w-4 h-4 text-amber-400" />
               <span className="text-heading">Cr{character.credits.toLocaleString()}</span>
@@ -361,10 +379,17 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
         {connections.length > 0 && (
           <div className="mb-6">
             <h3 className="text-lg font-bold text-heading mb-3 font-display">Connections</h3>
-            <div className="rounded p-4 space-y-2" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
+            <div
+              className="rounded p-4 space-y-2"
+              style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
+            >
               {connections.map((conn, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span>{RELATIONSHIP_ICONS[conn.relationship || ''] || <Circle className="w-4 h-4 text-subtle" />}</span>
+                  <span>
+                    {RELATIONSHIP_ICONS[conn.relationship || ''] || (
+                      <Circle className="w-4 h-4 text-subtle" />
+                    )}
+                  </span>
                   <span className="capitalize text-subtle">{conn.relationship}:</span>
                   <span className="text-heading">{conn.name}</span>
                   <span className="text-sm text-subtle">(Term {conn.termNumber})</span>
@@ -376,14 +401,10 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
       </GlassPanel>
 
       <div className="flex justify-between gap-4">
-        <SciFiButton
-          onClick={handleBack}
-          scifiVariant="ghost"
-          theme="slate"
-        >
+        <SciFiButton onClick={handleBack} scifiVariant="ghost" theme="slate">
           ← Back to Benefits
         </SciFiButton>
-        
+
         <SciFiButton
           onClick={handleCreateCharacter}
           disabled={isCreating || !name.trim()}

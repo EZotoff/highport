@@ -26,29 +26,29 @@ Phase 0 of the UI redesign was executed with `category="quick"` (Claude Sonnet) 
 
 ### 1.1 What's Working Well ✅
 
-| Asset | Location | Status |
-|-------|----------|--------|
-| Color palette | `lib/design-system/themeUtils.ts` | Trojan Reach colors correctly defined |
-| Animation hooks | `lib/design-system/animationUtils.ts` | useReducedMotion, useToggleLoop work |
-| GlassPanel | `components/ui/scifi/GlassPanel.tsx` | Glassmorphism with variants |
-| CosmicBackground | `components/ui/scifi/CosmicBackground.tsx` | Nebula + starfield + grid |
-| ProcessFlowSheen | `components/ui/scifi/ProcessFlowSheen.tsx` | Sheen animation works |
-| SilkyChevron | `components/ui/scifi/SilkyChevron.tsx` | Animated chevron works |
-| CSS Variables | `app/design-tokens.css` | All tokens defined |
-| Tailwind Config | `tailwind.config.js` | Custom colors, fonts, keyframes |
-| EnergyEdge | `components/graph/edges/EnergyEdge.tsx` | Glow + dash animation |
+| Asset            | Location                                   | Status                                |
+| ---------------- | ------------------------------------------ | ------------------------------------- |
+| Color palette    | `lib/design-system/themeUtils.ts`          | Trojan Reach colors correctly defined |
+| Animation hooks  | `lib/design-system/animationUtils.ts`      | useReducedMotion, useToggleLoop work  |
+| GlassPanel       | `components/ui/scifi/GlassPanel.tsx`       | Glassmorphism with variants           |
+| CosmicBackground | `components/ui/scifi/CosmicBackground.tsx` | Nebula + starfield + grid             |
+| ProcessFlowSheen | `components/ui/scifi/ProcessFlowSheen.tsx` | Sheen animation works                 |
+| SilkyChevron     | `components/ui/scifi/SilkyChevron.tsx`     | Animated chevron works                |
+| CSS Variables    | `app/design-tokens.css`                    | All tokens defined                    |
+| Tailwind Config  | `tailwind.config.js`                       | Custom colors, fonts, keyframes       |
+| EnergyEdge       | `components/graph/edges/EnergyEdge.tsx`    | Glow + dash animation                 |
 
 ### 1.2 What Needs Enhancement ⚠️
 
-| Component | Issue | Impact |
-|-----------|-------|--------|
-| `LifepathTimeline.tsx` | Styling inconsistent (inline + CSS vars mixed) | Medium |
-| `TimelineTerm.tsx` | Uses GlassPanel but still gray-heavy, lacks energy | High |
-| `BaseNode.tsx` | Basic glassmorphism, missing orbiting ring, muted glow | High |
-| `GraphCanvas.tsx` | Only CosmicBackground added, needs more polish | Medium |
-| `ChargenWizard.tsx` | Still uses legacy zinc styling | Low |
-| `CharacterPreview.tsx` | Still uses legacy zinc styling | Low |
-| `TermDetailCard.tsx` | Better than others but could be more dramatic | Medium |
+| Component              | Issue                                                  | Impact |
+| ---------------------- | ------------------------------------------------------ | ------ |
+| `LifepathTimeline.tsx` | Styling inconsistent (inline + CSS vars mixed)         | Medium |
+| `TimelineTerm.tsx`     | Uses GlassPanel but still gray-heavy, lacks energy     | High   |
+| `BaseNode.tsx`         | Basic glassmorphism, missing orbiting ring, muted glow | High   |
+| `GraphCanvas.tsx`      | Only CosmicBackground added, needs more polish         | Medium |
+| `ChargenWizard.tsx`    | Still uses legacy zinc styling                         | Low    |
+| `CharacterPreview.tsx` | Still uses legacy zinc styling                         | Low    |
+| `TermDetailCard.tsx`   | Better than others but could be more dramatic          | Medium |
 
 ### 1.3 Styling Inconsistencies Found
 
@@ -92,12 +92,12 @@ Replace hardcoded colors with CSS variables:
 
 ```tsx
 // BEFORE
-background: 'rgba(36, 43, 61, 0.9)'
-borderColor: 'rgba(61, 69, 85, 0.5)'
+background: 'rgba(36, 43, 61, 0.9)';
+borderColor: 'rgba(61, 69, 85, 0.5)';
 
-// AFTER  
-background: 'var(--nebula-mist)'
-borderColor: 'var(--asteroid-dust)'
+// AFTER
+background: 'var(--nebula-mist)';
+borderColor: 'var(--asteroid-dust)';
 ```
 
 ### Task 2: Enhance BaseNode with Dramatic Effects
@@ -107,22 +107,32 @@ borderColor: 'var(--asteroid-dust)'
 **Agent**: `category="visual-engineering"` or `load_skills=["frontend-ui-ux"]`
 
 Current state:
+
 - Basic glassmorphism ✅
 - Theme-based colors ✅
 - Hover/selection states ✅
 - Missing: Orbiting ring, dramatic selection glow, subtle float animation
 
 Enhancements needed:
+
 1. Add orbiting ring effect on selected state (from plan Part 4.2):
    ```tsx
-   {/* Orbiting ring - only on selected */}
-   {selected && (
-     <div className="absolute inset-[-8px] rounded-lg border border-plasma-cyan/20 
-                     animate-[spin_20s_linear_infinite]">
-       <div className="absolute top-0 left-1/2 w-2 h-2 bg-plasma-cyan rounded-full 
-                       shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-     </div>
-   )}
+   {
+     /* Orbiting ring - only on selected */
+   }
+   {
+     selected && (
+       <div
+         className="absolute inset-[-8px] rounded-lg border border-plasma-cyan/20 
+                     animate-[spin_20s_linear_infinite]"
+       >
+         <div
+           className="absolute top-0 left-1/2 w-2 h-2 bg-plasma-cyan rounded-full 
+                       shadow-[0_0_10px_rgba(0,240,255,0.8)]"
+         />
+       </div>
+     );
+   }
    ```
 2. Increase selection glow intensity (currently `40` opacity, should be `60-80`)
 3. Add subtle float animation on hover
@@ -135,11 +145,13 @@ Enhancements needed:
 **Agent**: `category="visual-engineering"` or `load_skills=["frontend-ui-ux"]`
 
 Current state:
+
 - Uses GlassPanel ✅
 - Has ProcessFlowSheen ✅
 - Missing: Corner accents, energy border, dramatic status indicators
 
 Enhancements needed:
+
 1. Add corner accent markers (from plan Part 3.3):
    ```tsx
    {/* Corner accent markers */}
@@ -157,25 +169,29 @@ Enhancements needed:
 **Agent**: `category="quick"` (find-replace pattern)
 
 The `TYPOGRAPHY` object in `themeUtils.ts` defines:
+
 ```ts
 export const TYPOGRAPHY = {
   body: "font-['Inter'] text-lg md:text-xl font-light leading-relaxed tracking-wide",
   secondary: "font-['Inter'] text-base md:text-lg font-light leading-relaxed",
   label: "font-['Inter'] text-[10px] md:text-xs font-bold uppercase tracking-[0.15em]",
   micro: "font-['Inter'] text-[9px] font-bold uppercase tracking-widest",
-  heading: "font-['Orbitron'] text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight drop-shadow-2xl",
+  heading:
+    "font-['Orbitron'] text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight drop-shadow-2xl",
   subheading: "font-['Orbitron'] text-xl md:text-2xl lg:text-3xl font-light tracking-wide",
   data: "font-['JetBrains_Mono'] text-sm tracking-wider",
 };
 ```
 
 But components still use inline font specs like:
+
 ```tsx
-className="text-lg font-bold"  // Should use TYPOGRAPHY.subheading or custom
-className="text-xs font-mono"   // Should use TYPOGRAPHY.data
+className = 'text-lg font-bold'; // Should use TYPOGRAPHY.subheading or custom
+className = 'text-xs font-mono'; // Should use TYPOGRAPHY.data
 ```
 
 Apply consistently across:
+
 - `LifepathTimeline.tsx` - header, age ruler, footer
 - `TimelineTerm.tsx` - term number, career name, status
 - `TermDetailCard.tsx` - section headers, dice results
@@ -194,12 +210,14 @@ Current glow values are too subtle. Increase intensity:
 box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
 
 /* AFTER */
-box-shadow: 0 0 15px rgba(0, 240, 255, 0.4),
-            0 0 30px rgba(0, 240, 255, 0.2),
-            0 0 45px rgba(0, 240, 255, 0.1);
+box-shadow:
+  0 0 15px rgba(0, 240, 255, 0.4),
+  0 0 30px rgba(0, 240, 255, 0.2),
+  0 0 45px rgba(0, 240, 255, 0.1);
 ```
 
 Apply to:
+
 - Node selection state
 - Active timeline term
 - Header text glow
@@ -212,15 +230,17 @@ Apply to:
 **Agent**: `category="visual-engineering"`
 
 From plan - add subtle RGB split effect:
+
 ```css
 .chromatic-heading {
-  text-shadow: 
+  text-shadow:
     -2px 0 rgba(255, 0, 0, 0.5),
     2px 0 rgba(0, 255, 255, 0.5);
 }
 ```
 
 Apply to:
+
 - Main page titles
 - "LIFEPATH" header
 - Character name display
@@ -232,6 +252,7 @@ Apply to:
 **Agent**: `category="visual-engineering"`
 
 CosmicBackground is added but could be more immersive:
+
 1. Increase starfield animation speed (currently too slow to notice)
 2. Add vignette effect at edges
 3. Consider adding subtle nebula pulse animation
@@ -243,11 +264,13 @@ CosmicBackground is added but could be more immersive:
 **Agent**: `category="visual-engineering"`
 
 Current issues:
+
 1. Age ruler could have more visual interest (tick marks, glow on current age)
 2. Empty state could be more inviting
 3. Footer summary could have more dramatic presentation
 
 Enhancements:
+
 1. Add glowing tick marks on age ruler
 2. Add animated "start your journey" prompt for empty state
 3. Add subtle separator effects in footer
@@ -262,22 +285,22 @@ For ALL visual polish tasks, use:
 
 ```typescript
 delegate_task({
-  category: "visual-engineering",  // Gemini 3 Pro with high thinking
-  load_skills: ["frontend-ui-ux"],
-  prompt: "...",
-  run_in_background: false
-})
+  category: 'visual-engineering', // Gemini 3 Pro with high thinking
+  load_skills: ['frontend-ui-ux'],
+  prompt: '...',
+  run_in_background: false,
+});
 ```
 
 OR for more creative/dramatic work:
 
 ```typescript
 delegate_task({
-  subagent_type: "frontend-ui-ux-engineer",  // Explicit agent selection
-  load_skills: ["frontend-ui-ux"],
-  prompt: "...",
-  run_in_background: false
-})
+  subagent_type: 'frontend-ui-ux-engineer', // Explicit agent selection
+  load_skills: ['frontend-ui-ux'],
+  prompt: '...',
+  run_in_background: false,
+});
 ```
 
 ### Execution Order
@@ -294,6 +317,7 @@ delegate_task({
 ### Verification Protocol
 
 After each task:
+
 1. `pnpm --filter web typecheck` - Must pass
 2. `pnpm --filter web build` - Must pass
 3. Visual verification using Playwright:
@@ -314,7 +338,7 @@ FILE: /home/ezotoff/AI_projects/traveller/apps/web/components/graph/nodes/BaseNo
 
 CURRENT STATE:
 - Basic glassmorphism with backdrop blur ✅
-- Theme-based colors via node-config ✅  
+- Theme-based colors via node-config ✅
 - Hover/selection states with glow ✅
 - Missing dramatic effects from design spec
 
@@ -323,7 +347,7 @@ REQUIREMENTS:
    - Ring should be slightly larger than the node
    - Should have a small glowing dot that orbits around it
    - Use CSS animation (spin 20s linear infinite)
-   
+
 2. Increase selection glow intensity:
    - Current: box-shadow with 40% opacity
    - Target: Triple-layer glow (15px at 40%, 30px at 20%, 45px at 10%)
@@ -427,6 +451,7 @@ CONSTRAINTS:
 ## Appendix A: File Reference
 
 ### Core Design System
+
 - `apps/web/lib/design-system/themeUtils.ts` - Colors, typography, theme helpers
 - `apps/web/lib/design-system/animationUtils.ts` - Animation hooks
 - `apps/web/lib/design-system/visualConfig.ts` - Timing constants
@@ -435,6 +460,7 @@ CONSTRAINTS:
 - `apps/web/tailwind.config.js` - Tailwind extensions
 
 ### Sci-Fi Primitives
+
 - `apps/web/components/ui/scifi/GlassPanel.tsx`
 - `apps/web/components/ui/scifi/CosmicBackground.tsx`
 - `apps/web/components/ui/scifi/ProcessFlowSheen.tsx`
@@ -445,6 +471,7 @@ CONSTRAINTS:
 - `apps/web/components/ui/scifi/TransitionText.tsx`
 
 ### Target Components
+
 - `apps/web/components/chargen/LifepathTimeline.tsx`
 - `apps/web/components/chargen/TimelineTerm.tsx`
 - `apps/web/components/chargen/TermDetailCard.tsx`
@@ -473,4 +500,4 @@ CONSTRAINTS:
 
 ---
 
-*This plan supersedes Phase 5 (Polish & Psychedelic Layer) of the original chargen-ui-redesign.md and provides more specific, actionable tasks with correct agent configuration.*
+_This plan supersedes Phase 5 (Polish & Psychedelic Layer) of the original chargen-ui-redesign.md and provides more specific, actionable tasks with correct agent configuration._

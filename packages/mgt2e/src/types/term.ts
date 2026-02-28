@@ -7,14 +7,14 @@ export interface CareerTerm {
   termNumber: number;
   careerId: string;
   assignmentId: string;
-  age: number;           // Age at start of term
-  
+  age: number; // Age at start of term
+
   // Rolls made this term
   survivalRoll?: DiceResult;
   eventRoll?: DiceResult;
   advancementRoll?: DiceResult;
   commissionRoll?: DiceResult;
-  
+
   // Outcomes
   survived: boolean;
   mishap?: CareerMishap;
@@ -22,18 +22,18 @@ export interface CareerTerm {
   promoted: boolean;
   commissioned?: boolean;
   rankGained?: number;
-  
+
   // Skills/benefits gained
   skillsGained: CharacterSkill[];
   benefitsGained: string[];
-  
+
   // Entities spawned from events
   spawnedEntities: SpawnedEntity[];
 }
 
 export interface SpawnedEntity {
   type: 'npc' | 'location' | 'item' | 'secret';
-  id: string;            // Generated UUID
+  id: string; // Generated UUID
   relationship?: string;
   name?: string;
   description?: string;

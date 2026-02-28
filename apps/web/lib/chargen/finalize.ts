@@ -20,17 +20,17 @@ export interface FinalizedCharacterData {
 export function createCharacterNode(character: ChargenCharacter): FinalizedCharacterData {
   const doc = getYDoc();
   const nodeId = crypto.randomUUID();
-  
+
   const careerSummary = buildCareerSummary(character);
-  
-  const connections = character.terms.flatMap(term => 
-    term.spawnedEntities.map(e => ({
+
+  const connections = character.terms.flatMap((term) =>
+    term.spawnedEntities.map((e) => ({
       nodeId: e.graphNodeId,
       relationship: e.relationship || 'connected',
       name: e.name,
-    }))
+    })),
   );
-  
+
   const node: GraphNode = {
     id: nodeId,
     type: 'traveller', // Player characters use 'traveller' type
@@ -41,7 +41,7 @@ export function createCharacterNode(character: ChargenCharacter): FinalizedChara
       age: character.age,
       characteristics: character.characteristics,
       skills: character.skills,
-      careerHistory: character.terms.map(t => ({
+      careerHistory: character.terms.map((t) => ({
         career: t.careerId,
         assignment: t.assignmentId,
         term: t.termNumber,
@@ -56,11 +56,11 @@ export function createCharacterNode(character: ChargenCharacter): FinalizedChara
     created_at: Date.now(),
     created_by: character.playerId,
   };
-  
+
   doc.transact(() => {
     addNode(doc, node);
-    
-    connections.forEach(conn => {
+
+    connections.forEach((conn) => {
       const edge: GraphEdge = {
         id: crypto.randomUUID(),
         source_id: nodeId,
@@ -75,7 +75,7 @@ export function createCharacterNode(character: ChargenCharacter): FinalizedChara
       addEdge(doc, edge);
     });
   }, 'chargen-finalize');
-  
+
   return {
     graphNodeId: nodeId,
     name: character.name,
@@ -91,26 +91,26 @@ export function createCharacterNode(character: ChargenCharacter): FinalizedChara
 
 function buildCareerSummary(character: ChargenCharacter): string {
   if (character.terms.length === 0) return 'No career history';
-  
+
   const careerGroups = new Map<string, number>();
   let lastCareerId = '';
   let lastRank = 0;
-  
-  character.terms.forEach(term => {
+
+  character.terms.forEach((term) => {
     careerGroups.set(term.careerId, (careerGroups.get(term.careerId) || 0) + 1);
     lastCareerId = term.careerId;
     lastRank = term.currentRank;
   });
-  
+
   const career = getCareer(lastCareerId);
   const rankInfo = career ? getRankInfo(career, lastRank) : null;
-  
+
   const parts: string[] = [];
   careerGroups.forEach((terms, careerId) => {
     const c = getCareer(careerId);
     parts.push(`${c?.name || careerId} (${terms} term${terms > 1 ? 's' : ''})`);
   });
-  
+
   if (rankInfo) {
     return `${rankInfo.title}, ${parts.join(', ')}`;
   }
@@ -124,21 +124,31 @@ function buildCharacterDescription(character: ChargenCharacter): string {
 
 function formatRelationship(rel: string): string {
   switch (rel) {
-    case 'ally': return 'Allied with';
-    case 'contact': return 'Contact of';
-    case 'rival': return 'Rival of';
-    case 'enemy': return 'Enemy of';
-    default: return 'Connected to';
+    case 'ally':
+      return 'Allied with';
+    case 'contact':
+      return 'Contact of';
+    case 'rival':
+      return 'Rival of';
+    case 'enemy':
+      return 'Enemy of';
+    default:
+      return 'Connected to';
   }
 }
 
 function getRelationshipColor(rel: string): string {
   switch (rel) {
-    case 'ally': return '#22c55e';
-    case 'contact': return '#3b82f6';
-    case 'rival': return '#f59e0b';
-    case 'enemy': return '#ef4444';
-    default: return '#71717a';
+    case 'ally':
+      return '#22c55e';
+    case 'contact':
+      return '#3b82f6';
+    case 'rival':
+      return '#f59e0b';
+    case 'enemy':
+      return '#ef4444';
+    default:
+      return '#71717a';
   }
 }
 
@@ -150,7 +160,9 @@ export function formatSkillsForDisplay(skills: Record<string, number>): string[]
       // Format skill name: "pilot.spacecraft" → "Pilot (Spacecraft) 2"
       const parts = skill.split('.');
       const base = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-      const specialty = parts[1] ? ` (${parts[1].charAt(0).toUpperCase() + parts[1].slice(1)})` : '';
+      const specialty = parts[1]
+        ? ` (${parts[1].charAt(0).toUpperCase() + parts[1].slice(1)})`
+        : '';
       return `${base}${specialty} ${level}`;
     });
 }
@@ -161,7 +173,9 @@ export function formatSkillsLevel0(skills: Record<string, number>): string[] {
     .map(([skill]) => {
       const parts = skill.split('.');
       const base = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-      const specialty = parts[1] ? ` (${parts[1].charAt(0).toUpperCase() + parts[1].slice(1)})` : '';
+      const specialty = parts[1]
+        ? ` (${parts[1].charAt(0).toUpperCase() + parts[1].slice(1)})`
+        : '';
       return `${base}${specialty}`;
     });
 }

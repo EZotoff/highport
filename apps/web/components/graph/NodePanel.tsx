@@ -61,10 +61,7 @@ export function NodePanel({ nodeId, onClose }: NodePanelProps) {
     <div className="absolute top-20 right-4 w-80 bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-lg shadow-xl overflow-hidden z-20 animate-in slide-in-from-right-10 duration-200">
       <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-800/50">
         <h3 className="font-bold text-zinc-100 truncate">{faction.name}</h3>
-        <button 
-          onClick={onClose}
-          className="text-zinc-400 hover:text-white transition-colors"
-        >
+        <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
           <X size={18} />
         </button>
       </div>
@@ -73,11 +70,15 @@ export function NodePanel({ nodeId, onClose }: NodePanelProps) {
         {/* Standing & Tier */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm text-zinc-400">
-            <span className="flex items-center gap-1"><Shield size={14} /> Standing</span>
-            <span className="flex items-center gap-1"><Activity size={14} /> Tier</span>
+            <span className="flex items-center gap-1">
+              <Shield size={14} /> Standing
+            </span>
+            <span className="flex items-center gap-1">
+              <Activity size={14} /> Tier
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <div 
+            <div
               className="flex-1 py-1 px-2 rounded text-center font-bold text-black shadow-sm"
               style={{ backgroundColor: getStandingColor(faction.standing) }}
             >
@@ -92,19 +93,21 @@ export function NodePanel({ nodeId, onClose }: NodePanelProps) {
         {/* Heat */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm text-zinc-400">
-            <span className="flex items-center gap-1"><Flame size={14} /> Heat</span>
+            <span className="flex items-center gap-1">
+              <Flame size={14} /> Heat
+            </span>
             <span className="text-xs">{faction.heat}/100</span>
           </div>
           <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-orange-500 transition-all duration-500" 
+            <div
+              className="h-full bg-orange-500 transition-all duration-500"
               style={{ width: `${faction.heat}%` }}
             />
           </div>
         </div>
 
         <div className="pt-2 border-t border-zinc-800">
-          <Link 
+          <Link
             href="/reputation"
             className="flex items-center justify-center gap-2 w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded transition-colors text-sm"
           >

@@ -5,6 +5,7 @@
 Added editable textarea for AI-generated event descriptions with CRDT state persistence.
 
 **Changes made:**
+
 1. Added `eventDescription?: string` field to `CareerTermResult` type in `apps/web/lib/chargen/types.ts`
 2. Implemented `handleAcceptDescription` handler in `TermResolutionStep.tsx` that:
    - Updates the current term in the character's terms array
@@ -16,11 +17,13 @@ Added editable textarea for AI-generated event descriptions with CRDT state pers
    - Proper min-height (80px) and vertical resize capability
 
 **Pattern observed:**
+
 - Term updates follow immutable pattern: copy array, modify specific index, update via CRDT
 - `getYDoc()` provides access to the shared document for all state updates
 - UI feedback is immediate (state change), CRDT sync happens in background
 
 **Verification:**
+
 - ✅ TypeScript compilation passes (`pnpm --filter web typecheck`)
 - ✅ Production build succeeds (`pnpm --filter web build`)
 
@@ -29,6 +32,7 @@ Added editable textarea for AI-generated event descriptions with CRDT state pers
 Implemented GM moderation controls for multiplayer character generation sessions.
 
 **Changes made:**
+
 1. Created `apps/web/lib/chargen/useGMControls.ts` hook:
    - Encapsulates session management logic (lock, unlock, end session)
    - Manages allowed careers whitelist
@@ -41,14 +45,17 @@ Implemented GM moderation controls for multiplayer character generation sessions
    - JSON export functionality for all characters
 
 **Pattern observed:**
+
 - `SessionSettings` uses an empty array to signify "Allow All" rather than a separate boolean flag. This required careful logic in the toggle handler to ensure unchecking one item implies "All except this one".
 - Access control is client-side via `session.createdBy === currentUserId`. Backend rules should enforce this as well for security, though strict server-side validation was not part of this frontend task.
 - Reused `useAllCharacters` to resolve character names for connection requests, avoiding N+1 queries.
 
 **Verification:**
+
 - ✅ TypeScript compilation passes (`pnpm --filter web typecheck`)
 
 ## Lifepath Timeline Implementation
+
 - Created `useLifepath` hook to abstract Yjs data access for character timeline.
 - Implemented horizontal scrolling timeline pattern for career terms.
 - Visualized career events, mishaps, and spawned entities with `lucide-react` icons.

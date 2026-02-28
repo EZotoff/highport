@@ -70,7 +70,7 @@ describe('Narrative API', () => {
       await generateEventDescription(baseParams);
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      
+
       // Verify snake_case conversion
       expect(callBody.event_text).toBe(baseParams.eventText);
       expect(callBody.character_context).toBeDefined();
@@ -110,7 +110,7 @@ describe('Narrative API', () => {
       const mockResponse: NPCDetails = {
         name: 'Lt. Cmdr Vasquez',
         personality: 'Cold, calculating, never forgets a slight',
-        motivation: 'Believes Zara\'s family connections cost him his promotion',
+        motivation: "Believes Zara's family connections cost him his promotion",
         appearance: 'Tall, sharp features, immaculate uniform',
         quirks: ['Taps fingers when annoyed', 'Speaks in clipped sentences'],
       };
@@ -137,7 +137,7 @@ describe('Narrative API', () => {
       await generateNPCDetails(baseParams);
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      
+
       expect(callBody.npc_type).toBe('rival');
       expect(callBody.context.event_text).toBe(baseParams.context.eventText);
       expect(callBody.context.character_name).toBe('Zara');

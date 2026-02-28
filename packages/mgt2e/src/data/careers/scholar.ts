@@ -4,13 +4,13 @@ export const SCHOLAR: CareerDefinition = {
   id: 'scholar',
   name: 'Scholar',
   description: 'Academics, researchers, and scientists.',
-  
+
   qualification: {
     characteristic: 'INT',
     target: 6,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'field-researcher',
@@ -58,7 +58,7 @@ export const SCHOLAR: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 INT' },
@@ -85,7 +85,7 @@ export const SCHOLAR: CareerDefinition = {
       { roll: 6, skill: 'science' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Scholar' },
     { rank: 1, title: 'Scholar', skill: 'science', skillLevel: 1 },
@@ -95,9 +95,9 @@ export const SCHOLAR: CareerDefinition = {
     { rank: 5, title: 'Scholar' },
     { rank: 6, title: 'Scholar' },
   ],
-  
+
   cashBenefits: [5000, 10000, 20000, 30000, 40000, 60000, 100000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Scientific Equipment' },
     { roll: 2, benefit: '+1 INT' },
@@ -106,7 +106,7 @@ export const SCHOLAR: CareerDefinition = {
     { roll: 5, benefit: 'TAS Membership' },
     { roll: 6, benefit: 'Ship Share', orHighRank: 'Lab Ship' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -121,9 +121,7 @@ export const SCHOLAR: CareerDefinition = {
     {
       roll: 4,
       description: 'You are assigned to work on a secret project.',
-      spawns: [
-        { type: 'secret', required: true, template: 'secret_research' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'secret_research' }],
       choices: [
         {
           id: 'secret-project',
@@ -158,9 +156,7 @@ export const SCHOLAR: CareerDefinition = {
     {
       roll: 9,
       description: 'You become entangled in a bureaucratic or political situation.',
-      spawns: [
-        { type: 'npc', relationship: 'rival', required: false, template: 'bureaucrat' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'rival', required: false, template: 'bureaucrat' }],
       choices: [
         {
           id: 'bureaucracy',
@@ -180,21 +176,17 @@ export const SCHOLAR: CareerDefinition = {
     {
       roll: 11,
       description: 'You are befriended by a patron in your field.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'academic_patron' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'academic_patron' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
       roll: 12,
       description: 'You make a major discovery. You are automatically promoted.',
-      spawns: [
-        { type: 'secret', required: false, template: 'major_discovery' },
-      ],
+      spawns: [{ type: 'secret', required: false, template: 'major_discovery' }],
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
@@ -214,9 +206,7 @@ export const SCHOLAR: CareerDefinition = {
       description: 'Your work is sabotaged by rivals.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'rival', required: true, template: 'saboteur' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'rival', required: true, template: 'saboteur' }],
       effects: [{ type: 'skill', target: 'investigate|deception', value: 1 }],
     },
     {
@@ -224,18 +214,14 @@ export const SCHOLAR: CareerDefinition = {
       description: 'A rival researcher steals your work and publishes it first.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'plagiarist' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'plagiarist' }],
     },
     {
       roll: 5,
       description: 'Your research is considered too controversial.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'secret', required: true, template: 'controversial_research' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'controversial_research' }],
     },
     {
       roll: 6,

@@ -55,7 +55,7 @@ export const CRB_CAREER_IDS = [
   'scout',
 ] as const;
 
-export type CrbCareerId = typeof CRB_CAREER_IDS[number];
+export type CrbCareerId = (typeof CRB_CAREER_IDS)[number];
 
 // Re-export individual careers
 export { AGENT } from './agent.js';

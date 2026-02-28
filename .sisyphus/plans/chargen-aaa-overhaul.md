@@ -1,6 +1,7 @@
 # PlaneShift Chargen AAA UI Overhaul - Execution Plan
 
 ## Plan Metadata
+
 ```yaml
 name: chargen-aaa-overhaul
 created: 2025-01-27
@@ -14,6 +15,7 @@ estimated_phases: 5
 ## Phase 1: Foundation (Sequential - Blocking)
 
 ### Task 1.1: Initialize shadcn/ui
+
 - [x] **ID**: `1.1-shadcn-init`
 - **Description**: Initialize shadcn/ui in the web app with fallback for Tailwind v4 compatibility
 - **File Paths**:
@@ -40,6 +42,7 @@ estimated_phases: 5
 ---
 
 ### Task 1.2: Install shadcn Components
+
 - [x] **ID**: `1.2-shadcn-components`
 - **Description**: Install core shadcn components needed for sci-fi primitives
 - **File Paths**:
@@ -68,6 +71,7 @@ estimated_phases: 5
 ---
 
 ### Task 1.3: SciFi-shadcn Bridge Layer
+
 - [x] **ID**: `1.3-bridge-layer`
 - **Description**: Create bridge between shadcn CSS variables and existing design tokens
 - **File Paths**:
@@ -113,6 +117,7 @@ estimated_phases: 5
 ## Phase 2: Sci-Fi Primitives (Parallel after Phase 1)
 
 ### Task 2.1: SciFiButton Component
+
 - [x] **ID**: `2.1-scifi-button`
 - **Description**: Create themed button wrapping shadcn Button
 - **File Paths**:
@@ -120,16 +125,18 @@ estimated_phases: 5
   - Modify: `apps/web/components/ui/scifi/index.ts` (add export)
 - **Dependencies**: `1.3-bridge-layer`
 - **Interface**:
+
   ```typescript
   import { ButtonProps } from '@/components/ui/button';
   import { ThemeColor } from '@/lib/design-system/types';
-  
+
   interface SciFiButtonProps extends ButtonProps {
-    theme?: ThemeColor;  // 'cyan' | 'violet' | 'amber' | 'emerald' | 'red' | 'slate'
+    theme?: ThemeColor; // 'cyan' | 'violet' | 'amber' | 'emerald' | 'red' | 'slate'
     glow?: boolean;
     variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'destructive';
   }
   ```
+
 - **Styling Requirements**:
   - Primary: Solid theme color background, dark text, glow on hover
   - Secondary: Transparent with themed border, themed text
@@ -149,6 +156,7 @@ estimated_phases: 5
 ---
 
 ### Task 2.2: SciFiInput Component
+
 - [x] **ID**: `2.2-scifi-input`
 - **Description**: Create themed input with FIXED text visibility
 - **File Paths**:
@@ -173,6 +181,7 @@ estimated_phases: 5
 ---
 
 ### Task 2.3: SciFiSelect Component
+
 - [x] **ID**: `2.3-scifi-select`
 - **Description**: Create themed select dropdown
 - **File Paths**:
@@ -195,6 +204,7 @@ estimated_phases: 5
 ---
 
 ### Task 2.4: SciFiBadge Component
+
 - [x] **ID**: `2.4-scifi-badge`
 - **Description**: Create themed badge with PROPER SPACING for skills
 - **File Paths**:
@@ -203,6 +213,7 @@ estimated_phases: 5
 - **Dependencies**: `1.3-bridge-layer`
 - **CRITICAL FIX**: Skills display as `"Melee 1"` not `"Melee1"`
 - **Interface**:
+
   ```typescript
   interface SciFiBadgeProps {
     children: React.ReactNode;
@@ -210,7 +221,7 @@ estimated_phases: 5
     variant?: 'default' | 'outline' | 'glow';
     size?: 'sm' | 'md' | 'lg';
   }
-  
+
   // Helper for skill display
   interface SkillBadgeProps {
     skill: string;
@@ -218,6 +229,7 @@ estimated_phases: 5
     theme?: ThemeColor;
   }
   ```
+
 - **Styling Requirements**:
   - Default: Themed background with matching text
   - Outline: Transparent with themed border
@@ -233,6 +245,7 @@ estimated_phases: 5
 ---
 
 ### Task 2.5: SciFiCard Component
+
 - [x] **ID**: `2.5-scifi-card`
 - **Description**: Create section container extending GlassPanel
 - **File Paths**:
@@ -267,6 +280,7 @@ estimated_phases: 5
 ---
 
 ### Task 2.6: SciFiDialog Component
+
 - [x] **ID**: `2.6-scifi-dialog`
 - **Description**: Create themed modal dialog
 - **File Paths**:
@@ -291,6 +305,7 @@ estimated_phases: 5
 ## Phase 3: Component Fixes (Parallel after Phase 2)
 
 ### Task 3.1: Fix BackgroundStep
+
 - [x] **ID**: `3.1-fix-background-step`
 - **Description**: Refactor to use new sci-fi primitives
 - **File Paths**:
@@ -315,6 +330,7 @@ estimated_phases: 5
 ---
 
 ### Task 3.2: Fix CharacterPreview
+
 - [x] **ID**: `3.2-fix-character-preview`
 - **Description**: Fix skills display spacing, improve layout
 - **File Paths**:
@@ -336,6 +352,7 @@ estimated_phases: 5
 ---
 
 ### Task 3.3: Fix StepNavigation Layout
+
 - [x] **ID**: `3.3-fix-step-navigation`
 - **Description**: Fix wasted space and cramped layout
 - **File Paths**:
@@ -356,6 +373,7 @@ estimated_phases: 5
 ---
 
 ### Task 3.4: Fix CareerSelectionStep
+
 - [x] **ID**: `3.4-fix-career-selection`
 - **Description**: Replace bespoke cards and buttons with primitives
 - **File Paths**:
@@ -378,6 +396,7 @@ estimated_phases: 5
 ---
 
 ### Task 3.5: Fix TermResolutionStep
+
 - [x] **ID**: `3.5-fix-term-resolution`
 - **Description**: Improve phase sections and button hierarchy
 - **File Paths**:
@@ -402,6 +421,7 @@ estimated_phases: 5
 ---
 
 ### Task 3.6: Fix MusteringOutStep
+
 - [x] **ID**: `3.6-fix-mustering-out`
 - **Description**: Replace emojis with Lucide icons, use primitives
 - **File Paths**:
@@ -429,13 +449,14 @@ estimated_phases: 5
 ---
 
 ### Task 3.7: Fix FinalizeStep
+
 - [x] **ID**: `3.7-fix-finalize-step`
 - **Description**: Replace emojis, improve layout with primitives
 - **File Paths**:
   - Modify: `apps/web/components/chargen/steps/FinalizeStep.tsx`
 - **Dependencies**: `2.1-scifi-button`, `2.2-scifi-input`, `2.4-scifi-badge`, `2.5-scifi-card`
 - **Icon Replacements**:
-  - `💰` → `<Coins />` 
+  - `💰` → `<Coins />`
   - `🎁` → `<Gift />`
   - `🟢🔵🟠🔴⚪` → Lucide icons or themed dots
 - **Specific Changes**:
@@ -464,6 +485,7 @@ estimated_phases: 5
 ---
 
 ### Task 3.8: Fix VerbositySelector
+
 - [x] **ID**: `3.8-fix-verbosity-selector`
 - **Description**: Align with sci-fi theme
 - **File Paths**:
@@ -489,6 +511,7 @@ estimated_phases: 5
 ## Phase 4: Layout Overhaul (After 3.3)
 
 ### Task 4.1: ChargenWizard Layout Overhaul
+
 - [x] **ID**: `4.1-wizard-layout`
 - **Description**: Better use of vertical space, fix proportions
 - **File Paths**:
@@ -518,6 +541,7 @@ estimated_phases: 5
 ---
 
 ### Task 4.2: Button Hierarchy Refinement
+
 - [x] **ID**: `4.2-button-hierarchy`
 - **Description**: Establish clear visual hierarchy across all buttons
 - **File Paths**:
@@ -532,7 +556,7 @@ estimated_phases: 5
   | Destructive | Dangerous actions | `<SciFiButton variant="destructive">` |
 - **Button Assignments**:
   - "Continue →", "Create Character" = Primary
-  - "← Back", "Choose Different Career" = Tertiary  
+  - "← Back", "Choose Different Career" = Tertiary
   - "Roll Survival", "Roll Event", etc. = Secondary (action but not navigation)
   - "Accept Mishap & Leave" = Destructive
 - **Verification**:
@@ -547,6 +571,7 @@ estimated_phases: 5
 ## Phase 5: Verification & Polish (Final)
 
 ### Task 5.1: Visual Testing Pass
+
 - [x] **ID**: `5.1-visual-testing`
 - **Description**: Full walkthrough with screenshots
 - **File Paths**: N/A (testing only)
@@ -579,6 +604,7 @@ estimated_phases: 5
 ---
 
 ### Task 5.2: Accessibility Audit
+
 - [x] **ID**: `5.2-accessibility`
 - **Description**: Verify contrast, hit areas, focus states
 - **File Paths**: N/A (audit only)
@@ -610,6 +636,7 @@ estimated_phases: 5
 ---
 
 ### Task 5.3: Build & Typecheck Verification
+
 - [x] **ID**: `5.3-build-verify`
 - **Description**: Final build verification
 - **File Paths**: N/A (verification only)
@@ -666,26 +693,28 @@ PHASE 5 (After all Phase 3 + 4):
 ## Code Patterns Reference
 
 ### Icon Replacement Map
-| Emoji | Lucide Import | Usage |
-|-------|---------------|-------|
-| 💰 | `Coins` | Cash/credits |
-| 🎁 | `Gift` | Benefits |
-| 🟢 | `UserCheck` | Ally relationship |
-| 🔵 | `Users` | Contact relationship |
-| 🟠 | `UserX` | Rival relationship |
-| 🔴 | `Skull` | Enemy relationship |
-| ⚪ | `Circle` | Unknown/default |
-| ✓ | `Check` | Success state |
-| ✗ | `X` | Failure state |
+
+| Emoji | Lucide Import | Usage                |
+| ----- | ------------- | -------------------- |
+| 💰    | `Coins`       | Cash/credits         |
+| 🎁    | `Gift`        | Benefits             |
+| 🟢    | `UserCheck`   | Ally relationship    |
+| 🔵    | `Users`       | Contact relationship |
+| 🟠    | `UserX`       | Rival relationship   |
+| 🔴    | `Skull`       | Enemy relationship   |
+| ⚪    | `Circle`      | Unknown/default      |
+| ✓     | `Check`       | Success state        |
+| ✗     | `X`           | Failure state        |
 
 ### Button Hierarchy Pattern
+
 ```typescript
 // Primary action (one per screen)
 <SciFiButton theme="cyan" glow>
   Continue →
 </SciFiButton>
 
-// Secondary action  
+// Secondary action
 <SciFiButton variant="outline" theme="violet">
   Roll Survival
 </SciFiButton>
@@ -702,6 +731,7 @@ PHASE 5 (After all Phase 3 + 4):
 ```
 
 ### Skill Badge Pattern
+
 ```typescript
 // In SciFiBadge.tsx
 export function SkillBadge({ skill, level, theme = 'emerald' }: SkillBadgeProps) {
@@ -717,15 +747,15 @@ export function SkillBadge({ skill, level, theme = 'emerald' }: SkillBadgeProps)
 
 ## Success Criteria Summary
 
-| Criterion | Metric |
-|-----------|--------|
-| AAA Game Quality | Visual inspection passes, no "web app" feel |
-| Consistent Design | All components use shared primitives |
-| shadcn Integration | 8+ shadcn components installed and wrapped |
-| No Spacing Issues | Skills display `"Skill N"` not `"SkillN"` |
-| Typography Hierarchy | Clear visual distinction between elements |
-| Interactive States | All hover/focus/active/disabled work via CSS |
-| No Accessibility Failures | Contrast ≥ 4.5:1, hit areas ≥ 44px |
-| Build Passes | `typecheck` and `build` exit 0 |
-| No Emojis | All replaced with Lucide icons |
-| No Imperative Hover | Zero `onMouseEnter`/`onMouseLeave` handlers |
+| Criterion                 | Metric                                       |
+| ------------------------- | -------------------------------------------- |
+| AAA Game Quality          | Visual inspection passes, no "web app" feel  |
+| Consistent Design         | All components use shared primitives         |
+| shadcn Integration        | 8+ shadcn components installed and wrapped   |
+| No Spacing Issues         | Skills display `"Skill N"` not `"SkillN"`    |
+| Typography Hierarchy      | Clear visual distinction between elements    |
+| Interactive States        | All hover/focus/active/disabled work via CSS |
+| No Accessibility Failures | Contrast ≥ 4.5:1, hit areas ≥ 44px           |
+| Build Passes              | `typecheck` and `build` exit 0               |
+| No Emojis                 | All replaced with Lucide icons               |
+| No Imperative Hover       | Zero `onMouseEnter`/`onMouseLeave` handlers  |

@@ -28,7 +28,7 @@ export function rollInitialCharacteristics(seed?: number): CharacteristicSet {
   if (seed !== undefined) {
     setRandomSeed(seed);
   }
-  
+
   const characteristics: CharacteristicSet = {
     STR: roll2d6().total,
     DEX: roll2d6().total,
@@ -37,18 +37,18 @@ export function rollInitialCharacteristics(seed?: number): CharacteristicSet {
     EDU: roll2d6().total,
     SOC: roll2d6().total,
   };
-  
+
   if (seed !== undefined) {
     resetRandomSeed();
   }
-  
+
   return characteristics;
 }
 
 export function createCharacter(doc: Y.Doc, playerId: string, name?: string): string {
   const characters = getCharactersMap(doc);
   const charId = crypto.randomUUID();
-  
+
   const character: ChargenCharacter = {
     id: charId,
     playerId,
@@ -64,7 +64,7 @@ export function createCharacter(doc: Y.Doc, playerId: string, name?: string): st
     age: 18,
     spawnedEntityIds: [],
   };
-  
+
   doc.transact(() => {
     const charMap = new Y.Map();
     Object.entries(character).forEach(([key, value]) => {
@@ -76,7 +76,7 @@ export function createCharacter(doc: Y.Doc, playerId: string, name?: string): st
     });
     characters.set(charId, charMap);
   }, 'chargen-create');
-  
+
   return charId;
 }
 
@@ -84,7 +84,7 @@ export function getCharacter(doc: Y.Doc, charId: string): ChargenCharacter | nul
   const characters = getCharactersMap(doc);
   const charMap = characters.get(charId);
   if (!charMap) return null;
-  
+
   return yMapToCharacter(charMap);
 }
 
@@ -92,18 +92,18 @@ export function yMapToCharacter(yMap: Y.Map<unknown>): ChargenCharacter {
   return {
     id: yMap.get('id') as string,
     playerId: yMap.get('playerId') as string,
-    name: yMap.get('name') as string || '',
+    name: (yMap.get('name') as string) || '',
     homeworld: yMap.get('homeworld') as string | undefined,
     characteristics: yMap.get('characteristics') as CharacteristicSet,
-    backgroundSkills: yMap.get('backgroundSkills') as string[] || [],
-    terms: yMap.get('terms') as CareerTermResult[] || [],
-    currentTermIndex: yMap.get('currentTermIndex') as number || 0,
-    status: yMap.get('status') as ChargenStatus || 'background',
-    skills: yMap.get('skills') as Record<string, number> || {},
-    benefits: yMap.get('benefits') as string[] || [],
-    credits: yMap.get('credits') as number || 0,
-    age: yMap.get('age') as number || 18,
-    spawnedEntityIds: yMap.get('spawnedEntityIds') as string[] || [],
+    backgroundSkills: (yMap.get('backgroundSkills') as string[]) || [],
+    terms: (yMap.get('terms') as CareerTermResult[]) || [],
+    currentTermIndex: (yMap.get('currentTermIndex') as number) || 0,
+    status: (yMap.get('status') as ChargenStatus) || 'background',
+    skills: (yMap.get('skills') as Record<string, number>) || {},
+    benefits: (yMap.get('benefits') as string[]) || [],
+    credits: (yMap.get('credits') as number) || 0,
+    age: (yMap.get('age') as number) || 18,
+    spawnedEntityIds: (yMap.get('spawnedEntityIds') as string[]) || [],
   };
 }
 
@@ -111,12 +111,12 @@ export function updateCharacter<K extends keyof ChargenCharacter>(
   doc: Y.Doc,
   charId: string,
   field: K,
-  value: ChargenCharacter[K]
+  value: ChargenCharacter[K],
 ): void {
   const characters = getCharactersMap(doc);
   const charMap = characters.get(charId);
   if (!charMap) return;
-  
+
   doc.transact(() => {
     if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
       charMap.set(field as string, JSON.parse(JSON.stringify(value)));
@@ -129,12 +129,12 @@ export function updateCharacter<K extends keyof ChargenCharacter>(
 export function updateCharacterFields(
   doc: Y.Doc,
   charId: string,
-  updates: Partial<ChargenCharacter>
+  updates: Partial<ChargenCharacter>,
 ): void {
   const characters = getCharactersMap(doc);
   const charMap = characters.get(charId);
   if (!charMap) return;
-  
+
   doc.transact(() => {
     Object.entries(updates).forEach(([key, value]) => {
       if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
@@ -150,16 +150,16 @@ export function swapCharacteristics(
   doc: Y.Doc,
   charId: string,
   stat1: keyof CharacteristicSet,
-  stat2: keyof CharacteristicSet
+  stat2: keyof CharacteristicSet,
 ): void {
   const character = getCharacter(doc, charId);
   if (!character) return;
-  
+
   const newChars = { ...character.characteristics };
   const temp = newChars[stat1];
   newChars[stat1] = newChars[stat2]!;
   newChars[stat2] = temp!;
-  
+
   updateCharacter(doc, charId, 'characteristics', newChars);
 }
 
@@ -173,11 +173,11 @@ export function setBackgroundSkills(doc: Y.Doc, charId: string, skills: string[]
     skills = skills.slice(0, 3);
   }
   updateCharacter(doc, charId, 'backgroundSkills', skills);
-  
+
   const character = getCharacter(doc, charId);
   if (character) {
     const newSkills = { ...character.skills };
-    skills.forEach(skill => {
+    skills.forEach((skill) => {
       if (!(skill in newSkills)) {
         newSkills[skill] = 0;
       }
@@ -189,8 +189,14 @@ export function setBackgroundSkills(doc: Y.Doc, charId: string, skills: string[]
 export function advanceStatus(doc: Y.Doc, charId: string): void {
   const character = getCharacter(doc, charId);
   if (!character) return;
-  
-  const statusOrder: ChargenStatus[] = ['background', 'career_selection', 'term_resolution', 'mustering_out', 'finalized'];
+
+  const statusOrder: ChargenStatus[] = [
+    'background',
+    'career_selection',
+    'term_resolution',
+    'mustering_out',
+    'finalized',
+  ];
   const currentIndex = statusOrder.indexOf(character.status);
   if (currentIndex < statusOrder.length - 1) {
     updateCharacter(doc, charId, 'status', statusOrder[currentIndex + 1]);
@@ -228,7 +234,7 @@ export function getSessionMap(doc: Y.Doc): Y.Map<unknown> {
 export function createSession(doc: Y.Doc, campaignId: string, gmUserId: string): string {
   const sessionId = crypto.randomUUID();
   const sessionMap = getSessionMap(doc);
-  
+
   doc.transact(() => {
     sessionMap.set('id', sessionId);
     sessionMap.set('campaignId', campaignId);
@@ -237,14 +243,14 @@ export function createSession(doc: Y.Doc, campaignId: string, gmUserId: string):
     sessionMap.set('status', 'active');
     sessionMap.set('settings', JSON.parse(JSON.stringify(DEFAULT_SESSION_SETTINGS)));
   }, 'session-create');
-  
+
   return sessionId;
 }
 
 export function getSession(doc: Y.Doc): ChargenSessionConfig | null {
   const sessionMap = getSessionMap(doc);
   if (!sessionMap.get('id')) return null;
-  
+
   return {
     id: sessionMap.get('id') as string,
     campaignId: sessionMap.get('campaignId') as string,
@@ -257,8 +263,9 @@ export function getSession(doc: Y.Doc): ChargenSessionConfig | null {
 
 export function updateSessionSettings(doc: Y.Doc, updates: Partial<SessionSettings>): void {
   const sessionMap = getSessionMap(doc);
-  const currentSettings = sessionMap.get('settings') as SessionSettings || DEFAULT_SESSION_SETTINGS;
-  
+  const currentSettings =
+    (sessionMap.get('settings') as SessionSettings) || DEFAULT_SESSION_SETTINGS;
+
   doc.transact(() => {
     const newSettings = { ...currentSettings, ...updates };
     sessionMap.set('settings', JSON.parse(JSON.stringify(newSettings)));
@@ -287,7 +294,7 @@ export function getEntityPoolMap(doc: Y.Doc): Y.Map<Y.Map<unknown>> {
 export function addEntityToPool(doc: Y.Doc, entity: Omit<SharedSpawnedEntity, 'id'>): string {
   const entityPool = getEntityPoolMap(doc);
   const entityId = crypto.randomUUID();
-  
+
   doc.transact(() => {
     const entityMap = new Y.Map();
     entityMap.set('id', entityId);
@@ -300,18 +307,18 @@ export function addEntityToPool(doc: Y.Doc, entity: Omit<SharedSpawnedEntity, 'i
     });
     entityPool.set(entityId, entityMap);
   }, 'entity-pool-add');
-  
+
   return entityId;
 }
 
 export function getEntityPool(doc: Y.Doc): SharedSpawnedEntity[] {
   const entityPool = getEntityPoolMap(doc);
   const result: SharedSpawnedEntity[] = [];
-  
+
   entityPool.forEach((entityMap) => {
     result.push(yMapToEntity(entityMap as Y.Map<unknown>));
   });
-  
+
   return result;
 }
 
@@ -332,9 +339,9 @@ export function yMapToEntity(yMap: Y.Map<unknown>): SharedSpawnedEntity {
     ownedBy: yMap.get('ownedBy') as string,
     name: yMap.get('name') as string,
     description: yMap.get('description') as string | undefined,
-    metadata: yMap.get('metadata') as Record<string, unknown> || {},
+    metadata: (yMap.get('metadata') as Record<string, unknown>) || {},
     graphNodeId: yMap.get('graphNodeId') as string,
-    claimedBy: yMap.get('claimedBy') as string[] || [],
+    claimedBy: (yMap.get('claimedBy') as string[]) || [],
   };
 }
 
@@ -361,11 +368,11 @@ export function requestConnection(
   entityId: string,
   relationship: string,
   note?: string,
-  userId?: string
+  userId?: string,
 ): string {
   const requestsArray = getConnectionRequestsArray(doc);
   const requestId = crypto.randomUUID();
-  
+
   const request: ConnectionRequest = {
     id: requestId,
     requesterId: userId || 'unknown',
@@ -376,11 +383,11 @@ export function requestConnection(
     note,
     createdAt: Date.now(),
   };
-  
+
   doc.transact(() => {
     requestsArray.push([request]);
   }, 'connection-request');
-  
+
   return requestId;
 }
 
@@ -388,25 +395,25 @@ export function resolveConnectionRequest(
   doc: Y.Doc,
   requestId: string,
   approved: boolean,
-  resolvedBy: string
+  resolvedBy: string,
 ): void {
   const requestsArray = getConnectionRequestsArray(doc);
   const requests = requestsArray.toArray() as ConnectionRequest[];
-  const index = requests.findIndex(r => r.id === requestId);
-  
+  const index = requests.findIndex((r) => r.id === requestId);
+
   if (index === -1) return;
-  
+
   const updatedRequest: ConnectionRequest = {
     ...requests[index],
     status: approved ? 'approved' : 'rejected',
     resolvedAt: Date.now(),
     resolvedBy,
   };
-  
+
   doc.transact(() => {
     requestsArray.delete(index, 1);
     requestsArray.insert(index, [updatedRequest]);
-    
+
     // If approved, update entity's claimedBy array
     if (approved) {
       const entityPool = getEntityPoolMap(doc);

@@ -4,13 +4,13 @@ export const NOBLE: CareerDefinition = {
   id: 'noble',
   name: 'Noble',
   description: 'Members of the aristocracy or ruling class.',
-  
+
   qualification: {
     characteristic: 'SOC',
     target: 10,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'administrator',
@@ -58,7 +58,7 @@ export const NOBLE: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 STR' },
@@ -85,7 +85,7 @@ export const NOBLE: CareerDefinition = {
       { roll: 6, skill: 'art' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Wastrel' },
     { rank: 1, title: 'Wastrel' },
@@ -95,9 +95,9 @@ export const NOBLE: CareerDefinition = {
     { rank: 5, title: 'Noble' },
     { rank: 6, title: 'Noble' },
   ],
-  
+
   cashBenefits: [10000, 10000, 50000, 50000, 100000, 100000, 200000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Ship Share' },
     { roll: 2, benefit: '+1 EDU' },
@@ -106,7 +106,7 @@ export const NOBLE: CareerDefinition = {
     { roll: 5, benefit: 'TAS Membership' },
     { roll: 6, benefit: 'Yacht', orHighRank: 'Personal Starship' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -174,9 +174,7 @@ export const NOBLE: CareerDefinition = {
     {
       roll: 10,
       description: 'You make a deal with a powerful faction.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'faction_leader' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'faction_leader' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
@@ -190,7 +188,7 @@ export const NOBLE: CareerDefinition = {
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
@@ -204,9 +202,7 @@ export const NOBLE: CareerDefinition = {
       description: 'A family scandal forces you from your position.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'secret', required: true, template: 'family_scandal' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'family_scandal' }],
       effects: [{ type: 'characteristic', target: 'SOC', value: -1 }],
     },
     {
@@ -214,9 +210,7 @@ export const NOBLE: CareerDefinition = {
       description: 'You are implicated in a political scandal.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'rival', required: true, template: 'political_enemy' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'rival', required: true, template: 'political_enemy' }],
     },
     {
       roll: 4,
@@ -230,9 +224,7 @@ export const NOBLE: CareerDefinition = {
       description: 'An assassin or other enemy targets you.',
       forced: true,
       injury: true,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'assassin' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'assassin' }],
     },
     {
       roll: 6,

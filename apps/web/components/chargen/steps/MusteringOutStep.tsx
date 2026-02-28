@@ -38,12 +38,12 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
   // Initialize state from character if returning to page
   useEffect(() => {
     if (character) {
-        // We can't easily reconstruct the exact roll history from just the benefits list and credits,
-        // but we can track the count. For a real implementation we might want to store the roll history in the character state.
-        // For now, we will rely on local state for the session, but persist the results.
-        // If the user refreshes, they might lose the history of rolls displayed, but the character sheet is correct.
-        // To fix this properly, we should probably add a 'benefitRolls' array to the character schema.
-        // But per instructions, we just persist credits and benefits array.
+      // We can't easily reconstruct the exact roll history from just the benefits list and credits,
+      // but we can track the count. For a real implementation we might want to store the roll history in the character state.
+      // For now, we will rely on local state for the session, but persist the results.
+      // If the user refreshes, they might lose the history of rolls displayed, but the character sheet is correct.
+      // To fix this properly, we should probably add a 'benefitRolls' array to the character schema.
+      // But per instructions, we just persist credits and benefits array.
     }
   }, [character]);
 
@@ -54,15 +54,15 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
   // Actually, we should check against the character's existing benefits count if we reload.
   // But since the task doesn't ask for schema changes to support roll history, I'll stick to the requested implementation.
   // Wait, if I reload, I lose "rollsUsed".
-  // The prompt says "Benefits include cash, equipment...". 
+  // The prompt says "Benefits include cash, equipment...".
   // If I reload, `character.benefits` has the strings. `character.credits` has the money.
   // So I can count `character.benefits.length`. But cash rolls don't add to benefits array in my code above?
   // "credits: character.credits + (result.result as number)" -> simply updates total.
   // So we lose track of how many cash rolls were made if we refresh.
   // I will just implement as requested. The user can just be careful not to refresh during mustering out, or we accept that limitation for now.
-  
+
   const rollsRemaining = totalRolls - rollsUsed;
-  
+
   const finalTerm = character.terms[character.terms.length - 1];
   const career = getCareer(finalTerm?.careerId || '');
   const highRank = isHighRank(character);
@@ -70,11 +70,11 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
 
   // Calculate totals for display
   const totalCredits = collectedBenefits
-    .filter(b => b.type === 'cash')
+    .filter((b) => b.type === 'cash')
     .reduce((sum, b) => sum + (b.result as number), character.credits);
-  
+
   const shipShares = collectedBenefits
-    .filter(b => b.type === 'benefit' && String(b.result).includes('Ship Share'))
+    .filter((b) => b.type === 'benefit' && String(b.result).includes('Ship Share'))
     .reduce((sum, b) => {
       const match = String(b.result).match(/(\d+)\s*Ship/i);
       return sum + (match ? parseInt(match[1]) : 1);
@@ -85,22 +85,22 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
     if (type === 'cash' && cashRollsUsed >= MAX_CASH_ROLLS) return;
 
     const result = rollBenefit(character, type);
-    
+
     const newBenefit: CollectedBenefit = {
       rollNumber: rollsUsed + 1,
       type,
       roll: result.roll.total,
       result: result.result,
     };
-    
-    setCollectedBenefits(prev => [...prev, newBenefit]);
+
+    setCollectedBenefits((prev) => [...prev, newBenefit]);
     setLastRollResult(result);
     setShowRollResult(true);
-    
+
     if (type === 'cash') {
-      setCashRollsUsed(prev => prev + 1);
+      setCashRollsUsed((prev) => prev + 1);
     }
-    
+
     // Persist to CRDT
     const doc = getYDoc();
     if (type === 'cash') {
@@ -112,7 +112,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         benefits: [...character.benefits, result.result as string],
       });
     }
-    
+
     // Hide result after delay
     setTimeout(() => setShowRollResult(false), 2000);
   };
@@ -128,12 +128,11 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
-         <h2 className="text-2xl font-bold text-heading mb-2 font-display">Mustering Out</h2>
-        
+        <h2 className="text-2xl font-bold text-heading mb-2 font-display">Mustering Out</h2>
+
         {/* Career Summary */}
         <div className="text-subtle mb-6">
-          {career?.name} • {character.terms.length} Terms • 
-          Rank {finalTerm?.currentRank || 0}
+          {career?.name} • {character.terms.length} Terms • Rank {finalTerm?.currentRank || 0}
           {highRank && <span className="text-amber-400 ml-2">(High Rank Bonuses)</span>}
         </div>
 
@@ -173,9 +172,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
             >
               <Gift className="w-5 h-5 text-cyan-400" />
               <div className="font-bold">Roll Benefits</div>
-              {highRank && (
-                <div className="text-xs opacity-75">High Rank Alternate</div>
-              )}
+              {highRank && <div className="text-xs opacity-75">High Rank Alternate</div>}
             </SciFiButton>
           </div>
         )}
@@ -183,11 +180,9 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         {/* Last Roll Result */}
         {showRollResult && lastRollResult && (
           <div className="bg-zinc-950 border border-zinc-700 rounded-lg p-4 mb-6 text-center animate-in fade-in">
-            <div className="text-subtle text-sm mb-1">
-              Rolled: {lastRollResult.roll.total}
-            </div>
+            <div className="text-subtle text-sm mb-1">Rolled: {lastRollResult.roll.total}</div>
             <div className="text-2xl font-bold text-heading">
-              {lastRollResult.type === 'cash' 
+              {lastRollResult.type === 'cash'
                 ? `Cr${(lastRollResult.result as number).toLocaleString()}`
                 : lastRollResult.result}
             </div>
@@ -197,18 +192,20 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         {/* Collected Benefits */}
         {collectedBenefits.length > 0 && (
           <div className="mb-6">
-             <h3 className="text-lg font-bold text-heading mb-3 font-display">Benefits Received</h3>
+            <h3 className="text-lg font-bold text-heading mb-3 font-display">Benefits Received</h3>
             <div className="space-y-2">
               {collectedBenefits.map((b, i) => (
                 <div key={i} className="flex items-center gap-3 bg-zinc-950 rounded p-3">
                   <span className="text-subtle text-sm">#{b.rollNumber}</span>
                   <span className={b.type === 'cash' ? 'text-amber-400' : 'text-cyan-400'}>
-                    {b.type === 'cash' ? <Coins className="w-5 h-5 text-amber-400" /> : <Gift className="w-5 h-5 text-cyan-400" />}
+                    {b.type === 'cash' ? (
+                      <Coins className="w-5 h-5 text-amber-400" />
+                    ) : (
+                      <Gift className="w-5 h-5 text-cyan-400" />
+                    )}
                   </span>
                   <span className="text-heading">
-                    {b.type === 'cash' 
-                      ? `Cr${(b.result as number).toLocaleString()}`
-                      : b.result}
+                    {b.type === 'cash' ? `Cr${(b.result as number).toLocaleString()}` : b.result}
                   </span>
                 </div>
               ))}
@@ -243,13 +240,9 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         >
           ← Back
         </SciFiButton>
-        
+
         {rollsRemaining === 0 && (
-          <SciFiButton
-            onClick={handleFinalize}
-            theme="cyan"
-            glow
-          >
+          <SciFiButton onClick={handleFinalize} theme="cyan" glow>
             Continue →
           </SciFiButton>
         )}

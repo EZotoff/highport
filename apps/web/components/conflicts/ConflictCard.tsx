@@ -45,16 +45,16 @@ export function ConflictCard({ conflict, onResolve, onDismiss, isLoading }: Conf
           <h3 className="text-amber-400 font-mono text-sm">{conflict.fieldPath}</h3>
           <p className="text-zinc-500 text-xs mt-1">Node: {conflict.nodeId}</p>
         </div>
-        <span className="text-xs text-zinc-600">
-          {formatTimestamp(conflict.createdAt)}
-        </span>
+        <span className="text-xs text-zinc-600">{formatTimestamp(conflict.createdAt)}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-blue-950/30 border border-blue-800/30 rounded p-3">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-blue-400 text-xs font-semibold uppercase">Foundry</span>
-            <span className="text-zinc-600 text-xs">{formatTimestamp(conflict.foundryTimestamp)}</span>
+            <span className="text-zinc-600 text-xs">
+              {formatTimestamp(conflict.foundryTimestamp)}
+            </span>
           </div>
           <pre className="text-zinc-300 text-sm whitespace-pre-wrap font-mono overflow-auto max-h-32">
             {formatValue(conflict.foundryValue)}
@@ -64,7 +64,9 @@ export function ConflictCard({ conflict, onResolve, onDismiss, isLoading }: Conf
         <div className="bg-emerald-950/30 border border-emerald-800/30 rounded p-3">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-emerald-400 text-xs font-semibold uppercase">Highport</span>
-            <span className="text-zinc-600 text-xs">{formatTimestamp(conflict.highportTimestamp)}</span>
+            <span className="text-zinc-600 text-xs">
+              {formatTimestamp(conflict.highportTimestamp)}
+            </span>
           </div>
           <pre className="text-zinc-300 text-sm whitespace-pre-wrap font-mono overflow-auto max-h-32">
             {formatValue(conflict.highportValue)}

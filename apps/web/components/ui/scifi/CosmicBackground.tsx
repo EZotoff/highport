@@ -25,19 +25,19 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
   className = '',
 }) => {
   const reducedMotion = useReducedMotion();
-  
+
   const opacityMap = {
     low: 0.3,
     medium: 0.5,
     high: 0.8,
   };
-  
+
   const opacity = opacityMap[intensity];
-  
+
   return (
-    <div 
+    <div
       className={`pointer-events-none overflow-hidden ${className}`}
-      style={{ 
+      style={{
         position: 'fixed',
         top: 0,
         right: 0,
@@ -47,7 +47,7 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
         pointerEvents: 'none',
       }}
     >
-      <div 
+      <div
         className={`animate-nebula-pulse`}
         style={{
           ...fullScreen,
@@ -60,10 +60,10 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
           `,
         }}
       />
-      
+
       {showStars && (
         <>
-          <div 
+          <div
             className="star-layer animate-twinkle-slow"
             style={{
               ...fullScreen,
@@ -79,7 +79,7 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
               backgroundSize: '350px 350px',
             }}
           />
-          <div 
+          <div
             className="star-layer animate-twinkle-medium"
             style={{
               ...fullScreen,
@@ -95,7 +95,7 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
               backgroundSize: '450px 450px',
             }}
           />
-          <div 
+          <div
             className="star-layer animate-twinkle-fast"
             style={{
               ...fullScreen,
@@ -113,9 +113,9 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
           />
         </>
       )}
-      
+
       {showGrid && (
-        <div 
+        <div
           style={{
             ...fullScreen,
             backgroundImage: `
@@ -128,17 +128,17 @@ export const CosmicBackground: React.FC<CosmicBackgroundProps> = ({
           }}
         />
       )}
-      
+
       {showScanlines && (
-        <div 
-            className="crt-scanlines"
-            style={{
-              ...fullScreen,
-              opacity: opacity * 0.8,
-              pointerEvents: 'none',
-            }}
-          />
-        )}
+        <div
+          className="crt-scanlines"
+          style={{
+            ...fullScreen,
+            opacity: opacity * 0.8,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
     </div>
   );
 };

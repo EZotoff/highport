@@ -258,7 +258,7 @@ describe('portrait service utility functions', () => {
   });
 
   describe('ensureStoryTags', () => {
-    it("adds default story entity type when story is missing", () => {
+    it('adds default story entity type when story is missing', () => {
       const result = ensureStoryTags({ demographics: { gender: 'female' } });
 
       expect(result.story).toEqual({ entity_type: 'npc' });

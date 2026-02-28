@@ -42,7 +42,7 @@ function LazyPortraitImage({ src, alt }: { src?: string; alt: string }) {
           observer.disconnect();
         }
       },
-      { rootMargin: '200px' }
+      { rootMargin: '200px' },
     );
 
     if (containerRef.current) {
@@ -56,11 +56,11 @@ function LazyPortraitImage({ src, alt }: { src?: string; alt: string }) {
     <div ref={containerRef} className="relative w-full h-full bg-zinc-900 overflow-hidden">
       {!isLoaded && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div 
+          <div
             className="absolute inset-0 animate-pulse bg-zinc-800/50"
-            style={{ 
+            style={{
               borderColor: THEME_HEX.cyan + '26',
-              borderWidth: '1px'
+              borderWidth: '1px',
             }}
           />
           <ImageIcon className="w-8 h-8 opacity-20" style={{ color: THEME_HEX.cyan }} />
@@ -187,15 +187,15 @@ export function PortraitLibrary({
         <div className="flex flex-col gap-4 py-4 flex-1 overflow-hidden">
           <div className="flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[200px]">
-              <label 
+              <label
                 className="text-xs font-bold uppercase tracking-widest mb-1 block"
                 style={{ color: TEXT_COLORS.label }}
               >
                 Search Tags
               </label>
               <div className="relative">
-                <Search 
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" 
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
                   style={{ color: THEME_HEX.cyan }}
                 />
                 <SciFiInput
@@ -208,7 +208,7 @@ export function PortraitLibrary({
             </div>
 
             <div className="w-40">
-              <label 
+              <label
                 className="text-xs font-bold uppercase tracking-widest mb-1 block"
                 style={{ color: TEXT_COLORS.label }}
               >
@@ -226,7 +226,7 @@ export function PortraitLibrary({
             </div>
 
             <div className="w-40">
-              <label 
+              <label
                 className="text-xs font-bold uppercase tracking-widest mb-1 block"
                 style={{ color: TEXT_COLORS.label }}
               >
@@ -246,7 +246,7 @@ export function PortraitLibrary({
             </div>
 
             <div className="w-40">
-              <label 
+              <label
                 className="text-xs font-bold uppercase tracking-widest mb-1 block"
                 style={{ color: TEXT_COLORS.label }}
               >
@@ -296,7 +296,9 @@ export function PortraitLibrary({
             ) : results.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center gap-4 opacity-50">
                 <ImageIcon className="w-16 h-16" style={{ color: THEME_HEX.slate }} />
-                <p style={{ color: TEXT_COLORS.subtle }}>No portraits matched your search criteria.</p>
+                <p style={{ color: TEXT_COLORS.subtle }}>
+                  No portraits matched your search criteria.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-1">
@@ -305,9 +307,9 @@ export function PortraitLibrary({
                     key={result.portrait.id}
                     onClick={() => onSelect(result.portrait)}
                     className="group relative aspect-square rounded-lg overflow-hidden border transition-all duration-300 hover:scale-105 active:scale-95"
-                    style={{ 
+                    style={{
                       borderColor: THEME_HEX.cyan + '4d',
-                      boxShadow: `0 0 0 0 ${THEME_HEX.cyan}00`
+                      boxShadow: `0 0 0 0 ${THEME_HEX.cyan}00`,
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = THEME_HEX.cyan;
@@ -322,20 +324,23 @@ export function PortraitLibrary({
                       src={normalizeImageUrl(result.portrait.image_url)}
                       alt="Portrait"
                     />
-                    
-                    <div 
+
+                    <div
                       className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold backdrop-blur-md border"
-                      style={{ 
+                      style={{
                         backgroundColor: 'rgba(0,0,0,0.6)',
                         color: THEME_HEX.cyan,
-                        borderColor: THEME_HEX.cyan + '4d'
+                        borderColor: THEME_HEX.cyan + '4d',
                       }}
                     >
                       {Math.round(result.score * 100)}%
                     </div>
 
                     <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                      <div className="text-[10px] uppercase tracking-tighter truncate" style={{ color: THEME_HEX.cyan }}>
+                      <div
+                        className="text-[10px] uppercase tracking-tighter truncate"
+                        style={{ color: THEME_HEX.cyan }}
+                      >
                         {result.portrait.tags.story.entity_type}
                       </div>
                       <div className="text-[9px] truncate" style={{ color: TEXT_COLORS.subtle }}>

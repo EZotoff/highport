@@ -1,12 +1,14 @@
 # WEB (Next.js 14)
 
 ## OVERVIEW
+
 Frontend for Highport. Uses App Router, Yjs for CRDT state, React Flow for graph visualization.
 Implements a Local-First architecture using `y-indexeddb` for offline persistence.
 
 ## COMPONENT ARCHITECTURE
 
 ### Directory Structure
+
 - `app/` - Next.js App Router pages
   - `(campaign)/graph/` - Main interactive graph view
   - `(campaign)/factions/` - Reputation tables
@@ -22,27 +24,31 @@ Implements a Local-First architecture using `y-indexeddb` for offline persistenc
   - `layout/` - Application shell, navigation, user menu
 
 ### Key Concepts
+
 - **Graph Components**: Handle canvas interactions and bridge React Flow events to Yjs operations.
 - **Table Components**: Render Y.Array data as sortable/filterable tables with real-time cell editing.
 - **Layout**: Manages the `HocuspocusProvider` context and connection status.
 
 ## KEY MODULES
-| File | Role |
-|------|------|
-| `lib/ydoc.ts` | Creates global Y.Doc, defines shared types (nodes, edges) |
-| `lib/yjs-helpers.ts` | Converts between TypeScript types and Y.Map (Bi-directional) |
-| `lib/sync.ts` | Singleton provider setup, connection management, IndexedDB |
-| `lib/awareness.ts` | Helpers for user presence, cursors, and selection states |
-| `lib/hooks/use-yjs.ts` | Custom hooks for subscribing to Yjs data changes |
+
+| File                   | Role                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| `lib/ydoc.ts`          | Creates global Y.Doc, defines shared types (nodes, edges)    |
+| `lib/yjs-helpers.ts`   | Converts between TypeScript types and Y.Map (Bi-directional) |
+| `lib/sync.ts`          | Singleton provider setup, connection management, IndexedDB   |
+| `lib/awareness.ts`     | Helpers for user presence, cursors, and selection states     |
+| `lib/hooks/use-yjs.ts` | Custom hooks for subscribing to Yjs data changes             |
 
 ## YJS PATTERNS
 
 ### Critical Rules
+
 1. **Map Attachment**: A `Y.Map` MUST be attached to the `Y.Doc` (or a parent attached type) BEFORE you can read/write to it safely.
-   - *Bad*: `const map = new Y.Map(); map.set('x', 1); doc.getMap('root').set('m', map);`
-   - *Good*: `const map = doc.getMap('root').set('m', new Y.Map()); map.set('x', 1);`
+   - _Bad_: `const map = new Y.Map(); map.set('x', 1); doc.getMap('root').set('m', map);`
+   - _Good_: `const map = doc.getMap('root').set('m', new Y.Map()); map.set('x', 1);`
 
 2. **Transactions**: Always bundle multiple operations into a single transaction to ensure atomicity and reduce update events.
+
    ```typescript
    doc.transact(() => {
      nodeMap.set('x', 100);
@@ -75,14 +81,17 @@ Implements a Local-First architecture using `y-indexeddb` for offline persistenc
 After any frontend changes:
 
 ### Level 1: Static Gates
+
 - `pnpm --filter web typecheck` → exit 0
 - `pnpm --filter web build` → exit 0
 
 ### Level 2: Unit Tests
+
 - `pnpm --filter web test` → all pass
 - Component tests in `__tests__/` verifying rendering and basic logic.
 
 ### Level 3: E2E Tests
+
 - `pnpm e2e` for affected routes
 - Key tests:
   - `graph.spec.ts`: Node CRUD, dragging, selection
@@ -90,6 +99,7 @@ After any frontend changes:
   - `sync.spec.ts`: Multi-user consistency
 
 ### Level 4: Agentic Visual Testing
+
 1. Start dev server if not running (`pnpm dev`)
 2. Navigate to affected route via Playwright MCP
 3. Check console for errors: `page.on('console', ...)` should be silent

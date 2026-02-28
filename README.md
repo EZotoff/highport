@@ -69,11 +69,13 @@ To enable the connection, you must install the local package as a Foundry module
 2. Create a symlink from `packages/foundry-module` to `Data/modules/highport-bridge`.
 
 **Linux/Mac:**
+
 ```bash
 ln -s "$(pwd)/packages/foundry-module" "/path/to/FoundryVTT/Data/modules/highport-bridge"
 ```
 
 **Windows:**
+
 ```powershell
 mklink /D "C:\Path\To\FoundryVTT\Data\modules\highport-bridge" "C:\Path\To\Repo\packages\foundry-module"
 ```
@@ -84,6 +86,7 @@ mklink /D "C:\Path\To\FoundryVTT\Data\modules\highport-bridge" "C:\Path\To\Repo\
 ### Manual Export
 
 If you cannot use the bridge module, you can manually export data:
+
 1. Select nodes in the Graph view.
 2. Click the "Export to Foundry" button.
 3. A ZIP file containing JSON Actor data will download.
@@ -151,6 +154,7 @@ pnpm --filter web e2e:ui
 ```
 
 E2E test coverage:
+
 - Graph node creation, selection, deletion
 - Reputation table editing and sync
 - Sync latency verification (<500ms between users)
@@ -161,11 +165,13 @@ E2E test coverage:
 Create `.env` files in relevant apps as needed:
 
 ### apps/server/.env
+
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/highport
 ```
 
 ### apps/rag-service/.env
+
 ```env
 GOOGLE_API_KEY=your-gemini-api-key
 PINECONE_API_KEY=your-pinecone-key
@@ -173,28 +179,32 @@ PINECONE_API_KEY=your-pinecone-key
 
 ## Services
 
-| Service | Local Port | Description |
-|---------|------------|-------------|
-| Web | 3010 | Next.js frontend |
-| Hocuspocus | 3011 | WebSocket sync server |
-| Fastify | 3012 | REST API server |
-| RAG Service | 8000 | Python FastAPI |
-| PostgreSQL | 5432 | Database |
+| Service     | Local Port | Description           |
+| ----------- | ---------- | --------------------- |
+| Web         | 3010       | Next.js frontend      |
+| Hocuspocus  | 3011       | WebSocket sync server |
+| Fastify     | 3012       | REST API server       |
+| RAG Service | 8000       | Python FastAPI        |
+| PostgreSQL  | 5432       | Database              |
 
 ## Architecture
 
 ### CRDT Sync
+
 Highport uses Yjs for conflict-free replicated data types (CRDTs). The Hocuspocus server handles WebSocket connections and persists documents to PostgreSQL.
 
 ### Graph Visualization
+
 The campaign graph uses React Flow for rendering and interaction. Nodes represent campaign entities (NPCs, locations, factions, etc.) and edges represent relationships.
 
 ### Offline Support
+
 y-indexeddb provides offline persistence. Changes made offline are automatically synced when reconnecting.
 
 ## Troubleshooting
 
 ### Database connection errors
+
 ```bash
 # Ensure PostgreSQL is running
 docker compose up -d
@@ -204,11 +214,13 @@ docker compose logs postgres
 ```
 
 ### Sync not working
+
 - Verify Hocuspocus server is running on port 3011
 - Check browser console for WebSocket errors
 - Clear IndexedDB if data is corrupted: Dev Tools > Application > IndexedDB > Delete database
 
 ### E2E tests failing
+
 ```bash
 # Ensure dev server is not already running, or use:
 CI=true pnpm e2e

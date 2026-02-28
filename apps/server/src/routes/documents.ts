@@ -52,25 +52,22 @@ export async function registerDocumentRoutes(fastify: FastifyInstance): Promise<
       }
 
       return { status: 'updated' };
-    }
+    },
   );
 
-  fastify.get<{ Params: ScopeParams }>(
-    '/api/documents/:sourceId',
-    async (request, reply) => {
-      const { sourceId } = request.params;
+  fastify.get<{ Params: ScopeParams }>('/api/documents/:sourceId', async (request, reply) => {
+    const { sourceId } = request.params;
 
-      const docs = await db
-        .select()
-        .from(ingestedDocuments)
-        .where(eq(ingestedDocuments.id, sourceId));
+    const docs = await db
+      .select()
+      .from(ingestedDocuments)
+      .where(eq(ingestedDocuments.id, sourceId));
 
-      if (docs.length === 0) {
-        reply.code(404);
-        return { error: 'Document not found' };
-      }
-
-      return docs[0];
+    if (docs.length === 0) {
+      reply.code(404);
+      return { error: 'Document not found' };
     }
-  );
+
+    return docs[0];
+  });
 }

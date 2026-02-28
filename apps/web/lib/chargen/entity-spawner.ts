@@ -18,9 +18,9 @@ export interface SpawnEntityInput {
 export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
   const doc = getYDoc();
   const nodeId = crypto.randomUUID();
-  
+
   const nodeType = mapSpawnTypeToNodeType(input.spawn.type);
-  
+
   const node: GraphNode = {
     id: nodeId,
     type: nodeType,
@@ -39,7 +39,7 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
     created_at: Date.now(),
     created_by: 'chargen',
   };
-  
+
   const edge: GraphEdge = {
     id: crypto.randomUUID(),
     source_id: input.characterId,
@@ -51,12 +51,12 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
     color: getRelationColor(input.spawn.relationship),
     hidden: false,
   };
-  
+
   doc.transact(() => {
     addNode(doc, node);
     addEdge(doc, edge);
   }, 'chargen-spawn');
-  
+
   addEntityToPool(doc, {
     type: input.spawn.type as 'npc' | 'location' | 'item' | 'secret',
     createdBy: input.characterId,
@@ -69,7 +69,7 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
     graphNodeId: nodeId,
     claimedBy: [input.characterId],
   });
-  
+
   return {
     type: input.spawn.type,
     graphNodeId: nodeId,
@@ -81,11 +81,16 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
 
 function mapSpawnTypeToNodeType(spawnType: string): NodeType {
   switch (spawnType) {
-    case 'npc': return 'npc';
-    case 'location': return 'location';
-    case 'item': return 'clue';
-    case 'secret': return 'clue';
-    default: return 'npc';
+    case 'npc':
+      return 'npc';
+    case 'location':
+      return 'location';
+    case 'item':
+      return 'clue';
+    case 'secret':
+      return 'clue';
+    default:
+      return 'npc';
   }
 }
 
@@ -100,20 +105,30 @@ function calculateSpawnPosition(): { x: number; y: number } {
 
 function getRelationLabel(relationship?: string): string {
   switch (relationship) {
-    case 'ally': return 'Allied with';
-    case 'contact': return 'Contact of';
-    case 'rival': return 'Rival of';
-    case 'enemy': return 'Enemy of';
-    default: return 'Connected to';
+    case 'ally':
+      return 'Allied with';
+    case 'contact':
+      return 'Contact of';
+    case 'rival':
+      return 'Rival of';
+    case 'enemy':
+      return 'Enemy of';
+    default:
+      return 'Connected to';
   }
 }
 
 function getRelationColor(relationship?: string): string {
   switch (relationship) {
-    case 'ally': return '#22c55e';
-    case 'contact': return '#3b82f6';
-    case 'rival': return '#f59e0b';
-    case 'enemy': return '#ef4444';
-    default: return '#71717a';
+    case 'ally':
+      return '#22c55e';
+    case 'contact':
+      return '#3b82f6';
+    case 'rival':
+      return '#f59e0b';
+    case 'enemy':
+      return '#ef4444';
+    default:
+      return '#71717a';
   }
 }

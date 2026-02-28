@@ -88,7 +88,7 @@ describe('Foundry Routes', () => {
           changes: { hp: { current: 10, max: 20 } },
           foundryUuid: 'Actor.abc123',
         },
-      })
+      }),
     );
 
     const response = await messagePromise;
@@ -112,7 +112,7 @@ describe('Foundry Routes', () => {
           changes: { credits: 5000 },
           foundryUuid: 'Actor.xyz789',
         },
-      })
+      }),
     );
 
     await messagePromise;

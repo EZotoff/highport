@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import * as Y from 'yjs';
-import { registerExportRoutes, extractNodesFromYDoc, nodeToFoundryActor, matchActorsToNodes } from '../src/routes/export.js';
+import {
+  registerExportRoutes,
+  extractNodesFromYDoc,
+  nodeToFoundryActor,
+  matchActorsToNodes,
+} from '../src/routes/export.js';
 
 vi.mock('../src/ws/hocuspocus.js', () => ({
   fetchDocumentState: vi.fn(),
@@ -13,7 +18,7 @@ const mockFetchDocumentState = vi.mocked(fetchDocumentState);
 function createTestYDocState(): Uint8Array {
   const doc = new Y.Doc();
   const nodesMap = doc.getMap('nodes');
-  
+
   const node1 = new Y.Map<unknown>();
   node1.set('id', 'node_1');
   node1.set('type', 'traveller');
@@ -29,7 +34,7 @@ function createTestYDocState(): Uint8Array {
   node1.set('hidden', false);
   node1.set('created_at', Date.now());
   node1.set('created_by', 'user_1');
-  
+
   const node2 = new Y.Map<unknown>();
   node2.set('id', 'node_2');
   node2.set('type', 'npc');
@@ -40,7 +45,7 @@ function createTestYDocState(): Uint8Array {
   node2.set('hidden', false);
   node2.set('created_at', Date.now());
   node2.set('created_by', 'user_1');
-  
+
   const node3 = new Y.Map<unknown>();
   node3.set('id', 'node_3');
   node3.set('type', 'world');
@@ -51,11 +56,11 @@ function createTestYDocState(): Uint8Array {
   node3.set('hidden', false);
   node3.set('created_at', Date.now());
   node3.set('created_by', 'user_1');
-  
+
   nodesMap.set('node_1', node1);
   nodesMap.set('node_2', node2);
   nodesMap.set('node_3', node3);
-  
+
   return Y.encodeStateAsUpdate(doc);
 }
 
@@ -103,7 +108,7 @@ describe('Export Routes', () => {
       const body = response.json();
       expect(body.actors).toHaveLength(2);
       expect(body.count).toBe(2);
-      
+
       const testChar = body.actors.find((a: { name: string }) => a.name === 'Test Character');
       expect(testChar).toBeDefined();
       expect(testChar._id).toBe('abc123');
@@ -135,7 +140,9 @@ describe('Export Routes', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.headers['content-type']).toContain('application/json');
-      expect(response.headers['content-disposition']).toBe('attachment; filename="highport-export.json"');
+      expect(response.headers['content-disposition']).toBe(
+        'attachment; filename="highport-export.json"',
+      );
     });
   });
 
@@ -176,15 +183,17 @@ describe('Export Routes', () => {
         method: 'POST',
         url: '/api/import/actors',
         payload: {
-          actors: [{
-            _id: 'abc123',
-            name: 'Different Name',
-            type: 'traveller',
-            system: {
-              hits: { value: 15, max: 25 },
-              finance: { cash: 10000 },
+          actors: [
+            {
+              _id: 'abc123',
+              name: 'Different Name',
+              type: 'traveller',
+              system: {
+                hits: { value: 15, max: 25 },
+                finance: { cash: 10000 },
+              },
             },
-          }],
+          ],
         },
       });
 
@@ -203,12 +212,14 @@ describe('Export Routes', () => {
         method: 'POST',
         url: '/api/import/actors',
         payload: {
-          actors: [{
-            _id: 'new_id',
-            name: 'test character',
-            type: 'traveller',
-            system: {},
-          }],
+          actors: [
+            {
+              _id: 'new_id',
+              name: 'test character',
+              type: 'traveller',
+              system: {},
+            },
+          ],
         },
       });
 
@@ -246,9 +257,9 @@ describe('Helper Functions', () => {
     it('extracts nodes from Y.Doc state', () => {
       const state = createTestYDocState();
       const nodes = extractNodesFromYDoc(state);
-      
+
       expect(nodes).toHaveLength(3);
-      expect(nodes.find(n => n.id === 'node_1')?.label).toBe('Test Character');
+      expect(nodes.find((n) => n.id === 'node_1')?.label).toBe('Test Character');
     });
   });
 
@@ -270,9 +281,9 @@ describe('Helper Functions', () => {
         created_at: Date.now(),
         created_by: 'user',
       };
-      
+
       const actor = nodeToFoundryActor(node);
-      
+
       expect(actor._id).toBe('xyz');
       expect(actor.name).toBe('Hero');
       expect(actor.system.hits).toEqual({ value: 5, max: 10 });
@@ -292,7 +303,7 @@ describe('Helper Functions', () => {
         created_at: Date.now(),
         created_by: 'user',
       };
-      
+
       const actor = nodeToFoundryActor(node);
       expect(actor._id).toBe('node_fallback');
     });
@@ -327,7 +338,7 @@ describe('Helper Functions', () => {
     it('matches by UUID first', () => {
       const actors = [{ _id: 'a1', name: 'Wrong Name', type: 'traveller', system: {} }];
       const result = matchActorsToNodes(actors, nodes);
-      
+
       expect(result.matched).toHaveLength(1);
       expect(result.matched[0].nodeId).toBe('n1');
     });
@@ -335,7 +346,7 @@ describe('Helper Functions', () => {
     it('matches by name when UUID not found', () => {
       const actors = [{ _id: 'unknown', name: 'bob', type: 'traveller', system: {} }];
       const result = matchActorsToNodes(actors, nodes);
-      
+
       expect(result.matched).toHaveLength(1);
       expect(result.matched[0].nodeId).toBe('n2');
     });
@@ -343,7 +354,7 @@ describe('Helper Functions', () => {
     it('reports unmatched actors', () => {
       const actors = [{ _id: 'xxx', name: 'Unknown', type: 'traveller', system: {} }];
       const result = matchActorsToNodes(actors, nodes);
-      
+
       expect(result.unmatched).toHaveLength(1);
       expect(result.updated).toBe(0);
     });

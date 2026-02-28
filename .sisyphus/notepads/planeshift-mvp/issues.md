@@ -2,17 +2,18 @@
 
 > Problems and gotchas encountered
 
-
 ## `/graph` Page Build Error (2026-01-27)
 
 **Error:**
+
 ```
 useSearchParams() should be wrapped in a suspense boundary at page "/graph"
 ```
 
 **Location:** `apps/web/components/graph/GraphCanvas.tsx` line 51
 
-**Impact:** 
+**Impact:**
+
 - E2E tests fail because the page won't render
 - Static generation fails during build
 
@@ -20,6 +21,7 @@ useSearchParams() should be wrapped in a suspense boundary at page "/graph"
 Wrap the `GraphCanvasContent` component in a Suspense boundary or move `useSearchParams()` to a separate client component that's wrapped in Suspense.
 
 Example fix:
+
 ```typescript
 // In page.tsx
 <Suspense fallback={<div>Loading...</div>}>
@@ -28,7 +30,6 @@ Example fix:
 ```
 
 Or refactor `GraphCanvas.tsx` to isolate the useSearchParams call.
-
 
 ## E2E Test Flakiness (2026-01-27)
 
@@ -49,12 +50,13 @@ E2E tests are flaky, with varying numbers of failures between runs (11-22 failin
    - Document name conflicts between test runs
 
 **Workarounds:**
+
 - Unit tests verify sync logic at the component level (135 tests passing)
 - Build/typecheck verify type safety
 - E2E tests for single-user flows work reliably
 
 **Recommendation:**
+
 - Add test isolation by using unique document names per test
 - Increase wait times for sync operations
 - Consider using Playwright fixtures for shared Yjs state
-

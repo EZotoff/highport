@@ -18,15 +18,11 @@ const STAT_FIELDS = [
 const TEXT_FIELDS = ['notes', 'description', 'biography'];
 
 function isStatField(fieldPath: string): boolean {
-  return STAT_FIELDS.some(
-    (stat) => fieldPath === stat || fieldPath.startsWith(`${stat}.`)
-  );
+  return STAT_FIELDS.some((stat) => fieldPath === stat || fieldPath.startsWith(`${stat}.`));
 }
 
 function isTextField(fieldPath: string): boolean {
-  return TEXT_FIELDS.some(
-    (text) => fieldPath === text || fieldPath.startsWith(`${text}.`)
-  );
+  return TEXT_FIELDS.some((text) => fieldPath === text || fieldPath.startsWith(`${text}.`));
 }
 
 export function resolveConflict(ctx: ConflictContext): Resolution {
@@ -47,7 +43,7 @@ export function resolveConflict(ctx: ConflictContext): Resolution {
 
 export function applyResolution(
   resolution: Resolution,
-  ctx: ConflictContext
+  ctx: ConflictContext,
 ): { value: unknown; source: 'foundry' | 'highport' } {
   switch (resolution) {
     case 'keep_foundry':
@@ -88,9 +84,10 @@ export function shouldQueueConflict(resolution: Resolution): boolean {
 export async function resolveConflictInDb(
   conflictId: string,
   resolution: ConflictResolution,
-  resolvedBy: string
+  resolvedBy: string,
 ): Promise<void> {
-  await db.update(conflictQueue)
+  await db
+    .update(conflictQueue)
     .set({
       status: 'resolved',
       resolution,
@@ -98,12 +95,13 @@ export async function resolveConflictInDb(
       resolvedAt: new Date(),
     })
     .where(eq(conflictQueue.id, conflictId));
-    
+
   console.log(`[Conflict] Resolved ${conflictId}: ${resolution} by ${resolvedBy}`);
 }
 
 export async function dismissConflict(conflictId: string, resolvedBy: string): Promise<void> {
-  await db.update(conflictQueue)
+  await db
+    .update(conflictQueue)
     .set({
       status: 'dismissed',
       resolvedBy,
@@ -113,10 +111,9 @@ export async function dismissConflict(conflictId: string, resolvedBy: string): P
 }
 
 export async function getPendingConflicts(): Promise<ConflictItem[]> {
-  const results = await db.select().from(conflictQueue)
-    .where(eq(conflictQueue.status, 'pending'));
-  
-  return results.map(r => ({
+  const results = await db.select().from(conflictQueue).where(eq(conflictQueue.status, 'pending'));
+
+  return results.map((r) => ({
     id: r.id,
     nodeId: r.nodeId,
     fieldPath: r.fieldPath,
@@ -133,12 +130,10 @@ export async function getPendingConflicts(): Promise<ConflictItem[]> {
 }
 
 export async function getConflictById(id: string): Promise<ConflictItem | null> {
-  const results = await db.select().from(conflictQueue)
-    .where(eq(conflictQueue.id, id))
-    .limit(1);
-  
+  const results = await db.select().from(conflictQueue).where(eq(conflictQueue.id, id)).limit(1);
+
   if (!results[0]) return null;
-  
+
   const r = results[0];
   return {
     id: r.id,

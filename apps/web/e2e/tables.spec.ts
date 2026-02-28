@@ -18,10 +18,10 @@ test.describe('Reputation Table', () => {
   test('can add a new faction', async ({ page }) => {
     // Initially shows "No factions defined." placeholder
     await expect(page.locator('text=No factions defined.')).toBeVisible();
-    
+
     await page.locator('button:has-text("Add Faction")').click();
     await page.waitForTimeout(500);
-    
+
     // After adding, placeholder disappears and faction row with input appears
     await expect(page.locator('text=No factions defined.')).not.toBeVisible();
     await expect(page.locator('tbody tr input').first()).toBeVisible();
@@ -35,7 +35,9 @@ test.describe('Reputation Table', () => {
     await nameCell.fill('Test Faction Name');
     await nameCell.blur();
     await page.waitForTimeout(500);
-    await expect(page.locator('tbody tr').last().locator('td').first().locator('input')).toHaveValue('Test Faction Name');
+    await expect(
+      page.locator('tbody tr').last().locator('td').first().locator('input'),
+    ).toHaveValue('Test Faction Name');
   });
 
   test('can edit standing value', async ({ page }) => {
@@ -46,7 +48,9 @@ test.describe('Reputation Table', () => {
     await standingInput.fill('50');
     await standingInput.blur();
     await page.waitForTimeout(500);
-    await expect(page.locator('tbody tr').last().locator('input[type="number"]').first()).toHaveValue('50');
+    await expect(
+      page.locator('tbody tr').last().locator('input[type="number"]').first(),
+    ).toHaveValue('50');
   });
 
   test('standing color changes based on value', async ({ page }) => {
@@ -93,7 +97,7 @@ test.describe('Two-User Table Sync', () => {
     await page1.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page1.reload();
     await page1.waitForSelector('table', { timeout: 30000 });
-    
+
     await page2.goto('/reputation');
     await page2.waitForSelector('table', { timeout: 30000 });
 

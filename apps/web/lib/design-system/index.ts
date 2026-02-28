@@ -1,19 +1,29 @@
 export { CHART_DEFAULTS, ANIMATION_TIMING, Z_LAYERS } from './visualConfig';
-export type { ThemeColor, AnimationPhase, NodeVariant, EdgeVariant, RelationshipType, FlowNode, FlowEdge, TermVisualConfig, EntityVisualConfig } from './types';
-export { 
-  getSafeAnimationClass, 
-  useReducedMotion, 
-  useSequenceController, 
-  useToggleLoop, 
-  useTransitionController 
+export type {
+  ThemeColor,
+  AnimationPhase,
+  NodeVariant,
+  EdgeVariant,
+  RelationshipType,
+  FlowNode,
+  FlowEdge,
+  TermVisualConfig,
+  EntityVisualConfig,
+} from './types';
+export {
+  getSafeAnimationClass,
+  useReducedMotion,
+  useSequenceController,
+  useToggleLoop,
+  useTransitionController,
 } from './animationUtils';
-export { 
-  THEME_COLORS, 
-  THEME_STYLES, 
-  THEME_HEX, 
+export {
+  THEME_COLORS,
+  THEME_STYLES,
+  THEME_HEX,
   TYPOGRAPHY,
-  isValidTheme, 
-  getThemeDotStyle, 
+  isValidTheme,
+  getThemeDotStyle,
   getEffectiveTheme,
   getThemeTextClass,
   getThemeBgClass,
@@ -21,5 +31,5 @@ export {
   getThemeRingClass,
   getThemeShadowClass,
   getThemeGradientFromClass,
-  getThemeHoverBorderClass
+  getThemeHoverBorderClass,
 } from './themeUtils';

@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  User, 
-  MapPin, 
-  Box, 
-  Key, 
-  ShieldAlert, 
-  Trophy, 
+import {
+  User,
+  MapPin,
+  Box,
+  Key,
+  ShieldAlert,
+  Trophy,
   Briefcase,
   ExternalLink,
   Dices,
-  X
+  X,
 } from 'lucide-react';
 import type { CareerTermResult, SpawnedEntityRef } from '../../lib/chargen/types';
 import { GlassPanel, ProcessFlowSheen, DiceRollDisplay } from '../ui/scifi';
@@ -29,7 +29,7 @@ export function TermDetailCard({
   career,
   isOpen,
   onClose,
-  onEntityClick
+  onEntityClick,
 }: TermDetailCardProps) {
   const [isVisible, setIsVisible] = useState(isOpen);
   const modalRef = React.useRef<HTMLDivElement>(null);
@@ -46,12 +46,16 @@ export function TermDetailCard({
     if (!isOpen || !modalRef.current) return;
     const container = modalRef.current;
     const selectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    const focusables = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(el => !el.hasAttribute('disabled'));
+    const focusables = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(
+      (el) => !el.hasAttribute('disabled'),
+    );
     focusables[0]?.focus();
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
-      const items = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(el => !el.hasAttribute('disabled'));
+      const items = Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(
+        (el) => !el.hasAttribute('disabled'),
+      );
       if (items.length === 0) return;
       const first = items[0];
       const last = items[items.length - 1];
@@ -75,7 +79,7 @@ export function TermDetailCard({
   const themeHex = THEME_HEX[themeColor];
 
   return (
-    <div 
+    <div
       className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
       style={{
         backgroundColor: 'var(--deep-void-80)',
@@ -95,8 +99,8 @@ export function TermDetailCard({
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         <ProcessFlowSheen duration={4} />
-        
-        <div 
+
+        <div
           className="flex items-center justify-between px-6 py-4"
           style={{
             background: `linear-gradient(90deg, ${themeHex}15 0%, transparent 100%)`,
@@ -104,18 +108,19 @@ export function TermDetailCard({
           }}
         >
           <div>
-            <div 
+            <div
               className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
               style={{ color: themeHex }}
             >
               Term {term.termNumber}
             </div>
-            <h2 id="term-detail-title" className={`flex items-center gap-2 mt-1 text-heading ${TYPOGRAPHY.subheading}`}>
+            <h2
+              id="term-detail-title"
+              className={`flex items-center gap-2 mt-1 text-heading ${TYPOGRAPHY.subheading}`}
+            >
               <Briefcase className="w-5 h-5" style={{ color: THEME_HEX.violet }} />
               {career.name}
-              <span className="text-subtle font-normal text-sm">
-                ({term.assignmentId})
-              </span>
+              <span className="text-subtle font-normal text-sm">({term.assignmentId})</span>
             </h2>
           </div>
           <div className="flex items-center gap-4">
@@ -143,9 +148,8 @@ export function TermDetailCard({
         </div>
 
         <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-          
           <section className="space-y-3">
-            <h3 
+            <h3
               className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
               style={{ color: THEME_HEX.cyan }}
             >
@@ -156,7 +160,7 @@ export function TermDetailCard({
               {term.survivalRoll && (
                 <div className="space-y-1">
                   <span className={`text-subtle ${TYPOGRAPHY.label}`}>Survival</span>
-                  <DiceRollDisplay 
+                  <DiceRollDisplay
                     dice={term.survivalRoll.dice}
                     rolls={term.survivalRoll.rolls}
                     total={term.survivalRoll.total}
@@ -170,7 +174,7 @@ export function TermDetailCard({
               {term.commissionRoll && (
                 <div className="space-y-1">
                   <span className={`text-subtle ${TYPOGRAPHY.label}`}>Commission</span>
-                  <DiceRollDisplay 
+                  <DiceRollDisplay
                     dice={term.commissionRoll.dice}
                     rolls={term.commissionRoll.rolls}
                     total={term.commissionRoll.total}
@@ -184,7 +188,7 @@ export function TermDetailCard({
               {term.advancementRoll && (
                 <div className="space-y-1">
                   <span className={`text-subtle ${TYPOGRAPHY.label}`}>Advancement</span>
-                  <DiceRollDisplay 
+                  <DiceRollDisplay
                     dice={term.advancementRoll.dice}
                     rolls={term.advancementRoll.rolls}
                     total={term.advancementRoll.total}
@@ -198,7 +202,7 @@ export function TermDetailCard({
               {term.eventRoll && (
                 <div className="space-y-1">
                   <span className={`text-subtle ${TYPOGRAPHY.label}`}>Event</span>
-                  <DiceRollDisplay 
+                  <DiceRollDisplay
                     dice={term.eventRoll.dice}
                     rolls={term.eventRoll.rolls}
                     total={term.eventRoll.total}
@@ -211,24 +215,25 @@ export function TermDetailCard({
 
           {(term.eventDescription || term.mishap) && (
             <section className="space-y-3">
-              <h3 
+              <h3
                 className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
                 style={{ color: term.mishap ? THEME_HEX.red : THEME_HEX.amber }}
               >
                 {term.mishap ? <ShieldAlert className="w-4 h-4" /> : <Trophy className="w-4 h-4" />}
                 {term.mishap ? 'Mishap' : 'Life Event'}
               </h3>
-              <div 
+              <div
                 className="p-4 rounded-lg"
                 style={{
-                  background: term.mishap 
-                    ? 'rgba(239, 68, 68, 0.1)' 
-                    : 'var(--star-metal-60)',
+                  background: term.mishap ? 'rgba(239, 68, 68, 0.1)' : 'var(--star-metal-60)',
                   border: `1px solid ${term.mishap ? 'rgba(239, 68, 68, 0.3)' : 'var(--asteroid-dust-50)'}`,
                 }}
               >
                 <p className="text-default leading-relaxed">
-                  {term.eventDescription || term.mishap?.description || term.eventChoice || "No details available."}
+                  {term.eventDescription ||
+                    term.mishap?.description ||
+                    term.eventChoice ||
+                    'No details available.'}
                 </p>
               </div>
             </section>
@@ -236,7 +241,7 @@ export function TermDetailCard({
 
           {term.spawnedEntities.length > 0 && (
             <section className="space-y-3">
-              <h3 
+              <h3
                 className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
                 style={{ color: THEME_HEX.violet }}
               >
@@ -253,7 +258,7 @@ export function TermDetailCard({
 
           {term.skillsGained.length > 0 && (
             <section className="space-y-3">
-              <h3 
+              <h3
                 className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
                 style={{ color: THEME_HEX.emerald }}
               >
@@ -262,8 +267,8 @@ export function TermDetailCard({
               </h3>
               <div className="flex flex-wrap gap-2">
                 {term.skillsGained.map((skill, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-md"
                     style={{
                       background: 'rgba(16, 185, 129, 0.1)',
@@ -274,7 +279,7 @@ export function TermDetailCard({
                       {skill.skill}
                       {skill.specialty ? `: ${skill.specialty}` : ''}
                     </span>
-                    <span 
+                    <span
                       className="text-xs font-bold px-1.5 py-0.5 rounded"
                       style={{
                         background: 'rgba(16, 185, 129, 0.2)',
@@ -288,32 +293,32 @@ export function TermDetailCard({
               </div>
             </section>
           )}
-
         </div>
       </GlassPanel>
     </div>
   );
 }
 
-function EntityCard({ 
-  entity, 
-  onClick 
-}: { 
-  entity: SpawnedEntityRef; 
-  onClick?: (id: string) => void; 
+function EntityCard({
+  entity,
+  onClick,
+}: {
+  entity: SpawnedEntityRef;
+  onClick?: (id: string) => void;
 }) {
   const isHostile = entity.relationship === 'rival' || entity.relationship === 'enemy';
   const entityColor = isHostile ? THEME_HEX.red : THEME_HEX.cyan;
-  
-  const Icon = {
-    npc: User,
-    location: MapPin,
-    item: Box,
-    secret: Key
-  }[entity.type] || User;
+
+  const Icon =
+    {
+      npc: User,
+      location: MapPin,
+      item: Box,
+      secret: Key,
+    }[entity.type] || User;
 
   return (
-    <div 
+    <div
       className="flex items-start gap-4 p-3 rounded-lg transition-all group hover:border-[var(--entity-color)]"
       style={{
         background: 'var(--star-metal-60)',
@@ -321,7 +326,7 @@ function EntityCard({
         ['--entity-color' as string]: entityColor,
       }}
     >
-      <div 
+      <div
         className="mt-1 p-2 rounded-lg"
         style={{
           background: `${entityColor}20`,
@@ -330,12 +335,12 @@ function EntityCard({
       >
         <Icon className="w-5 h-5" />
       </div>
-      
+
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h4 className="text-sm font-bold text-heading truncate">{entity.name}</h4>
           {entity.relationship && (
-            <span 
+            <span
               className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold"
               style={{
                 background: `${entityColor}20`,
@@ -347,14 +352,12 @@ function EntityCard({
           )}
         </div>
         {entity.description && (
-          <p className="text-xs text-subtle mt-1 line-clamp-2">
-            {entity.description}
-          </p>
+          <p className="text-xs text-subtle mt-1 line-clamp-2">{entity.description}</p>
         )}
       </div>
 
       {onClick && (
-        <button 
+        <button
           type="button"
           aria-label={`View ${entity.name} in graph`}
           onClick={() => onClick(entity.graphNodeId)}

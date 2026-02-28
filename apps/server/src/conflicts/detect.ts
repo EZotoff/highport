@@ -6,27 +6,18 @@ import type { IncomingChange, SyncState } from './types.js';
 
 const CONFLICT_WINDOW_MS = 5000;
 
-export function detectConflict(
-  state: SyncState,
-  incoming: IncomingChange
-): boolean {
+export function detectConflict(state: SyncState, incoming: IncomingChange): boolean {
   const field = state.fields[incoming.fieldPath];
   if (!field) return false;
 
   const oppositeLastSync =
-    incoming.source === 'foundry'
-      ? field.lastHighportSync
-      : field.lastFoundrySync;
+    incoming.source === 'foundry' ? field.lastHighportSync : field.lastFoundrySync;
 
-  const lastSync =
-    incoming.source === 'foundry'
-      ? field.lastFoundrySync
-      : field.lastHighportSync;
+  const lastSync = incoming.source === 'foundry' ? field.lastFoundrySync : field.lastHighportSync;
 
   return (
     oppositeLastSync > lastSync &&
-    Math.abs(incoming.timestamp.getTime() - oppositeLastSync.getTime()) <
-      CONFLICT_WINDOW_MS
+    Math.abs(incoming.timestamp.getTime() - oppositeLastSync.getTime()) < CONFLICT_WINDOW_MS
   );
 }
 
@@ -38,7 +29,7 @@ export function buildSyncStateFromDb(
     currentValue: unknown;
     lastFoundrySync: Date | null;
     lastHighportSync: Date | null;
-  }>
+  }>,
 ): SyncState | null {
   if (rows.length === 0) return null;
 
@@ -63,24 +54,24 @@ export function buildSyncStateFromDb(
 export async function detectConflictFromDb(
   nodeId: string,
   fieldPath: string,
-  incoming: IncomingChange
+  incoming: IncomingChange,
 ): Promise<boolean> {
-  const state = await db.select().from(syncState)
+  const state = await db
+    .select()
+    .from(syncState)
     .where(and(eq(syncState.nodeId, nodeId), eq(syncState.fieldPath, fieldPath)))
     .limit(1);
-  
+
   if (!state[0]) return false;
-  
-  const lastSync = incoming.source === 'foundry' 
-    ? state[0].lastFoundrySync 
-    : state[0].lastHighportSync;
-    
-  const oppositeLastSync = incoming.source === 'foundry'
-    ? state[0].lastHighportSync
-    : state[0].lastFoundrySync;
-  
+
+  const lastSync =
+    incoming.source === 'foundry' ? state[0].lastFoundrySync : state[0].lastHighportSync;
+
+  const oppositeLastSync =
+    incoming.source === 'foundry' ? state[0].lastHighportSync : state[0].lastFoundrySync;
+
   if (!lastSync || !oppositeLastSync) return false;
-  
+
   return (
     oppositeLastSync > lastSync &&
     Math.abs(incoming.timestamp.getTime() - oppositeLastSync.getTime()) < CONFLICT_WINDOW_MS
@@ -93,7 +84,7 @@ export async function createConflict(
   foundryValue: unknown,
   highportValue: unknown,
   foundryTimestamp: Date,
-  highportTimestamp: Date
+  highportTimestamp: Date,
 ): Promise<string> {
   const id = generateId('conflict');
   await db.insert(conflictQueue).values({
@@ -114,12 +105,13 @@ export async function updateSyncState(
   foundryUuid: string,
   fieldPath: string,
   value: unknown,
-  source: 'foundry' | 'highport'
+  source: 'foundry' | 'highport',
 ): Promise<void> {
   const id = generateId('sync');
   const now = new Date();
-  
-  await db.insert(syncState)
+
+  await db
+    .insert(syncState)
     .values({
       id,
       nodeId,

@@ -23,12 +23,14 @@ export interface Participant {
 export function useParticipants(): Participant[] {
   const characters = useAllCharacters();
   const session = useSession();
-  const [awarenessStates, setAwarenessStates] = useState<Map<number, ChargenAwarenessState>>(new Map());
-  
+  const [awarenessStates, setAwarenessStates] = useState<Map<number, ChargenAwarenessState>>(
+    new Map(),
+  );
+
   useEffect(() => {
     const provider = getProvider();
     if (!provider?.awareness) return;
-    
+
     const handleChange = () => {
       const states = new Map<number, ChargenAwarenessState>();
       provider.awareness?.getStates().forEach((state, clientId) => {
@@ -38,21 +40,21 @@ export function useParticipants(): Participant[] {
       });
       setAwarenessStates(states);
     };
-    
+
     provider.awareness?.on('change', handleChange);
     handleChange(); // Initial load
-    
+
     return () => {
       provider.awareness?.off('change', handleChange);
     };
   }, []);
-  
+
   return useMemo(() => {
     const participants: Participant[] = [];
-    
+
     // Add GM if session exists
     if (session) {
-      const gmCharacter = characters.find(c => c.playerId === session.createdBy);
+      const gmCharacter = characters.find((c) => c.playerId === session.createdBy);
       participants.push({
         userId: session.createdBy,
         character: gmCharacter || null,
@@ -61,11 +63,11 @@ export function useParticipants(): Participant[] {
         isOnline: true, // TODO: check awareness
       });
     }
-    
+
     // Add players (excluding GM)
-    characters.forEach(char => {
+    characters.forEach((char) => {
       if (session && char.playerId === session.createdBy) return; // Skip GM, already added
-      
+
       participants.push({
         userId: char.playerId,
         character: char,
@@ -74,7 +76,7 @@ export function useParticipants(): Participant[] {
         isOnline: true,
       });
     });
-    
+
     return participants;
   }, [characters, session, awarenessStates]);
 }
@@ -83,13 +85,13 @@ export function useUpdateChargenAwareness() {
   const update = (state: Partial<ChargenAwarenessState>) => {
     const provider = getProvider();
     if (!provider?.awareness) return;
-    
+
     const currentState = provider.awareness.getLocalState() || {};
     provider.awareness.setLocalStateField('chargen', {
       ...(currentState.chargen || {}),
       ...state,
     });
   };
-  
+
   return update;
 }

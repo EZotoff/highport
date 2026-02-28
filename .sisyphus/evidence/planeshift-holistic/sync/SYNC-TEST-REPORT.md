@@ -12,19 +12,20 @@ Multi-user sync tests **CANNOT be executed** due to a database authentication fa
 
 ### Key Findings
 
-| Metric | Value |
-|--------|-------|
-| Tests Attempted | 4 |
-| Tests Passed | 0 |
-| Tests Failed | 1 |
-| Tests Blocked | 3 |
-| Root Cause | Database authentication misconfiguration |
+| Metric          | Value                                    |
+| --------------- | ---------------------------------------- |
+| Tests Attempted | 4                                        |
+| Tests Passed    | 0                                        |
+| Tests Failed    | 1                                        |
+| Tests Blocked   | 3                                        |
+| Root Cause      | Database authentication misconfiguration |
 
 ---
 
 ## Root Cause Analysis
 
 ### Symptom
+
 - User A creates a node → visible on User A's screen
 - User B does NOT see the node (sync fails)
 - Awareness (presence badges) WORKS - both users see each other
@@ -33,17 +34,20 @@ Multi-user sync tests **CANNOT be executed** due to a database authentication fa
 ### Technical Root Cause
 
 **Error in Hocuspocus server logs:**
+
 ```
 [onLoadDocument] password authentication failed for user "ezotoff"
 PostgresError: password authentication failed for user "ezotoff"
 ```
 
 **Expected configuration (from `.env`):**
+
 ```
 DATABASE_URL=postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_test
 ```
 
 **Actual behavior:**
+
 - The `DATABASE_URL` environment variable is NOT being loaded
 - The `postgres` library defaults to connecting as the OS user (`ezotoff`) without a password
 - PostgreSQL rejects the connection
@@ -67,24 +71,29 @@ DATABASE_URL=postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_te
 ## Test Results Detail
 
 ### M1: Node Creation Syncs
+
 **Status:** ❌ FAILED  
 **Expected:** User A creates node → User B sees node within 500ms  
 **Actual:** User B never sees the node  
 **Latency:** N/A (sync never occurred)
 
 **Evidence:**
+
 - `sync-01-node-creation-A.png` - Shows User A with 1 node visible
 - `sync-01-node-creation-B.png` - Shows User B with 0 nodes, but sees User A's presence
 
 ### M2: Node Drag Syncs
+
 **Status:** 🚫 BLOCKED  
 **Reason:** Cannot test - prerequisite M1 failed
 
 ### M3: Node Deletion Syncs
+
 **Status:** 🚫 BLOCKED  
 **Reason:** Cannot test - prerequisite M1 failed
 
 ### M4: Conflict Resolution
+
 **Status:** 🚫 BLOCKED  
 **Reason:** Cannot test - prerequisite M1 failed
 
@@ -95,17 +104,20 @@ DATABASE_URL=postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_te
 To enable sync testing, fix the environment variable loading:
 
 ### Option 1: Add dotenv to server
+
 ```bash
 pnpm --filter server add dotenv
 ```
 
 Then in `src/index.ts`:
+
 ```typescript
 import 'dotenv/config';
 // ... rest of code
 ```
 
 ### Option 2: Use tsx with env-file flag
+
 ```json
 {
   "scripts": {
@@ -115,6 +127,7 @@ import 'dotenv/config';
 ```
 
 ### Option 3: Export DATABASE_URL before running
+
 ```bash
 export DATABASE_URL="postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_test"
 pnpm --filter server dev
@@ -124,10 +137,10 @@ pnpm --filter server dev
 
 ## Evidence Files
 
-| File | Description |
-|------|-------------|
-| `sync-01-node-creation-A.png` | User A's view after creating a node |
-| `sync-01-node-creation-B.png` | User B's view - node not synced |
+| File                             | Description                           |
+| -------------------------------- | ------------------------------------- |
+| `sync-01-node-creation-A.png`    | User A's view after creating a node   |
+| `sync-01-node-creation-B.png`    | User B's view - node not synced       |
 | `sync-latency-measurements.json` | Detailed test results and diagnostics |
 
 ---
@@ -141,5 +154,7 @@ While the WebSocket connection establishes and awareness works (users can see ea
 This is a **critical bug** that prevents the core real-time collaboration feature from functioning.
 
 ### Priority: CRITICAL
+
 ### Impact: All real-time collaboration features non-functional
+
 ### Recommendation: Fix environment variable loading before proceeding with further sync testing

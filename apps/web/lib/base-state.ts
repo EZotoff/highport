@@ -38,10 +38,10 @@ export function getResourcesMap(doc: Y.Doc): Y.Map<Y.Map<unknown>> {
 
 export function initBaseResources(doc: Y.Doc): void {
   const resourcesMap = getResourcesMap(doc);
-  
+
   if (resourcesMap.size === 0) {
     doc.transact(() => {
-      DEFAULT_RESOURCES.forEach(def => {
+      DEFAULT_RESOURCES.forEach((def) => {
         const id = generateId('resource');
         const resourceMap = new Y.Map();
         resourceMap.set('id', id);
@@ -50,17 +50,22 @@ export function initBaseResources(doc: Y.Doc): void {
         resourceMap.set('max', def.max);
         resourceMap.set('unit', def.unit);
         resourceMap.set('history', new Y.Array());
-        
+
         resourcesMap.set(id, resourceMap);
       });
     });
   }
 }
 
-export function addResource(doc: Y.Doc, name: string, unit: string = '', max: number | null = null): string {
+export function addResource(
+  doc: Y.Doc,
+  name: string,
+  unit: string = '',
+  max: number | null = null,
+): string {
   const resourcesMap = getResourcesMap(doc);
   const id = generateId('resource');
-  
+
   doc.transact(() => {
     const resourceMap = new Y.Map();
     resourceMap.set('id', id);
@@ -69,40 +74,42 @@ export function addResource(doc: Y.Doc, name: string, unit: string = '', max: nu
     resourceMap.set('max', max);
     resourceMap.set('unit', unit);
     resourceMap.set('history', new Y.Array());
-    
+
     resourcesMap.set(id, resourceMap);
   });
-  
+
   return id;
 }
 
 export function updateResource(
-  doc: Y.Doc, 
-  resourceId: string, 
-  updates: Partial<Omit<Resource, 'id' | 'history'>>, 
-  userId: string
+  doc: Y.Doc,
+  resourceId: string,
+  updates: Partial<Omit<Resource, 'id' | 'history'>>,
+  userId: string,
 ): void {
   const resourcesMap = getResourcesMap(doc);
   const resourceMap = resourcesMap.get(resourceId);
-  
+
   if (!resourceMap) return;
-  
+
   doc.transact(() => {
     if (updates.current !== undefined) {
       const currentVal = resourceMap.get('current') as number;
       if (currentVal !== updates.current) {
         const history = resourceMap.get('history') as Y.Array<ResourceChange>;
         if (history) {
-          history.push([{
-            value: updates.current,
-            changedBy: userId,
-            changedAt: Date.now()
-          }]);
+          history.push([
+            {
+              value: updates.current,
+              changedBy: userId,
+              changedAt: Date.now(),
+            },
+          ]);
         }
       }
       resourceMap.set('current', updates.current);
     }
-    
+
     if (updates.name !== undefined) resourceMap.set('name', updates.name);
     if (updates.max !== undefined) resourceMap.set('max', updates.max);
     if (updates.unit !== undefined) resourceMap.set('unit', updates.unit);

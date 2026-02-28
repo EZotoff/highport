@@ -44,7 +44,7 @@ export function ConflictQueue() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resolution, resolvedBy: 'gm' }),
       });
-      setConflicts(prev => prev.filter(c => c.id !== id));
+      setConflicts((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       setError('Failed to resolve conflict');
     }
@@ -57,7 +57,7 @@ export function ConflictQueue() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resolvedBy: 'gm' }),
       });
-      setConflicts(prev => prev.filter(c => c.id !== id));
+      setConflicts((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       setError('Failed to dismiss conflict');
     }
@@ -70,28 +70,32 @@ export function ConflictQueue() {
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-xl font-bold">Conflict Queue ({conflicts.length})</h2>
-      {conflicts.map(conflict => (
+      {conflicts.map((conflict) => (
         <div key={conflict.id} className="border rounded-lg p-4 bg-white shadow">
           <div className="font-medium text-lg">{conflict.fieldPath}</div>
           <div className="text-sm text-gray-500">Node: {conflict.nodeId}</div>
-          
+
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="p-3 bg-blue-50 rounded">
               <div className="text-sm font-medium text-blue-700">Foundry Value</div>
-              <pre className="text-sm mt-1 overflow-auto">{JSON.stringify(conflict.foundryValue, null, 2)}</pre>
+              <pre className="text-sm mt-1 overflow-auto">
+                {JSON.stringify(conflict.foundryValue, null, 2)}
+              </pre>
               <div className="text-xs text-gray-400 mt-2">
                 {new Date(conflict.foundryTimestamp).toLocaleString()}
               </div>
             </div>
             <div className="p-3 bg-green-50 rounded">
               <div className="text-sm font-medium text-green-700">Highport Value</div>
-              <pre className="text-sm mt-1 overflow-auto">{JSON.stringify(conflict.highportValue, null, 2)}</pre>
+              <pre className="text-sm mt-1 overflow-auto">
+                {JSON.stringify(conflict.highportValue, null, 2)}
+              </pre>
               <div className="text-xs text-gray-400 mt-2">
                 {new Date(conflict.highportTimestamp).toLocaleString()}
               </div>
             </div>
           </div>
-          
+
           <div className="flex gap-2 mt-4">
             <button
               onClick={() => handleResolve(conflict.id, 'keep_foundry')}

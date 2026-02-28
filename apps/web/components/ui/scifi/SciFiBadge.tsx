@@ -1,11 +1,11 @@
 import React from 'react';
 import { ThemeColor } from '@/lib/design-system/types';
-import { 
-  getThemeBgClass, 
-  getThemeTextClass, 
-  getThemeBorderClass, 
+import {
+  getThemeBgClass,
+  getThemeTextClass,
+  getThemeBorderClass,
   THEME_HEX,
-  isValidTheme
+  isValidTheme,
 } from '@/lib/design-system/themeUtils';
 import { cn } from '@/lib/utils';
 
@@ -17,46 +17,41 @@ export interface SciFiBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-export function SciFiBadge({ 
-  children, 
-  theme = 'cyan', 
-  variant = 'default', 
-  size = 'md', 
+export function SciFiBadge({
+  children,
+  theme = 'cyan',
+  variant = 'default',
+  size = 'md',
   className,
   style,
-  ...props 
+  ...props
 }: SciFiBadgeProps) {
   const safeTheme = isValidTheme(theme) ? theme : 'cyan';
 
-  const baseClasses = "inline-flex items-center rounded-none font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 holo-shimmer relative";
+  const baseClasses =
+    'inline-flex items-center rounded-none font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 holo-shimmer relative';
 
   const sizeClasses = {
-    sm: "text-xs px-2 py-0.5",
-    md: "text-sm px-2.5 py-1",
-    lg: "text-base px-3 py-1.5",
+    sm: 'text-xs px-2 py-0.5',
+    md: 'text-sm px-2.5 py-1',
+    lg: 'text-base px-3 py-1.5',
   };
 
-  let variantClasses = "";
-  
+  let variantClasses = '';
+
   if (variant === 'default') {
-    variantClasses = cn(
-      getThemeBgClass(safeTheme, '500/20'),
-      getThemeTextClass(safeTheme, 300)
-    );
+    variantClasses = cn(getThemeBgClass(safeTheme, '500/20'), getThemeTextClass(safeTheme, 300));
   } else if (variant === 'outline') {
     variantClasses = cn(
-      "bg-transparent border",
+      'bg-transparent border',
       getThemeBorderClass(safeTheme, '500/50'),
-      getThemeTextClass(safeTheme, 400)
+      getThemeTextClass(safeTheme, 400),
     );
   } else if (variant === 'glow') {
-    variantClasses = cn(
-      getThemeBgClass(safeTheme, '500/20'),
-      getThemeTextClass(safeTheme, 300)
-    );
+    variantClasses = cn(getThemeBgClass(safeTheme, '500/20'), getThemeTextClass(safeTheme, 300));
   }
 
-  const customStyle: React.CSSProperties = { 
+  const customStyle: React.CSSProperties = {
     ...style,
     clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
     borderLeft: `3px solid ${THEME_HEX[safeTheme]}`,
@@ -70,8 +65,8 @@ export function SciFiBadge({
   }
 
   return (
-    <div 
-      className={cn(baseClasses, sizeClasses[size], variantClasses, className)} 
+    <div
+      className={cn(baseClasses, sizeClasses[size], variantClasses, className)}
       style={customStyle}
       {...props}
     >
@@ -93,10 +88,10 @@ export function SkillBadge({ skill, level, theme = 'emerald', className }: Skill
   const fillPercentage = Math.min((level / 5) * 100, 100);
 
   return (
-    <SciFiBadge 
-      theme={theme} 
-      size="sm" 
-      className={cn("overflow-hidden", className)}
+    <SciFiBadge
+      theme={theme}
+      size="sm"
+      className={cn('overflow-hidden', className)}
       style={{ position: 'relative' }}
     >
       <div

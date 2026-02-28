@@ -26,6 +26,7 @@ This document outlines the comprehensive plan for integrating Gemini 2.0 Flash I
 ## Executive Summary
 
 ### Goals
+
 1. **Generate portraits on-the-fly** during character/NPC creation using Gemini 2.0 Flash Image
 2. **Persist portraits** with comprehensive tagging for future reuse and search
 3. **Enable portrait remix** for adapting existing portraits to new contexts
@@ -33,6 +34,7 @@ This document outlines the comprehensive plan for integrating Gemini 2.0 Flash I
 5. **Support family resemblance** through explicit family grouping
 
 ### Key Decisions
+
 - **Separate `PortraitService`** instead of extending `NarrativeGenerator`
 - **Hierarchical JSONB tags** with strict enum validation
 - **Object storage** for images (local FS dev, S3-compatible prod)
@@ -45,16 +47,17 @@ This document outlines the comprehensive plan for integrating Gemini 2.0 Flash I
 
 ### Existing Infrastructure
 
-| Component | Location | Current State |
-|-----------|----------|---------------|
-| Character Gen Wizard | `apps/web/components/chargen/ChargenWizard.tsx` | 7-step wizard, creates `ChargenCharacter` |
-| NPC Generation | `apps/rag-service/services/narrative_generator.py` | Generates name, personality, motivation, appearance (text) |
-| Graph Nodes | `packages/shared/src/types/graph.ts` | `GraphNode.metadata.image_url` field exists (unused) |
-| Gemini Provider | `apps/rag-service/providers/gemini.py` | Text-only, uses `gemini-2.0-flash` |
-| Entity Spawn Form | `apps/web/components/chargen/EntitySpawnForm.tsx` | UI for creating NPCs during chargen |
-| NPC Details Schema | `apps/rag-service/schemas/narrative.py` | Has `appearance?: str` field |
+| Component            | Location                                           | Current State                                              |
+| -------------------- | -------------------------------------------------- | ---------------------------------------------------------- |
+| Character Gen Wizard | `apps/web/components/chargen/ChargenWizard.tsx`    | 7-step wizard, creates `ChargenCharacter`                  |
+| NPC Generation       | `apps/rag-service/services/narrative_generator.py` | Generates name, personality, motivation, appearance (text) |
+| Graph Nodes          | `packages/shared/src/types/graph.ts`               | `GraphNode.metadata.image_url` field exists (unused)       |
+| Gemini Provider      | `apps/rag-service/providers/gemini.py`             | Text-only, uses `gemini-2.0-flash`                         |
+| Entity Spawn Form    | `apps/web/components/chargen/EntitySpawnForm.tsx`  | UI for creating NPCs during chargen                        |
+| NPC Details Schema   | `apps/rag-service/schemas/narrative.py`            | Has `appearance?: str` field                               |
 
 ### Gaps to Fill
+
 - No image generation capability in Gemini provider
 - No portrait storage or management
 - No tagging system
@@ -136,11 +139,11 @@ This document outlines the comprehensive plan for integrating Gemini 2.0 Flash I
 
 ### Service Boundaries
 
-| Service | Responsibility | Key Principle |
-|---------|----------------|---------------|
-| **Frontend (Web)** | UI, user interaction | Never talks to Gemini directly |
+| Service              | Responsibility             | Key Principle                  |
+| -------------------- | -------------------------- | ------------------------------ |
+| **Frontend (Web)**   | UI, user interaction       | Never talks to Gemini directly |
 | **Backend (Server)** | Rules, persistence, search | System of record for portraits |
-| **AI Service (RAG)** | AI inference only | Stateless, no persistence |
+| **AI Service (RAG)** | AI inference only          | Stateless, no persistence      |
 
 ---
 
@@ -153,35 +156,35 @@ This document outlines the comprehensive plan for integrating Gemini 2.0 Flash I
 CREATE TABLE portraits (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     campaign_id UUID NOT NULL REFERENCES campaigns(id),
-    
+
     -- Node linkage
     subject_node_id UUID REFERENCES graph_nodes(id),
-    
+
     -- Lineage tracking
     anchor_portrait_id UUID REFERENCES portraits(id),
     source_portrait_id UUID REFERENCES portraits(id),
-    
+
     -- Family/protection
     family_group_id UUID,
     protected BOOLEAN NOT NULL DEFAULT false,
-    source_policy TEXT NOT NULL DEFAULT 'campaign' 
+    source_policy TEXT NOT NULL DEFAULT 'campaign'
         CHECK (source_policy IN ('subject_only', 'family_only', 'campaign', 'public')),
-    
+
     -- Tags (JSONB for flexibility)
     tags JSONB NOT NULL DEFAULT '{}',
-    
+
     -- Generation metadata
     prompt TEXT,
     prompt_fingerprint TEXT,
     model_id TEXT,
-    
+
     -- Storage
     storage_key TEXT NOT NULL,
     mime_type TEXT NOT NULL DEFAULT 'image/png',
     size_bytes INTEGER,
     width INTEGER,
     height INTEGER,
-    
+
     -- Audit
     created_by_user_id UUID NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -208,7 +211,17 @@ export interface PortraitTags {
     skin_tone?: 'very_fair' | 'fair' | 'medium' | 'olive' | 'brown' | 'dark';
     eye_color?: 'brown' | 'hazel' | 'green' | 'blue' | 'gray' | 'amber';
     hair_color?: 'black' | 'brown' | 'blonde' | 'red' | 'gray' | 'white' | 'dyed';
-    hair_style?: 'buzzcut' | 'short' | 'medium' | 'long' | 'bald' | 'ponytail' | 'braids' | 'afro' | 'wavy' | 'curly';
+    hair_style?:
+      | 'buzzcut'
+      | 'short'
+      | 'medium'
+      | 'long'
+      | 'bald'
+      | 'ponytail'
+      | 'braids'
+      | 'afro'
+      | 'wavy'
+      | 'curly';
   };
   physical?: {
     build?: 'slim' | 'average' | 'athletic' | 'stocky' | 'heavy';
@@ -225,7 +238,13 @@ export interface PortraitTags {
     vibe?: 'trustworthy' | 'menacing' | 'mysterious' | 'eccentric' | 'professional';
   };
   background?: {
-    homeworld_type?: 'high_tech' | 'industrial' | 'frontier' | 'agricultural' | 'underclass' | 'rich_core';
+    homeworld_type?:
+      | 'high_tech'
+      | 'industrial'
+      | 'frontier'
+      | 'agricultural'
+      | 'underclass'
+      | 'rich_core';
     social_class?: 'low' | 'middle' | 'upper' | 'noble';
   };
   story: {
@@ -242,15 +261,32 @@ export interface PortraitTags {
   freeform?: string[];
 }
 
-export type DistinguishingFeature = 
-  | 'scar' | 'tattoo' | 'cybernetic_implant' | 'piercing'
-  | 'missing_eye' | 'burn_marks' | 'freckles' | 'beard' | 'mustache'
+export type DistinguishingFeature =
+  | 'scar'
+  | 'tattoo'
+  | 'cybernetic_implant'
+  | 'piercing'
+  | 'missing_eye'
+  | 'burn_marks'
+  | 'freckles'
+  | 'beard'
+  | 'mustache'
   | { custom: string };
 
-export type CareerType = 
-  | 'navy' | 'marines' | 'scout' | 'merchant' | 'army' 
-  | 'agent' | 'noble' | 'drifter' | 'scholar' | 'rogue' 
-  | 'citizen' | 'entertainer' | 'other';
+export type CareerType =
+  | 'navy'
+  | 'marines'
+  | 'scout'
+  | 'merchant'
+  | 'army'
+  | 'agent'
+  | 'noble'
+  | 'drifter'
+  | 'scholar'
+  | 'rogue'
+  | 'citizen'
+  | 'entertainer'
+  | 'other';
 
 export type SourcePolicy = 'subject_only' | 'family_only' | 'campaign' | 'public';
 
@@ -385,15 +421,15 @@ class ExtractTagsResponse(BaseModel):
 
 ### Tag Categories & Weights
 
-| Category | Fields | Search Weight | Purpose |
-|----------|--------|---------------|---------|
-| **Demographics** | gender, age_range, skin_tone, eye_color, hair_color, hair_style | 5x (high) | Primary visual identification |
-| **Physical** | build, height, distinguishing_features | 3x (medium-high) | Body type matching |
-| **Career** | career_type, rank_level, career_style | 3x (medium) | Context-appropriate portraits |
-| **Traits** | demeanor, vibe | 2x (low-medium) | Emotional match |
-| **Background** | homeworld_type, social_class | 2x (low-medium) | Aesthetic context |
-| **Story** | entity_type, relationship_type, importance_level | Filter (not scored) | Protection rules |
-| **Rendering** | style, framing, lighting | 1x (low) | Visual consistency |
+| Category         | Fields                                                          | Search Weight       | Purpose                       |
+| ---------------- | --------------------------------------------------------------- | ------------------- | ----------------------------- |
+| **Demographics** | gender, age_range, skin_tone, eye_color, hair_color, hair_style | 5x (high)           | Primary visual identification |
+| **Physical**     | build, height, distinguishing_features                          | 3x (medium-high)    | Body type matching            |
+| **Career**       | career_type, rank_level, career_style                           | 3x (medium)         | Context-appropriate portraits |
+| **Traits**       | demeanor, vibe                                                  | 2x (low-medium)     | Emotional match               |
+| **Background**   | homeworld_type, social_class                                    | 2x (low-medium)     | Aesthetic context             |
+| **Story**        | entity_type, relationship_type, importance_level                | Filter (not scored) | Protection rules              |
+| **Rendering**    | style, framing, lighting                                        | 1x (low)            | Visual consistency            |
 
 ### Tag Extraction Pipeline
 
@@ -413,16 +449,16 @@ Character Data --> NarrativeGenerator.appearance --> AI Tag Extraction --> Valid
 // Example: Infer physical tags from Traveller characteristics
 function inferTagsFromCharacteristics(chars: CharacteristicSet): Partial<PortraitTags['physical']> {
   const result: Partial<PortraitTags['physical']> = {};
-  
+
   // STR + END -> Build
   const strEnd = (chars.STR + chars.END) / 2;
   if (strEnd >= 10) result.build = 'athletic';
   else if (strEnd >= 8) result.build = 'average';
   else if (strEnd <= 5) result.build = 'slim';
-  
+
   // SOC -> Social markers (handled in background.social_class)
   // ... etc
-  
+
   return result;
 }
 ```
@@ -479,11 +515,7 @@ export interface PortraitService {
   }): Promise<PortraitSearchResult[]>;
 
   // Attachment
-  attachToNode(input: {
-    portraitId: string;
-    nodeId: string;
-    userId: string;
-  }): Promise<void>;
+  attachToNode(input: { portraitId: string; nodeId: string; userId: string }): Promise<void>;
 
   // Policy
   canRemixFrom(input: {
@@ -501,7 +533,7 @@ export interface PortraitService {
 
 class PortraitAI:
     """AI capabilities for portrait generation."""
-    
+
     async def generate_image(
         self,
         tags: PortraitTags,
@@ -543,22 +575,26 @@ class PortraitAI:
 **Goal**: Core infrastructure for portrait generation and storage
 
 #### 1.1 Database & Types
+
 - [x] Create `portraits` table migration
 - [x] Add `PortraitTags` TypeScript types to `packages/shared`
 - [x] Add Pydantic models to `apps/rag-service`
 - [x] Update `GraphNode.metadata` type to include `portrait_id`
 
 #### 1.2 Storage Layer
+
 - [x] Implement `StorageAdapter` interface
 - [x] Implement `LocalDiskStorageAdapter` for dev
 - [x] Add storage configuration to `.env`
 
 #### 1.3 Gemini Image Generation
+
 - [x] Extend `GeminiProvider` with `generate_image()` method
 - [x] Add image generation endpoint to RAG service
 - [x] Implement prompt builder from tags
 
 #### 1.4 Basic Portrait Service
+
 - [x] Create `PortraitService` class
 - [x] Implement `generateFromNPC()` basic flow
 - [x] Add portrait router with `/portraits/generate` endpoint
@@ -568,17 +604,20 @@ class PortraitAI:
 **Goal**: Connect portrait generation to character creation flows
 
 #### 2.1 NPC Integration
+
 - [x] Add "Generate Portrait" button to `EntitySpawnForm`
 - [x] Implement `usePortrait` hook for frontend
 - [x] Connect NPC creation to portrait service
 - [x] Display generated portrait in entity spawn UI
 
-#### 2.2 PC Integration  
+#### 2.2 PC Integration
+
 - [x] Add portrait generation to `FinalizeStep.tsx`
 - [x] Auto-mark PC portraits as `protected: true`
 - [x] Attach portrait to graph node on finalize
 
 #### 2.3 Tag Extraction
+
 - [x] Implement `extract_tags()` in RAG service
 - [x] Add tag extraction endpoint
 - [x] Integrate with NPC `appearance` text
@@ -588,16 +627,19 @@ class PortraitAI:
 **Goal**: Portrait discovery and reuse
 
 #### 3.1 Search Implementation
+
 - [x] Implement weighted tag matching algorithm
 - [x] Add `/portraits/search` endpoint
 - [x] Create `PortraitLibrary` component
 
 #### 3.2 Portrait Selection UI
+
 - [x] Add portrait picker modal
 - [x] Implement "use existing portrait" option
 - [x] Add portrait preview in graph nodes
 
 #### 3.3 Suggestion System
+
 - [x] Implement `suggestForCharacter()` service method
 - [x] Add "suggested portraits" section in spawn form
 - [x] Show score breakdown for suggestions
@@ -607,16 +649,19 @@ class PortraitAI:
 **Goal**: Portrait editing with policy enforcement
 
 #### 4.1 Protection Rules
+
 - [x] Implement `canRemixFrom()` policy method
 - [x] Add `source_policy` field handling
 - [x] Enforce protection in remix endpoint
 
 #### 4.2 Family Groups
+
 - [x] Add family group management
 - [x] Implement "Create Relative" option
 - [x] Auto-set family resemblance in remix
 
 #### 4.3 Remix UI
+
 - [x] Create portrait remix modal
 - [x] Add "edit this portrait" option
 - [x] Support prompt delta input
@@ -627,16 +672,19 @@ class PortraitAI:
 **Goal**: Production-ready quality
 
 #### 5.1 Performance
+
 - [x] Add caching for portrait images
 - [x] Implement lazy loading in gallery
 - [x] Add progress indicators for generation
 
 #### 5.2 S3 Storage Adapter
+
 - [x] Implement `S3CompatibleStorageAdapter`
 - [x] Add signed URL generation
 - [x] Configure for production
 
 #### 5.3 Testing
+
 - [x] Unit tests for tag matching
 - [x] Integration tests for generation flow
 - [x] E2E test for portrait in chargen
@@ -653,7 +701,7 @@ class PortraitAI:
 // ADD: Portrait generation section
 <div className="pt-4 border-t border-zinc-700">
   <label className="text-sm font-medium mb-2 block">Portrait</label>
-  
+
   {portrait ? (
     <div className="relative">
       <img src={portrait.imageUrl} className="w-32 h-32 rounded-lg object-cover" />
@@ -685,7 +733,7 @@ class PortraitAI:
     onPortraitGenerated={setPortrait}
     autoProtect={true} // Travellers are always protected
   />
-</div>
+</div>;
 
 // MODIFY: createCharacterNode to include portrait
 const handleFinalize = async () => {
@@ -702,13 +750,15 @@ const handleFinalize = async () => {
 // apps/web/components/graph/CustomNode.tsx
 
 // ADD: Portrait display in node
-{node.metadata.portrait_id && (
-  <img 
-    src={`/api/portraits/${node.metadata.portrait_id}/image`}
-    className="w-12 h-12 rounded-full absolute -top-2 -right-2"
-    alt={node.label}
-  />
-)}
+{
+  node.metadata.portrait_id && (
+    <img
+      src={`/api/portraits/${node.metadata.portrait_id}/image`}
+      className="w-12 h-12 rounded-full absolute -top-2 -right-2"
+      alt={node.label}
+    />
+  );
+}
 ```
 
 ---
@@ -875,12 +925,12 @@ paths:
 
 ### Protection Levels
 
-| Policy | Who Can Remix | Use Case |
-|--------|---------------|----------|
-| `subject_only` | Only for the same subject node | Key story NPCs, Travellers |
-| `family_only` | Same subject OR same family_group | Relatives of key characters |
-| `campaign` | Anyone in the campaign | General NPCs |
-| `public` | Anyone (future) | Shared portrait library |
+| Policy         | Who Can Remix                     | Use Case                    |
+| -------------- | --------------------------------- | --------------------------- |
+| `subject_only` | Only for the same subject node    | Key story NPCs, Travellers  |
+| `family_only`  | Same subject OR same family_group | Relatives of key characters |
+| `campaign`     | Anyone in the campaign            | General NPCs                |
+| `public`       | Anyone (future)                   | Shared portrait library     |
 
 ### Enforcement Rules
 
@@ -888,41 +938,47 @@ paths:
 function canRemixPortrait(
   source: Portrait,
   targetNodeId: string | undefined,
-  userId: string
+  userId: string,
 ): { allowed: boolean; reason?: string } {
   // Protected portraits have strict rules
   if (source.protected) {
     // Rule 1: subject_only - only same subject can use
     if (source.sourcePolicy === 'subject_only') {
       if (targetNodeId !== source.subjectNodeId) {
-        return { allowed: false, reason: 'This portrait is protected and can only be remixed for the same character.' };
+        return {
+          allowed: false,
+          reason: 'This portrait is protected and can only be remixed for the same character.',
+        };
       }
     }
-    
+
     // Rule 2: family_only - same subject OR same family
     if (source.sourcePolicy === 'family_only') {
       if (targetNodeId !== source.subjectNodeId) {
         const targetNode = getNode(targetNodeId);
         const targetFamilyGroup = targetNode?.metadata?.family_group_id;
         if (targetFamilyGroup !== source.familyGroupId) {
-          return { allowed: false, reason: 'This portrait can only be remixed for family members.' };
+          return {
+            allowed: false,
+            reason: 'This portrait can only be remixed for family members.',
+          };
         }
       }
     }
   }
-  
+
   return { allowed: true };
 }
 ```
 
 ### Auto-Protection Rules
 
-| Entity Type | Auto Protected | Default Policy |
-|-------------|----------------|----------------|
-| Traveller (PC) | Yes | `subject_only` |
-| NPC with `importance_level: 'key'` | Yes | `subject_only` |
-| NPC with `relationship_type: 'ally' or 'enemy'` | Optional | `campaign` |
-| Generic NPC | No | `campaign` |
+| Entity Type                                     | Auto Protected | Default Policy |
+| ----------------------------------------------- | -------------- | -------------- |
+| Traveller (PC)                                  | Yes            | `subject_only` |
+| NPC with `importance_level: 'key'`              | Yes            | `subject_only` |
+| NPC with `relationship_type: 'ally' or 'enemy'` | Optional       | `campaign`     |
+| Generic NPC                                     | No             | `campaign`     |
 
 ---
 
@@ -992,8 +1048,7 @@ describe('Portrait Generation Flow', () => {
     expect(response.body.id).toBeDefined();
 
     // 2. Verify storage
-    const imageResponse = await request(app)
-      .get(`/portraits/${response.body.id}/image`);
+    const imageResponse = await request(app).get(`/portraits/${response.body.id}/image`);
     expect(imageResponse.status).toBe(200);
     expect(imageResponse.headers['content-type']).toBe('image/png');
 
@@ -1005,7 +1060,10 @@ describe('Portrait Generation Flow', () => {
     // 4. Verify search finds it
     const searchResponse = await request(app)
       .get('/portraits/search')
-      .query({ campaign_id: testCampaignId, tags: JSON.stringify({ demographics: { gender: 'male' } }) });
+      .query({
+        campaign_id: testCampaignId,
+        tags: JSON.stringify({ demographics: { gender: 'male' } }),
+      });
     expect(searchResponse.body).toContainEqual(expect.objectContaining({ id: response.body.id }));
   });
 });
@@ -1019,22 +1077,22 @@ describe('Portrait Generation Flow', () => {
 test('should generate portrait during NPC creation', async ({ page }) => {
   // Navigate to chargen
   await page.goto('/chargen');
-  
+
   // Start career event that spawns NPC
   // ... navigate to event with spawn
-  
+
   // Fill NPC form
   await page.fill('[data-testid="npc-name"]', 'Captain Vance');
-  
+
   // Click generate portrait
   await page.click('[data-testid="generate-portrait"]');
-  
+
   // Wait for portrait to appear
   await expect(page.locator('[data-testid="portrait-preview"]')).toBeVisible();
-  
+
   // Complete spawn
   await page.click('[data-testid="spawn-complete"]');
-  
+
   // Verify portrait in graph node
   await page.goto('/graph');
   await expect(page.locator('[data-testid="node-captain-vance"] img')).toBeVisible();
@@ -1047,30 +1105,31 @@ test('should generate portrait during NPC creation', async ({ page }) => {
 
 ### By Phase
 
-| Phase | Description | Effort | Dependencies |
-|-------|-------------|--------|--------------|
-| Phase 1 | Foundation | 3-4 days | None |
-| Phase 2 | Integration | 2-3 days | Phase 1 |
-| Phase 3 | Search & Library | 2-3 days | Phase 2 |
-| Phase 4 | Remix & Protection | 2-3 days | Phase 3 |
-| Phase 5 | Polish & Advanced | 2-3 days | Phase 4 |
-| **Total** | | **11-16 days** | |
+| Phase     | Description        | Effort         | Dependencies |
+| --------- | ------------------ | -------------- | ------------ |
+| Phase 1   | Foundation         | 3-4 days       | None         |
+| Phase 2   | Integration        | 2-3 days       | Phase 1      |
+| Phase 3   | Search & Library   | 2-3 days       | Phase 2      |
+| Phase 4   | Remix & Protection | 2-3 days       | Phase 3      |
+| Phase 5   | Polish & Advanced  | 2-3 days       | Phase 4      |
+| **Total** |                    | **11-16 days** |              |
 
 ### MVP (Minimum Viable Portrait)
 
 For a quick MVP with just generation + storage + basic attachment:
+
 - Phase 1.1-1.4: 3 days
 - Phase 2.1-2.2 (partial): 2 days
 - **MVP Total: 5 days**
 
 ### Risks & Mitigations
 
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|------------|
-| Gemini image gen latency (>30s) | User frustration | Medium | Add async job queue, progress indicator |
-| Tag taxonomy drift | Poor search quality | High | Strict enum validation, AI normalization |
-| Storage costs at scale | Operational cost | Low | Content-addressable deduplication |
-| Policy enforcement bugs | Wrong portraits exposed | Medium | Comprehensive unit tests, audit logging |
+| Risk                            | Impact                  | Likelihood | Mitigation                               |
+| ------------------------------- | ----------------------- | ---------- | ---------------------------------------- |
+| Gemini image gen latency (>30s) | User frustration        | Medium     | Add async job queue, progress indicator  |
+| Tag taxonomy drift              | Poor search quality     | High       | Strict enum validation, AI normalization |
+| Storage costs at scale          | Operational cost        | Low        | Content-addressable deduplication        |
+| Policy enforcement bugs         | Wrong portraits exposed | Medium     | Comprehensive unit tests, audit logging  |
 
 ---
 
@@ -1147,32 +1206,32 @@ Safety:
 
 ### New Files
 
-| File Path | Purpose |
-|-----------|---------|
-| `packages/shared/src/types/portrait.ts` | TypeScript types for portraits |
-| `apps/server/src/services/portrait.service.ts` | Portrait business logic |
-| `apps/server/src/routes/portraits.ts` | Portrait API routes |
-| `apps/server/src/storage/storage-adapter.ts` | Storage abstraction |
-| `apps/server/src/storage/local-disk-adapter.ts` | Local file storage |
-| `apps/server/migrations/NNNN_create_portraits.sql` | Database migration |
-| `apps/rag-service/schemas/portrait.py` | Pydantic models |
-| `apps/rag-service/services/portrait_generator.py` | AI portrait generation |
-| `apps/rag-service/routers/portrait.py` | AI endpoints |
-| `apps/web/lib/portrait/usePortrait.ts` | Portrait React hook |
-| `apps/web/components/portrait/PortraitGenerator.tsx` | Generation UI |
-| `apps/web/components/portrait/PortraitLibrary.tsx` | Search/select UI |
-| `apps/web/components/portrait/PortraitRemixer.tsx` | Remix UI |
+| File Path                                            | Purpose                        |
+| ---------------------------------------------------- | ------------------------------ |
+| `packages/shared/src/types/portrait.ts`              | TypeScript types for portraits |
+| `apps/server/src/services/portrait.service.ts`       | Portrait business logic        |
+| `apps/server/src/routes/portraits.ts`                | Portrait API routes            |
+| `apps/server/src/storage/storage-adapter.ts`         | Storage abstraction            |
+| `apps/server/src/storage/local-disk-adapter.ts`      | Local file storage             |
+| `apps/server/migrations/NNNN_create_portraits.sql`   | Database migration             |
+| `apps/rag-service/schemas/portrait.py`               | Pydantic models                |
+| `apps/rag-service/services/portrait_generator.py`    | AI portrait generation         |
+| `apps/rag-service/routers/portrait.py`               | AI endpoints                   |
+| `apps/web/lib/portrait/usePortrait.ts`               | Portrait React hook            |
+| `apps/web/components/portrait/PortraitGenerator.tsx` | Generation UI                  |
+| `apps/web/components/portrait/PortraitLibrary.tsx`   | Search/select UI               |
+| `apps/web/components/portrait/PortraitRemixer.tsx`   | Remix UI                       |
 
 ### Modified Files
 
-| File Path | Changes |
-|-----------|---------|
-| `packages/shared/src/types/graph.ts` | Add `portrait_id` to metadata |
-| `apps/rag-service/providers/gemini.py` | Add image generation methods |
-| `apps/web/components/chargen/EntitySpawnForm.tsx` | Add portrait section |
-| `apps/web/components/chargen/steps/FinalizeStep.tsx` | Add portrait generation |
-| `apps/web/lib/chargen/finalize.ts` | Attach portrait to node |
-| `apps/web/components/graph/CustomNode.tsx` | Display portrait |
+| File Path                                            | Changes                       |
+| ---------------------------------------------------- | ----------------------------- |
+| `packages/shared/src/types/graph.ts`                 | Add `portrait_id` to metadata |
+| `apps/rag-service/providers/gemini.py`               | Add image generation methods  |
+| `apps/web/components/chargen/EntitySpawnForm.tsx`    | Add portrait section          |
+| `apps/web/components/chargen/steps/FinalizeStep.tsx` | Add portrait generation       |
+| `apps/web/lib/chargen/finalize.ts`                   | Attach portrait to node       |
+| `apps/web/components/graph/CustomNode.tsx`           | Display portrait              |
 
 ---
 

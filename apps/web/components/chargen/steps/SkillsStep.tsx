@@ -27,9 +27,10 @@ export default function SkillsStep({ characterId }: SkillsStepProps) {
     <div className="space-y-6">
       <GlassPanel theme="violet" variant="bordered" className="p-6">
         <h2 className="text-xl font-display font-bold text-heading mb-4">Skills Summary</h2>
-        
+
         <p className="text-label mb-6">
-          These are the skills your character has acquired through their background and career terms.
+          These are the skills your character has acquired through their background and career
+          terms.
         </p>
 
         <div className="mb-6">
@@ -67,8 +68,8 @@ export default function SkillsStep({ characterId }: SkillsStepProps) {
 
       <GlassPanel theme="cyan" variant="default" className="p-4">
         <p className="text-sm text-label">
-          <span className="text-cyan-400 font-semibold">Note:</span> Skills at Level 0 indicate basic familiarity. 
-          Trained skills (Level 1+) represent professional competence.
+          <span className="text-cyan-400 font-semibold">Note:</span> Skills at Level 0 indicate
+          basic familiarity. Trained skills (Level 1+) represent professional competence.
         </p>
       </GlassPanel>
     </div>

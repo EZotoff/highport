@@ -4,13 +4,13 @@ export const ROGUE: CareerDefinition = {
   id: 'rogue',
   name: 'Rogue',
   description: 'Criminals, thieves, and other unsavory types.',
-  
+
   qualification: {
     characteristic: 'DEX',
     target: 6,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'thief',
@@ -58,7 +58,7 @@ export const ROGUE: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: 'carouse' },
@@ -85,7 +85,7 @@ export const ROGUE: CareerDefinition = {
       { roll: 6, skill: 'advocate' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Lackey' },
     { rank: 1, title: 'Henchman', skill: 'stealth', skillLevel: 1 },
@@ -95,9 +95,9 @@ export const ROGUE: CareerDefinition = {
     { rank: 5, title: 'Leader' },
     { rank: 6, title: 'Captain' },
   ],
-  
+
   cashBenefits: [0, 0, 10000, 10000, 50000, 100000, 100000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Ship Share' },
     { roll: 2, benefit: 'Weapon' },
@@ -106,7 +106,7 @@ export const ROGUE: CareerDefinition = {
     { roll: 5, benefit: '+1 DEX' },
     { roll: 6, benefit: 'Ship Share', orHighRank: 'Corsair' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -121,9 +121,7 @@ export const ROGUE: CareerDefinition = {
     {
       roll: 4,
       description: 'You are involved in a feud with a rival criminal organization.',
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'rival_gang' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'rival_gang' }],
       effects: [{ type: 'skill', target: 'stealth|guncombat|melee', value: 1 }],
     },
     {
@@ -177,7 +175,8 @@ export const ROGUE: CareerDefinition = {
     },
     {
       roll: 9,
-      description: 'You have the opportunity to establish yourself as a fence or other criminal contact.',
+      description:
+        'You have the opportunity to establish yourself as a fence or other criminal contact.',
       spawns: [
         { type: 'npc', relationship: 'contact', required: true, template: 'criminal_contact' },
       ],
@@ -186,17 +185,13 @@ export const ROGUE: CareerDefinition = {
     {
       roll: 10,
       description: 'You are approached by a patron for a major job.',
-      spawns: [
-        { type: 'npc', relationship: 'contact', required: true, template: 'crime_patron' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'contact', required: true, template: 'crime_patron' }],
       effects: [{ type: 'benefit', target: 'dm', value: 1 }],
     },
     {
       roll: 11,
       description: 'You are taken on as a trusted lieutenant by a crime boss.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'crime_boss' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'crime_boss' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
@@ -205,7 +200,7 @@ export const ROGUE: CareerDefinition = {
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
@@ -226,9 +221,7 @@ export const ROGUE: CareerDefinition = {
       description: 'Betrayed by a fellow rogue.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'betrayer' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'betrayer' }],
     },
     {
       roll: 4,

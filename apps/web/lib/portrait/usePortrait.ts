@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import type { PortraitRecord, PortraitSourcePolicy, PortraitTags } from '@highport/shared/types/portrait';
+import type {
+  PortraitRecord,
+  PortraitSourcePolicy,
+  PortraitTags,
+} from '@highport/shared/types/portrait';
 import { getOrCreateUser } from '../identity';
 import { getYDoc } from '../ydoc';
 import { updateNodeMetadata } from '../yjs-helpers';
@@ -75,25 +79,22 @@ export function usePortraitGenerator() {
     const user = getOrCreateUser();
 
     try {
-      const response = await fetch(
-        `${SERVER_URL}/api/portraits/${params.portraitId}/remix`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-Id': user.userId,
-          },
-          body: JSON.stringify({
-            campaignId: params.campaignId,
-            promptDelta: params.promptDelta,
-            tagsPatch: params.tagsPatch,
-            targetNodeId: params.targetNodeId,
-            familyGroupId: params.familyGroupId,
-            protected: params.protected,
-            sourcePolicy: params.sourcePolicy,
-          }),
-        }
-      );
+      const response = await fetch(`${SERVER_URL}/api/portraits/${params.portraitId}/remix`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.userId,
+        },
+        body: JSON.stringify({
+          campaignId: params.campaignId,
+          promptDelta: params.promptDelta,
+          tagsPatch: params.tagsPatch,
+          targetNodeId: params.targetNodeId,
+          familyGroupId: params.familyGroupId,
+          protected: params.protected,
+          sourcePolicy: params.sourcePolicy,
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

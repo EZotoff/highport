@@ -28,17 +28,17 @@ export default function BenefitsStep({ characterId }: BenefitsStepProps) {
   }
 
   const connections = character.terms.flatMap((term, termIndex) =>
-    (term.spawnedEntities || []).map(e => ({
+    (term.spawnedEntities || []).map((e) => ({
       ...e,
       termNumber: termIndex + 1,
-    }))
+    })),
   );
 
   return (
     <div className="space-y-6">
       <GlassPanel theme="violet" variant="bordered" className="p-6">
         <h2 className="text-xl font-display font-bold text-heading mb-4">Mustering Out Benefits</h2>
-        
+
         <p className="text-label mb-6">
           These are the benefits your character received upon leaving their career.
         </p>
@@ -63,7 +63,7 @@ export default function BenefitsStep({ characterId }: BenefitsStepProps) {
           {character.benefits && character.benefits.length > 0 ? (
             <div className="space-y-2">
               {character.benefits.map((benefit, i) => (
-                <div 
+                <div
                   key={i}
                   className="bg-deep-void/60 rounded-lg p-3 border border-cyan-500/20 flex items-center gap-3"
                 >
@@ -82,11 +82,13 @@ export default function BenefitsStep({ characterId }: BenefitsStepProps) {
             <h3 className="text-lg font-display text-heading mb-3">Connections</h3>
             <div className="space-y-2">
               {connections.map((conn, i) => (
-                <div 
+                <div
                   key={i}
                   className="bg-deep-void/60 rounded-lg p-3 border border-slate-500/20 flex items-center gap-3"
                 >
-                  {RELATIONSHIP_ICONS[conn.relationship || ''] || <Users className="w-5 h-5 text-subtle" />}
+                  {RELATIONSHIP_ICONS[conn.relationship || ''] || (
+                    <Users className="w-5 h-5 text-subtle" />
+                  )}
                   <div>
                     <span className="text-heading font-medium">{conn.name}</span>
                     <span className="text-subtle text-sm ml-2">

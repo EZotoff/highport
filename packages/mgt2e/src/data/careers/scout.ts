@@ -3,14 +3,15 @@ import type { CareerDefinition } from '../../types/career.js';
 export const SCOUT: CareerDefinition = {
   id: 'scout',
   name: 'Scout',
-  description: 'Members of the exploration branch, trained to explore new regions, survey new worlds, and make first contact.',
-  
+  description:
+    'Members of the exploration branch, trained to explore new regions, survey new worlds, and make first contact.',
+
   qualification: {
     characteristic: 'INT',
     target: 5,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'courier',
@@ -58,7 +59,7 @@ export const SCOUT: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 STR' },
@@ -85,7 +86,7 @@ export const SCOUT: CareerDefinition = {
       { roll: 6, skill: 'jackofalltrades' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Scout' },
     { rank: 1, title: 'Scout', skill: 'vaccsuit', skillLevel: 1 },
@@ -95,9 +96,9 @@ export const SCOUT: CareerDefinition = {
     { rank: 5, title: 'Senior Scout' },
     { rank: 6, title: 'Senior Scout' },
   ],
-  
+
   cashBenefits: [20000, 20000, 30000, 30000, 50000, 50000, 50000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Ship Share' },
     { roll: 2, benefit: '+1 INT' },
@@ -106,7 +107,7 @@ export const SCOUT: CareerDefinition = {
     { roll: 5, benefit: 'Scout Ship' },
     { roll: 6, benefit: 'Scout Ship' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -132,9 +133,7 @@ export const SCOUT: CareerDefinition = {
     {
       roll: 4,
       description: 'You survey an alien world.',
-      spawns: [
-        { type: 'location', required: true, template: 'alien_world' },
-      ],
+      spawns: [{ type: 'location', required: true, template: 'alien_world' }],
       choices: [
         {
           id: 'survey-skill',
@@ -170,10 +169,9 @@ export const SCOUT: CareerDefinition = {
     },
     {
       roll: 8,
-      description: 'When dealing with an alien race, you make a mistake that creates a Loss of trust.',
-      spawns: [
-        { type: 'npc', relationship: 'rival', required: false, template: 'alien_rival' },
-      ],
+      description:
+        'When dealing with an alien race, you make a mistake that creates a Loss of trust.',
+      spawns: [{ type: 'npc', relationship: 'rival', required: false, template: 'alien_rival' }],
       effects: [{ type: 'skill', target: 'diplomat', value: 1 }],
     },
     {
@@ -182,9 +180,7 @@ export const SCOUT: CareerDefinition = {
       spawns: [
         { type: 'npc', relationship: 'ally', required: false, template: 'grateful_contact' },
       ],
-      effects: [
-        { type: 'special', target: 'choice', value: 'sacrifice_benefit_for_ally' },
-      ],
+      effects: [{ type: 'special', target: 'choice', value: 'sacrifice_benefit_for_ally' }],
     },
     {
       roll: 10,
@@ -197,9 +193,7 @@ export const SCOUT: CareerDefinition = {
     {
       roll: 11,
       description: 'You uncover something unknown and significant.',
-      spawns: [
-        { type: 'secret', required: true, template: 'major_discovery' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'major_discovery' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
@@ -208,11 +202,12 @@ export const SCOUT: CareerDefinition = {
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
-      description: 'Severely injured in action. Roll twice on the Injury table and take the lower result.',
+      description:
+        'Severely injured in action. Roll twice on the Injury table and take the lower result.',
       injury: true,
       forced: true,
       effects: [{ type: 'special', target: 'injury', value: 'severe' }],
@@ -236,9 +231,7 @@ export const SCOUT: CareerDefinition = {
       description: 'You have no idea what happened to you – Loss of memory.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'secret', required: true, template: 'lost_memory' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'lost_memory' }],
     },
     {
       roll: 5,

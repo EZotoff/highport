@@ -6,13 +6,7 @@ export type NodeVariant = 'default' | 'character' | 'career' | 'event' | 'skill'
 
 export type EdgeVariant = 'default' | 'career-path' | 'relationship' | 'event-chain';
 
-export type RelationshipType = 
-  | 'ally' 
-  | 'rival' 
-  | 'contact' 
-  | 'enemy' 
-  | 'patron' 
-  | 'dependent';
+export type RelationshipType = 'ally' | 'rival' | 'contact' | 'enemy' | 'patron' | 'dependent';
 
 export interface FlowNode {
   id: string;

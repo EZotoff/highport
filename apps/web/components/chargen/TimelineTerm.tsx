@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  User, MapPin, Package, FileKey, 
-  Shield, X, Award, ChevronDown
-} from 'lucide-react';
+import { User, MapPin, Package, FileKey, Shield, X, Award, ChevronDown } from 'lucide-react';
 import type { CareerTermResult, SpawnedEntityRef } from '../../lib/chargen/types';
 import { TimelineEvent } from './TimelineEvent';
 import { GlassPanel, ProcessFlowSheen } from '@/components/ui/scifi';
@@ -19,12 +16,12 @@ interface TimelineTermProps {
 
 export function TimelineTerm({ term, career, onExpand, onEntityClick }: TimelineTermProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const isMishap = !!term.mishap;
   const isAdvancement = term.advanced;
   const isCommission = term.commissioned;
-  
-  const theme: ThemeColor = isMishap ? 'red' : (isAdvancement || isCommission) ? 'amber' : 'cyan';
+
+  const theme: ThemeColor = isMishap ? 'red' : isAdvancement || isCommission ? 'amber' : 'cyan';
   const themeHex = THEME_HEX[theme];
 
   const handleToggleExpand = (e: React.MouseEvent) => {
@@ -47,10 +44,11 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
       onClick={onExpand}
     >
       {/* Energy border gradient */}
-      <div 
+      <div
         className="absolute inset-0 rounded-xl pointer-events-none"
         style={{
-          background: 'linear-gradient(135deg, var(--plasma-cyan) 0%, var(--impulse-violet) 50%, var(--plasma-cyan) 100%)',
+          background:
+            'linear-gradient(135deg, var(--plasma-cyan) 0%, var(--impulse-violet) 50%, var(--plasma-cyan) 100%)',
           backgroundSize: '200% 200%',
           animation: 'gradient-shift 4s ease infinite',
           mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
@@ -68,37 +66,34 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
       <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-plasma-cyan/50 pointer-events-none" />
 
       <ProcessFlowSheen duration={4} />
-      
-      <div 
+
+      <div
         className="flex items-center justify-between p-3 border-b relative z-10"
         style={{ borderColor: `${themeHex}20` }}
       >
         <div className="flex flex-col">
-          <span 
-            className={TYPOGRAPHY.label}
-            style={{ color: themeHex }}
-          >
+          <span className={TYPOGRAPHY.label} style={{ color: themeHex }}>
             TERM {term.termNumber}
           </span>
-          <span 
-            className="font-semibold text-sm tracking-wide text-heading truncate max-w-[140px]" 
+          <span
+            className="font-semibold text-sm tracking-wide text-heading truncate max-w-[140px]"
             title={career.name}
           >
             {career.name}
           </span>
         </div>
-        
+
         <div className="flex items-center gap-1">
           <span className={`text-subtle ${TYPOGRAPHY.data} text-[10px]`}>AGE {term.startAge}</span>
           {term.survived ? (
-            <div 
+            <div
               className="p-1 rounded shadow-[0_0_8px_rgba(16,185,129,0.5),0_0_16px_rgba(16,185,129,0.25)]"
               style={{ backgroundColor: `${THEME_HEX.emerald}20` }}
             >
               <Shield className="w-3 h-3" style={{ color: THEME_HEX.emerald }} />
             </div>
           ) : (
-            <div 
+            <div
               className="p-1 rounded shadow-[0_0_8px_rgba(239,68,68,0.5),0_0_16px_rgba(239,68,68,0.25)]"
               style={{ backgroundColor: `${THEME_HEX.red}20` }}
             >
@@ -110,28 +105,28 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
 
       <div className="p-3 flex flex-col gap-2 relative z-10">
         {(isAdvancement || isCommission || term.rankGained !== undefined) && (
-          <div 
+          <div
             className={`flex items-center gap-1.5 px-2 py-1 rounded ${TYPOGRAPHY.label} shadow-[0_0_8px_rgba(245,158,11,0.5),0_0_16px_rgba(245,158,11,0.25)]`}
-            style={{ 
+            style={{
               backgroundColor: `${THEME_HEX.amber}15`,
               color: THEME_HEX.amber,
-              border: `1px solid ${THEME_HEX.amber}30`
+              border: `1px solid ${THEME_HEX.amber}30`,
             }}
           >
             <Award className="w-3 h-3" />
             <span>
-              {isCommission ? 'Commissioned' : 'Promoted'} 
+              {isCommission ? 'Commissioned' : 'Promoted'}
               {term.currentRank > 0 && ` (Rank ${term.currentRank})`}
             </span>
           </div>
         )}
 
-        <TimelineEvent 
-          event={term.event} 
-          eventDescription={term.eventDescription} 
-          mishap={term.mishap} 
+        <TimelineEvent
+          event={term.event}
+          eventDescription={term.eventDescription}
+          mishap={term.mishap}
         />
-        
+
         {term.spawnedEntities.length > 0 && (
           <div className="mt-1">
             <button
@@ -142,17 +137,19 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
               className="flex items-center gap-1 text-[10px] uppercase tracking-wider mb-2 transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 rounded"
               style={{ color: THEME_HEX.violet }}
             >
-              <ChevronDown 
+              <ChevronDown
                 className="w-3 h-3 transition-transform"
-                style={{ 
+                style={{
                   transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                   transitionDuration,
                 }}
               />
-              <span>{term.spawnedEntities.length} Encounter{term.spawnedEntities.length > 1 ? 's' : ''}</span>
+              <span>
+                {term.spawnedEntities.length} Encounter{term.spawnedEntities.length > 1 ? 's' : ''}
+              </span>
             </button>
-            
-            <div 
+
+            <div
               className="overflow-hidden"
               style={{
                 maxHeight: isExpanded ? `${term.spawnedEntities.length * 32}px` : '0px',
@@ -160,32 +157,32 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
                 transition: `all ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`,
               }}
             >
-              <div 
+              <div
                 className="flex flex-wrap gap-1.5 pt-2 border-t"
                 style={{ borderColor: 'var(--asteroid-dust-30)' }}
               >
                 {term.spawnedEntities.map((entity, i) => (
-                  <EntityBadge 
-                    key={`${entity.graphNodeId}-${i}`} 
-                    entity={entity} 
+                  <EntityBadge
+                    key={`${entity.graphNodeId}-${i}`}
+                    entity={entity}
                     onClick={(e) => {
                       e.stopPropagation();
                       onEntityClick?.(entity.graphNodeId);
-                    }} 
+                    }}
                   />
                 ))}
               </div>
             </div>
           </div>
         )}
-        
+
         {term.skillsGained.length > 0 && (
-          <div 
+          <div
             className="flex flex-wrap gap-1 pt-2 border-t"
             style={{ borderColor: 'var(--asteroid-dust-30)' }}
           >
             {term.skillsGained.slice(0, isExpanded ? undefined : 3).map((skill, i) => (
-              <span 
+              <span
                 key={i}
                 className="text-[9px] px-1.5 py-0.5 rounded font-mono"
                 style={{
@@ -198,17 +195,15 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
               </span>
             ))}
             {!isExpanded && term.skillsGained.length > 3 && (
-              <span className="text-[9px] text-subtle">
-                +{term.skillsGained.length - 3} more
-              </span>
+              <span className="text-[9px] text-subtle">+{term.skillsGained.length - 3} more</span>
             )}
           </div>
         )}
       </div>
 
-      <div 
+      <div
         className="h-0.5 transition-all group-hover:opacity-100 opacity-0"
-        style={{ 
+        style={{
           background: `linear-gradient(90deg, transparent, ${themeHex}, transparent)`,
           transitionDuration,
         }}
@@ -217,35 +212,67 @@ export function TimelineTerm({ term, career, onExpand, onEntityClick }: Timeline
   );
 }
 
-function EntityBadge({ entity, onClick }: { entity: SpawnedEntityRef; onClick: (e: React.MouseEvent) => void }) {
+function EntityBadge({
+  entity,
+  onClick,
+}: {
+  entity: SpawnedEntityRef;
+  onClick: (e: React.MouseEvent) => void;
+}) {
   const getIcon = () => {
     switch (entity.type) {
-      case 'npc': return <User className="w-3 h-3" />;
-      case 'location': return <MapPin className="w-3 h-3" />;
-      case 'item': return <Package className="w-3 h-3" />;
-      case 'secret': return <FileKey className="w-3 h-3" />;
-      default: return <div className="w-3 h-3 rounded-full bg-gray-500" />;
+      case 'npc':
+        return <User className="w-3 h-3" />;
+      case 'location':
+        return <MapPin className="w-3 h-3" />;
+      case 'item':
+        return <Package className="w-3 h-3" />;
+      case 'secret':
+        return <FileKey className="w-3 h-3" />;
+      default:
+        return <div className="w-3 h-3 rounded-full bg-gray-500" />;
     }
   };
 
   const getStyles = (): { color: string; bgColor: string; borderColor: string } => {
     switch (entity.relationship) {
-      case 'enemy': return { color: THEME_HEX.red, bgColor: `${THEME_HEX.red}15`, borderColor: `${THEME_HEX.red}30` };
-      case 'rival': return { color: THEME_HEX.amber, bgColor: `${THEME_HEX.amber}15`, borderColor: `${THEME_HEX.amber}30` };
-      case 'ally': return { color: THEME_HEX.emerald, bgColor: `${THEME_HEX.emerald}15`, borderColor: `${THEME_HEX.emerald}30` };
-      case 'contact': return { color: THEME_HEX.cyan, bgColor: `${THEME_HEX.cyan}15`, borderColor: `${THEME_HEX.cyan}30` };
-      default: return { color: '#94a3b8', bgColor: '#94a3b815', borderColor: '#94a3b830' };
+      case 'enemy':
+        return {
+          color: THEME_HEX.red,
+          bgColor: `${THEME_HEX.red}15`,
+          borderColor: `${THEME_HEX.red}30`,
+        };
+      case 'rival':
+        return {
+          color: THEME_HEX.amber,
+          bgColor: `${THEME_HEX.amber}15`,
+          borderColor: `${THEME_HEX.amber}30`,
+        };
+      case 'ally':
+        return {
+          color: THEME_HEX.emerald,
+          bgColor: `${THEME_HEX.emerald}15`,
+          borderColor: `${THEME_HEX.emerald}30`,
+        };
+      case 'contact':
+        return {
+          color: THEME_HEX.cyan,
+          bgColor: `${THEME_HEX.cyan}15`,
+          borderColor: `${THEME_HEX.cyan}30`,
+        };
+      default:
+        return { color: '#94a3b8', bgColor: '#94a3b815', borderColor: '#94a3b830' };
     }
   };
 
   const styles = getStyles();
 
   return (
-    <div 
+    <div
       className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] cursor-pointer transition-all hover:brightness-125"
-      style={{ 
-        color: styles.color, 
-        backgroundColor: styles.bgColor, 
+      style={{
+        color: styles.color,
+        backgroundColor: styles.bgColor,
         border: `1px solid ${styles.borderColor}`,
         transitionDuration: `${ANIMATION_TIMING.TRANSITION_EXIT}ms`,
       }}

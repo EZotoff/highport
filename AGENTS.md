@@ -21,27 +21,27 @@ highport/
 
 ## WHERE TO LOOK
 
-| Task | Location | Notes |
-|------|----------|-------|
-| Add new Yjs document type | `apps/web/lib/ydoc.ts` | Use existing pattern |
-| Database schema changes | `apps/server/src/db/schema.ts` | Run db:generate after |
-| Add API endpoint | `apps/server/src/api/index.ts` | Fastify routing |
-| Shared types | `packages/shared/src/types/` | Export via package.json |
-| Frontend components | `apps/web/` | Next.js App Router |
-| RAG pipelines | `apps/rag-service/` | Python FastAPI |
-| Sync Logic | `apps/web/lib/sync.ts` | Client-side sync logic |
-| WebSocket Server | `apps/server/src/ws/hocuspocus.ts` | Hocuspocus server setup |
+| Task                      | Location                           | Notes                   |
+| ------------------------- | ---------------------------------- | ----------------------- |
+| Add new Yjs document type | `apps/web/lib/ydoc.ts`             | Use existing pattern    |
+| Database schema changes   | `apps/server/src/db/schema.ts`     | Run db:generate after   |
+| Add API endpoint          | `apps/server/src/api/index.ts`     | Fastify routing         |
+| Shared types              | `packages/shared/src/types/`       | Export via package.json |
+| Frontend components       | `apps/web/`                        | Next.js App Router      |
+| RAG pipelines             | `apps/rag-service/`                | Python FastAPI          |
+| Sync Logic                | `apps/web/lib/sync.ts`             | Client-side sync logic  |
+| WebSocket Server          | `apps/server/src/ws/hocuspocus.ts` | Hocuspocus server setup |
 
 ## CODE MAP
 
-| Symbol | Type | Location | Role |
-|--------|------|----------|------|
-| `GraphNode` | Interface | packages/shared/src/types/graph.ts | Core node schema |
-| `GraphEdge` | Interface | packages/shared/src/types/graph.ts | Core edge schema |
-| `createYDoc` | Function | apps/web/lib/ydoc.ts | Creates campaign Y.Doc |
-| `HocuspocusServer` | Class | apps/server/src/ws/hocuspocus.ts | WebSocket sync server |
-| `documents` | Table | apps/server/src/db/schema.ts | Drizzle schema |
-| `YjsHelpers` | Module | apps/web/lib/yjs-helpers.ts | Helper functions for Yjs |
+| Symbol             | Type      | Location                           | Role                     |
+| ------------------ | --------- | ---------------------------------- | ------------------------ |
+| `GraphNode`        | Interface | packages/shared/src/types/graph.ts | Core node schema         |
+| `GraphEdge`        | Interface | packages/shared/src/types/graph.ts | Core edge schema         |
+| `createYDoc`       | Function  | apps/web/lib/ydoc.ts               | Creates campaign Y.Doc   |
+| `HocuspocusServer` | Class     | apps/server/src/ws/hocuspocus.ts   | WebSocket sync server    |
+| `documents`        | Table     | apps/server/src/db/schema.ts       | Drizzle schema           |
+| `YjsHelpers`       | Module    | apps/web/lib/yjs-helpers.ts        | Helper functions for Yjs |
 
 ## CONVENTIONS
 
@@ -78,10 +78,10 @@ pnpm --filter server db:studio    # GUI
 
 ## TESTING
 
-| Type | Framework | Location | Notes |
-|------|-----------|----------|-------|
-| Unit/Integration | Vitest | `apps/*/__tests__/` | Requires Docker for server |
-| E2E | Playwright | `apps/web/e2e/` | 28 tests covering critical flows |
+| Type             | Framework  | Location            | Notes                            |
+| ---------------- | ---------- | ------------------- | -------------------------------- |
+| Unit/Integration | Vitest     | `apps/*/__tests__/` | Requires Docker for server       |
+| E2E              | Playwright | `apps/web/e2e/`     | 28 tests covering critical flows |
 
 ---
 
@@ -91,7 +91,8 @@ pnpm --filter server db:studio    # GUI
 
 **"Done" is NOT just when hardcoded tests pass.**
 
-Hardcoded tests (unit, integration, E2E) verify *known* scenarios. They cannot discover:
+Hardcoded tests (unit, integration, E2E) verify _known_ scenarios. They cannot discover:
+
 - Bugs in untested interaction paths
 - Visual glitches not covered by assertions
 - Edge cases nobody thought to test
@@ -134,15 +135,15 @@ Hardcoded tests (unit, integration, E2E) verify *known* scenarios. They cannot d
 
 ### When Each Level is Required
 
-| Task Type | L1 Static | L2 Unit | L3 E2E | L4 Agentic |
-|-----------|-----------|---------|--------|------------|
-| **Any code change** | ✅ Always | ✅ Always | - | - |
-| **UI Component** | ✅ | ✅ | Optional | ✅ Visual + Interaction |
-| **API Endpoint** | ✅ | ✅ | Optional | ✅ curl + edge cases |
-| **CRDT/Sync Logic** | ✅ | ✅ | ✅ Required | ✅ Multi-user flows |
-| **Full-Stack Feature** | ✅ | ✅ | ✅ Required | ✅ All acceptance scenarios |
-| **Bug Fix** | ✅ | ✅ + regression | Regression | ✅ Reproduce + variants |
-| **Foundry Integration** | ✅ | ✅ | N/A | ✅ Manual (requires Foundry) |
+| Task Type               | L1 Static | L2 Unit         | L3 E2E      | L4 Agentic                   |
+| ----------------------- | --------- | --------------- | ----------- | ---------------------------- |
+| **Any code change**     | ✅ Always | ✅ Always       | -           | -                            |
+| **UI Component**        | ✅        | ✅              | Optional    | ✅ Visual + Interaction      |
+| **API Endpoint**        | ✅        | ✅              | Optional    | ✅ curl + edge cases         |
+| **CRDT/Sync Logic**     | ✅        | ✅              | ✅ Required | ✅ Multi-user flows          |
+| **Full-Stack Feature**  | ✅        | ✅              | ✅ Required | ✅ All acceptance scenarios  |
+| **Bug Fix**             | ✅        | ✅ + regression | Regression  | ✅ Reproduce + variants      |
+| **Foundry Integration** | ✅        | ✅              | N/A         | ✅ Manual (requires Foundry) |
 
 ---
 
@@ -172,13 +173,13 @@ scenarios = task.acceptance_scenarios  # Defined by Prometheus
 for scenario in scenarios:
     # a. Set up preconditions
     setup_state(scenario.given)
-    
+
     # b. Execute actions via Playwright MCP
     for action in scenario.when:
-        skill_mcp(mcp_name="playwright", tool_name=action.tool, 
+        skill_mcp(mcp_name="playwright", tool_name=action.tool,
                   arguments=action.args)
         wait_for_settlement()
-    
+
     # c. Verify outcomes
     for expectation in scenario.then:
         result = verify_expectation(expectation)
@@ -188,7 +189,7 @@ for scenario in scenarios:
             get_console_errors()
             # Report failure with context
             fail(f"{scenario.name}: {expectation} - {result.error}")
-    
+
     # d. Capture success evidence
     take_screenshot(f"PASS-{scenario.name}.png")
 
@@ -218,16 +219,18 @@ When Prometheus creates task plans, each task MUST include **Acceptance Scenario
 
 ### Task Definition Format
 
-```markdown
+````markdown
 ## Task: [Task Title]
 
 ### Implementation Requirements
+
 - [Technical requirement 1]
 - [Technical requirement 2]
 
 ### Acceptance Scenarios
 
 **Scenario 1: [Name]**
+
 ```gherkin
 GIVEN [precondition - initial state]
 AND [additional precondition if needed]
@@ -236,8 +239,10 @@ AND [additional action if needed]
 THEN [expected outcome - what user sees]
 AND [additional expectation if needed]
 ```
+````
 
 **Scenario 2: [Name]**
+
 ```gherkin
 GIVEN ...
 WHEN ...
@@ -245,16 +250,19 @@ THEN ...
 ```
 
 ### Edge Cases to Explore
+
 - [Edge case 1 - what happens if...?]
 - [Edge case 2 - what happens if...?]
 - [Error condition - how should it fail gracefully?]
 
 ### Done When
+
 - [ ] All acceptance scenarios pass via agentic testing
 - [ ] No console errors during any scenario
 - [ ] Edge cases documented with observed behavior
 - [ ] Evidence saved to .sisyphus/evidence/{task-id}/
-```
+
+````
 
 ### Example: Real-Time Graph Sync Task
 
@@ -277,9 +285,10 @@ WHEN User A clicks "Add Node" button
 THEN User B sees a new node appear within 500ms
 AND the node has the same ID in both contexts
 AND the node has correct styling (not broken/missing)
-```
+````
 
 **Scenario 2: Node Drag Sync**
+
 ```gherkin
 GIVEN User A and User B are viewing a graph with 1 node
 AND the node is at position (100, 100)
@@ -289,6 +298,7 @@ AND the movement is smooth (no teleporting)
 ```
 
 **Scenario 3: Persistence After Disconnect**
+
 ```gherkin
 GIVEN User A creates 3 nodes on /graph
 WHEN User A closes their browser
@@ -298,17 +308,20 @@ AND node positions are preserved
 ```
 
 ### Edge Cases to Explore
+
 - What happens if WebSocket disconnects mid-drag?
 - What if both users drag the same node simultaneously?
 - What if a user deletes a node another user is dragging?
 - What happens with 100 nodes? (performance)
 
 ### Done When
+
 - [ ] All 3 acceptance scenarios pass via agentic testing
 - [ ] No console errors during any scenario
 - [ ] Edge case behaviors documented
 - [ ] Evidence saved to .sisyphus/evidence/graph-sync/
-```
+
+````
 
 ---
 
@@ -414,16 +427,16 @@ echo "Web (3010): $WEB_HTTP"
 echo "Hocuspocus (3011): $HOCUSPOCUS_HTTP"
 echo "Fastify (3012): $FASTIFY_HTTP"
 echo "RAG (8000): $RAG_HTTP"
-```
+````
 
 ### Required Services by Task Type
 
-| Task Type | Required Services |
-|-----------|------------------|
-| UI-only testing | Web (3010) |
+| Task Type              | Required Services                           |
+| ---------------------- | ------------------------------------------- |
+| UI-only testing        | Web (3010)                                  |
 | Real-time sync testing | Web (3010) + Server (3011, 3012) + Postgres |
-| RAG/Chat testing | Web (3010) + Server (3012) + RAG (8000) |
-| Full E2E testing | All services |
+| RAG/Chat testing       | Web (3010) + Server (3012) + RAG (8000)     |
+| Full E2E testing       | All services                                |
 
 ### Start Services
 
@@ -521,13 +534,13 @@ await context_b.close()
 
 ### Sync Scenarios to Test
 
-| Scenario | Actor Action | Observer Expectation | Latency |
-|----------|--------------|---------------------|---------|
-| Node creation | Click "Add Node" | Node appears | <500ms |
-| Node drag | Drag node to new position | Node moves | <500ms |
-| Node deletion | Right-click → Delete | Node disappears | <500ms |
-| Table edit | Edit faction name | Name updates | <500ms |
-| Presence cursor | Move mouse | Cursor indicator moves | <200ms |
+| Scenario        | Actor Action              | Observer Expectation   | Latency |
+| --------------- | ------------------------- | ---------------------- | ------- |
+| Node creation   | Click "Add Node"          | Node appears           | <500ms  |
+| Node drag       | Drag node to new position | Node moves             | <500ms  |
+| Node deletion   | Right-click → Delete      | Node disappears        | <500ms  |
+| Table edit      | Edit faction name         | Name updates           | <500ms  |
+| Presence cursor | Move mouse                | Cursor indicator moves | <200ms  |
 
 ---
 
@@ -546,6 +559,7 @@ When Atlas orchestrates tasks, it MUST follow this verification protocol:
 ### Never Trust Claims
 
 Subagents frequently claim "done" when:
+
 - Tests are not actually passing
 - Visual bugs exist
 - Integration is broken
@@ -603,23 +617,23 @@ Subagents frequently claim "done" when:
 
 ### Service Ports
 
-| Service | Port |
-|---------|------|
+| Service       | Port |
+| ------------- | ---- |
 | Web (Next.js) | 3010 |
-| Hocuspocus | 3011 |
-| Fastify API | 3012 |
-| RAG Service | 8000 |
-| PostgreSQL | 5432 |
+| Hocuspocus    | 3011 |
+| Fastify API   | 3012 |
+| RAG Service   | 8000 |
+| PostgreSQL    | 5432 |
 
 ### Key Files
 
-| Purpose | Location |
-|---------|----------|
-| CRDT helpers | `apps/web/lib/yjs-helpers.ts` |
-| Sync provider | `apps/web/lib/sync.ts` |
+| Purpose          | Location                           |
+| ---------------- | ---------------------------------- |
+| CRDT helpers     | `apps/web/lib/yjs-helpers.ts`      |
+| Sync provider    | `apps/web/lib/sync.ts`             |
 | WebSocket server | `apps/server/src/ws/hocuspocus.ts` |
-| DB schema | `apps/server/src/db/schema.ts` |
-| Shared types | `packages/shared/src/types/` |
+| DB schema        | `apps/server/src/db/schema.ts`     |
+| Shared types     | `packages/shared/src/types/`       |
 
 ### NOTES
 
@@ -642,6 +656,7 @@ To run a full holistic verification of Highport:
 ```
 
 This triggers Atlas-orchestrated verification with:
+
 1. Prerequisites check (services, static gates, tests)
 2. Structured scenarios (Gherkin acceptance tests)
 3. Multi-user sync tests (two browser contexts)
@@ -650,12 +665,12 @@ This triggers Atlas-orchestrated verification with:
 
 ## Verification Files
 
-| File | Purpose |
-|------|---------|
-| `.sisyphus/verification/TEMPLATE.md` | Template for verification plans |
-| `.sisyphus/verification/highport-holistic.md` | Highport-specific scenarios |
-| `.opencode/skills/verify-app.md` | Slash command skill |
-| `.sisyphus/evidence/{plan-name}/` | Evidence output directory |
+| File                                          | Purpose                         |
+| --------------------------------------------- | ------------------------------- |
+| `.sisyphus/verification/TEMPLATE.md`          | Template for verification plans |
+| `.sisyphus/verification/highport-holistic.md` | Highport-specific scenarios     |
+| `.opencode/skills/verify-app.md`              | Slash command skill             |
+| `.sisyphus/evidence/{plan-name}/`             | Evidence output directory       |
 
 ## Verification Plan Structure
 
@@ -696,7 +711,7 @@ Verification plans contain:
 
 ## Scenario Format (Gherkin)
 
-```markdown
+````markdown
 ### Scenario {N}: {Name}
 
 **Priority**: Critical | High | Medium | Low
@@ -711,102 +726,108 @@ AND {additional action}
 THEN {expected outcome}
 AND {additional expectation}
 ```
+````
 
 **Evidence**: `{screenshot-name}.png`
+
 ```
 
 ## Execution Flow
 
 ```
+
 User: /verify-app
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│  ATLAS STARTS   │ ◄── Orchestrator
+│ ATLAS STARTS │ ◄── Orchestrator
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
 │ 1. PREREQUISITES│ ◄── Sequential, blocking
-│    - Services   │
-│    - TypeCheck  │
-│    - Tests      │
+│ - Services │
+│ - TypeCheck │
+│ - Tests │
 └────────┬────────┘
-         │ PASS
-         ▼
+│ PASS
+▼
 ┌─────────────────┐
-│ 2. SMOKE TESTS  │ ◄── delegate_task + playwright
+│ 2. SMOKE TESTS │ ◄── delegate_task + playwright
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│ 3. FEATURE      │ ◄── Parallel where possible
-│    TESTS        │
+│ 3. FEATURE │ ◄── Parallel where possible
+│ TESTS │
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│ 4. PERSISTENCE  │
-│    TESTS        │
+│ 4. PERSISTENCE │
+│ TESTS │
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│ 5. SYNC TESTS   │ ◄── Two browser contexts
-│    (Multi-User) │
+│ 5. SYNC TESTS │ ◄── Two browser contexts
+│ (Multi-User) │
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│ 6. INTEGRATION  │
-│    TESTS        │
+│ 6. INTEGRATION │
+│ TESTS │
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│ 7. EXPLORATORY  │ ◄── Time-boxed (15 min)
-│    TESTING      │
+│ 7. EXPLORATORY │ ◄── Time-boxed (15 min)
+│ TESTING │
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│ 8. REPORT       │ ◄── REPORT.md generated
-│    GENERATION   │
+│ 8. REPORT │ ◄── REPORT.md generated
+│ GENERATION │
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│  VERIFICATION   │
-│  COMPLETE       │
+│ VERIFICATION │
+│ COMPLETE │
 └─────────────────┘
+
 ```
 
 ## Evidence Directory Structure
 
 ```
+
 .sisyphus/evidence/highport-holistic/
 ├── prerequisites/
-│   ├── typecheck-output.txt
-│   ├── test-output.txt
-│   └── e2e-output.txt
+│ ├── typecheck-output.txt
+│ ├── test-output.txt
+│ └── e2e-output.txt
 ├── smoke/
-│   └── smoke-*.png
+│ └── smoke-_.png
 ├── feature/
-│   └── feature-*.png
+│ └── feature-_.png
 ├── persist/
-│   └── persist-*.png
+│ └── persist-_.png
 ├── sync/
-│   ├── sync-*-A.png
-│   ├── sync-*-B.png
-│   └── sync-latency-measurements.json
+│ ├── sync-_-A.png
+│ ├── sync-_-B.png
+│ └── sync-latency-measurements.json
 ├── integration/
-│   └── integration-*.png
+│ └── integration-_.png
 ├── exploratory/
-│   ├── exploration-log.md
-│   └── finding-*.png
+│ ├── exploration-log.md
+│ └── finding-\*.png
 ├── console-errors.txt
 └── REPORT.md
-```
+
+````
 
 ## Success Criteria
 
@@ -836,7 +857,7 @@ Run holistic verification of Highport.
 4. Execute scenarios from .sisyphus/verification/highport-holistic.md
 5. Perform 15 min exploratory testing
 6. Generate REPORT.md in .sisyphus/evidence/
-```
+````
 
 ## Creating Custom Verification Plans
 

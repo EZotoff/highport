@@ -62,10 +62,11 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none rounded-lg opacity-[0.03]"
         style={{
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
+          backgroundImage:
+            'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
         }}
       />
 
@@ -75,9 +76,9 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
         </div>
       )}
 
-      <Handle 
-        type="target" 
-        position={Position.Top} 
+      <Handle
+        type="target"
+        position={Position.Top}
         className="!w-3 !h-3 !border-2 transition-all duration-200"
         style={{
           top: -6,
@@ -87,22 +88,26 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
           transform: isHovered || selected ? 'scale(1.2)' : 'scale(1)',
         }}
       />
-      
+
       <div className="flex items-start gap-3">
-        <div 
+        <div
           className="flex items-center justify-center w-10 h-10 rounded-full text-xl shrink-0"
           style={{
             backgroundColor: `${config.themeHex}20`,
-            color: config.themeHex
+            color: config.themeHex,
           }}
         >
           <Icon className="w-5 h-5" />
         </div>
-        
+
         <div className="flex flex-col min-w-0">
-          <div className="font-bold text-sm tracking-wide text-gray-100 leading-tight break-words">{data.label as string}</div>
+          <div className="font-bold text-sm tracking-wide text-gray-100 leading-tight break-words">
+            {data.label as string}
+          </div>
           {description && (
-            <div className={`mt-1 line-clamp-2 text-gray-400 ${TYPOGRAPHY.secondary} text-xs`}>{description}</div>
+            <div className={`mt-1 line-clamp-2 text-gray-400 ${TYPOGRAPHY.secondary} text-xs`}>
+              {description}
+            </div>
           )}
         </div>
       </div>
@@ -113,32 +118,28 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
             className="w-8 h-8 rounded-full overflow-hidden border border-asteroid-dust-50 shadow-lg"
             style={{ backgroundColor: '#0d111a' }}
           >
-            <img
-              src={portraitUrl}
-              alt="Portrait"
-              className="w-full h-full object-cover"
-            />
+            <img src={portraitUrl} alt="Portrait" className="w-full h-full object-cover" />
           </div>
         )}
         {isLocked && (
-          <div 
+          <div
             className="p-1 rounded-full border shadow-sm text-xs"
             style={{
               backgroundColor: '#1a1f2e',
               borderColor: 'var(--asteroid-dust-50)',
-              color: THEME_HEX.amber
+              color: THEME_HEX.amber,
             }}
           >
             <Lock className="w-3 h-3" />
           </div>
         )}
         {isHidden && (
-          <div 
+          <div
             className="p-1 rounded-full border shadow-sm text-xs"
             style={{
               backgroundColor: '#1a1f2e',
               borderColor: 'var(--asteroid-dust-50)',
-              color: THEME_HEX.violet
+              color: THEME_HEX.violet,
             }}
           >
             <EyeOff className="w-3 h-3" />
@@ -146,9 +147,9 @@ const BaseNode = memo(({ data, selected, type }: NodeProps) => {
         )}
       </div>
 
-      <Handle 
-        type="source" 
-        position={Position.Bottom} 
+      <Handle
+        type="source"
+        position={Position.Bottom}
         className="!w-3 !h-3 !border-2 transition-all duration-200"
         style={{
           bottom: -6,

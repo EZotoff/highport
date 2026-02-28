@@ -24,7 +24,7 @@ describe('ChatInterface', () => {
     render(
       <ToastProvider>
         <ChatInterface />
-      </ToastProvider>
+      </ToastProvider>,
     );
     expect(screen.getByPlaceholderText('Ask a question...')).toBeDefined();
     expect(screen.getByText('Ask about the universe...')).toBeDefined();
@@ -41,7 +41,7 @@ describe('ChatInterface', () => {
     render(
       <ToastProvider>
         <ChatInterface />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const input = screen.getByPlaceholderText('Ask a question...');
@@ -60,14 +60,14 @@ describe('ChatInterface', () => {
   it('handles empty results', async () => {
     const mockStreamQuery = vi.mocked(RagClient.streamQuery);
     mockStreamQuery.mockImplementation(async (_query, onChunk, onDone) => {
-        onChunk('You do not recall any information.');
-        onDone();
+      onChunk('You do not recall any information.');
+      onDone();
     });
 
     render(
       <ToastProvider>
         <ChatInterface />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const input = screen.getByPlaceholderText('Ask a question...');
@@ -75,7 +75,7 @@ describe('ChatInterface', () => {
     fireEvent.submit(input.closest('form')!);
 
     await waitFor(() => {
-        expect(screen.getByText('You do not recall any information.')).toBeDefined();
+      expect(screen.getByText('You do not recall any information.')).toBeDefined();
     });
   });
 
@@ -88,7 +88,7 @@ describe('ChatInterface', () => {
     render(
       <ToastProvider>
         <ChatInterface />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const input = screen.getByPlaceholderText('Ask a question...');
@@ -99,8 +99,8 @@ describe('ChatInterface', () => {
     // But we expect a toast (which we can't easily assert without mocking toast context deeply or checking DOM for toast)
     // However, the assistant message should be removed if empty
     await waitFor(() => {
-       const messages = screen.queryAllByText('Error trigger');
-       expect(messages.length).toBe(1); // User message
+      const messages = screen.queryAllByText('Error trigger');
+      expect(messages.length).toBe(1); // User message
     });
   });
 });

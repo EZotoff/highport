@@ -4,13 +4,13 @@ export const NAVY: CareerDefinition = {
   id: 'navy',
   name: 'Navy',
   description: 'Members of the interstellar navy which patrols space between the stars.',
-  
+
   qualification: {
     characteristic: 'INT',
     target: 6,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'line-crew',
@@ -58,7 +58,7 @@ export const NAVY: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 STR' },
@@ -93,7 +93,7 @@ export const NAVY: CareerDefinition = {
       { roll: 6, skill: 'tactics', specialty: 'naval' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Crewman' },
     { rank: 1, title: 'Able Spacehand', skill: 'mechanic', skillLevel: 1 },
@@ -103,7 +103,7 @@ export const NAVY: CareerDefinition = {
     { rank: 5, title: 'Chief Petty Officer' },
     { rank: 6, title: 'Master Chief' },
   ],
-  
+
   officerRanks: [
     { rank: 0, title: 'Ensign', skill: 'melee', skillLevel: 1 },
     { rank: 1, title: 'Sublieutenant', skill: 'leadership', skillLevel: 1 },
@@ -113,9 +113,9 @@ export const NAVY: CareerDefinition = {
     { rank: 5, title: 'Admiral', skill: '+1 SOC' },
     { rank: 6, title: 'Fleet Admiral' },
   ],
-  
+
   cashBenefits: [1000, 5000, 10000, 10000, 20000, 50000, 50000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Personal Vehicle' },
     { roll: 2, benefit: '+1 INT' },
@@ -124,7 +124,7 @@ export const NAVY: CareerDefinition = {
     { roll: 5, benefit: 'Ship Share', orHighRank: '+2 Ship Shares' },
     { roll: 6, benefit: '+1 SOC', orHighRank: 'Yacht' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -163,9 +163,7 @@ export const NAVY: CareerDefinition = {
     {
       roll: 6,
       description: 'Your vessel participates in a notable military engagement.',
-      spawns: [
-        { type: 'location', required: false, template: 'battle_location' },
-      ],
+      spawns: [{ type: 'location', required: false, template: 'battle_location' }],
       effects: [{ type: 'special', target: 'roll', value: 'Pilot/Gunner/Engineer' }],
     },
     {
@@ -190,9 +188,7 @@ export const NAVY: CareerDefinition = {
     {
       roll: 9,
       description: 'You foil an attempted crime on board, such as mutiny, sabotage, or conspiracy.',
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'criminal_enemy' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'criminal_enemy' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+2' }],
     },
     {
@@ -223,18 +219,20 @@ export const NAVY: CareerDefinition = {
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
-      description: 'Severely injured in action. Roll twice on the Injury table and take the lower result.',
+      description:
+        'Severely injured in action. Roll twice on the Injury table and take the lower result.',
       injury: true,
       forced: true,
       effects: [{ type: 'special', target: 'injury', value: 'severe' }],
     },
     {
       roll: 2,
-      description: 'Placed in the frozen watch and revived when your ship arrives in-system. Loss of one term.',
+      description:
+        'Placed in the frozen watch and revived when your ship arrives in-system. Loss of one term.',
       forced: true,
       injury: false,
     },
@@ -257,9 +255,7 @@ export const NAVY: CareerDefinition = {
       description: 'You are tormented by a cruel officer, who drives you out.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'cruel_officer' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'cruel_officer' }],
     },
     {
       roll: 6,

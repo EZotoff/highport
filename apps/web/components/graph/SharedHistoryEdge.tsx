@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  EdgeProps,
-  getBezierPath,
-} from '@xyflow/react';
+import { BaseEdge, EdgeLabelRenderer, EdgeProps, getBezierPath } from '@xyflow/react';
 
 interface SharedHistoryEdgeData extends Record<string, unknown> {
   characterAName: string;
@@ -62,7 +57,7 @@ export default function SharedHistoryEdge({
           }}
           className="group relative z-20"
         >
-          <div 
+          <div
             className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-violet-500 text-[10px] text-white shadow-md transition-transform hover:scale-125"
             onClick={() => console.log('Shared History Connection:', edgeData)}
           >
@@ -73,7 +68,7 @@ export default function SharedHistoryEdge({
             <div className="mb-2 border-b border-violet-500/20 pb-1 font-semibold text-violet-300">
               Shared History
             </div>
-            
+
             <div className="flex flex-col gap-2">
               <div className="flex justify-between">
                 <span className="font-medium text-white">{edgeData.characterAName}</span>
@@ -82,7 +77,9 @@ export default function SharedHistoryEdge({
 
               <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500">
                 <span>via</span>
-                <span className="rounded bg-slate-800 px-1 text-slate-300">{edgeData.entityName}</span>
+                <span className="rounded bg-slate-800 px-1 text-slate-300">
+                  {edgeData.entityName}
+                </span>
               </div>
 
               <div className="flex justify-between">

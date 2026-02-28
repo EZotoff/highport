@@ -3,10 +3,13 @@
 ## Context
 
 ### Original Request
+
 Build PlaneShift - a real-time collaborative TTRPG campaign management platform serving as a "second screen" for Foundry VTT, specifically targeting Mongoose Traveller 2e campaigns.
 
 ### Interview Summary
+
 **Key Discussions**:
+
 - **Scope**: Full 4-phase roadmap (Graph → Tables → RAG → Foundry Integration)
 - **Stack**: Next.js 14 + Fastify + FastAPI, Neon (Postgres), Pinecone, Vercel
 - **Testing**: TDD with RED-GREEN-REFACTOR cycle
@@ -15,6 +18,7 @@ Build PlaneShift - a real-time collaborative TTRPG campaign management platform 
 - **Foundry**: Standalone bridge module working with vanilla mgt2e (no fork)
 
 **Research Findings**:
+
 - Yjs: Flat Y.Map structure for nodes/edges, singleton pattern for React, binary persistence to Postgres
 - React Flow: 500-1000 nodes viable with `onlyRenderVisibleElements={true}`, memoize custom nodes
 - GraphRAG: MUST pre-filter at vector DB level (Pinecone metadata filtering)
@@ -29,21 +33,25 @@ Build PlaneShift - a real-time collaborative TTRPG campaign management platform 
 > Deviations are documented below with rationale.
 
 ### Deviation 1: Edges Storage Type
+
 - **Brief (Section 3.2.1)**: `Edges (Y.Array<Edge>)`
 - **This Plan**: `edges: Y.Map<string, Y.Map>` (keyed by edge ID)
 - **Rationale**: Y.Map allows O(1) edge lookup/update by ID, which is critical for edge deletion when nodes are removed. Y.Array requires O(n) scan. The brief's rationale for Y.Array ("helps with Z-indexing") is not compelling since edge rendering order rarely matters.
 
 ### Deviation 2: Base Resources Schema
+
 - **Brief (Section 4.1)**: Generic resources (RU, PWH, Morale)
 - **This Plan**: Traveller-specific resources (Credits, Ship Fuel, Cargo Space, Maintenance, Life Support)
 - **Rationale**: User explicitly requested Traveller-themed resources during interview. The extensibility requirement (GM can add custom resources) is preserved.
 
 ### Deviation 3: Node Property Naming
+
 - **Brief (Appendix A1.1)**: Uses `meta: { description, foundry_uuid, tags, ... }`
 - **This Plan**: Uses `metadata` (consistent with brief Section 3.2.1)
 - **Decision**: Use `metadata` everywhere for consistency. The `meta` vs `metadata` inconsistency in the brief is resolved in favor of `metadata`.
 
 ### Deviation 4: Position Structure
+
 - **Brief (Section 3.2.1)**: `position: Y.Map {x: float, y: float}` (nested Y.Map)
 - **This Plan**: `position: { x: number, y: number }` (plain object stored in Y.Map)
 - **Rationale**: React Flow expects plain `{x, y}` objects. Wrapping in Y.Map adds complexity without benefit since position updates are atomic (both x and y change together).
@@ -53,15 +61,18 @@ Build PlaneShift - a real-time collaborative TTRPG campaign management platform 
 ## Work Objectives
 
 ### Core Objective
+
 Build a real-time collaborative campaign management platform that synchronizes narrative state (characters, factions, events) between a web application and Foundry VTT, with AI-powered knowledge retrieval gated by character permissions.
 
 ### Concrete Deliverables
+
 1. **Lifepath Graph**: Interactive node/edge graph with real-time multi-user editing
 2. **Campaign Tables**: Base resources and faction reputation tracking
 3. **GraphRAG Chat**: AI lore assistant with character-knowledge gating
 4. **Foundry Bridge**: Bi-directional sync module for mgt2e
 
 ### Definition of Done
+
 - [x] Multiple users can simultaneously edit graph nodes with <200ms sync latency
 - [x] Graph persists to database and survives page reload
 - [x] RAG queries respect character knowledge permissions
@@ -70,12 +81,14 @@ Build a real-time collaborative campaign management platform that synchronizes n
 - [x] Application deploys to Vercel with managed backend services
 
 ### Must Have
+
 - Real-time collaboration (Yjs CRDT)
 - Offline resilience (local-first with sync on reconnect)
 - Knowledge gating (characters only see what they know)
 - TDD for all core logic
 
 ### Must NOT Have (Guardrails)
+
 - NO minigames (Hacking, Negotiation) - deferred to v2.0
 - NO progress clocks/research workflow - deferred to v2.0
 - NO forking mgt2e - use standalone bridge module only
@@ -89,29 +102,36 @@ Build a real-time collaborative campaign management platform that synchronizes n
 ## Verification Strategy
 
 ### Test Decision
+
 - **Infrastructure exists**: NO (greenfield)
 - **User wants tests**: TDD
 - **Framework**: Vitest (frontend), Vitest (backend Node), pytest (Python)
 
 ### TDD Workflow
+
 Each TODO follows RED-GREEN-REFACTOR:
+
 1. **RED**: Write failing test first
 2. **GREEN**: Implement minimum code to pass
 3. **REFACTOR**: Clean up while keeping green
 
 ### Offline Persistence Strategy
+
 The MVP requires "offline resilience" (local-first with sync on reconnect).
 
 **Implementation:**
+
 - **Task 2**: Add `y-indexeddb` provider to persist Y.Doc locally in browser IndexedDB
 - **Task 4**: Server persistence complements (not replaces) local persistence
 - **Reconnect flow**: On reconnect, Yjs automatically syncs local changes to server
 
 **Yjs Provider Stack (in order):**
+
 1. `IndexeddbPersistence` - Local browser storage (always active)
 2. `WebsocketProvider` - Server sync (when connected)
 
 **Offline Behavior:**
+
 - User edits while offline → changes saved to IndexedDB
 - Reconnect → WebsocketProvider syncs deltas to server
 - Other clients receive updates via server broadcast
@@ -137,22 +157,22 @@ User opens app → localStorage checked for `planeshift_user`
 // packages/shared/src/types/identity.ts
 
 interface MockUser {
-  userId: string;           // Format: user_{uuid} (stored in localStorage)
-  name: string;             // Display name (editable)
-  color: string;            // Hex color for presence (#RRGGBB)
-  isGM: boolean;            // GM role flag
+  userId: string; // Format: user_{uuid} (stored in localStorage)
+  name: string; // Display name (editable)
+  color: string; // Hex color for presence (#RRGGBB)
+  isGM: boolean; // GM role flag
 }
 
 interface MockCharacter {
-  characterId: string;      // Format: char_{uuid}
-  name: string;             // Character name
-  ownerId: string;          // userId who owns this character
+  characterId: string; // Format: char_{uuid}
+  name: string; // Character name
+  ownerId: string; // userId who owns this character
 }
 
 // Active session state (stored in React context)
 interface SessionState {
   user: MockUser;
-  activeCharacter: MockCharacter | null;  // Currently selected character
+  activeCharacter: MockCharacter | null; // Currently selected character
 }
 ```
 
@@ -160,14 +180,15 @@ interface SessionState {
 
 All API requests include these headers for identity:
 
-| Header | Value | Used By |
-|--------|-------|---------|
-| `X-User-Id` | `user_{uuid}` string | All services |
-| `X-User-Name` | Display name | Logging |
-| `X-Is-GM` | `true` or `false` | Permission checks |
+| Header           | Value                  | Used By            |
+| ---------------- | ---------------------- | ------------------ |
+| `X-User-Id`      | `user_{uuid}` string   | All services       |
+| `X-User-Name`    | Display name           | Logging            |
+| `X-Is-GM`        | `true` or `false`      | Permission checks  |
 | `X-Character-Id` | `char_{uuid}` or empty | RAG scope assembly |
 
 **Example request:**
+
 ```http
 GET /api/knowledge/scope HTTP/1.1
 X-User-Id: user_550e8400e29b41d4a716446655440000
@@ -178,15 +199,16 @@ X-Character-Id: char_660e8400e29b41d4a716446655440001
 
 #### Identity Persistence
 
-| Data | Storage | Lifetime |
-|------|---------|----------|
-| `userId`, `name`, `color`, `isGM` | localStorage | Until cleared |
-| `activeCharacter` | sessionStorage | Per tab |
-| Awareness presence | Yjs Awareness | Ephemeral (disconnects) |
+| Data                              | Storage        | Lifetime                |
+| --------------------------------- | -------------- | ----------------------- |
+| `userId`, `name`, `color`, `isGM` | localStorage   | Until cleared           |
+| `activeCharacter`                 | sessionStorage | Per tab                 |
+| Awareness presence                | Yjs Awareness  | Ephemeral (disconnects) |
 
 #### GM Detection (Single Source of Truth)
 
 **MVP GM Rule (Authoritative):**
+
 ```
 1. Check localStorage 'planeshift_user'.isGM
 2. If URL has ?gm=true → set isGM=true and persist to localStorage
@@ -197,6 +219,7 @@ X-Character-Id: char_660e8400e29b41d4a716446655440001
 The "first user" fallback mentioned elsewhere is deferred to post-MVP when we have auth.
 
 **How to become GM in MVP:**
+
 1. Open app with `?gm=true` query param (one-time setup per browser)
 2. This sets `isGM=true` in localStorage permanently for that browser
 3. Remove `?gm=true` from URL - GM status persists
@@ -221,11 +244,11 @@ export function getOrCreateUser(): MockUser {
   // 1. Check for ?gm=true promotion (before reading stored user)
   const urlParams = new URLSearchParams(window.location.search);
   const gmPromotion = urlParams.get('gm') === 'true';
-  
+
   // 2. Read stored user (if exists)
   const storedJson = localStorage.getItem('planeshift_user');
   let user: MockUser | null = storedJson ? JSON.parse(storedJson) : null;
-  
+
   // 3. Handle cases
   if (user) {
     // Existing user: check for GM promotion
@@ -239,11 +262,11 @@ export function getOrCreateUser(): MockUser {
       userId: generateUserId(),
       name: 'Anonymous',
       color: randomColor(),
-      isGM: gmPromotion,  // Only true if ?gm=true on first visit
+      isGM: gmPromotion, // Only true if ?gm=true on first visit
     };
     localStorage.setItem('planeshift_user', JSON.stringify(user));
   }
-  
+
   return user;
 }
 
@@ -262,6 +285,7 @@ export function setActiveCharacter(char: MockCharacter | null): void {
 ```
 
 **Algorithm summary:**
+
 1. Check URL for `?gm=true` FIRST
 2. Load existing user from localStorage (if any)
 3. If existing user AND `?gm=true`: promote to GM, persist
@@ -270,8 +294,9 @@ export function setActiveCharacter(char: MockCharacter | null): void {
 6. **NO "first user becomes GM" logic exists**
 
 **API Client (uses identity):**
+
 ```typescript
-// apps/web/lib/api.ts  
+// apps/web/lib/api.ts
 import { getOrCreateUser, getActiveCharacter } from './identity';
 
 export function apiClient(path: string, options?: RequestInit) {
@@ -297,7 +322,7 @@ export function apiClient(path: string, options?: RequestInit) {
 #### Relationship Model
 
 ```
-Campaign (1) ──────┬──────> Document (graph) 
+Campaign (1) ──────┬──────> Document (graph)
                    ├──────> Document (baseState)
                    └──────> Document (reputationState)
 ```
@@ -310,20 +335,21 @@ Each campaign has multiple Y.Doc documents (one per data type).
 > The prefix makes IDs self-describing and prevents mixing different entity types.
 > The suffix is a UUID with hyphens removed, but treat as opaque (don't parse).
 
-| Entity | ID Format | Full Example |
-|--------|-----------|--------------|
-| Campaign | `campaign_{uuid}` | `campaign_550e8400e29b41d4a716446655440000` |
-| Document | `{campaignId}:{docType}` | `campaign_550e8400e29b41d4a716446655440000:graph` |
-| Node | `node_{uuid}` | `node_660e8400e29b41d4a716446655440000` |
-| Edge | `edge_{uuid}` | `edge_770e8400e29b41d4a716446655440000` |
-| User | `user_{uuid}` | `user_880e8400e29b41d4a716446655440000` |
-| Character | `char_{uuid}` | `char_990e8400e29b41d4a716446655440000` |
+| Entity    | ID Format                | Full Example                                      |
+| --------- | ------------------------ | ------------------------------------------------- |
+| Campaign  | `campaign_{uuid}`        | `campaign_550e8400e29b41d4a716446655440000`       |
+| Document  | `{campaignId}:{docType}` | `campaign_550e8400e29b41d4a716446655440000:graph` |
+| Node      | `node_{uuid}`            | `node_660e8400e29b41d4a716446655440000`           |
+| Edge      | `edge_{uuid}`            | `edge_770e8400e29b41d4a716446655440000`           |
+| User      | `user_{uuid}`            | `user_880e8400e29b41d4a716446655440000`           |
+| Character | `char_{uuid}`            | `char_990e8400e29b41d4a716446655440000`           |
 
 > **Examples in this document** are sometimes truncated for readability
 > (e.g., `campaign_550e8400` instead of full 32-char UUID suffix).
 > Implementations MUST use full-length IDs.
 
 **TypeScript helper:**
+
 ```typescript
 // packages/shared/src/utils/id.ts
 export function generateId(prefix: string): string {
@@ -353,33 +379,35 @@ export function generateKnowledgeGrantId(): string {
 #### DocType Values
 
 > **Naming Convention (Authoritative):**
+>
 > - DocType strings: `camelCase` (e.g., `baseState`, `reputationState`)
 > - Y.Doc top-level map names: **SAME** as DocType (e.g., `ydoc.getMap('baseState')`)
 > - Database `doc_type` column: stores the DocType string as-is
 > - Hocuspocus room name: `{campaignId}:{docType}` (e.g., `campaign_mvp_default:baseState`)
 
-| DocType | Y.Doc Top-Level Map | Content |
-|---------|---------------------|---------|
-| `graph` | `ydoc.getMap('graph')` | nodes Y.Map, edges Y.Map |
-| `baseState` | `ydoc.getMap('baseState')` | resources Y.Map, inventory Y.Map |
-| `reputationState` | `ydoc.getMap('reputationState')` | factions Y.Map |
+| DocType           | Y.Doc Top-Level Map              | Content                          |
+| ----------------- | -------------------------------- | -------------------------------- |
+| `graph`           | `ydoc.getMap('graph')`           | nodes Y.Map, edges Y.Map         |
+| `baseState`       | `ydoc.getMap('baseState')`       | resources Y.Map, inventory Y.Map |
+| `reputationState` | `ydoc.getMap('reputationState')` | factions Y.Map                   |
 
 **Code Example:**
+
 ```typescript
 // Correct usage
-const docType = 'baseState';  // camelCase
-const roomName = `${campaignId}:${docType}`;  // campaign_xyz:baseState
-const dataMap = ydoc.getMap(docType);  // Same string as docType
+const docType = 'baseState'; // camelCase
+const roomName = `${campaignId}:${docType}`; // campaign_xyz:baseState
+const dataMap = ydoc.getMap(docType); // Same string as docType
 ```
 
 #### URL Patterns
 
 > **Note**: Examples below use truncated IDs for readability. Full IDs are 32+ chars.
 
-| Endpoint | Pattern | Example (truncated) |
-|----------|---------|---------------------|
-| WebSocket (Hocuspocus) | `ws://host:3001` + `name` param | URL: `ws://localhost:3001`, name: `campaign_550e8400...:graph` |
-| HTTP GET (fallback) | `/api/doc/{campaignId}/{docType}` | `/api/doc/campaign_550e8400.../graph` |
+| Endpoint               | Pattern                           | Example (truncated)                                            |
+| ---------------------- | --------------------------------- | -------------------------------------------------------------- |
+| WebSocket (Hocuspocus) | `ws://host:3001` + `name` param   | URL: `ws://localhost:3001`, name: `campaign_550e8400...:graph` |
+| HTTP GET (fallback)    | `/api/doc/{campaignId}/{docType}` | `/api/doc/campaign_550e8400.../graph`                          |
 
 > **IMPORTANT**: Hocuspocus does NOT use path-based routing like `/yjs/{docId}`.
 > The document identifier is passed via the `name` parameter to `HocuspocusProvider`, NOT in the URL path.
@@ -399,7 +427,7 @@ export const DEFAULT_CAMPAIGN_ID = 'campaign_mvp_default';
 
 // Usage in apps/web - see "Client Connection Code" in Persistence Architecture
 // for complete HocuspocusProvider setup
-const docId = `${DEFAULT_CAMPAIGN_ID}:graph`;  // Document name passed to provider
+const docId = `${DEFAULT_CAMPAIGN_ID}:graph`; // Document name passed to provider
 ```
 
 > **Exception**: `DEFAULT_CAMPAIGN_ID` intentionally uses a human-readable suffix
@@ -465,20 +493,21 @@ The plan originally suggested client HTTP POSTs for persistence. **Corrected app
 
 #### Compaction Strategy
 
-| Trigger | Action |
-|---------|--------|
-| Every 5 minutes | Merge `document_updates` into `documents.yjs_state` |
-| On doc unload (all clients disconnect) | Final merge + clear updates |
-| Manual (admin) | Force compaction via `/api/admin/compact/{docId}` |
+| Trigger                                | Action                                              |
+| -------------------------------------- | --------------------------------------------------- |
+| Every 5 minutes                        | Merge `document_updates` into `documents.yjs_state` |
+| On doc unload (all clients disconnect) | Final merge + clear updates                         |
+| Manual (admin)                         | Force compaction via `/api/admin/compact/{docId}`   |
 
 **Compaction query:**
+
 ```sql
 -- Merge all updates since last compaction
-UPDATE documents 
+UPDATE documents
 SET yjs_state = $merged_state, updated_at = NOW()
 WHERE campaign_id = $campaign_id AND doc_type = $doc_type;
 
-DELETE FROM document_updates 
+DELETE FROM document_updates
 WHERE doc_id = $doc_id AND created_at < $compaction_time;
 ```
 
@@ -489,6 +518,7 @@ WHERE doc_id = $doc_id AND created_at < $compaction_time;
 > This avoids reimplementing document lifecycle management.
 
 **Why Hocuspocus over y-websocket-server:**
+
 - Built-in `Database.fetch` hook for loading and `onChange` hook for incremental persistence
 - Automatic document cleanup when last client disconnects
 - TypeScript-first with good types
@@ -500,12 +530,13 @@ WHERE doc_id = $doc_id AND created_at < $compaction_time;
 > Hocuspocus runs as a STANDALONE server on port 3001. Fastify is NOT used for WebSocket transport.
 > Fastify handles REST API endpoints on port 3002 (health checks, doc fallback, knowledge APIs).
 
-| Component | Port | Responsibility |
-|-----------|------|----------------|
+| Component      | Port | Responsibility                                           |
+| -------------- | ---- | -------------------------------------------------------- |
 | **Hocuspocus** | 3001 | WebSocket transport for Yjs sync (`ws://localhost:3001`) |
-| **Fastify** | 3002 | REST API (`/health`, `/api/doc/*`, `/api/knowledge/*`) |
+| **Fastify**    | 3002 | REST API (`/health`, `/api/doc/*`, `/api/knowledge/*`)   |
 
 **Client Connection Code:**
+
 ```typescript
 // apps/web/lib/sync.ts
 import { HocuspocusProvider } from '@hocuspocus/provider';
@@ -517,7 +548,7 @@ const docId = `${DEFAULT_CAMPAIGN_ID}:graph`;
 
 export const provider = new HocuspocusProvider({
   url: process.env.NEXT_PUBLIC_HOCUSPOCUS_URL || 'ws://localhost:3001',
-  name: docId,  // Hocuspocus uses 'name' as the document identifier
+  name: docId, // Hocuspocus uses 'name' as the document identifier
   document: ydoc,
 });
 
@@ -526,6 +557,7 @@ export const awareness = provider.awareness;
 ```
 
 **URL Contract:**
+
 - Base WebSocket URL: `ws://localhost:3001` (local) or `wss://sync.planeshift.app` (production)
 - Room/document name: Passed via `name` parameter to HocuspocusProvider
 - The provider handles the WebSocket protocol internally
@@ -543,13 +575,14 @@ export const awareness = provider.awareness;
 > Hocuspocus hook names and signatures differ between versions. This plan targets v2.x.
 
 1. **Server Setup (Hocuspocus standalone on port 3001)**:
+
    ```typescript
    // apps/server/src/ws/hocuspocus.ts
    import { Hocuspocus } from '@hocuspocus/server';
    import { Database } from '@hocuspocus/extension-database';
-   import { db } from '../db/client';  // Drizzle client
-   import { ensureDocumentExists } from './bootstrap';  // See below
-   
+   import { db } from '../db/client'; // Drizzle client
+   import { ensureDocumentExists } from './bootstrap'; // See below
+
    export const hocuspocus = new Hocuspocus({
      port: 3001,
      extensions: [
@@ -557,25 +590,25 @@ export const awareness = provider.awareness;
          // Called when first client connects - load state from DB
          async fetch({ documentName }) {
            const docId = documentName;
-           
+
            // CRITICAL: Ensure parent rows exist BEFORE any DB operations
            await ensureDocumentExists(docId);
-           
+
            // Load compacted state
            const snapshot = await db.query.documents.findFirst({
              where: eq(documents.id, docId),
            });
-           
+
            // Apply pending updates on top of snapshot
            const pendingUpdates = await db.query.documentUpdates.findMany({
              where: eq(documentUpdates.docId, docId),
              orderBy: [asc(documentUpdates.createdAt)],
            });
-           
+
            if (!snapshot?.yjsState && pendingUpdates.length === 0) {
-             return null;  // New document, no state to load
+             return null; // New document, no state to load
            }
-           
+
            // Merge snapshot + pending updates
            const doc = new Y.Doc();
            if (snapshot?.yjsState) {
@@ -584,10 +617,10 @@ export const awareness = provider.awareness;
            for (const update of pendingUpdates) {
              Y.applyUpdate(doc, update.updateData);
            }
-           
+
            return Y.encodeStateAsUpdate(doc);
          },
-         
+
          // Called on EACH incremental update from any client
          // This is the correct hook for storing incremental updates
          async store({ documentName, state, document }) {
@@ -597,22 +630,22 @@ export const awareness = provider.awareness;
          },
        }),
      ],
-     
+
      // onChange is called for EACH incremental update (Uint8Array)
      async onChange({ documentName, update }) {
        const docId = documentName;
        const updateId = generateId('update');
-       
+
        // Parent rows guaranteed by fetch() (runs first on connect)
        // Store the incremental Yjs update (binary diff)
        await db.insert(documentUpdates).values({
          id: updateId,
          docId,
-         updateData: update,  // Uint8Array - the actual incremental update
+         updateData: update, // Uint8Array - the actual incremental update
          createdAt: new Date(),
        });
      },
-     
+
      // Called when last client disconnects
      async onDisconnect({ documentName, clientsCount }) {
        if (clientsCount === 0) {
@@ -631,12 +664,13 @@ export const awareness = provider.awareness;
    | `onDisconnect` | Client disconnects | documentName, clientsCount | Trigger compaction when last client leaves |
 
 2. **Document Bootstrapping (Handles FK Constraints)**:
+
    ```typescript
    // apps/server/src/ws/bootstrap.ts
    import { db } from '../db/client';
    import { campaigns, documents } from '../db/schema';
    import { DEFAULT_CAMPAIGN_ID } from '@planeshift/shared/constants';
-   
+
    /**
     * Ensures the campaign and document rows exist before any persistence.
     * Called in onLoadDocument BEFORE reading or writing.
@@ -648,27 +682,29 @@ export const awareness = provider.awareness;
      if (!campaignId || !docType) {
        throw new Error(`Invalid docId format: ${docId}. Expected "{campaignId}:{docType}"`);
      }
-     
+
      // 1. Ensure campaign exists (upsert - no-op if exists)
-     await db.insert(campaigns)
+     await db
+       .insert(campaigns)
        .values({
          id: campaignId,
          name: campaignId === DEFAULT_CAMPAIGN_ID ? 'Default Campaign' : 'Unnamed Campaign',
-         ownerId: 'system',  // Placeholder until auth exists
+         ownerId: 'system', // Placeholder until auth exists
          createdAt: new Date(),
        })
-       .onConflictDoNothing();  // If already exists, skip
-     
+       .onConflictDoNothing(); // If already exists, skip
+
      // 2. Ensure document row exists (upsert - no-op if exists)
-     await db.insert(documents)
+     await db
+       .insert(documents)
        .values({
          id: docId,
          campaignId,
          docType,
-         yjsState: null,  // No initial state (empty doc)
+         yjsState: null, // No initial state (empty doc)
          updatedAt: new Date(),
        })
-       .onConflictDoNothing();  // If already exists, skip
+       .onConflictDoNothing(); // If already exists, skip
    }
    ```
 
@@ -683,6 +719,7 @@ export const awareness = provider.awareness;
    8. Client edits trigger `onChange` hook - inserts work because parent rows exist
 
    **Migration Seed (Alternative for DEFAULT_CAMPAIGN_ID):**
+
    ```sql
    -- apps/server/drizzle/0001_seed_default_campaign.sql
    -- Run as part of db:migrate, ensures default campaign exists
@@ -696,63 +733,62 @@ export const awareness = provider.awareness;
    - Runtime `ensureDocumentExists` handles any future dynamic campaigns
 
 3. **Database Client Setup (Drizzle + postgres driver)**:
+
    ```typescript
    // apps/server/src/db/client.ts
    import { drizzle } from 'drizzle-orm/postgres-js';
    import postgres from 'postgres';
    import * as schema from './schema';
-   
+
    const queryClient = postgres(process.env.DATABASE_URL!);
    export const db = drizzle(queryClient, { schema });
-   
+
    // For raw SQL when needed (e.g., advisory locks)
    export const sql = queryClient;
    ```
 
-3. **Compaction (with locking to prevent race conditions)**:
+4. **Compaction (with locking to prevent race conditions)**:
+
    ```typescript
    // apps/server/src/ws/compaction.ts
    import { db, sql } from '../db/client';
    import * as Y from 'yjs';
-   
+
    // Hash docId to int for pg_advisory_lock (stable numeric hash)
    function hashDocIdToInt(docId: string): number {
      let hash = 0;
      for (let i = 0; i < docId.length; i++) {
-       hash = ((hash << 5) - hash) + docId.charCodeAt(i);
-       hash = hash & hash;  // Convert to 32bit integer
+       hash = (hash << 5) - hash + docId.charCodeAt(i);
+       hash = hash & hash; // Convert to 32bit integer
      }
      return Math.abs(hash);
    }
-   
+
    export async function compactDocument(docId: string): Promise<void> {
      const lockId = hashDocIdToInt(docId);
-     
+
      // Advisory lock for this document (session-level, auto-releases on disconnect)
      await sql`SELECT pg_advisory_lock(${lockId})`;
-     
+
      try {
        // Get current timestamp BEFORE reading updates
        const now = new Date();
-       
+
        // Load all updates up to this timestamp
        const updates = await db.query.documentUpdates.findMany({
-         where: and(
-           eq(documentUpdates.docId, docId),
-           lte(documentUpdates.createdAt, now)
-         ),
+         where: and(eq(documentUpdates.docId, docId), lte(documentUpdates.createdAt, now)),
          orderBy: [asc(documentUpdates.createdAt)],
        });
-       
+
        if (updates.length === 0) {
-         return;  // Nothing to compact
+         return; // Nothing to compact
        }
-       
+
        // Load current snapshot
        const snapshot = await db.query.documents.findFirst({
          where: eq(documents.id, docId),
        });
-       
+
        // Merge all updates
        const doc = new Y.Doc();
        if (snapshot?.yjsState) {
@@ -762,9 +798,10 @@ export const awareness = provider.awareness;
          Y.applyUpdate(doc, update.updateData);
        }
        const mergedState = Y.encodeStateAsUpdate(doc);
-       
+
        // Upsert merged state
-       await db.insert(documents)
+       await db
+         .insert(documents)
          .values({
            id: docId,
            campaignId: docId.split(':')[0],
@@ -776,38 +813,41 @@ export const awareness = provider.awareness;
            target: documents.id,
            set: { yjsState: mergedState, updatedAt: now },
          });
-       
+
        // Delete only updates we merged (by timestamp)
-       await db.delete(documentUpdates)
-         .where(and(
-           eq(documentUpdates.docId, docId),
-           lte(documentUpdates.createdAt, now)
-         ));
+       await db
+         .delete(documentUpdates)
+         .where(and(eq(documentUpdates.docId, docId), lte(documentUpdates.createdAt, now)));
      } finally {
        await sql`SELECT pg_advisory_unlock(${lockId})`;
      }
    }
    ```
 
-4. **Periodic Compaction Job**:
+5. **Periodic Compaction Job**:
+
    ```typescript
    // apps/server/src/jobs/compaction.ts
    import { hocuspocus } from '../ws/hocuspocus';
-   
+
    // Run every 5 minutes
-   setInterval(async () => {
-     const activeDocNames = hocuspocus.getDocumentNames();
-     for (const docName of activeDocNames) {
-       try {
-         await compactDocument(docName);
-       } catch (e) {
-         console.error(`Compaction failed for ${docName}:`, e);
+   setInterval(
+     async () => {
+       const activeDocNames = hocuspocus.getDocumentNames();
+       for (const docName of activeDocNames) {
+         try {
+           await compactDocument(docName);
+         } catch (e) {
+           console.error(`Compaction failed for ${docName}:`, e);
+         }
        }
-     }
-   }, 5 * 60 * 1000);
+     },
+     5 * 60 * 1000,
+   );
    ```
 
 **Race Condition Safety:**
+
 - `pg_advisory_lock` prevents concurrent compaction of same doc
 - Timestamp-based deletion ensures updates arriving DURING compaction are not lost
 - Hocuspocus handles document lifecycle internally
@@ -834,20 +874,21 @@ All scope tags follow this format:
 
 #### Tag Namespaces
 
-| Type | Pattern | Example | Meaning | Grantable? |
-|------|---------|---------|---------|------------|
-| `public` | `public` | `public` | Anyone can access | No (automatic) |
-| `gm` | `gm` | `gm` | GM-only access | No (role-based) |
-| `party` | `party` | `party` | All player characters | No (automatic) |
-| `char` | `char:{characterId}` | `char:char_660e8400...` | Specific character's personal data | No (automatic) |
-| `faction` | `faction:{factionId}` | `faction:imperial-navy` | Faction members know this | No (membership-based) |
-| `secret` | `secret:{slug}` | `secret:ancient-artifact-location` | **Grantable secret knowledge** | **YES** |
+| Type      | Pattern               | Example                            | Meaning                            | Grantable?            |
+| --------- | --------------------- | ---------------------------------- | ---------------------------------- | --------------------- |
+| `public`  | `public`              | `public`                           | Anyone can access                  | No (automatic)        |
+| `gm`      | `gm`                  | `gm`                               | GM-only access                     | No (role-based)       |
+| `party`   | `party`               | `party`                            | All player characters              | No (automatic)        |
+| `char`    | `char:{characterId}`  | `char:char_660e8400...`            | Specific character's personal data | No (automatic)        |
+| `faction` | `faction:{factionId}` | `faction:imperial-navy`            | Faction members know this          | No (membership-based) |
+| `secret`  | `secret:{slug}`       | `secret:ancient-artifact-location` | **Grantable secret knowledge**     | **YES**               |
 
 #### Grantable Knowledge Tags (`secret:*`)
 
 The `secret:{slug}` namespace is for discoverable secrets that can be granted to characters:
 
 **How it works:**
+
 1. **Ingestion**: GM uploads lore document tagged with `access_scope: ["gm", "secret:lost-city"]`
 2. **Initial state**: Only GM can query this content
 3. **Discovery**: During play, character discovers the secret
@@ -855,6 +896,7 @@ The `secret:{slug}` namespace is for discoverable secrets that can be granted to
 5. **Access**: Character's scope now includes `secret:lost-city`, so RAG returns the content
 
 **Slug naming convention:**
+
 - Lowercase alphanumeric with hyphens: `^[a-z0-9-]+$`
 - Max 64 characters
 - Human-readable (not UUIDs)
@@ -865,30 +907,34 @@ The `secret:{slug}` namespace is for discoverable secrets that can be granted to
 ```typescript
 // apps/server/src/services/scope.ts
 
-async function assembleScope(userId: string, characterId: string | null, isGM: boolean): Promise<string[]> {
+async function assembleScope(
+  userId: string,
+  characterId: string | null,
+  isGM: boolean,
+): Promise<string[]> {
   const scope: string[] = ['public'];
-  
+
   if (isGM) {
     scope.push('gm');
   }
-  
+
   if (characterId) {
     scope.push(`char:${characterId}`);
     scope.push('party');
-    
+
     // Add faction scopes from character's faction memberships
     const factions = await getFactionMemberships(characterId);
     for (const f of factions) {
       scope.push(`faction:${f.factionId}`);
     }
-    
+
     // Add granted secret knowledge
     const grants = await getKnowledgeGrants(characterId);
     for (const g of grants) {
-      scope.push(g.knowledgeTag);  // e.g., "secret:lost-city"
+      scope.push(g.knowledgeTag); // e.g., "secret:lost-city"
     }
   }
-  
+
   return scope;
 }
 ```
@@ -951,11 +997,11 @@ CREATE TABLE character_knowledge (
 
 > **Note**: Character IDs below are truncated for readability.
 
-| User | Character | isGM | Grants | Assembled Scope |
-|------|-----------|------|--------|-----------------|
+| User  | Character         | isGM  | Grants                    | Assembled Scope                                                                                     |
+| ----- | ----------------- | ----- | ------------------------- | --------------------------------------------------------------------------------------------------- |
 | Alice | char_garrus123... | false | `secret:traitor-identity` | `['public', 'party', 'char:char_garrus123...', 'faction:imperial-navy', 'secret:traitor-identity']` |
-| Bob | None | true | (none) | `['public', 'gm']` |
-| Carol | char_zara456... | false | (none) | `['public', 'party', 'char:char_zara456...']` |
+| Bob   | None              | true  | (none)                    | `['public', 'gm']`                                                                                  |
+| Carol | char_zara456...   | false | (none)                    | `['public', 'party', 'char:char_zara456...']`                                                       |
 
 #### Document Scope Update Flow (Scope Editor → Pinecone)
 
@@ -1009,27 +1055,25 @@ CREATE TABLE ingested_documents (
 // apps/server/src/routes/documents.ts
 fastify.patch('/api/documents/:sourceId/scope', async (req, reply) => {
   const { sourceId } = req.params;
-  const { accessScope } = req.body;  // string[] of scope tags
+  const { accessScope } = req.body; // string[] of scope tags
   const userId = req.headers['x-user-id'];
   const isGM = req.headers['x-is-gm'] === 'true';
-  
+
   // Only GM can change scope
   if (!isGM) {
     return reply.status(403).send({ error: 'Only GM can modify document scope' });
   }
-  
+
   // Update local database
-  await db.update(ingestedDocuments)
-    .set({ accessScope })
-    .where(eq(ingestedDocuments.id, sourceId));
-  
+  await db.update(ingestedDocuments).set({ accessScope }).where(eq(ingestedDocuments.id, sourceId));
+
   // Forward to RAG service to update Pinecone
   await fetch(`${RAG_SERVICE_URL}/update-scope`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sourceId, accessScope }),
   });
-  
+
   return { status: 'updated' };
 });
 ```
@@ -1050,7 +1094,7 @@ async def update_scope(request: UpdateScopeRequest):
     """Update access_scope metadata for all vectors from a source document."""
     source_id = request.source_id
     new_scope = request.access_scope
-    
+
     # Fetch vector IDs by source_id metadata
     # Note: Pinecone doesn't support querying by metadata alone,
     # so we use a dummy query with filter
@@ -1060,10 +1104,10 @@ async def update_scope(request: UpdateScopeRequest):
         top_k=10000,  # Get all chunks from this doc
         include_metadata=True,
     )
-    
+
     if not results.matches:
         raise HTTPException(404, f"No vectors found for source_id: {source_id}")
-    
+
     # Update each vector's metadata
     updates = []
     for match in results.matches:
@@ -1071,13 +1115,13 @@ async def update_scope(request: UpdateScopeRequest):
             "id": match.id,
             "set_metadata": {"access_scope": new_scope}
         })
-    
+
     # Batch update (Pinecone supports up to 1000 per batch)
     for i in range(0, len(updates), 1000):
         batch = updates[i:i+1000]
         index.update(id=batch[0]["id"], set_metadata=batch[0]["set_metadata"])
         # Note: For true batch update, use index.update with vectors list
-    
+
     return {"updated_count": len(updates)}
 ```
 
@@ -1092,7 +1136,7 @@ interface ScopeEditorProps {
 
 export function ScopeEditor({ document, onUpdate }: ScopeEditorProps) {
   const [scope, setScope] = useState<string[]>(document.accessScope);
-  
+
   const handleSave = async () => {
     await apiClient(`/api/documents/${document.id}/scope`, {
       method: 'PATCH',
@@ -1100,18 +1144,20 @@ export function ScopeEditor({ document, onUpdate }: ScopeEditorProps) {
     });
     onUpdate();
   };
-  
+
   // UI with checkboxes for public/gm/party, dropdown for factions, text input for secrets
 }
 ```
 
 **Task 12 Updated What To Do** (add to existing list):
+
 - Create `ingested_documents` table to track uploaded docs and their scope
 - Create `PATCH /api/documents/:sourceId/scope` endpoint in apps/server
 - Create `POST /update-scope` endpoint in apps/rag-service
 - UI shows list of ingested documents with current scope, allows editing
 
 **Task 12 Updated Acceptance Criteria** (add to existing list):
+
 - [x] `ingested_documents` table exists with `access_scope` column
 - [x] `PATCH /api/documents/:sourceId/scope` with `{ accessScope: ["gm", "secret:x"] }` → updates DB and Pinecone
 - [x] Pinecone vectors for that source_id now have updated `access_scope` metadata
@@ -1120,25 +1166,28 @@ export function ScopeEditor({ document, onUpdate }: ScopeEditorProps) {
 ---
 
 ### Database Ownership & Migrations
+
 All PostgreSQL tables are owned by `apps/server` (Node.js service).
 
-| Table | Owner | Used By |
-|-------|-------|---------|
-| `campaigns` | apps/server | apps/web, apps/server |
-| `documents` | apps/server | apps/server |
-| `document_updates` | apps/server | apps/server |
+| Table                 | Owner       | Used By                       |
+| --------------------- | ----------- | ----------------------------- |
+| `campaigns`           | apps/server | apps/web, apps/server         |
+| `documents`           | apps/server | apps/server                   |
+| `document_updates`    | apps/server | apps/server                   |
 | `character_knowledge` | apps/server | apps/server, apps/rag-service |
-| `users` | apps/server | all |
+| `users`               | apps/server | all                           |
 
 **ORM Decision: Drizzle ORM**
 
 We use [Drizzle ORM](https://orm.drizzle.team/) for the following reasons:
+
 - TypeScript-first with excellent type inference
 - SQL-like syntax (less abstraction than Prisma)
 - Lightweight, no heavy runtime
 - Good migration support
 
 **Migration Strategy:**
+
 - Migrations live in `apps/server/drizzle/`
 - Schema defined in `apps/server/src/db/schema.ts`
 - `pnpm --filter server db:generate` generates migrations from schema changes
@@ -1147,11 +1196,13 @@ We use [Drizzle ORM](https://orm.drizzle.team/) for the following reasons:
 
 **UUID Generation:**
 IDs are generated **in application code**, not by Postgres `gen_random_uuid()`.
+
 - All ID generation uses `packages/shared/src/utils/id.ts` functions
 - Database columns use `VARCHAR(64)` or `TEXT`, not `UUID` type
 - This avoids `pgcrypto` extension dependency and works with Neon free tier
 
 **Corrected schema example:**
+
 ```sql
 CREATE TABLE character_knowledge (
   id VARCHAR(64) PRIMARY KEY,              -- Generated in app: generateId('grant')
@@ -1169,12 +1220,12 @@ See Task 0 for complete `docker-compose.yml`, `.env.test`, and `.github/workflow
 
 **DATABASE_URL Policy:**
 
-| Environment | DATABASE_URL Source | Value |
-|-------------|---------------------|-------|
-| **Local dev** | `apps/server/.env` | `postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_test` |
-| **Local test** | `apps/server/.env.test` | Same as dev (uses docker-compose postgres) |
-| **CI** | GitHub Actions env | `postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_test` |
-| **Production** | Vercel env vars | Neon connection string (set in Vercel dashboard) |
+| Environment    | DATABASE_URL Source     | Value                                                                   |
+| -------------- | ----------------------- | ----------------------------------------------------------------------- |
+| **Local dev**  | `apps/server/.env`      | `postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_test` |
+| **Local test** | `apps/server/.env.test` | Same as dev (uses docker-compose postgres)                              |
+| **CI**         | GitHub Actions env      | `postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_test` |
+| **Production** | Vercel env vars         | Neon connection string (set in Vercel dashboard)                        |
 
 **Rule**: Local dev/test/CI all use the same credentials via docker-compose.
 Neon is only used in production (Vercel). Task 4's "Create Neon database" is for production setup, not for running tests.
@@ -1187,13 +1238,14 @@ Neon is only used in production (Vercel). Task 4's "Create Neon database" is for
 
 #### Embeddings Model
 
-| Setting | Value | Rationale |
-|---------|-------|-----------|
-| **Model** | `text-embedding-3-small` | OpenAI's cost-effective embedding model |
-| **Dimensions** | 1536 | Default for text-embedding-3-small |
-| **Provider** | OpenAI API | Consistent with ecosystem |
+| Setting        | Value                    | Rationale                               |
+| -------------- | ------------------------ | --------------------------------------- |
+| **Model**      | `text-embedding-3-small` | OpenAI's cost-effective embedding model |
+| **Dimensions** | 1536                     | Default for text-embedding-3-small      |
+| **Provider**   | OpenAI API               | Consistent with ecosystem               |
 
 **Implementation:**
+
 ```python
 # apps/rag-service/services/embeddings.py
 from openai import OpenAI
@@ -1210,13 +1262,14 @@ def embed(text: str) -> list[float]:
 
 #### Chunking Configuration
 
-| Setting | Value | Rationale |
-|---------|-------|-----------|
-| **Chunk size** | 500 tokens | Balance between context and granularity |
-| **Chunk overlap** | 50 tokens | Maintain context across boundaries |
-| **Tokenizer** | `tiktoken` with `cl100k_base` | Matches OpenAI embedding model |
+| Setting           | Value                         | Rationale                               |
+| ----------------- | ----------------------------- | --------------------------------------- |
+| **Chunk size**    | 500 tokens                    | Balance between context and granularity |
+| **Chunk overlap** | 50 tokens                     | Maintain context across boundaries      |
+| **Tokenizer**     | `tiktoken` with `cl100k_base` | Matches OpenAI embedding model          |
 
 **Implementation:**
+
 ```python
 # apps/rag-service/services/chunking.py
 import tiktoken
@@ -1237,14 +1290,15 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]
 
 #### Pinecone Index Configuration
 
-| Setting | Value | Rationale |
-|---------|-------|-----------|
-| **Index name** | `planeshift-lore` | Descriptive, matches project |
-| **Dimension** | 1536 | Matches text-embedding-3-small |
-| **Metric** | `cosine` | Standard for semantic similarity |
-| **Namespace** | `{campaignId}` | Isolate campaigns; use `"default"` for MVP |
+| Setting        | Value             | Rationale                                  |
+| -------------- | ----------------- | ------------------------------------------ |
+| **Index name** | `planeshift-lore` | Descriptive, matches project               |
+| **Dimension**  | 1536              | Matches text-embedding-3-small             |
+| **Metric**     | `cosine`          | Standard for semantic similarity           |
+| **Namespace**  | `{campaignId}`    | Isolate campaigns; use `"default"` for MVP |
 
 **Index Creation (one-time setup):**
+
 ```python
 # scripts/create_pinecone_index.py
 from pinecone import Pinecone
@@ -1267,6 +1321,7 @@ pc.create_index(
 | `PINECONE_INDEX_NAME` | Yes | Default: `planeshift-lore` |
 
 **Unit vs Integration Test Strategy:**
+
 - **Unit tests**: Mock `embed()` to return deterministic 1536-dim vectors; mock Pinecone client
 - **Integration tests**: Use real APIs when `RUN_INTEGRATION=true` and keys are present
 - Test fixtures provide canned embeddings for reproducible unit tests
@@ -1289,6 +1344,7 @@ pc.create_index(
 ```
 
 **Key Design Decisions:**
+
 - **Separate from Hocuspocus**: Foundry sync uses plain JSON messages, not Yjs CRDT protocol
 - **Runs on Fastify (port 3002)**: WebSocket upgrade handled by `@fastify/websocket`
 - **Endpoint**: `ws://localhost:3002/foundry` (local) or `wss://api.planeshift.app/foundry` (production)
@@ -1297,6 +1353,7 @@ pc.create_index(
 #### Connection Setup
 
 **Foundry Module (client):**
+
 ```javascript
 // packages/foundry-module/src/socket.js
 class FoundryBridge {
@@ -1306,41 +1363,41 @@ class FoundryBridge {
     this.ws = null;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
-    this.reconnectDelay = 1000;  // Doubles each attempt, max 30s
+    this.reconnectDelay = 1000; // Doubles each attempt, max 30s
   }
 
   connect() {
     const url = `${this.serverUrl}/foundry`;
     this.ws = new WebSocket(url);
-    
+
     this.ws.onopen = () => {
-      console.log("PlaneShift Bridge: Connected");
+      console.log('PlaneShift Bridge: Connected');
       this.reconnectAttempts = 0;
       // Send handshake
-      this.send({ type: "handshake", apiKey: this.apiKey });
+      this.send({ type: 'handshake', apiKey: this.apiKey });
     };
-    
+
     this.ws.onclose = () => {
-      console.log("PlaneShift Bridge: Disconnected");
+      console.log('PlaneShift Bridge: Disconnected');
       this.scheduleReconnect();
     };
-    
+
     this.ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
       this.handleMessage(msg);
     };
   }
-  
+
   scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error("PlaneShift Bridge: Max reconnect attempts reached");
+      console.error('PlaneShift Bridge: Max reconnect attempts reached');
       return;
     }
-    const delay = Math.min(this.reconnectDelay * (2 ** this.reconnectAttempts), 30000);
+    const delay = Math.min(this.reconnectDelay * 2 ** this.reconnectAttempts, 30000);
     this.reconnectAttempts++;
     setTimeout(() => this.connect(), delay);
   }
-  
+
   send(msg) {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(msg));
@@ -1350,6 +1407,7 @@ class FoundryBridge {
 ```
 
 **Server (Fastify plugin):**
+
 ```typescript
 // apps/server/src/api/foundry.ts
 import { FastifyPluginAsync } from 'fastify';
@@ -1357,15 +1415,15 @@ import websocket from '@fastify/websocket';
 
 export const foundryPlugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(websocket);
-  
+
   fastify.get('/foundry', { websocket: true }, (socket, req) => {
     console.log('Foundry client connected');
-    
+
     socket.on('message', (data) => {
       const msg = JSON.parse(data.toString());
       handleFoundryMessage(socket, msg);
     });
-    
+
     socket.on('close', () => {
       console.log('Foundry client disconnected');
     });
@@ -1390,27 +1448,29 @@ function handleFoundryMessage(socket: WebSocket, msg: FoundryMessage) {
 #### Message Protocol
 
 **Envelope Format:**
+
 ```typescript
 interface FoundryMessage {
-  type: string;           // Message type (see below)
-  requestId?: string;     // Optional correlation ID
-  apiKey?: string;        // Only in handshake
-  payload?: object;       // Type-specific data
-  timestamp?: number;     // Unix timestamp ms
+  type: string; // Message type (see below)
+  requestId?: string; // Optional correlation ID
+  apiKey?: string; // Only in handshake
+  payload?: object; // Type-specific data
+  timestamp?: number; // Unix timestamp ms
 }
 ```
 
 **Message Types:**
 
-| Type | Direction | Purpose | Payload |
-|------|-----------|---------|---------|
-| `handshake` | Foundry→Server | Initial connection | `{ apiKey: string }` |
-| `handshake_ack` | Server→Foundry | Confirm connection | `{ status: 'ok' }` |
-| `actor_update` | Foundry→Server | Actor changed in Foundry | See below |
-| `node_update` | Server→Foundry | Node changed in PlaneShift | See below |
-| `error` | Server→Foundry | Error response | `{ code: string, message: string }` |
+| Type            | Direction      | Purpose                    | Payload                             |
+| --------------- | -------------- | -------------------------- | ----------------------------------- |
+| `handshake`     | Foundry→Server | Initial connection         | `{ apiKey: string }`                |
+| `handshake_ack` | Server→Foundry | Confirm connection         | `{ status: 'ok' }`                  |
+| `actor_update`  | Foundry→Server | Actor changed in Foundry   | See below                           |
+| `node_update`   | Server→Foundry | Node changed in PlaneShift | See below                           |
+| `error`         | Server→Foundry | Error response             | `{ code: string, message: string }` |
 
 **`actor_update` Payload:**
+
 ```typescript
 {
   type: 'actor_update',
@@ -1428,6 +1488,7 @@ interface FoundryMessage {
 ```
 
 **`node_update` Payload:**
+
 ```typescript
 {
   type: 'node_update',
@@ -1444,15 +1505,16 @@ interface FoundryMessage {
 
 #### Field Mapping (mgt2e ↔ PlaneShift)
 
-| mgt2e Actor Path | PlaneShift Node Metadata | Sync Direction |
-|------------------|-------------------------|----------------|
-| `system.hits.value` | `metadata.hp.current` | Bidirectional |
-| `system.hits.max` | `metadata.hp.max` | Foundry → PlaneShift only |
-| `system.characteristics.str.value` | `metadata.characteristics.str` | Bidirectional |
-| `system.finance.cash` | `metadata.credits` | Bidirectional |
-| `name` | `label` | Bidirectional |
+| mgt2e Actor Path                   | PlaneShift Node Metadata       | Sync Direction            |
+| ---------------------------------- | ------------------------------ | ------------------------- |
+| `system.hits.value`                | `metadata.hp.current`          | Bidirectional             |
+| `system.hits.max`                  | `metadata.hp.max`              | Foundry → PlaneShift only |
+| `system.characteristics.str.value` | `metadata.characteristics.str` | Bidirectional             |
+| `system.finance.cash`              | `metadata.credits`             | Bidirectional             |
+| `name`                             | `label`                        | Bidirectional             |
 
 **Whitelisted fields** (only these sync, prevents accidental overwrites):
+
 - `system.hits.*`
 - `system.characteristics.*`
 - `system.finance.cash`
@@ -1467,24 +1529,27 @@ interface FoundryMessage {
 
 #### Environment Variables
 
-| Env Var | Used By | Local/CI | Production |
-|---------|---------|----------|------------|
-| `NEXT_PUBLIC_HOCUSPOCUS_URL` | apps/web (browser, WebSocket) | `ws://localhost:3001` | `wss://sync.planeshift.app` |
-| `NEXT_PUBLIC_SERVER_URL` | apps/web (browser, REST) | `http://localhost:3002` | `https://api.planeshift.app` |
-| `NEXT_PUBLIC_RAG_URL` | apps/web (browser) | `http://localhost:8000` | `https://rag.planeshift.app` |
-| `SERVER_INTERNAL_URL` | apps/rag-service | `http://localhost:3002` | `http://server:3002` (internal) |
+| Env Var                      | Used By                       | Local/CI                | Production                      |
+| ---------------------------- | ----------------------------- | ----------------------- | ------------------------------- |
+| `NEXT_PUBLIC_HOCUSPOCUS_URL` | apps/web (browser, WebSocket) | `ws://localhost:3001`   | `wss://sync.planeshift.app`     |
+| `NEXT_PUBLIC_SERVER_URL`     | apps/web (browser, REST)      | `http://localhost:3002` | `https://api.planeshift.app`    |
+| `NEXT_PUBLIC_RAG_URL`        | apps/web (browser)            | `http://localhost:8000` | `https://rag.planeshift.app`    |
+| `SERVER_INTERNAL_URL`        | apps/rag-service              | `http://localhost:3002` | `http://server:3002` (internal) |
 
 #### Request Routing
 
 **Browser → Hocuspocus** (WebSocket for Yjs sync):
+
 - Local: `ws://localhost:3001`
 - Production: `wss://sync.planeshift.app`
 
 **Browser → Fastify** (REST API):
+
 - Local: `http://localhost:3002`
 - Production: `https://api.planeshift.app`
 
 **Browser → RAG Service** (REST):
+
 - Local: Direct to `http://localhost:8000`
 - Production: Direct to `https://rag.planeshift.app` (Railway/Render)
 - **NOT proxied via Next.js** - browser calls RAG service directly
@@ -1492,6 +1557,7 @@ interface FoundryMessage {
 - See Task 13 `rag-client.ts` for implementation
 
 **RAG Service → Fastify** (REST, for scope assembly):
+
 - Local: `http://localhost:3002/api/knowledge/scope`
 - Production: Internal networking or public API
 
@@ -1501,9 +1567,9 @@ interface FoundryMessage {
 // apps/server/src/api/index.ts (Fastify on port 3002)
 fastify.register(cors, {
   origin: [
-    'http://localhost:3000',      // Local Next.js
-    'https://planeshift.app',     // Production
-    'https://*.vercel.app',       // Preview deployments
+    'http://localhost:3000', // Local Next.js
+    'https://planeshift.app', // Production
+    'https://*.vercel.app', // Preview deployments
   ],
 });
 ```
@@ -1539,24 +1605,28 @@ cd apps/web && pnpm dev
 ```
 
 **Cross-Service Access:**
+
 - `apps/rag-service` accesses `character_knowledge` via REST API to `apps/server` (Fastify on 3002)
 - RAG service does NOT have direct database access
 - This ensures single source of truth for permissions
 
 ### Test Setup (Task 0)
+
 Before any feature work, establish test infrastructure in each app.
 
 ### External Service Test Strategy
+
 Tests must run without paid API credentials. Strategy by service:
 
-| Service | Test Strategy | Env Vars Required |
-|---------|--------------|-------------------|
-| **Neon (Postgres)** | Use local PostgreSQL via Docker for unit tests; Neon for integration | `DATABASE_URL` (integration only) |
-| **Pinecone** | Mock `pinecone.Index` in unit tests; use test index for integration | `PINECONE_API_KEY` (integration only) |
-| **OpenAI Embeddings** | Mock `openai.embeddings.create()` returning fake 1536-dim vectors | `OPENAI_API_KEY` (integration only) |
-| **Gemini LLM** | Mock `GeminiProvider.generate()` returning canned responses | `GEMINI_API_KEY` (integration only) |
+| Service               | Test Strategy                                                        | Env Vars Required                     |
+| --------------------- | -------------------------------------------------------------------- | ------------------------------------- |
+| **Neon (Postgres)**   | Use local PostgreSQL via Docker for unit tests; Neon for integration | `DATABASE_URL` (integration only)     |
+| **Pinecone**          | Mock `pinecone.Index` in unit tests; use test index for integration  | `PINECONE_API_KEY` (integration only) |
+| **OpenAI Embeddings** | Mock `openai.embeddings.create()` returning fake 1536-dim vectors    | `OPENAI_API_KEY` (integration only)   |
+| **Gemini LLM**        | Mock `GeminiProvider.generate()` returning canned responses          | `GEMINI_API_KEY` (integration only)   |
 
 **CI Pipeline:**
+
 - Unit tests: Run with all mocks, no env vars required
 - Integration tests: Run only when `RUN_INTEGRATION=true` and keys present
 - Tests skip gracefully if env vars missing (pytest.mark.skipif / vitest.skipIf)
@@ -1587,22 +1657,22 @@ Tests must run without paid API credentials. Strategy by service:
 test('sync latency is under 200ms', async ({ browser }) => {
   const tab1 = await browser.newPage();
   const tab2 = await browser.newPage();
-  
+
   await tab1.goto('/campaign/test');
   await tab2.goto('/campaign/test');
-  
+
   // Wait for both to connect
   await tab1.waitForSelector('[data-testid="connection-status"][data-status="connected"]');
   await tab2.waitForSelector('[data-testid="connection-status"][data-status="connected"]');
-  
+
   // Create a node in tab1 with timestamp
   const startTime = Date.now();
   await tab1.click('[data-testid="add-node-button"]');
-  
+
   // Wait for node to appear in tab2
   await tab2.waitForSelector('[data-testid="graph-node"]', { timeout: 1000 });
   const endTime = Date.now();
-  
+
   const latency = endTime - startTime;
   expect(latency).toBeLessThan(200);
   console.log(`Sync latency: ${latency}ms`);
@@ -1647,6 +1717,7 @@ awareness.on('change', () => {
 7. Hover over the flame graph to see individual frame times
 
 **Acceptance Threshold:**
+
 - 95%+ of frames should be ≤16.67ms
 - No individual frame should exceed 50ms (noticeable jank)
 
@@ -1671,26 +1742,26 @@ test('renders 500 nodes at 60fps', async ({ page }) => {
   // Load test document with 500 nodes
   await page.goto('/campaign/perf-test');
   await page.waitForSelector('[data-testid="graph-canvas"][data-loaded="true"]');
-  
+
   // Verify node count
   const nodeCount = await page.locator('[data-testid="graph-node"]').count();
   expect(nodeCount).toBe(500);
-  
+
   // Use CDP to capture performance metrics
   const client = await page.context().newCDPSession(page);
   await client.send('Performance.enable');
-  
+
   // Simulate pan (hold and drag)
   const canvas = page.locator('[data-testid="graph-canvas"]');
   await canvas.hover();
   await page.mouse.down();
-  await page.mouse.move(500, 300, { steps: 50 });  // Slow drag
+  await page.mouse.move(500, 300, { steps: 50 }); // Slow drag
   await page.mouse.up();
-  
+
   // Get metrics
   const metrics = await client.send('Performance.getMetrics');
-  const layoutDuration = metrics.metrics.find(m => m.name === 'LayoutDuration')?.value || 0;
-  
+  const layoutDuration = metrics.metrics.find((m) => m.name === 'LayoutDuration')?.value || 0;
+
   // Layout should be minimal during pan (React Flow handles virtualization)
   console.log(`Layout duration: ${layoutDuration}s`);
 });
@@ -1705,7 +1776,7 @@ import { generateNodeId } from '@planeshift/shared/utils/id';
 export function generateTestNodes(count: number): GraphNode[] {
   const nodes: GraphNode[] = [];
   const gridSize = Math.ceil(Math.sqrt(count));
-  
+
   for (let i = 0; i < count; i++) {
     const row = Math.floor(i / gridSize);
     const col = i % gridSize;
@@ -1779,25 +1850,26 @@ Phase 4: Foundry Integration
 
 ## Parallelization
 
-| Group | Tasks | Reason |
-|-------|-------|--------|
-| A | 1, 5 | Yjs client code and Fastify server are in different directories |
-| B | 7, 10 | Tables (frontend) and Python service (separate app) are independent |
+| Group | Tasks | Reason                                                              |
+| ----- | ----- | ------------------------------------------------------------------- |
+| A     | 1, 5  | Yjs client code and Fastify server are in different directories     |
+| B     | 7, 10 | Tables (frontend) and Python service (separate app) are independent |
 
-| Task | Depends On | Reason |
-|------|------------|--------|
-| 2 | 1 | React Flow needs Yjs types defined |
-| 3 | 2, 5 | Presence needs both React Flow integration AND WebSocket server for awareness transport |
-| 4 | 5 | Persistence hooks into Hocuspocus server |
-| 11 | 10 | Ingestion needs FastAPI service |
-| 15 | 14 | Sync logic needs module scaffold |
+| Task | Depends On | Reason                                                                                  |
+| ---- | ---------- | --------------------------------------------------------------------------------------- |
+| 2    | 1          | React Flow needs Yjs types defined                                                      |
+| 3    | 2, 5       | Presence needs both React Flow integration AND WebSocket server for awareness transport |
+| 4    | 5          | Persistence hooks into Hocuspocus server                                                |
+| 11   | 10         | Ingestion needs FastAPI service                                                         |
+| 15   | 14         | Sync logic needs module scaffold                                                        |
 
 ---
 
 ## TODOs
 
-> **Execution Order Note**: Task numbers are for reference only. 
+> **Execution Order Note**: Task numbers are for reference only.
 > Follow the Task Flow diagram for actual execution order:
+>
 > - Tasks 1 and 5 can run in parallel after Task 0
 > - Task 3 requires BOTH Tasks 2 and 5 complete
 > - Task 4 requires Task 5 complete (implement Task 5 before Task 4)
@@ -1896,34 +1968,37 @@ Phase 4: Foundry Integration
     - Jobs: lint, typecheck, test (with Postgres service), build
 
   **docker-compose.yml** (project root):
+
   ```yaml
   version: '3.8'
   services:
     postgres:
       image: postgres:16-alpine
       ports:
-        - "5432:5432"
+        - '5432:5432'
       environment:
         POSTGRES_USER: planeshift
         POSTGRES_PASSWORD: planeshift_dev
         POSTGRES_DB: planeshift_test
       healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U planeshift -d planeshift_test"]
+        test: ['CMD-SHELL', 'pg_isready -U planeshift -d planeshift_test']
         interval: 5s
         timeout: 5s
         retries: 5
   ```
 
   **apps/server/.env.test**:
+
   ```bash
   DATABASE_URL=postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_test
   ```
 
   **.github/workflows/ci.yml**:
+
   ```yaml
   name: CI
   on: [push, pull_request]
-  
+
   jobs:
     test:
       runs-on: ubuntu-latest
@@ -1941,10 +2016,10 @@ Phase 4: Foundry Integration
             --health-interval 10s
             --health-timeout 5s
             --health-retries 5
-      
+
       env:
         DATABASE_URL: postgresql://planeshift:planeshift_dev@localhost:5432/planeshift_test
-      
+
       steps:
         - uses: actions/checkout@v4
         - uses: pnpm/action-setup@v2
@@ -1954,7 +2029,7 @@ Phase 4: Foundry Integration
           with:
             node-version: '20'
             cache: 'pnpm'
-        
+
         - run: pnpm install
         - run: pnpm lint
         - run: pnpm typecheck
@@ -1964,6 +2039,7 @@ Phase 4: Foundry Integration
   ```
 
   **Root package.json** (project root):
+
   ```json
   {
     "name": "planeshift",
@@ -1988,6 +2064,7 @@ Phase 4: Foundry Integration
   ```
 
   **turbo.json** (project root):
+
   ```json
   {
     "$schema": "https://turbo.build/schema.json",
@@ -2016,10 +2093,11 @@ Phase 4: Foundry Integration
   ```
 
   **pnpm-workspace.yaml** (project root):
+
   ```yaml
   packages:
-    - "apps/*"
-    - "packages/*"
+    - 'apps/*'
+    - 'packages/*'
   ```
 
   **Must NOT do**:
@@ -2070,52 +2148,59 @@ Phase 4: Foundry Integration
 
   **What to do**:
   - Define TypeScript interfaces for graph entities in `packages/shared`:
-  
+
   ```typescript
   // Canonical Yjs Schema - THIS IS AUTHORITATIVE
   // ID format: All IDs use prefixed format per "Campaign & Document ID Strategy"
-  
+
   interface GraphNode {
-    id: string;                    // Format: node_{uuid} (immutable after creation)
-    type: NodeType;                // Enum value
-    label: string;                 // Display name - plain string with LWW semantics
-                                   // (Y.Text was considered for character-level collab,
-                                   // but adds complexity; LWW is sufficient for MVP)
+    id: string; // Format: node_{uuid} (immutable after creation)
+    type: NodeType; // Enum value
+    label: string; // Display name - plain string with LWW semantics
+    // (Y.Text was considered for character-level collab,
+    // but adds complexity; LWW is sufficient for MVP)
     position: { x: number; y: number }; // Plain object, NOT Y.Map
-    metadata: {                    // Flexible payload
+    metadata: {
+      // Flexible payload
       description?: string;
-      foundry_uuid?: string;       // Link to Foundry Actor/Item
+      foundry_uuid?: string; // Link to Foundry Actor/Item
       tags?: string[];
       image_url?: string;
       // Type-specific fields stored here
     };
-    locked: boolean;               // If true, only GM can edit
-    hidden: boolean;               // If true, invisible to non-GM
-    created_at: number;            // Unix timestamp ms
-    created_by: string;            // Format: user_{uuid} (from MVP Identity Model)
+    locked: boolean; // If true, only GM can edit
+    hidden: boolean; // If true, invisible to non-GM
+    created_at: number; // Unix timestamp ms
+    created_by: string; // Format: user_{uuid} (from MVP Identity Model)
   }
 
   interface GraphEdge {
-    id: string;                    // Format: edge_{uuid}
-    source_id: string;             // Node ID (node_{uuid})
-    target_id: string;             // Node ID (node_{uuid})
-    relation_label: string;        // e.g., "Ally", "Enemy", "Located In"
+    id: string; // Format: edge_{uuid}
+    source_id: string; // Node ID (node_{uuid})
+    target_id: string; // Node ID (node_{uuid})
+    relation_label: string; // e.g., "Ally", "Enemy", "Located In"
     type: 'directional' | 'bi-directional' | 'undirected';
-    weight: number;                // 1-5, affects line thickness
+    weight: number; // 1-5, affects line thickness
     style: 'solid' | 'dashed' | 'dotted';
-    color: string;                 // Hex code
+    color: string; // Hex code
     hidden: boolean;
   }
 
-  type NodeType = 
-    | 'traveller' | 'npc' | 'spacecraft' | 'world'  // mgt2e-aligned
-    | 'faction' | 'location'                         // Generic
-    | 'event' | 'clue' | 'sector'                   // PlaneShift-only
-    | `custom:${string}`;                           // User-defined
+  type NodeType =
+    | 'traveller'
+    | 'npc'
+    | 'spacecraft'
+    | 'world' // mgt2e-aligned
+    | 'faction'
+    | 'location' // Generic
+    | 'event'
+    | 'clue'
+    | 'sector' // PlaneShift-only
+    | `custom:${string}`; // User-defined
   ```
-  
+
   - Also export identity types (from MVP Identity Model section):
-  
+
   ```typescript
   // packages/shared/src/types/identity.ts
   interface MockUser {
@@ -2124,14 +2209,14 @@ Phase 4: Foundry Integration
     color: string;
     isGM: boolean;
   }
-  
+
   interface MockCharacter {
     characterId: string;
     name: string;
     ownerId: string;
   }
   ```
-  
+
   - Create Yjs document singleton in `apps/web/lib/ydoc.ts`
   - Define Y.Map structure:
     - `nodes: Y.Map<string, Y.Map>` - outer keyed by node ID, inner Y.Map for each node
@@ -2142,24 +2227,25 @@ Phase 4: Foundry Integration
     - TypeScript interfaces (`GraphNode`, `GraphEdge`) represent the **logical shape**
     - Conversion helpers translate between Y.Map and plain objects for React
   - Create conversion helpers:
+
     ```typescript
     // apps/web/lib/yjs-helpers.ts
-    
+
     // Convert Y.Map to plain object for React Flow consumption
     export function yMapToNode(ymap: Y.Map<any>): GraphNode {
       return {
         id: ymap.get('id'),
         type: ymap.get('type'),
         label: ymap.get('label'),
-        position: ymap.get('position'),  // Plain object stored in Y.Map
-        metadata: ymap.get('metadata'),   // Plain object stored in Y.Map
+        position: ymap.get('position'), // Plain object stored in Y.Map
+        metadata: ymap.get('metadata'), // Plain object stored in Y.Map
         locked: ymap.get('locked'),
         hidden: ymap.get('hidden'),
         created_at: ymap.get('created_at'),
         created_by: ymap.get('created_by'),
       };
     }
-    
+
     // Convert plain object to Y.Map for Yjs storage
     export function nodeToYMap(doc: Y.Doc, node: GraphNode): Y.Map<any> {
       const ymap = new Y.Map();
@@ -2167,8 +2253,8 @@ Phase 4: Foundry Integration
         ymap.set('id', node.id);
         ymap.set('type', node.type);
         ymap.set('label', node.label);
-        ymap.set('position', node.position);    // Store as plain object
-        ymap.set('metadata', node.metadata);    // Store as plain object
+        ymap.set('position', node.position); // Store as plain object
+        ymap.set('metadata', node.metadata); // Store as plain object
         ymap.set('locked', node.locked);
         ymap.set('hidden', node.hidden);
         ymap.set('created_at', node.created_at);
@@ -2176,9 +2262,10 @@ Phase 4: Foundry Integration
       });
       return ymap;
     }
-    
+
     // Similar helpers for edges: yMapToEdge, edgeToYMap
     ```
+
   - Write unit tests for:
     - Adding a node to Y.Map (using nodeToYMap helper)
     - Updating node position (via ymap.set('position', ...))
@@ -2331,21 +2418,22 @@ Phase 4: Foundry Integration
   - **Prerequisite**: Task 5 must be complete (Hocuspocus server running in-memory)
   - **This task modifies** `apps/server/src/ws/hocuspocus.ts` to add `Database` extension
   - Design schema with VARCHAR IDs (generated in-app, NOT Postgres):
-    
+
     > **ID Column Sizes:**
+    >
     > - Most entity IDs: `VARCHAR(64)` (prefix + 32-char UUID = ~40 chars, 64 gives headroom)
     > - Document IDs: `VARCHAR(128)` (composite `{campaignId}:{docType}` = ~64+1+16 = ~81 chars max)
-    
+
     ```sql
     -- All IDs generated via packages/shared/src/utils/id.ts
-    
+
     CREATE TABLE campaigns (
       id VARCHAR(64) PRIMARY KEY,           -- generateCampaignId()
       name VARCHAR(255) NOT NULL,
       owner_id VARCHAR(64) NOT NULL,        -- user ID
       created_at TIMESTAMP DEFAULT NOW()
     );
-    
+
     CREATE TABLE documents (
       id VARCHAR(128) PRIMARY KEY,          -- Composite: {campaignId}:{docType}
                                             -- Max: 64 (campaign) + 1 (:) + 16 (docType) = 81 chars
@@ -2355,20 +2443,21 @@ Phase 4: Foundry Integration
       updated_at TIMESTAMP DEFAULT NOW(),
       UNIQUE(campaign_id, doc_type)
     );
-    
+
     CREATE TABLE document_updates (
       id VARCHAR(64) PRIMARY KEY,           -- generateId('update')
       doc_id VARCHAR(128) NOT NULL REFERENCES documents(id),  -- Matches documents.id
       update_data BYTEA NOT NULL,           -- Binary Yjs update
       created_at TIMESTAMP DEFAULT NOW()
     );
-    
+
     CREATE TABLE users (
       id VARCHAR(64) PRIMARY KEY,           -- generateUserId() - matches localStorage
       name VARCHAR(255),
       created_at TIMESTAMP DEFAULT NOW()
     );
     ```
+
   - **Server-side persistence** (via Hocuspocus hooks, NOT client HTTP POST):
     - Hocuspocus `Database.fetch` loads state from DB on first client connect (see Persistence Architecture)
     - Hocuspocus `onChange` hook writes each incremental update to `document_updates` table
@@ -2710,14 +2799,14 @@ Phase 4: Foundry Integration
   - **Scope Tag Specification section above** (metadata format)
 
   **Acceptance Criteria**:
-  
-  *Unit tests (mocked, no API keys required):*
+
+  _Unit tests (mocked, no API keys required):_
   - [ ] POST PDF file → returns `{"chunks": 15, "status": "indexed"}` (mocked embeddings + Pinecone)
   - [ ] Test: 1000-word doc → creates ~2 chunks
   - [ ] Test: Each chunk has embedding of 1536 dimensions (mock returns correct shape)
   - [ ] Test: Metadata includes `access_scope: ["public"]`
-  
-  *Integration tests (requires API keys, run with RUN_INTEGRATION=true):*
+
+  _Integration tests (requires API keys, run with RUN_INTEGRATION=true):_
   - [ ] Pinecone dashboard shows new vectors with metadata
 
   **Commit**: YES
@@ -2737,7 +2826,7 @@ Phase 4: Foundry Integration
     - `GET /api/knowledge/:characterId` - Returns `{ tags: string[] }`
     - `GET /api/knowledge/scope` - Uses headers to assemble full scope array
     - `PATCH /api/documents/:sourceId/scope` - Updates document scope and propagates to Pinecone
-  - **In apps/rag-service**: 
+  - **In apps/rag-service**:
     - On query, call `GET {SERVER_INTERNAL_URL}/api/knowledge/scope` with forwarded headers
     - Use returned scope array in Pinecone filter: `{ "access_scope": { "$in": scope } }`
     - `POST /update-scope` - Updates Pinecone vector metadata for a source document
@@ -2799,34 +2888,35 @@ Phase 4: Foundry Integration
   - Display "No information found" if no results match scope
 
   **Streaming Implementation:**
+
   ```python
   # apps/rag-service/routers/query.py
   from fastapi.responses import StreamingResponse
-  
+
   @router.post("/query")
   async def query(request: QueryRequest):
       # ... retrieve context from Pinecone ...
-      
+
       async def generate():
           async for chunk in gemini_provider.stream(prompt, context):
               yield f"data: {json.dumps({'text': chunk})}\n\n"
           yield "data: [DONE]\n\n"
-      
+
       return StreamingResponse(generate(), media_type="text/event-stream")
   ```
-  
+
   ```typescript
   // apps/web/lib/rag-client.ts
   import { getOrCreateUser, getActiveCharacter } from './identity';
-  
+
   // Browser calls RAG service DIRECTLY (not via Next.js proxy)
   // Identity headers attached per Service URLs Policy
   const RAG_URL = process.env.NEXT_PUBLIC_RAG_URL || 'http://localhost:8000';
-  
+
   async function streamQuery(query: string, onChunk: (text: string) => void) {
     const user = getOrCreateUser();
     const char = getActiveCharacter();
-    
+
     const response = await fetch(`${RAG_URL}/query`, {
       method: 'POST',
       headers: {
@@ -2838,16 +2928,16 @@ Phase 4: Foundry Integration
       },
       body: JSON.stringify({ query }),
     });
-    
+
     const reader = response.body!.getReader();
     const decoder = new TextDecoder();
-    
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      
+
       const text = decoder.decode(value);
-      const lines = text.split('\n').filter(line => line.startsWith('data: '));
+      const lines = text.split('\n').filter((line) => line.startsWith('data: '));
       for (const line of lines) {
         const data = JSON.parse(line.slice(6));
         if (data.text) onChunk(data.text);
@@ -2867,15 +2957,15 @@ Phase 4: Foundry Integration
   - PROJECT_BRIEF_v2.md Section 5.2 (Concrete Examples)
 
   **Acceptance Criteria**:
-  
-  *Unit tests (mocked, no API keys required):*
+
+  _Unit tests (mocked, no API keys required):_
   - [ ] Chat UI shows input box and message history
   - [ ] Test: Query with mock scope → correct filter passed to Pinecone mock
   - [ ] Test: Empty results from Pinecone → "You do not recall any information" response
   - [ ] Test: Scope filtering verified with mock data (different scopes return different chunks)
   - [ ] Test: Response generation uses retrieved context (verify mock LLM receives chunks)
-  
-  *Integration tests (requires API keys, run with RUN_INTEGRATION=true):*
+
+  _Integration tests (requires API keys, run with RUN_INTEGRATION=true):_
   - [ ] Query "What is the City of Brass?" → returns public lore from Pinecone
   - [ ] Query secret without knowledge → "You do not recall any information"
   - [ ] Grant knowledge → same query now returns secret
@@ -2909,6 +2999,7 @@ Phase 4: Foundry Integration
 
   > **MVP API Key Behavior:**
   > The API key setting exists for future authentication but is NOT enforced in MVP.
+  >
   > - Foundry module sends API key via JSON `handshake` message (see Foundry Bridge Transport Protocol)
   > - **NOT via HTTP header** - WebSocket clients cannot set custom headers reliably cross-browser
   > - Server logs receipt but does NOT validate (accepts any value, including empty)
@@ -2958,17 +3049,18 @@ Phase 4: Foundry Integration
   - Send via WebSocket to PlaneShift server
   - Server receives → updates corresponding graph node
   - Map mgt2e actor fields to PlaneShift node metadata
-  
+
   **Actor Filtering Logic:**
+
   ```javascript
   // packages/foundry-module/src/sync.js
-  Hooks.on("updateActor", (actor, changes, options, userId) => {
+  Hooks.on('updateActor', (actor, changes, options, userId) => {
     // Only sync player-owned actors (party members)
     if (!actor.hasPlayerOwner) return;
-    
+
     // Only sync if this client made the change (avoid echo)
     if (userId !== game.user.id) return;
-    
+
     // Extract whitelisted fields only
     const payload = buildSyncPayload(actor, changes);
     if (payload) {
@@ -3052,57 +3144,57 @@ Phase 4: Foundry Integration
 
   **What to do**:
   - Implement conflict detection: same field changed in both systems
-  
+
   **Conflict Detection Data Model:**
-  
+
   > **How we detect "same field changed in both systems":**
-  
+
   ```typescript
   // apps/server/src/conflicts/types.ts
-  
+
   interface SyncState {
-    nodeId: string;           // PlaneShift node ID
-    foundryUuid: string;      // Linked Foundry actor UUID
+    nodeId: string; // PlaneShift node ID
+    foundryUuid: string; // Linked Foundry actor UUID
     fields: {
-      [fieldPath: string]: {  // e.g., "metadata.hp.current"
+      [fieldPath: string]: {
+        // e.g., "metadata.hp.current"
         value: unknown;
-        lastFoundrySync: Date;   // When last synced FROM Foundry
+        lastFoundrySync: Date; // When last synced FROM Foundry
         lastPlaneshiftSync: Date; // When last synced FROM PlaneShift
       };
     };
   }
-  
+
   interface IncomingChange {
     source: 'foundry' | 'planeshift';
     fieldPath: string;
     newValue: unknown;
-    timestamp: Date;          // When change was made (client-side)
+    timestamp: Date; // When change was made (client-side)
   }
-  
+
   // Conflict detection algorithm:
   function detectConflict(state: SyncState, incoming: IncomingChange): boolean {
     const field = state.fields[incoming.fieldPath];
-    if (!field) return false;  // New field, no conflict
-    
-    const lastSync = incoming.source === 'foundry' 
-      ? field.lastFoundrySync 
-      : field.lastPlaneshiftSync;
-    
-    const oppositeLastSync = incoming.source === 'foundry'
-      ? field.lastPlaneshiftSync
-      : field.lastFoundrySync;
-    
+    if (!field) return false; // New field, no conflict
+
+    const lastSync =
+      incoming.source === 'foundry' ? field.lastFoundrySync : field.lastPlaneshiftSync;
+
+    const oppositeLastSync =
+      incoming.source === 'foundry' ? field.lastPlaneshiftSync : field.lastFoundrySync;
+
     // Conflict = opposite side changed AFTER our last sync of that field
     // AND incoming change is not more recent than opposite side's change
-    const CONFLICT_WINDOW_MS = 5000;  // 5 second window
+    const CONFLICT_WINDOW_MS = 5000; // 5 second window
     return (
       oppositeLastSync > lastSync &&
       Math.abs(incoming.timestamp.getTime() - oppositeLastSync.getTime()) < CONFLICT_WINDOW_MS
     );
   }
   ```
-  
+
   **Database Table:**
+
   ```sql
   CREATE TABLE sync_state (
     id VARCHAR(64) PRIMARY KEY,
@@ -3114,7 +3206,7 @@ Phase 4: Foundry Integration
     last_planeshift_sync TIMESTAMP,
     UNIQUE(node_id, field_path)
   );
-  
+
   CREATE TABLE conflict_queue (
     id VARCHAR(64) PRIMARY KEY,
     node_id VARCHAR(64) NOT NULL,
@@ -3130,7 +3222,7 @@ Phase 4: Foundry Integration
     created_at TIMESTAMP DEFAULT NOW()
   );
   ```
-  
+
   - Apply Conflict Matrix rules from brief:
     - GM vs Player → GM wins
     - Player vs Player → LWW
@@ -3242,34 +3334,35 @@ Phase 4: Foundry Integration
 
 ## Commit Strategy
 
-| After Task | Message | Key Files |
-|------------|---------|-----------|
-| 0 | `chore: initialize monorepo` | turbo.json, pnpm-workspace.yaml |
-| 1 | `feat(shared): add graph types and Yjs structure` | packages/shared/ |
-| 2 | `feat(web): integrate React Flow with Yjs` | apps/web/components/graph/ |
-| 3 | `feat(web): add presence awareness` | apps/web/lib/awareness.ts |
-| 4 | `feat(server): add Yjs persistence to Neon` | apps/server/src/db/ |
-| 5 | `feat(server): add Hocuspocus and Fastify servers` | apps/server/ |
-| 6 | `feat(web): add graph polish and undo/redo` | apps/web/components/graph/ |
-| 7 | `feat(web): add base resources table` | apps/web/components/tables/ |
-| 8 | `feat(web): add reputation table` | apps/web/components/tables/ |
-| 9 | `feat(web): link graph and tables` | apps/web/components/ |
-| 10 | `feat(rag-service): initialize FastAPI` | apps/rag-service/ |
-| 11 | `feat(rag-service): add document ingestion` | apps/rag-service/routers/ |
-| 12 | `feat(rag-service): add knowledge gating` | apps/rag-service/ |
-| 13 | `feat: add RAG chat interface` | apps/web/components/chat/ |
-| 14 | `feat(foundry-module): initialize bridge` | packages/foundry-module/ |
-| 15 | `feat(foundry-module): Foundry → PlaneShift sync` | packages/foundry-module/ |
-| 16 | `feat(foundry-module): PlaneShift → Foundry sync` | packages/foundry-module/ |
-| 17 | `feat: add conflict resolution` | apps/web/components/conflicts/ |
-| 18 | `feat(web): add manual import/export` | apps/web/components/settings/ |
-| 19 | `test: add E2E tests and polish` | apps/web/e2e/ |
+| After Task | Message                                            | Key Files                       |
+| ---------- | -------------------------------------------------- | ------------------------------- |
+| 0          | `chore: initialize monorepo`                       | turbo.json, pnpm-workspace.yaml |
+| 1          | `feat(shared): add graph types and Yjs structure`  | packages/shared/                |
+| 2          | `feat(web): integrate React Flow with Yjs`         | apps/web/components/graph/      |
+| 3          | `feat(web): add presence awareness`                | apps/web/lib/awareness.ts       |
+| 4          | `feat(server): add Yjs persistence to Neon`        | apps/server/src/db/             |
+| 5          | `feat(server): add Hocuspocus and Fastify servers` | apps/server/                    |
+| 6          | `feat(web): add graph polish and undo/redo`        | apps/web/components/graph/      |
+| 7          | `feat(web): add base resources table`              | apps/web/components/tables/     |
+| 8          | `feat(web): add reputation table`                  | apps/web/components/tables/     |
+| 9          | `feat(web): link graph and tables`                 | apps/web/components/            |
+| 10         | `feat(rag-service): initialize FastAPI`            | apps/rag-service/               |
+| 11         | `feat(rag-service): add document ingestion`        | apps/rag-service/routers/       |
+| 12         | `feat(rag-service): add knowledge gating`          | apps/rag-service/               |
+| 13         | `feat: add RAG chat interface`                     | apps/web/components/chat/       |
+| 14         | `feat(foundry-module): initialize bridge`          | packages/foundry-module/        |
+| 15         | `feat(foundry-module): Foundry → PlaneShift sync`  | packages/foundry-module/        |
+| 16         | `feat(foundry-module): PlaneShift → Foundry sync`  | packages/foundry-module/        |
+| 17         | `feat: add conflict resolution`                    | apps/web/components/conflicts/  |
+| 18         | `feat(web): add manual import/export`              | apps/web/components/settings/   |
+| 19         | `test: add E2E tests and polish`                   | apps/web/e2e/                   |
 
 ---
 
 ## Success Criteria
 
 ### Verification Commands
+
 ```bash
 # All tests pass
 pnpm test
@@ -3288,6 +3381,7 @@ pytest apps/rag-service/
 ```
 
 ### Final Checklist
+
 - [x] Multiple users can simultaneously edit graph with <200ms sync (verified per "Sync Latency Measurement" procedure)
 - [x] Graph persists to database and survives reload
 - [x] RAG queries respect character knowledge permissions

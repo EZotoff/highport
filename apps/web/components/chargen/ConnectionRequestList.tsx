@@ -67,9 +67,9 @@ export default function ConnectionRequestList({
   const canApprove = (req: ConnectionRequest) => {
     const entity = entityPool.find((e) => e.id === req.entityId);
     if (!entity) return false;
-    
+
     if (entity.ownedBy === currentUserId) return true;
-    
+
     if (isGM) return true;
 
     return false;
@@ -81,7 +81,7 @@ export default function ConnectionRequestList({
         <h3 className="text-sm font-medium text-subtle mb-3 uppercase tracking-wider">
           {filterPending ? 'Pending Requests' : 'Connection Requests'}
         </h3>
-        
+
         <div className="space-y-3">
           {filteredRequests.map((req) => {
             const requesterName = getRequesterName(req.requesterCharId);
@@ -89,8 +89,8 @@ export default function ConnectionRequestList({
             const userCanDecide = canApprove(req);
 
             return (
-              <div 
-                key={req.id} 
+              <div
+                key={req.id}
                 className="bg-zinc-950 border border-zinc-800 rounded-lg p-3 shadow-sm"
               >
                 <div className="flex justify-between items-start mb-2">
@@ -99,15 +99,17 @@ export default function ConnectionRequestList({
                     <span className="text-subtle mx-1">wants to connect to</span>
                     <span className="font-medium text-heading">{entityName}</span>
                   </div>
-                  
+
                   {!filterPending && (
-                    <div className={`text-xs px-2 py-0.5 rounded-full border ${
-                      req.status === 'approved' 
-                        ? 'bg-green-900/30 text-green-400 border-green-800' 
-                        : req.status === 'rejected'
-                        ? 'bg-red-900/30 text-red-400 border-red-800'
-                        : 'bg-zinc-800 text-subtle border-zinc-700'
-                    }`}>
+                    <div
+                      className={`text-xs px-2 py-0.5 rounded-full border ${
+                        req.status === 'approved'
+                          ? 'bg-green-900/30 text-green-400 border-green-800'
+                          : req.status === 'rejected'
+                            ? 'bg-red-900/30 text-red-400 border-red-800'
+                            : 'bg-zinc-800 text-subtle border-zinc-700'
+                      }`}
+                    >
                       {req.status.toUpperCase()}
                     </div>
                   )}
@@ -126,11 +128,7 @@ export default function ConnectionRequestList({
 
                 {req.status === 'pending' && userCanDecide && (
                   <div className="flex gap-2 mt-2">
-                    <SciFiButton
-                      theme="emerald"
-                      size="sm"
-                      onClick={() => handleApprove(req.id)}
-                    >
+                    <SciFiButton theme="emerald" size="sm" onClick={() => handleApprove(req.id)}>
                       Approve
                     </SciFiButton>
                     <SciFiButton
@@ -142,11 +140,9 @@ export default function ConnectionRequestList({
                     </SciFiButton>
                   </div>
                 )}
-                
+
                 {req.status === 'pending' && !userCanDecide && (
-                  <div className="text-xs text-subtle mt-2 italic">
-                    Waiting for approval...
-                  </div>
+                  <div className="text-xs text-subtle mt-2 italic">Waiting for approval...</div>
                 )}
               </div>
             );

@@ -1,9 +1,11 @@
 # SERVER (Fastify + Hocuspocus)
 
 ## OVERVIEW
+
 Backend for Highport. Handles WebSocket sync via Hocuspocus and REST API via Fastify. Persists Y.Doc state to PostgreSQL.
 
 ## STRUCTURE
+
 - `src/index.ts` - Server entry point
 - `src/api/` - Fastify REST routes
 - `src/ws/` - Hocuspocus WebSocket server
@@ -11,14 +13,16 @@ Backend for Highport. Handles WebSocket sync via Hocuspocus and REST API via Fas
 - `src/jobs/` - Background jobs (e.g., compaction)
 
 ## KEY MODULES
-| File | Role |
-|------|------|
-| `src/ws/hocuspocus.ts` | WebSocket server for Yjs sync |
-| `src/db/schema.ts` | Drizzle schema for documents table |
-| `src/db/client.ts` | Database connection pool |
-| `src/api/index.ts` | REST API endpoints |
+
+| File                   | Role                               |
+| ---------------------- | ---------------------------------- |
+| `src/ws/hocuspocus.ts` | WebSocket server for Yjs sync      |
+| `src/db/schema.ts`     | Drizzle schema for documents table |
+| `src/db/client.ts`     | Database connection pool           |
+| `src/api/index.ts`     | REST API endpoints                 |
 
 ## HOCUSPOCUS PATTERNS
+
 - **Configuration**: Server listens on port 3011. Configured in `src/ws/hocuspocus.ts`.
 - **Persistence**: Uses `DatabaseExtension` to save Y.Doc updates to PostgreSQL `documents` table.
 - **Hooks**:
@@ -32,14 +36,17 @@ Backend for Highport. Handles WebSocket sync via Hocuspocus and REST API via Fas
 After any backend changes:
 
 ### Level 1: Static Gates
+
 - `pnpm --filter server typecheck` → exit 0
 - `pnpm --filter server build` → exit 0
 
 ### Level 2: Unit/Integration Tests
+
 - `docker compose up -d` (PostgreSQL required)
 - `pnpm --filter server test` → all pass
 
 ### Level 3: API Testing (Agentic)
+
 1. Ensure server is running (port 3012)
 2. Test happy path:
    ```bash
@@ -50,11 +57,13 @@ After any backend changes:
 4. Document response schemas
 
 ### WebSocket Verification
+
 1. Connect to ws://localhost:3011
 2. Verify Yjs sync handshake
 3. Test document load/save persistence
 
 ## DRIZZLE PATTERNS
+
 - **Schema**: Defined in `src/db/schema.ts`. Use descriptive column names.
 - **Migrations**:
   1. Modify `schema.ts`
@@ -64,6 +73,7 @@ After any backend changes:
 - **Transactions**: Use `db.transaction(async (tx) => { ... })` for multi-step updates.
 
 ## ERROR HANDLING
+
 - **Fastify**: Use `setErrorHandler` in `src/index.ts` to catch global errors.
 - **Status Codes**:
   - 400: Validation error (zod parsing failed)
@@ -72,6 +82,7 @@ After any backend changes:
 - **Logging**: Use structured logging (pino). Do not log sensitive data.
 
 ## ANTI-PATTERNS
+
 - **Forgetting Docker**: Always check `docker compose up -d` before running tests.
 - **ESM Issues**: Ensure `"type": "module"` is respected. Use `.js` extensions in relative imports if needed.
 - **Missing Await**: All DB and Hocuspocus hooks are async. Missing `await` leads to race conditions.

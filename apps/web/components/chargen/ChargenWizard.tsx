@@ -62,35 +62,35 @@ export default function ChargenWizard() {
     if (!isSynced || characterId) return;
     const active = getActiveCharacter();
     if (active && active.characterId) {
-        setCharacterId(active.characterId);
+      setCharacterId(active.characterId);
     }
   }, [isSynced, characterId]);
 
   useEffect(() => {
     if (!isSynced || !characterId) return;
     if (character) return;
-    
+
     const timer = setTimeout(() => {
       if (!character) {
         localStorage.removeItem('highport_active_character');
         setCharacterId(null);
       }
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, [isSynced, characterId, character]);
 
   useEffect(() => {
     if (!character) return;
-    
+
     const statusToStep: Record<string, number> = {
-      'background': 0,
-      'career_selection': 1,
-      'term_resolution': 1,
-      'mustering_out': 1,
-      'finalized': 4,
+      background: 0,
+      career_selection: 1,
+      term_resolution: 1,
+      mustering_out: 1,
+      finalized: 4,
     };
-    
+
     const targetStep = statusToStep[character.status] ?? 0;
     if (currentStep !== targetStep) {
       setCurrentStep(targetStep);
@@ -100,9 +100,9 @@ export default function ChargenWizard() {
   const isStepValid = () => {
     switch (currentStep) {
       case 0:
-        return !!character && 
-               (character.backgroundSkills?.length || 0) === 3 &&
-               !!character.name?.trim();
+        return (
+          !!character && (character.backgroundSkills?.length || 0) === 3 && !!character.name?.trim()
+        );
       default:
         return true;
     }
@@ -110,13 +110,13 @@ export default function ChargenWizard() {
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1 && isStepValid()) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     }
   };
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep((prev) => prev - 1);
     }
   };
 
@@ -127,29 +127,15 @@ export default function ChargenWizard() {
 
     switch (currentStep) {
       case 0:
-        return (
-          <BackgroundStep 
-            characterId={characterId} 
-            onCharacterCreated={setCharacterId} 
-          />
-        );
+        return <BackgroundStep characterId={characterId} onCharacterCreated={setCharacterId} />;
       case 1:
         if (character?.status === 'term_resolution') {
-          return (
-            <TermResolutionStep
-              characterId={characterId}
-              verbosity={verbosity}
-            />
-          );
+          return <TermResolutionStep characterId={characterId} verbosity={verbosity} />;
         }
         if (character?.status === 'mustering_out') {
           return <MusteringOutStep characterId={characterId} />;
         }
-        return (
-          <CareerSelectionStep 
-            characterId={characterId} 
-          />
-        );
+        return <CareerSelectionStep characterId={characterId} />;
       case 2:
         return <SkillsStep characterId={characterId} />;
       case 3:
@@ -159,7 +145,9 @@ export default function ChargenWizard() {
       default:
         return (
           <GlassPanel theme="violet" variant="default" className="p-6 text-center">
-             <h2 className="text-xl font-bold text-heading mb-2 font-display">{STEPS[currentStep].label}</h2>
+            <h2 className="text-xl font-bold text-heading mb-2 font-display">
+              {STEPS[currentStep].label}
+            </h2>
             <p className="text-subtle">Step content coming soon...</p>
           </GlassPanel>
         );
@@ -170,7 +158,7 @@ export default function ChargenWizard() {
     return (
       <div className="flex flex-col h-full max-w-7xl mx-auto items-center justify-center">
         <GlassPanel theme="cyan" variant="default" className="p-8 text-center">
-          <div 
+          <div
             className="animate-pulse mb-2 text-lg font-medium"
             style={{ color: THEME_HEX.cyan }}
             data-testid="participant-panel"
@@ -187,24 +175,17 @@ export default function ChargenWizard() {
     <div className="flex flex-col h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-4 lg:gap-6 mb-6">
         <div className="w-full lg:flex-1 lg:min-w-0">
-          <StepNavigation 
-            steps={STEPS} 
-            currentStep={currentStep} 
-            onStepClick={setCurrentStep}
-          />
+          <StepNavigation steps={STEPS} currentStep={currentStep} onStepClick={setCurrentStep} />
         </div>
         <div className="w-full lg:w-[320px] lg:shrink-0">
-          <VerbositySelector 
-            value={verbosity} 
-            onChange={setVerbosity}
-          />
+          <VerbositySelector value={verbosity} onChange={setVerbosity} />
         </div>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-0 overflow-hidden">
         {/* Left sidebar: Participants */}
         <div className="lg:col-span-1 h-full overflow-hidden min-w-0">
-          <ParticipantPanel 
+          <ParticipantPanel
             currentUserId={characterId || undefined}
             onViewCharacter={setCharacterId}
           />
@@ -212,11 +193,9 @@ export default function ChargenWizard() {
 
         {/* Main content: Wizard steps */}
         <div className="lg:col-span-2 flex flex-col h-full overflow-hidden min-w-0 px-2 lg:px-4">
-          <div className="flex-1 overflow-y-auto pr-2 pb-4">
-            {renderStepContent()}
-          </div>
-          
-          <div 
+          <div className="flex-1 overflow-y-auto pr-2 pb-4">{renderStepContent()}</div>
+
+          <div
             className="mt-4 pt-4 flex justify-between"
             style={{ borderTop: `1px solid rgba(148, 163, 184, 0.2)` }}
           >
@@ -228,7 +207,7 @@ export default function ChargenWizard() {
             >
               ← Back
             </SciFiButton>
-            
+
             <SciFiButton
               onClick={handleNext}
               disabled={currentStep === STEPS.length - 1 || !isStepValid()}
@@ -246,9 +225,7 @@ export default function ChargenWizard() {
             <CharacterPreview characterId={characterId} />
           </div>
           <div className="h-64 shrink-0 overflow-hidden">
-            <EntityPoolPanel 
-              currentCharId={characterId || undefined}
-            />
+            <EntityPoolPanel currentCharId={characterId || undefined} />
           </div>
         </div>
       </div>

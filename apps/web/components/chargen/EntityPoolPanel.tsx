@@ -28,24 +28,27 @@ const RELATIONSHIP_COLORS: Record<string, string> = {
   enemy: 'text-red-400',
 };
 
-export function EntityPoolPanel({ 
-  currentCharId, 
-  onRequestConnection, 
-  onViewDetails 
+export function EntityPoolPanel({
+  currentCharId,
+  onRequestConnection,
+  onViewDetails,
 }: EntityPoolPanelProps) {
   const entities = useEntityPool();
   const characters = useAllCharacters();
   const [filter, setFilter] = useState<string>('all');
 
   const charMap = useMemo(() => {
-    return characters.reduce((acc, char) => {
-      acc[char.id] = char.name;
-      return acc;
-    }, {} as Record<string, string>);
+    return characters.reduce(
+      (acc, char) => {
+        acc[char.id] = char.name;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
   }, [characters]);
 
   const filteredEntities = useMemo(() => {
-    return entities.filter(entity => {
+    return entities.filter((entity) => {
       if (filter === 'all') return true;
       return entity.type === filter;
     });
@@ -69,17 +72,17 @@ export function EntityPoolPanel({
         >
           Spawned Entities
         </h2>
-        
+
         <div className="flex flex-wrap gap-2">
           {['all', 'npc', 'location', 'item', 'secret'].map((type) => (
             <SciFiButton
               key={type}
               onClick={() => setFilter(type)}
               size="sm"
-              theme={filter === type ? "cyan" : "slate"}
-              scifiVariant={filter === type ? "outline" : "ghost"}
+              theme={filter === type ? 'cyan' : 'slate'}
+              scifiVariant={filter === type ? 'outline' : 'ghost'}
             >
-              {type === 'all' ? 'All' : (type.charAt(0).toUpperCase() + type.slice(1) + 's')}
+              {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1) + 's'}
             </SciFiButton>
           ))}
         </div>
@@ -95,20 +98,19 @@ export function EntityPoolPanel({
             const relationship = getRelationship(entity);
             const isClaimedByCurrent = currentCharId && entity.claimedBy.includes(currentCharId);
             const isClaimed = entity.claimedBy.length > 0;
-            const relationshipColor = relationship && RELATIONSHIP_COLORS[relationship] 
-              ? RELATIONSHIP_COLORS[relationship] 
-              : 'text-subtle';
+            const relationshipColor =
+              relationship && RELATIONSHIP_COLORS[relationship]
+                ? RELATIONSHIP_COLORS[relationship]
+                : 'text-subtle';
 
             return (
-              <div 
-                key={entity.id} 
+              <div
+                key={entity.id}
                 className="bg-zinc-950 border border-zinc-800 rounded p-3 hover:border-zinc-700 transition-colors"
               >
                 <div className="flex items-start justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <div className="text-subtle">
-                      {getTypeIcon(entity.type)}
-                    </div>
+                    <div className="text-subtle">{getTypeIcon(entity.type)}</div>
                     <div>
                       <h3 className="text-default font-semibold text-sm">
                         {entity.name}
@@ -122,7 +124,8 @@ export function EntityPoolPanel({
 
                 {entity.type === 'npc' && relationship && (
                   <div className={`text-xs ${relationshipColor} mb-1 font-medium`}>
-                    {relationship.charAt(0).toUpperCase() + relationship.slice(1)} of {getCreatorName(entity)}
+                    {relationship.charAt(0).toUpperCase() + relationship.slice(1)} of{' '}
+                    {getCreatorName(entity)}
                   </div>
                 )}
 
@@ -133,9 +136,7 @@ export function EntityPoolPanel({
                 <div className="h-px bg-zinc-800 my-2" />
 
                 {entity.description && (
-                  <p className="text-subtle text-xs mb-3 line-clamp-2">
-                    "{entity.description}"
-                  </p>
+                  <p className="text-subtle text-xs mb-3 line-clamp-2">"{entity.description}"</p>
                 )}
 
                 {isClaimed && (

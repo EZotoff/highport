@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { exportLifepathAsText, exportLifepathAsMarkdown, exportLifepathAsImage, downloadBlob, downloadText } from '../lifepath-export';
+import {
+  exportLifepathAsText,
+  exportLifepathAsMarkdown,
+  exportLifepathAsImage,
+  downloadBlob,
+  downloadText,
+} from '../lifepath-export';
 import type { ChargenCharacter } from '../types';
 
 const mockCharacter: ChargenCharacter = {
@@ -50,20 +56,18 @@ const mockCharacter: ChargenCharacter = {
       advanced: false,
       currentRank: 1,
       eventDescription: 'Saved the ship from disaster',
-      skillsGained: [
-        { skill: 'Pilot', level: 1 },
-      ],
+      skillsGained: [{ skill: 'Pilot', level: 1 }],
       spawnedEntities: [],
     },
   ],
   currentTermIndex: 1,
   status: 'finalized',
   skills: {
-    'Pilot': 2,
-    'Tactics': 2,
+    Pilot: 2,
+    Tactics: 2,
     'Vacc Suit': 1,
-    'Mechanic': 1,
-    'Leadership': 1,
+    Mechanic: 1,
+    Leadership: 1,
   },
   benefits: ['2 Ship Shares', 'TL12 Blade'],
   credits: 35000,
@@ -74,7 +78,7 @@ describe('lifepath-export', () => {
   describe('exportLifepathAsText', () => {
     it('should export character lifepath as plain text', () => {
       const result = exportLifepathAsText(mockCharacter);
-      
+
       expect(result).toContain('LIFEPATH: Commander Sarah Chen');
       expect(result).toContain('Age: 34');
       expect(result).toContain('CAREER: Navy - 2 Terms');
@@ -93,7 +97,7 @@ describe('lifepath-export', () => {
   describe('exportLifepathAsMarkdown', () => {
     it('should export character lifepath as markdown', () => {
       const result = exportLifepathAsMarkdown(mockCharacter);
-      
+
       expect(result).toContain('# Lifepath: Commander Sarah Chen');
       expect(result).toContain('**Age:** 34');
       expect(result).toContain('## Career: Navy - 2 Terms');
@@ -111,10 +115,10 @@ describe('lifepath-export', () => {
   describe('exportLifepathAsImage', () => {
     it('should throw error about missing dependency', async () => {
       const mockElement = document.createElement('div');
-      
-      await expect(exportLifepathAsImage(mockElement))
-        .rejects
-        .toThrow('Image export requires html-to-image library');
+
+      await expect(exportLifepathAsImage(mockElement)).rejects.toThrow(
+        'Image export requires html-to-image library',
+      );
     });
   });
 

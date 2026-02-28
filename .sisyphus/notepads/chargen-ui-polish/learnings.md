@@ -1,10 +1,11 @@
-
 ## Visual Effects Implementation
+
 - **CSS Animations**: Added global keyframes in `globals.css` for reusable animations like `gradient-shift` and `pulse-danger`.
 - **Tailwind Arbitrary Values**: Used arbitrary values (e.g., `shadow-[...]`) for complex glow effects to avoid cluttering the theme config with one-off values.
 - **GlassMorphism**: Combined `GlassPanel` with absolute positioning layers for "energy border" effects.
 
 ## Build Process
+
 - **Typecheck Dependency**: `pnpm typecheck` (tsc) may fail if Next.js generated types are missing. Running `pnpm build` first generates these types and resolves the issue.
 
 ---
@@ -44,11 +45,13 @@
    - Age ruler: Pulsing indicator on current age draws attention
 
 ### Agent Configuration
+
 - **ALWAYS use `category="visual-engineering"`** for UI polish tasks
 - The Gemini 3 Pro model produces higher quality visual work
 - Do NOT use `category="quick"` for visual tasks (produces flat/basic results)
 
 ### All 8 Tasks Completed
+
 1. ✅ Task 1: Standardize styling (CSS variables)
 2. ✅ Task 2: Enhance BaseNode (orbiting ring, glow, float, scanlines)
 3. ✅ Task 3: Enhance TimelineTerm (corners, border, glow)
@@ -64,5 +67,6 @@
 - Verified that `@/components/ui/scifi` correctly resolves for imports in `apps/web`.
 
 ## Session 2026-02-02 - Chargen Typography Classes
+
 - Replaced Tailwind color utilities in chargen UI with typography classes (`text-heading`, `text-default`, `text-label`, `text-subtle`) to avoid missing palette generation in Tailwind v4.
 - For text inputs/textareas, prefer `text-default` on the control and drop non-functional `placeholder:text-*` color utilities when no custom placeholder class exists.

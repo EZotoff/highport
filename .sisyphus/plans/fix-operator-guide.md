@@ -3,9 +3,11 @@
 ## Context
 
 ### Original Request
+
 User asked to verify that best-practices for invoking Prometheus were documented.
 
 ### Finding
+
 The `MEATBAGS.md` operator guide is missing critical information about how to invoke Prometheus.
 
 ---
@@ -13,12 +15,15 @@ The `MEATBAGS.md` operator guide is missing critical information about how to in
 ## Work Objectives
 
 ### Core Objective
+
 Add a dedicated "Invoking Prometheus" section to the operator guide.
 
 ### Concrete Deliverables
+
 - Updated `MEATBAGS.md` with Prometheus invocation instructions
 
 ### Definition of Done
+
 - [x] Guide includes "Invoking Prometheus" section before "Workflow: Complex Projects"
 - [x] Section explains no loop command is needed
 - [x] Section describes interview-first behavior
@@ -41,13 +46,14 @@ Add a dedicated "Invoking Prometheus" section to the operator guide.
   ### How to Invoke
 
   Simply describe your project. Prometheus will:
+
   1. **Interview you** — ask clarifying questions
   2. **Research** — explore codebase and docs via agents
   3. **Generate plan** — save to `.sisyphus/plans/{name}.md`
 
   ### Prompt Template
-
   ```
+
   I want to build [PROJECT DESCRIPTION].
 
   Requirements:
@@ -55,6 +61,7 @@ Add a dedicated "Invoking Prometheus" section to the operator guide.
   - [Requirement 2]
 
   Tech stack: [languages, frameworks]
+
   ```
 
   **Prometheus handles the rest.** When requirements are clear, plan is auto-generated.
@@ -88,13 +95,15 @@ Add a dedicated "Invoking Prometheus" section to the operator guide.
 
   **What to do**:
   Change the prompt template in "Workflow: Complex Projects" from:
+
   ```
   Create a Prometheus plan for: [PROJECT DESCRIPTION]
   ...
   Output: .sisyphus/plans/[project-name].md
   ```
-  
+
   To a simpler, conversational format:
+
   ```
   I want to build [PROJECT DESCRIPTION].
 
@@ -122,12 +131,14 @@ Add a dedicated "Invoking Prometheus" section to the operator guide.
 ## Success Criteria
 
 ### Verification Commands
+
 ```bash
 grep -A 20 "Invoking Prometheus" MEATBAGS.md  # Should show new section
 grep "No loop command" MEATBAGS.md            # Should find this phrase
 ```
 
 ### Final Checklist
+
 - [x] "Invoking Prometheus" section exists
 - [x] No loop commands mentioned for Prometheus
 - [x] Interview-first behavior documented

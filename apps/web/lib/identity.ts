@@ -22,7 +22,7 @@ export function getOrCreateUser(): MockUser {
   }
 
   let user: MockUser | null = null;
-  
+
   if (typeof window !== 'undefined') {
     const storedJson = localStorage.getItem('highport_user');
     user = storedJson ? JSON.parse(storedJson) : null;

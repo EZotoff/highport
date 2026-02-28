@@ -479,15 +479,15 @@ export function getSkill(id: string): SkillDefinition | undefined {
 }
 
 export function getBackgroundSkills(): SkillDefinition[] {
-  return Object.values(SKILLS).filter(s => s.background);
+  return Object.values(SKILLS).filter((s) => s.background);
 }
 
 export function getCombatSkills(): SkillDefinition[] {
-  return Object.values(SKILLS).filter(s => s.combat || s.specialties?.some(sp => sp.combat));
+  return Object.values(SKILLS).filter((s) => s.combat || s.specialties?.some((sp) => sp.combat));
 }
 
 export function getPsionicSkills(): SkillDefinition[] {
-  return Object.values(SKILLS).filter(s => s.psionic);
+  return Object.values(SKILLS).filter((s) => s.psionic);
 }
 
 export function getAllSkillIds(): string[] {

@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import * as Y from 'yjs';
 import { Awareness } from 'y-protocols/awareness';
-import { getRandomColor, initAwareness, updateCursor, updateSelection, PresenceState } from '../lib/awareness';
+import {
+  getRandomColor,
+  initAwareness,
+  updateCursor,
+  updateSelection,
+  PresenceState,
+} from '../lib/awareness';
 
 describe('Awareness', () => {
   it('getRandomColor returns a valid hex color', () => {

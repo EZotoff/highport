@@ -34,13 +34,13 @@ PlaneShift's character generation is NOT just a form to fill in stats. It's a **
 
 ### Key Decisions Made
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| **Dice Rolling** | Auto-Roll | System handles rolls, less friction |
-| **NPC Ownership** | GM by Default | With transferable ownership for future crew/fleet features |
-| **AI Assistance** | Controllable Verbosity | Player can write themselves, get structured fields, OR get rich AI suggestions |
-| **Session Mode** | Both Sync + Async | Works for Session Zero AND mid-campaign character replacement |
-| **Career Scope** | Configurable per Campaign | GM enables/disables careers; start with CRB |
+| Decision          | Choice                    | Rationale                                                                      |
+| ----------------- | ------------------------- | ------------------------------------------------------------------------------ |
+| **Dice Rolling**  | Auto-Roll                 | System handles rolls, less friction                                            |
+| **NPC Ownership** | GM by Default             | With transferable ownership for future crew/fleet features                     |
+| **AI Assistance** | Controllable Verbosity    | Player can write themselves, get structured fields, OR get rich AI suggestions |
+| **Session Mode**  | Both Sync + Async         | Works for Session Zero AND mid-campaign character replacement                  |
+| **Career Scope**  | Configurable per Campaign | GM enables/disables careers; start with CRB                                    |
 
 ### What Makes This Different
 
@@ -81,7 +81,7 @@ Term 1: Navy (Line/Crew) - Zara
 
 [2] Career Event: Roll 2d6 on Navy Events table
     → Auto-roll: 7 = "You make a rival in the officer corps"
-    
+
     ┌─────────────────────────────────────────────────────────────┐
     │ NEW ENTITY: Rival (NPC)                                     │
     │                                                             │
@@ -95,14 +95,14 @@ Term 1: Navy (Line/Crew) - Zara
     │ [Generate Full Description] ← Rich AI prose                 │
     │ [Accept Minimal] [Skip Details for Now]                     │
     └─────────────────────────────────────────────────────────────┘
-    
+
     → Creates: NPC Node "Lt. Cmdr Vasquez" with edge "Rival of → Zara"
     → Knowledge: Only Zara knows Vasquez's motivation (secret gated)
     → GM sees: Full NPC card in their view
 
 [3] Advancement: Gain Skill
     → Vacc Suit-1 (auto from career) + choose: [Gun Combat] [Mechanic]
-    
+
 [4] Continue / Muster Out?
     → [Continue to Term 2] [Muster Out]
 
@@ -119,33 +119,33 @@ Meanwhile, Bob (creating Marcus) sees:
 
 ### Completed Features
 
-| Feature | Status | Location | Notes |
-|---------|--------|----------|-------|
-| **Graph CRDT (Yjs)** | Complete | `apps/web/`, `apps/server/` | Nodes/edges sync via Hocuspocus |
-| **Presence/Cursors** | Complete | `apps/web/` | Real-time user cursors |
-| **Graph Visualization** | Complete | `apps/web/` | React Flow with pan/zoom |
-| **Faction Reputation Tables** | Complete | `apps/web/` | CRDT-synced, inline editing |
-| **Base Resources Table** | Complete | `apps/web/` | Credits, fuel, cargo tracking |
-| **RAG Service (Basic)** | Complete | `apps/rag-service/` | Ingestion, embeddings, knowledge gating |
-| **Foundry Bridge (Basic)** | Complete | `packages/foundry-module/` | HP, characteristics, credits sync |
-| **Conflict Detection** | Scaffolded | `apps/server/src/conflicts/` | Types defined, queue logic partial |
-| **Mock Identity (No-Auth)** | Complete | `apps/web/lib/identity.ts` | localStorage user, ?gm=true flag |
+| Feature                       | Status     | Location                     | Notes                                   |
+| ----------------------------- | ---------- | ---------------------------- | --------------------------------------- |
+| **Graph CRDT (Yjs)**          | Complete   | `apps/web/`, `apps/server/`  | Nodes/edges sync via Hocuspocus         |
+| **Presence/Cursors**          | Complete   | `apps/web/`                  | Real-time user cursors                  |
+| **Graph Visualization**       | Complete   | `apps/web/`                  | React Flow with pan/zoom                |
+| **Faction Reputation Tables** | Complete   | `apps/web/`                  | CRDT-synced, inline editing             |
+| **Base Resources Table**      | Complete   | `apps/web/`                  | Credits, fuel, cargo tracking           |
+| **RAG Service (Basic)**       | Complete   | `apps/rag-service/`          | Ingestion, embeddings, knowledge gating |
+| **Foundry Bridge (Basic)**    | Complete   | `packages/foundry-module/`   | HP, characteristics, credits sync       |
+| **Conflict Detection**        | Scaffolded | `apps/server/src/conflicts/` | Types defined, queue logic partial      |
+| **Mock Identity (No-Auth)**   | Complete   | `apps/web/lib/identity.ts`   | localStorage user, ?gm=true flag        |
 
 ### Not Started Features
 
-| Feature | Domain | Blocking? | Notes |
-|---------|--------|-----------|-------|
-| **Character Creation UI** | Core | No | Lifepath chargen wizard |
-| **Lifepath Graph Visualization** | Core | Blocked by CharGen | Career timeline on graph |
-| **Campaign CRUD** | Campaign | No | Multi-campaign support |
-| **Full Foundry Sync (Skills, Items)** | Integration | No | Per architecture doc |
-| **World Actor Sync** | Integration | No | UWP, trade codes |
-| **Journal Sync** | Integration | No | Bidirectional notes |
-| **Blue-booking Interface** | Narrative | Blocked by Full Sync | Async play mode |
-| **Conflict Resolution UI** | Core | No | GM merge interface |
-| **Character Panel (Extended)** | Core | Blocked by Skills Sync | Show all character data |
-| **OAuth Authentication** | Infrastructure | No | Replace mock identity |
-| **Minigames (Hacking, Negotiation)** | Future (v2.0) | Deferred | Not MVP |
+| Feature                               | Domain         | Blocking?              | Notes                    |
+| ------------------------------------- | -------------- | ---------------------- | ------------------------ |
+| **Character Creation UI**             | Core           | No                     | Lifepath chargen wizard  |
+| **Lifepath Graph Visualization**      | Core           | Blocked by CharGen     | Career timeline on graph |
+| **Campaign CRUD**                     | Campaign       | No                     | Multi-campaign support   |
+| **Full Foundry Sync (Skills, Items)** | Integration    | No                     | Per architecture doc     |
+| **World Actor Sync**                  | Integration    | No                     | UWP, trade codes         |
+| **Journal Sync**                      | Integration    | No                     | Bidirectional notes      |
+| **Blue-booking Interface**            | Narrative      | Blocked by Full Sync   | Async play mode          |
+| **Conflict Resolution UI**            | Core           | No                     | GM merge interface       |
+| **Character Panel (Extended)**        | Core           | Blocked by Skills Sync | Show all character data  |
+| **OAuth Authentication**              | Infrastructure | No                     | Replace mock identity    |
+| **Minigames (Hacking, Negotiation)**  | Future (v2.0)  | Deferred               | Not MVP                  |
 
 ---
 
@@ -155,90 +155,90 @@ Meanwhile, Bob (creating Marcus) sees:
 
 Features that form the base layer for everything else.
 
-| Feature | Dependencies | Independently Testable? |
-|---------|--------------|-------------------------|
-| Mock Identity | None | Yes (done) |
-| Graph CRDT | None | Yes (done) |
-| Presence/Cursors | Graph CRDT | Yes (done) |
-| Offline Persistence (IndexedDB) | Graph CRDT | Yes (done) |
-| Conflict Detection | Graph CRDT | Yes (scaffolded) |
-| Conflict Resolution UI | Conflict Detection | Yes |
+| Feature                         | Dependencies       | Independently Testable? |
+| ------------------------------- | ------------------ | ----------------------- |
+| Mock Identity                   | None               | Yes (done)              |
+| Graph CRDT                      | None               | Yes (done)              |
+| Presence/Cursors                | Graph CRDT         | Yes (done)              |
+| Offline Persistence (IndexedDB) | Graph CRDT         | Yes (done)              |
+| Conflict Detection              | Graph CRDT         | Yes (scaffolded)        |
+| Conflict Resolution UI          | Conflict Detection | Yes                     |
 
 ### Domain 2: Campaign Management
 
 Multi-campaign and table features.
 
-| Feature | Dependencies | Independently Testable? |
-|---------|--------------|-------------------------|
-| Base Resources Table | Graph CRDT | Yes (done) |
-| Faction Reputation Table | Graph CRDT | Yes (done) |
-| Campaign CRUD | Database schema | Yes |
-| Campaign Selector UI | Campaign CRUD | Yes |
+| Feature                  | Dependencies    | Independently Testable? |
+| ------------------------ | --------------- | ----------------------- |
+| Base Resources Table     | Graph CRDT      | Yes (done)              |
+| Faction Reputation Table | Graph CRDT      | Yes (done)              |
+| Campaign CRUD            | Database schema | Yes                     |
+| Campaign Selector UI     | Campaign CRUD   | Yes                     |
 
 ### Domain 3: Character System
 
 MGT2e character creation and management.
 
-| Feature | Dependencies | Independently Testable? |
-|---------|--------------|-------------------------|
-| **Character Creation Wizard** | Graph CRDT, MGT2e data models | **Yes** |
-| Characteristics Generator | Character Creation | Yes (part of wizard) |
-| Career Term Selection | Character Creation | Yes (part of wizard) |
-| Skills Assignment | Character Creation, MGT2e skill list | Yes (part of wizard) |
-| **Lifepath Graph Visualization** | Character Creation, Graph CRDT | **Yes** |
-| Character Panel (Basic) | Graph nodes | Yes (done - shows synced data) |
-| Character Panel (Extended) | Full Foundry Sync | Blocked |
+| Feature                          | Dependencies                         | Independently Testable?        |
+| -------------------------------- | ------------------------------------ | ------------------------------ |
+| **Character Creation Wizard**    | Graph CRDT, MGT2e data models        | **Yes**                        |
+| Characteristics Generator        | Character Creation                   | Yes (part of wizard)           |
+| Career Term Selection            | Character Creation                   | Yes (part of wizard)           |
+| Skills Assignment                | Character Creation, MGT2e skill list | Yes (part of wizard)           |
+| **Lifepath Graph Visualization** | Character Creation, Graph CRDT       | **Yes**                        |
+| Character Panel (Basic)          | Graph nodes                          | Yes (done - shows synced data) |
+| Character Panel (Extended)       | Full Foundry Sync                    | Blocked                        |
 
 ### Domain 4: Knowledge/RAG
 
 AI-powered lore retrieval with permission gating.
 
-| Feature | Dependencies | Independently Testable? |
-|---------|--------------|-------------------------|
-| Document Ingestion | Pinecone, OpenAI | Yes (done) |
-| Chunking + Embeddings | None | Yes (done) |
-| Scope Tags | Database schema | Yes (done) |
-| Knowledge Gating | Scope Tags, Character Identity | Yes (done) |
-| Chat Interface | Knowledge Gating | Yes (done) |
-| Scope Editor UI | ingested_documents table | Yes (done) |
+| Feature               | Dependencies                   | Independently Testable? |
+| --------------------- | ------------------------------ | ----------------------- |
+| Document Ingestion    | Pinecone, OpenAI               | Yes (done)              |
+| Chunking + Embeddings | None                           | Yes (done)              |
+| Scope Tags            | Database schema                | Yes (done)              |
+| Knowledge Gating      | Scope Tags, Character Identity | Yes (done)              |
+| Chat Interface        | Knowledge Gating               | Yes (done)              |
+| Scope Editor UI       | ingested_documents table       | Yes (done)              |
 
 ### Domain 5: Foundry Integration
 
 Sync between PlaneShift and Foundry VTT.
 
-| Feature | Dependencies | Independently Testable? |
-|---------|--------------|-------------------------|
-| Basic Actor Sync (HP, Stats, Credits) | WebSocket bridge | Yes (done) |
-| **Skills Sync (Read-Only)** | MGT2e skill list types | **Yes** |
-| **Items Sync (Read-Only)** | MGT2e item types | **Yes** |
-| Career Terms Sync | MGT2e term types | Yes |
-| Associates Sync (Merge) | MGT2e associate types | Yes |
-| **World Actor Sync** | UWP types | **Yes** |
-| Actor Creation (Push to Foundry) | Character Creation | Blocked |
-| Journal Sync (Bidirectional) | None | Yes |
-| Conflict Resolution Queue | Conflict Detection | Yes |
-| Full Bidirectional (PlaneShift modifies Foundry) | All above | Blocked |
+| Feature                                          | Dependencies           | Independently Testable? |
+| ------------------------------------------------ | ---------------------- | ----------------------- |
+| Basic Actor Sync (HP, Stats, Credits)            | WebSocket bridge       | Yes (done)              |
+| **Skills Sync (Read-Only)**                      | MGT2e skill list types | **Yes**                 |
+| **Items Sync (Read-Only)**                       | MGT2e item types       | **Yes**                 |
+| Career Terms Sync                                | MGT2e term types       | Yes                     |
+| Associates Sync (Merge)                          | MGT2e associate types  | Yes                     |
+| **World Actor Sync**                             | UWP types              | **Yes**                 |
+| Actor Creation (Push to Foundry)                 | Character Creation     | Blocked                 |
+| Journal Sync (Bidirectional)                     | None                   | Yes                     |
+| Conflict Resolution Queue                        | Conflict Detection     | Yes                     |
+| Full Bidirectional (PlaneShift modifies Foundry) | All above              | Blocked                 |
 
 ### Domain 6: Narrative Features
 
 Story-focused features for GMs and players.
 
-| Feature | Dependencies | Independently Testable? |
-|---------|--------------|-------------------------|
-| Blue-booking Interface | Full Sync (HP modification) | Blocked |
-| Session Timeline | Graph CRDT | Yes |
-| News Feed | Journal Sync | Blocked |
+| Feature                | Dependencies                | Independently Testable? |
+| ---------------------- | --------------------------- | ----------------------- |
+| Blue-booking Interface | Full Sync (HP modification) | Blocked                 |
+| Session Timeline       | Graph CRDT                  | Yes                     |
+| News Feed              | Journal Sync                | Blocked                 |
 
 ### Domain 7: Future (v2.0 - Deferred)
 
 Explicitly out of scope for MVP.
 
-| Feature | Notes |
-|---------|-------|
-| Hacking Minigame | Uses graph engine, post-MVP |
-| Negotiation Minigame | Social combat, post-MVP |
-| Research/Progress Clocks | Blades-style clocks, post-MVP |
-| OAuth Authentication | Post-MVP, use mock identity for now |
+| Feature                  | Notes                               |
+| ------------------------ | ----------------------------------- |
+| Hacking Minigame         | Uses graph engine, post-MVP         |
+| Negotiation Minigame     | Social combat, post-MVP             |
+| Research/Progress Clocks | Blades-style clocks, post-MVP       |
+| OAuth Authentication     | Post-MVP, use mock identity for now |
 
 ---
 
@@ -340,73 +340,73 @@ These chunks can be worked on independently. User can reorder based on prioritie
 
 #### Phase A1: Data Foundation
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| A1.1 | Extract MGT2e data (careers, skills, events) from Foundry repo | Medium | None |
-| A1.2 | Create shared types package for MGT2e data | Medium | A1.1 |
-| A1.3 | Campaign-configurable career list | Low | A1.2 |
-| A1.4 | Dice roller utility (auto-roll with seed option) | Low | None |
+| Step | Feature                                                        | Effort | Dependencies |
+| ---- | -------------------------------------------------------------- | ------ | ------------ |
+| A1.1 | Extract MGT2e data (careers, skills, events) from Foundry repo | Medium | None         |
+| A1.2 | Create shared types package for MGT2e data                     | Medium | A1.1         |
+| A1.3 | Campaign-configurable career list                              | Low    | A1.2         |
+| A1.4 | Dice roller utility (auto-roll with seed option)               | Low    | None         |
 
 **Deliverable**: MGT2e career/skill/event data available as TypeScript types with auto-roll capability.
 
 #### Phase A2: Single-Player Chargen Flow
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| A2.1 | Chargen session state (CRDT-synced) | Medium | A1.2 |
-| A2.2 | Characteristics generation (roll or point-buy) | Low | A2.1 |
-| A2.3 | Career selection UI | Medium | A2.1, A1.2 |
-| A2.4 | Term resolution flow (survival, events, advancement) | High | A2.3, A1.4 |
-| A2.5 | Entity spawning from events (NPC, location, item nodes) | High | A2.4, Graph CRDT |
-| A2.6 | Skills assignment UI | Medium | A2.4 |
-| A2.7 | Benefits/mustering out | Medium | A2.4 |
-| A2.8 | Final character node creation with full metadata | Medium | A2.6, A2.7 |
+| Step | Feature                                                 | Effort | Dependencies     |
+| ---- | ------------------------------------------------------- | ------ | ---------------- |
+| A2.1 | Chargen session state (CRDT-synced)                     | Medium | A1.2             |
+| A2.2 | Characteristics generation (roll or point-buy)          | Low    | A2.1             |
+| A2.3 | Career selection UI                                     | Medium | A2.1, A1.2       |
+| A2.4 | Term resolution flow (survival, events, advancement)    | High   | A2.3, A1.4       |
+| A2.5 | Entity spawning from events (NPC, location, item nodes) | High   | A2.4, Graph CRDT |
+| A2.6 | Skills assignment UI                                    | Medium | A2.4             |
+| A2.7 | Benefits/mustering out                                  | Medium | A2.4             |
+| A2.8 | Final character node creation with full metadata        | Medium | A2.6, A2.7       |
 
 **Deliverable**: Single player can generate a character term-by-term, with events spawning graph entities.
 
 #### Phase A3: AI Narrative Layer
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| A3.1 | Event description generation (LLM call) | Medium | A2.4, RAG Service |
-| A3.2 | NPC personality/motivation generation | Medium | A3.1 |
-| A3.3 | Connection suggestion engine | Medium | A3.2 |
-| A3.4 | Verbosity control (minimal → structured → rich) | Low | A3.1 |
-| A3.5 | "Generate Full Description" button | Low | A3.1 |
+| Step | Feature                                         | Effort | Dependencies      |
+| ---- | ----------------------------------------------- | ------ | ----------------- |
+| A3.1 | Event description generation (LLM call)         | Medium | A2.4, RAG Service |
+| A3.2 | NPC personality/motivation generation           | Medium | A3.1              |
+| A3.3 | Connection suggestion engine                    | Medium | A3.2              |
+| A3.4 | Verbosity control (minimal → structured → rich) | Low    | A3.1              |
+| A3.5 | "Generate Full Description" button              | Low    | A3.1              |
 
 **Deliverable**: AI can assist with narrative details at user's chosen verbosity level.
 
 #### Phase A4: Multiplayer Chargen
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| A4.1 | Shared chargen session state | Medium | A2.1 |
-| A4.2 | Real-time visibility of others' progress | Medium | A4.1 |
-| A4.3 | NPC Pool (shared view of spawned NPCs) | Medium | A2.5, A4.1 |
-| A4.4 | "Request Connection" flow (adopt NPC as ally/contact) | Medium | A4.3 |
-| A4.5 | Cross-player history suggestions | Medium | A4.4, A3.3 |
-| A4.6 | GM moderation controls | Low | A4.1 |
+| Step | Feature                                               | Effort | Dependencies |
+| ---- | ----------------------------------------------------- | ------ | ------------ |
+| A4.1 | Shared chargen session state                          | Medium | A2.1         |
+| A4.2 | Real-time visibility of others' progress              | Medium | A4.1         |
+| A4.3 | NPC Pool (shared view of spawned NPCs)                | Medium | A2.5, A4.1   |
+| A4.4 | "Request Connection" flow (adopt NPC as ally/contact) | Medium | A4.3         |
+| A4.5 | Cross-player history suggestions                      | Medium | A4.4, A3.3   |
+| A4.6 | GM moderation controls                                | Low    | A4.1         |
 
 **Deliverable**: Multiple players can do Session Zero together, seeing each other's entities and making cross-connections.
 
 #### Phase A5: Lifepath Visualization
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| A5.1 | Timeline view component (per-character career progression) | Medium | A2.4 |
-| A5.2 | Graph integration (career terms as node clusters) | Medium | A5.1 |
-| A5.3 | Connection lines between characters (shared history) | Low | A4.5 |
-| A5.4 | Collapsible lifepath panel | Low | A5.1 |
+| Step | Feature                                                    | Effort | Dependencies |
+| ---- | ---------------------------------------------------------- | ------ | ------------ |
+| A5.1 | Timeline view component (per-character career progression) | Medium | A2.4         |
+| A5.2 | Graph integration (career terms as node clusters)          | Medium | A5.1         |
+| A5.3 | Connection lines between characters (shared history)       | Low    | A4.5         |
+| A5.4 | Collapsible lifepath panel                                 | Low    | A5.1         |
 
 **Deliverable**: Visual timeline of career + graph showing all entities created during chargen.
 
 #### Phase A6: Ownership & Transfer
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| A6.1 | Entity ownership model (GM default, transferable) | Medium | A2.5 |
-| A6.2 | Transfer ownership UI | Low | A6.1 |
-| A6.3 | Crew/affiliation tracking (for future fleet features) | Medium | A6.1 |
+| Step | Feature                                               | Effort | Dependencies |
+| ---- | ----------------------------------------------------- | ------ | ------------ |
+| A6.1 | Entity ownership model (GM default, transferable)     | Medium | A2.5         |
+| A6.2 | Transfer ownership UI                                 | Low    | A6.1         |
+| A6.3 | Crew/affiliation tracking (for future fleet features) | Medium | A6.1         |
 
 **Deliverable**: NPCs owned by GM but can be assigned to players for crew/faction use.
 
@@ -418,13 +418,13 @@ These chunks can be worked on independently. User can reorder based on prioritie
 
 Per `.sisyphus/plans/foundry-mgt2e-architecture.md` - Phase 1 expansion.
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| B1 | Skills Sync (Foundry → PlaneShift, read-only) | Medium | MGT2e types (A1) |
-| B2 | Items Sync (Foundry → PlaneShift, read-only) | Medium | MGT2e types (A1) |
-| B3 | Career Terms Sync | Low | A1 |
-| B4 | Associates Sync (bidirectional merge) | Medium | A1 |
-| B5 | Character Panel Extended UI | Medium | B1, B2 |
+| Step | Feature                                       | Effort | Dependencies     |
+| ---- | --------------------------------------------- | ------ | ---------------- |
+| B1   | Skills Sync (Foundry → PlaneShift, read-only) | Medium | MGT2e types (A1) |
+| B2   | Items Sync (Foundry → PlaneShift, read-only)  | Medium | MGT2e types (A1) |
+| B3   | Career Terms Sync                             | Low    | A1               |
+| B4   | Associates Sync (bidirectional merge)         | Medium | A1               |
+| B5   | Character Panel Extended UI                   | Medium | B1, B2           |
 
 **Deliverable**: PlaneShift displays full character sheet data from Foundry (skills, items, careers).
 
@@ -436,12 +436,12 @@ Per `.sisyphus/plans/foundry-mgt2e-architecture.md` - Phase 1 expansion.
 
 Per architecture doc - Phase 2.
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| C1 | World Node Type + Metadata Schema | Low | None |
-| C2 | World Actor Sync (UWP, trade codes) | Medium | C1, Foundry Bridge |
-| C3 | World Display on Graph | Low | C1 |
-| C4 | Trade Code Derivation Display | Low | C2 |
+| Step | Feature                             | Effort | Dependencies       |
+| ---- | ----------------------------------- | ------ | ------------------ |
+| C1   | World Node Type + Metadata Schema   | Low    | None               |
+| C2   | World Actor Sync (UWP, trade codes) | Medium | C1, Foundry Bridge |
+| C3   | World Display on Graph              | Low    | C1                 |
+| C4   | Trade Code Derivation Display       | Low    | C2                 |
 
 **Deliverable**: World/planet data from Foundry appears as nodes with UWP displayed.
 
@@ -453,13 +453,13 @@ Per architecture doc - Phase 2.
 
 Per architecture doc - Phase 3.
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| D1 | "Push to Foundry" Button | Low | Chunk A complete |
-| D2 | create_actor Message Handler (server) | Medium | Foundry Bridge |
-| D3 | Actor Creation in Foundry (module) | Medium | D2 |
-| D4 | UUID Linking Ceremony | Low | D3 |
-| D5 | Initial Data Population | Medium | D3, A7 |
+| Step | Feature                               | Effort | Dependencies     |
+| ---- | ------------------------------------- | ------ | ---------------- |
+| D1   | "Push to Foundry" Button              | Low    | Chunk A complete |
+| D2   | create_actor Message Handler (server) | Medium | Foundry Bridge   |
+| D3   | Actor Creation in Foundry (module)    | Medium | D2               |
+| D4   | UUID Linking Ceremony                 | Low    | D3               |
+| D5   | Initial Data Population               | Medium | D3, A7           |
 
 **Deliverable**: Characters created in PlaneShift can be pushed to Foundry VTT.
 
@@ -471,12 +471,12 @@ Per architecture doc - Phase 3.
 
 Per architecture doc - Phase 4.
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| E1 | JournalEntry Hooks in Bridge Module | Medium | None |
-| E2 | Journal Node Type or Edge Attachment | Low | None |
-| E3 | News Feed Push to Foundry | Medium | E1 |
-| E4 | Session Notes Sync | Medium | E1 |
+| Step | Feature                              | Effort | Dependencies |
+| ---- | ------------------------------------ | ------ | ------------ |
+| E1   | JournalEntry Hooks in Bridge Module  | Medium | None         |
+| E2   | Journal Node Type or Edge Attachment | Low    | None         |
+| E3   | News Feed Push to Foundry            | Medium | E1           |
+| E4   | Session Notes Sync                   | Medium | E1           |
 
 **Deliverable**: Notes written in PlaneShift appear in Foundry journals and vice versa.
 
@@ -486,12 +486,12 @@ Per architecture doc - Phase 4.
 
 ### Chunk F: Conflict Resolution
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| F1 | Complete Conflict Detection Logic | Medium | Scaffolded code exists |
-| F2 | Conflict Queue Database Schema | Low | None |
-| F3 | Conflict Resolution UI (GM view) | Medium | F1, F2 |
-| F4 | Manual Merge Interface | Medium | F3 |
+| Step | Feature                           | Effort | Dependencies           |
+| ---- | --------------------------------- | ------ | ---------------------- |
+| F1   | Complete Conflict Detection Logic | Medium | Scaffolded code exists |
+| F2   | Conflict Queue Database Schema    | Low    | None                   |
+| F3   | Conflict Resolution UI (GM view)  | Medium | F1, F2                 |
+| F4   | Manual Merge Interface            | Medium | F3                     |
 
 **Deliverable**: GM can see and resolve sync conflicts in a dedicated UI.
 
@@ -501,12 +501,12 @@ Per architecture doc - Phase 4.
 
 ### Chunk G: Campaign CRUD
 
-| Step | Feature | Effort | Dependencies |
-|------|---------|--------|--------------|
-| G1 | Campaign List/Create API | Low | Database schema exists |
-| G2 | Campaign Selector UI | Low | G1 |
-| G3 | Per-Campaign Document Isolation | Medium | G1 |
-| G4 | Campaign Settings Page | Low | G1 |
+| Step | Feature                         | Effort | Dependencies           |
+| ---- | ------------------------------- | ------ | ---------------------- |
+| G1   | Campaign List/Create API        | Low    | Database schema exists |
+| G2   | Campaign Selector UI            | Low    | G1                     |
+| G3   | Per-Campaign Document Isolation | Medium | G1                     |
+| G4   | Campaign Settings Page          | Low    | G1                     |
 
 **Deliverable**: Users can create and switch between multiple campaigns.
 
@@ -602,16 +602,16 @@ interface ChargenSession {
   campaignId: string;
   startedAt: number;
   status: 'active' | 'completed';
-  
+
   // Players in session
   participants: Y.Map<userId, ChargenParticipant>;
-  
+
   // Characters being generated
   characters: Y.Map<charId, ChargenCharacter>;
-  
+
   // Shared NPC pool (spawned from events)
   npcPool: Y.Map<npcId, SpawnedNPC>;
-  
+
   // Connections made between entities
   connections: Y.Array<ConnectionRequest>;
 }
@@ -620,19 +620,19 @@ interface ChargenCharacter {
   id: string;
   playerId: string;
   name: string;
-  
+
   // Core stats
   characteristics: Record<string, number>;
-  
+
   // Career history
   terms: Y.Array<CareerTerm>;
   currentTerm: number;
-  
+
   // Skills/Benefits accumulated
   skills: Record<string, number>;
   benefits: string[];
   credits: number;
-  
+
   // State
   status: 'generating' | 'mustered_out' | 'finalized';
 }
@@ -642,39 +642,39 @@ interface CareerTerm {
   career: string;
   assignment: string;
   age: number;
-  
+
   // Rolls and results
   survivalRoll: DiceResult;
   eventRoll: DiceResult;
   advancementRoll?: DiceResult;
-  
+
   // Event outcome
   event: {
     tableResult: number;
-    description: string;        // AI-generated or user-written
-    spawnedEntities: string[];  // IDs of NPCs/locations spawned
+    description: string; // AI-generated or user-written
+    spawnedEntities: string[]; // IDs of NPCs/locations spawned
   };
-  
+
   // Skills gained this term
   skillsGained: Record<string, number>;
 }
 
 interface SpawnedNPC {
   id: string;
-  createdBy: string;           // userId who spawned
-  createdDuring: string;       // charId and term
-  ownedBy: string;             // 'gm' by default
-  
+  createdBy: string; // userId who spawned
+  createdDuring: string; // charId and term
+  ownedBy: string; // 'gm' by default
+
   name: string;
   relationship: 'rival' | 'ally' | 'contact' | 'enemy';
-  
+
   // AI-generated or user-written
   description: string;
   motivation?: string;
   personality?: string;
-  
+
   // Connections claimed by other players
-  claimedBy: string[];         // charIds that have adopted this NPC
+  claimedBy: string[]; // charIds that have adopted this NPC
 }
 ```
 
@@ -723,7 +723,7 @@ When an event creates a secret (e.g., NPC motivation, hidden item):
 const secret = {
   tag: `secret:${eventId}-npc-motivation`,
   content: "Vasquez blames Zara for his brother's death",
-  initialScope: ['gm', `char:${characterId}`],  // Only GM and creator know
+  initialScope: ['gm', `char:${characterId}`], // Only GM and creator know
 };
 
 // Stored in Pinecone with access_scope metadata
@@ -736,21 +736,23 @@ const secret = {
 
 ### Model Selection by Use Case
 
-| Use Case | Model | Rationale |
-|----------|-------|-----------|
+| Use Case                                                                         | Model              | Rationale                                |
+| -------------------------------------------------------------------------------- | ------------------ | ---------------------------------------- |
 | **Creative generation** (event descriptions, NPC personalities, narrative prose) | **Gemini 3 Flash** | Optimized for creative, thematic content |
-| **Structured tasks** (parsing, extraction, classification) | **GPT-5.2** | Structure over creativity |
-| **Structured tasks (cost-sensitive)** | **GPT-5.2-mini** | Same structure, lower cost |
+| **Structured tasks** (parsing, extraction, classification)                       | **GPT-5.2**        | Structure over creativity                |
+| **Structured tasks (cost-sensitive)**                                            | **GPT-5.2-mini**   | Same structure, lower cost               |
 
 ### Gemini 3 Flash (Creative Generation)
 
 Use for:
+
 - Event description generation
 - NPC personality/motivation prose
 - Rich narrative suggestions
 - Thematic world-building content
 
 **API Configuration:**
+
 ```python
 # apps/rag-service/services/creative.py
 import google.generativeai as genai
@@ -782,12 +784,14 @@ response = genai.generate_content(
 ### GPT-5.2 (Structured Tasks)
 
 Use for:
+
 - Skill/career parsing
 - Event table lookup
 - Entity extraction
 - Data validation
 
 **API Configuration:**
+
 ```python
 # apps/rag-service/services/structured.py
 from openai import OpenAI
@@ -821,15 +825,16 @@ response = client.responses.create(
 
 ### GPT-5.2 vs GPT-5.2-mini
 
-| Aspect | GPT-5.2 | GPT-5.2-mini |
-|--------|---------|--------------|
-| **Use When** | Complex parsing, multi-step reasoning | Simple extraction, classification |
-| **Reasoning Effort** | `low` to `xhigh` available | `none` to `medium` recommended |
-| **Verbosity** | `low` / `medium` / `high` | `low` / `medium` |
-| **Cost** | Higher | Lower |
-| **Latency** | Higher | Lower |
+| Aspect               | GPT-5.2                               | GPT-5.2-mini                      |
+| -------------------- | ------------------------------------- | --------------------------------- |
+| **Use When**         | Complex parsing, multi-step reasoning | Simple extraction, classification |
+| **Reasoning Effort** | `low` to `xhigh` available            | `none` to `medium` recommended    |
+| **Verbosity**        | `low` / `medium` / `high`             | `low` / `medium`                  |
+| **Cost**             | Higher                                | Lower                             |
+| **Latency**          | Higher                                | Lower                             |
 
 **Decision Matrix:**
+
 ```
 Task: Parse career event text → GPT-5.2-mini (simple extraction)
 Task: Suggest cross-character connections → GPT-5.2 with reasoning.effort="medium"
@@ -843,23 +848,23 @@ Task: Validate skill prerequisites → GPT-5.2-mini (classification)
 
 ```typescript
 // TypeScript client pattern
-import OpenAI from "openai";
-import { z } from "zod";
-import { zodResponseFormat } from "openai/helpers/zod";
+import OpenAI from 'openai';
+import { z } from 'zod';
+import { zodResponseFormat } from 'openai/helpers/zod';
 
 const NPCSchema = z.object({
   name: z.string(),
-  relationship: z.enum(["rival", "ally", "contact", "enemy"]),
+  relationship: z.enum(['rival', 'ally', 'contact', 'enemy']),
   motivation: z.string(),
   personality_traits: z.array(z.string()),
 });
 
 const response = await openai.responses.create({
-  model: "gpt-5.2-mini",
-  input: "Extract NPC details from: ...",
+  model: 'gpt-5.2-mini',
+  input: 'Extract NPC details from: ...',
   text: {
-    format: zodResponseFormat(NPCSchema, "npc")
-  }
+    format: zodResponseFormat(NPCSchema, 'npc'),
+  },
 });
 
 const npc = NPCSchema.parse(JSON.parse(response.output));
@@ -867,13 +872,13 @@ const npc = NPCSchema.parse(JSON.parse(response.output));
 
 ### Environment Variables
 
-| Variable | Required | Service | Notes |
-|----------|----------|---------|-------|
-| `GEMINI_API_KEY` | Yes (creative) | apps/rag-service | Gemini 3 Flash access |
-| `OPENAI_API_KEY` | Yes (structured) | apps/rag-service | GPT-5.2 access |
-| `AI_CREATIVE_MODEL` | No | apps/rag-service | Default: `gemini-3-flash` |
-| `AI_STRUCTURED_MODEL` | No | apps/rag-service | Default: `gpt-5.2` |
-| `AI_STRUCTURED_MODEL_MINI` | No | apps/rag-service | Default: `gpt-5.2-mini` |
+| Variable                   | Required         | Service          | Notes                     |
+| -------------------------- | ---------------- | ---------------- | ------------------------- |
+| `GEMINI_API_KEY`           | Yes (creative)   | apps/rag-service | Gemini 3 Flash access     |
+| `OPENAI_API_KEY`           | Yes (structured) | apps/rag-service | GPT-5.2 access            |
+| `AI_CREATIVE_MODEL`        | No               | apps/rag-service | Default: `gemini-3-flash` |
+| `AI_STRUCTURED_MODEL`      | No               | apps/rag-service | Default: `gpt-5.2`        |
+| `AI_STRUCTURED_MODEL_MINI` | No               | apps/rag-service | Default: `gpt-5.2-mini`   |
 
 ---
 
@@ -881,13 +886,13 @@ const npc = NPCSchema.parse(JSON.parse(response.output));
 
 ### Source Files (from Foundry MGT2e repo)
 
-| Data | Source File | Key Structure |
-|------|-------------|---------------|
-| Careers | `mgt2e/module/helpers/config.mjs` | `MGT2.CAREERS` |
-| Skills | `mgt2e/module/helpers/config.mjs` | `MGT2.SKILLS` |
-| Events | `mgt2e/packs/career-events.db` | LevelDB pack |
-| Mishaps | `mgt2e/packs/career-mishaps.db` | LevelDB pack |
-| Benefits | Per-career in config | `MGT2.CAREERS[x].benefits` |
+| Data     | Source File                       | Key Structure              |
+| -------- | --------------------------------- | -------------------------- |
+| Careers  | `mgt2e/module/helpers/config.mjs` | `MGT2.CAREERS`             |
+| Skills   | `mgt2e/module/helpers/config.mjs` | `MGT2.SKILLS`              |
+| Events   | `mgt2e/packs/career-events.db`    | LevelDB pack               |
+| Mishaps  | `mgt2e/packs/career-mishaps.db`   | LevelDB pack               |
+| Benefits | Per-career in config              | `MGT2.CAREERS[x].benefits` |
 
 ### Extraction Script Approach
 
@@ -900,6 +905,7 @@ node scripts/extract-mgt2e-data.js --source=/tmp/mgt2e --output=packages/mgt2e/d
 ```
 
 Output structure:
+
 ```
 packages/mgt2e/
 ├── data/
@@ -928,16 +934,16 @@ packages/mgt2e/
 
 ### Resolved Decisions
 
-| Decision | Choice | Notes |
-|----------|--------|-------|
-| CharGen Scope | Collaborative Narrative | Full multiplayer, AI-assisted, entity-spawning |
-| Dice Rolling | Auto-Roll | System handles all rolls |
-| NPC Ownership | GM Default + Transferable | Future crew/fleet features need this |
-| AI Verbosity | Controllable | Minimal → Structured → Rich options |
-| Session Mode | Both Sync + Async | Works for Session Zero and mid-campaign |
-| Career Scope | Configurable per Campaign | Start with CRB, GM can enable more |
-| Lifepath Style | Both Views | Timeline + Graph integration |
-| MGT2e Data Source | Extract from Repo | One-time script, complete data |
+| Decision          | Choice                    | Notes                                          |
+| ----------------- | ------------------------- | ---------------------------------------------- |
+| CharGen Scope     | Collaborative Narrative   | Full multiplayer, AI-assisted, entity-spawning |
+| Dice Rolling      | Auto-Roll                 | System handles all rolls                       |
+| NPC Ownership     | GM Default + Transferable | Future crew/fleet features need this           |
+| AI Verbosity      | Controllable              | Minimal → Structured → Rich options            |
+| Session Mode      | Both Sync + Async         | Works for Session Zero and mid-campaign        |
+| Career Scope      | Configurable per Campaign | Start with CRB, GM can enable more             |
+| Lifepath Style    | Both Views                | Timeline + Graph integration                   |
+| MGT2e Data Source | Extract from Repo         | One-time script, complete data                 |
 
 ### Open Questions
 
@@ -982,9 +988,9 @@ Before starting implementation:
 
 ## Reference Documents
 
-| Document | Purpose |
-|----------|---------|
-| `foundry-mgt2e-architecture.md` | Complete Foundry integration design |
-| `planeshift-mvp.md` | Detailed implementation spec (infrastructure, persistence) |
-| `PROJECT_BRIEF_v2.md` | Original 4-phase vision document |
-| MGT2e GitHub repo | Source for skill/career/item data |
+| Document                        | Purpose                                                    |
+| ------------------------------- | ---------------------------------------------------------- |
+| `foundry-mgt2e-architecture.md` | Complete Foundry integration design                        |
+| `planeshift-mvp.md`             | Detailed implementation spec (infrastructure, persistence) |
+| `PROJECT_BRIEF_v2.md`           | Original 4-phase vision document                           |
+| MGT2e GitHub repo               | Source for skill/career/item data                          |

@@ -4,16 +4,16 @@ export interface SkillDefinition {
   id: string;
   name: string;
   defaultCharacteristic: CharacteristicCode;
-  background: boolean;        // Can be taken during background phase
-  combat: boolean;            // Is a combat skill
-  psionic: boolean;           // Requires PSI
+  background: boolean; // Can be taken during background phase
+  combat: boolean; // Is a combat skill
+  psionic: boolean; // Requires PSI
   specialties?: SkillSpecialty[];
 }
 
 export interface SkillSpecialty {
   id: string;
   name: string;
-  defaultCharacteristic?: CharacteristicCode;  // Override parent if different
+  defaultCharacteristic?: CharacteristicCode; // Override parent if different
   combat?: boolean;
 }
 

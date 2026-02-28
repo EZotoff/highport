@@ -85,15 +85,17 @@ test.describe('RAG Chat with Mock Response', () => {
         body: 'data: The Third Imperium is a vast interstellar empire.\n\n',
       });
     });
-    
+
     await page.goto('/chat');
     await page.waitForSelector('input[placeholder="Ask a question..."]', { timeout: 30000 });
-    
+
     const input = page.locator('input[placeholder="Ask a question..."]');
     const submitButton = page.locator('button[type="submit"]');
     await input.fill('What is the Third Imperium?');
     await submitButton.click();
     await page.waitForTimeout(1000);
-    await expect(page.locator('text=The Third Imperium is a vast interstellar empire.')).toBeVisible();
+    await expect(
+      page.locator('text=The Third Imperium is a vast interstellar empire.'),
+    ).toBeVisible();
   });
 });

@@ -7,22 +7,22 @@
  * Register all module settings
  */
 export function registerSettings() {
-  game.settings.register("highport-bridge", "serverUrl", {
-    name: "PLANE_SHIFT.Settings.ServerUrl.Name",
-    hint: "PLANE_SHIFT.Settings.ServerUrl.Hint",
-    scope: "world",
+  game.settings.register('highport-bridge', 'serverUrl', {
+    name: 'PLANE_SHIFT.Settings.ServerUrl.Name',
+    hint: 'PLANE_SHIFT.Settings.ServerUrl.Hint',
+    scope: 'world',
     config: true,
     type: String,
-    default: "ws://localhost:3012"
+    default: 'ws://localhost:3012',
   });
 
-  game.settings.register("highport-bridge", "apiKey", {
-    name: "PLANE_SHIFT.Settings.ApiKey.Name",
-    hint: "PLANE_SHIFT.Settings.ApiKey.Hint",
-    scope: "world",
+  game.settings.register('highport-bridge', 'apiKey', {
+    name: 'PLANE_SHIFT.Settings.ApiKey.Name',
+    hint: 'PLANE_SHIFT.Settings.ApiKey.Hint',
+    scope: 'world',
     config: true,
     type: String,
-    default: ""
+    default: '',
   });
 }
 
@@ -31,7 +31,7 @@ export function registerSettings() {
  * @returns {string} The Highport server URL
  */
 export function getServerUrl() {
-  return game.settings.get("highport-bridge", "serverUrl");
+  return game.settings.get('highport-bridge', 'serverUrl');
 }
 
 /**
@@ -39,5 +39,5 @@ export function getServerUrl() {
  * @returns {string} The Highport API key
  */
 export function getApiKey() {
-  return game.settings.get("highport-bridge", "apiKey");
+  return game.settings.get('highport-bridge', 'apiKey');
 }

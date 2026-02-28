@@ -1,10 +1,11 @@
-
 ## Task 8 - Reputation & Faction Table
+
 - **Computed Fields in Yjs**: When storing data in Yjs that has derived properties (like `tier` from `standing`), computing and storing them during the update transaction ensures all clients see consistent data without duplicate logic.
 - **Soft Linking**: Linking Yjs entities (Factions) to other Yjs entities (Graph Nodes) via string IDs is effective. The consuming component is responsible for resolving these IDs by subscribing to both data sources.
 - **Color Gradients**: HSL (`hue-saturation-lightness`) is efficient for programmatically generating status colors (e.g., Red-to-Green gradient) without complex interpolation libraries.
 
 ## Task 10 - Python RAG Service Setup
+
 - **Provider Abstraction Pattern**: Abstract base class (`LLMProvider`) with concrete implementations (`GeminiProvider`) enables swapping LLM backends without changing calling code. Lazy client initialization (`_ensure_client()`) defers API key validation until actual use.
 - **Deterministic Mock Embeddings**: Using SHA256 hash of text to generate consistent 1536-dim vectors enables reproducible tests without actual OpenAI calls. The hash bytes are extended cyclically to fill the vector dimension.
 - **pytest-asyncio Auto Mode**: Setting `asyncio_mode = "auto"` in pyproject.toml eliminates need for `@pytest.mark.asyncio` decorators on every async test (though I kept them for explicitness).
@@ -17,6 +18,7 @@
 - Clean separation of data transformation (`yMapToFaction`) helps with typing and testing.
 
 ## Task 11 - Document Ingestion Pipeline
+
 - **Dependency Injection with Protocols**: Using Python `Protocol` classes for dependency typing enables duck typing while maintaining type safety. The `set_dependencies()`/`clear_dependencies()` pattern allows easy mock injection for tests without FastAPI's Depends system complexity.
 - **tiktoken for Token Counting**: Using `tiktoken.get_encoding("cl100k_base")` with GPT-4's encoding provides accurate token counts. The chunking strategy with overlap (`target_tokens=500, overlap_tokens=50`) ensures context continuity between chunks.
 - **Lazy PDF Import**: Importing `pypdf` inside the function (`from pypdf import PdfReader`) avoids import errors when the dependency isn't needed and keeps startup fast.
@@ -26,6 +28,7 @@
 - **Scope Tag Metadata Pattern**: Storing `access_scope: ["public"]` as a list allows future multi-scope support without schema changes. Including `chunk_index`, `source_id`, `entities`, and `text` in metadata enables rich retrieval filtering.
 
 ## Task 9 - Graph-Table Linking
+
 - **URL-Driven State**: Using URL parameters (`?focusNode=id`) combined with client-side state enables deep linking to specific graph views, allowing the table to "control" the graph via standard navigation.
 - **Component Isolation**: Created `NodePanel` as a standalone component that subscribes to Yjs data independently given a nodeId. This decoupling makes it reusable and easier to test.
 - **Visual Feedback**: Provided immediate visual feedback (Toast + Button Styles) for broken links (e.g., deleted nodes) directly in the table UI, improving user confidence.
@@ -34,6 +37,7 @@
 ## Knowledge Gating & Access Control (Task 12)
 
 ### Drizzle ORM Mock Pattern
+
 When mocking Drizzle's `db` for tests, tables expose their name through internal symbols, not `table._.name` directly. Use this helper to extract table names robustly:
 
 ```typescript
@@ -54,7 +58,9 @@ function getTableName(table: unknown): string {
 ```
 
 ### Pinecone Filter Queries
+
 For querying by metadata filter only (not similarity), use a zero vector:
+
 ```python
 results = index.query(
     vector=[0.0] * 1536,  # Zero vector for filter-only queries
@@ -65,9 +71,11 @@ results = index.query(
 ```
 
 ### React 'use client' Callback Props
+
 The warning "Props must be serializable for components in the 'use client' entry file" for callback props like `onUpdate: () => void` is expected. Client components can receive function props when rendered by other client components.
 
 ## Task 12 - Knowledge Gating & Access Control
+
 - **Drizzle Array Columns**: Use `.array()` modifier on text columns for PostgreSQL text arrays. Default values require `sql` template: `default(sql\`'{public}'::text[]\`)`.
 - **Database CHECK Constraints**: Drizzle supports CHECK constraints via the `check()` function in the table config. Used `sql\`\${table.knowledgeTag} LIKE 'secret:%'\`` to enforce only secret tags can be stored.
 - **Fastify Route Registration Pattern**: Created separate route files (`routes/knowledge.ts`, `routes/documents.ts`) with `registerXxxRoutes(fastify)` functions that get called from the main API index. Keeps route logic modular and testable.
@@ -78,12 +86,14 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **Icon Mocking in React Tests**: Mocking icon libraries (lucide-react) with simple span elements with data-testid makes tests work without the actual icon implementations.
 
 ## RAG System Implementation (Task 13)
+
 - **FastAPI SSE Pattern**: Used `StreamingResponse` with `media_type="text/event-stream"` for real-time chat. Yielding `data: {json}\n\n` ensures compatibility with standard SSE clients.
 - **Pytest Asyncio Strict Mode**: Encountered failures with `@pytest.fixture` on async fixtures. Switched to `@pytest_asyncio.fixture` to satisfy strict mode requirements in `pytest-asyncio`.
 - **Vitest Alias Resolution**: Encountered issues with `@/lib/...` alias resolution in component tests. Switched to relative imports (`../../lib/...`) which proved more stable for this test setup.
 - **Pinecone Metadata Filtering**: Implemented scope-based access control using Pinecone's metadata filters. Mock implementation required careful simulation of the `` operator for array fields.
 
 ## Task 14 - Foundry Bridge Module Setup
+
 - **Foundry V12 ESM Modules**: Foundry VTT V12+ uses ES modules (`esmodules` in module.json). Must use `export` syntax, not CommonJS.
 - **Settings Registration Timing**: `game.settings.register()` must be called during `Hooks.once('init')` - this is when Foundry initializes the settings system.
 - **WebSocket Handshake Pattern**: Since WebSocket clients can't reliably set custom HTTP headers, send authentication via JSON message after connection: `{type: 'handshake', apiKey: '...', clientType: 'foundry', version: '1.0.0'}`.
@@ -92,12 +102,14 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **Global Connection State**: Exported `connection` instance allows external access/testing while `PlaneShiftConnection` class enables custom instantiation.
 
 ## Task 14 (Refined) - Foundry Module Initialization
+
 - **Modular File Structure**: Split settings/socket logic into separate ES modules (`scripts/settings.js`, `scripts/socket.js`) for cleaner separation of concerns. Main `module.js` only handles hooks and orchestration.
 - **Localization Keys vs Runtime Translation**: Use raw localization keys (`"PLANE_SHIFT.Settings.ServerUrl.Name"`) in `game.settings.register()` - Foundry automatically resolves them at display time. Don't call `game.i18n.localize()` during registration.
 - **WebSocket URL Construction**: Server URL is stored as base URL (e.g., `ws://localhost:3012`), then `/foundry` path is appended in the FoundryBridge constructor. This keeps configuration clean while enabling endpoint-specific routing.
 - **Export Pattern for Foundry Modules**: Export both the bridge instance AND the class: `export { bridge, FoundryBridge }`. This allows external modules to access current connection state or create custom instances.
 
 ## Task 15 - Foundry → PlaneShift Sync
+
 - **@fastify/websocket v8 Breaking Change**: In version 8+, the handler's first parameter is `SocketStream` (a Duplex stream), not the WebSocket directly. Listen for `data` events on the stream, not `message` events: `connection.on('data', (data: Buffer) => {...})`. Access the underlying WebSocket via `connection.socket.send()` for responses.
 - **Foundry Hook Filtering**: Use `actor.hasPlayerOwner` to filter to only party-relevant actors, and `userId !== game.user.id` to avoid echo loops where changes made by this client trigger sync back.
 - **Whitelist-Based Sync**: Only syncing whitelisted paths (`system.hits`, `system.characteristics`, etc.) prevents excessive data transfer and focuses on game-relevant state changes.
@@ -105,6 +117,7 @@ The warning "Props must be serializable for components in the 'use client' entry
 - **requestId Pattern**: Including a unique `requestId` in messages enables reliable ack/nack handling for sync operations.
 
 ## Task 15 - Foundry → PlaneShift Actor Sync
+
 - **@fastify/websocket SocketStream Pattern**: In @fastify/websocket v8, the WebSocket handler receives a `SocketStream` (Duplex stream), not a raw WebSocket. Access the actual WebSocket via `connection.socket`, then use standard WebSocket events (`message`, `close`, `error`).
 - **Side-Effect Imports for Hooks**: Importing a module purely for side effects (e.g., `import "./scripts/sync.js"`) registers Foundry hooks at module load time. No explicit function call needed since hooks are registered at top-level.
 - **TypeScript ws Types**: @fastify/websocket's types depend on `ws` module. Adding both `ws` and `@types/ws` as dependencies ensures proper typing for WebSocket class. Import as `import type { WebSocket as WS } from 'ws'` to get the correct type.
@@ -145,15 +158,18 @@ The warning "Props must be serializable for components in the 'use client' entry
 ## E2E Performance Test (2026-01-27)
 
 ### Status
+
 **File already exists:** `apps/web/e2e/performance.spec.ts`
 
 The performance test file was already implemented and includes:
+
 - 500 node creation and rendering test
 - FPS measurement using requestAnimationFrame (>= 30 fps threshold)
 - Pan/zoom responsiveness test (< 2000ms threshold)
 - Concurrent users test (5 users, 20 nodes)
 
 ### Implementation Notes
+
 - Uses programmatic node creation via `page.evaluate()` with button clicks
 - Batches creation (pauses every 50 nodes) to avoid overwhelming the browser
 - Measures FPS over 1 second window using requestAnimationFrame
@@ -161,7 +177,9 @@ The performance test file was already implemented and includes:
 - Reasonable thresholds for CI environments (30fps not 60fps)
 
 ### Current Blocker
+
 The test cannot run because `/graph` page has a build error:
+
 ```
 Error: useSearchParams() should be wrapped in a suspense boundary
 ```
@@ -169,27 +187,31 @@ Error: useSearchParams() should be wrapped in a suspense boundary
 This is a separate issue in `apps/web/app/graph/page.tsx` that needs fixing before E2E tests can run.
 
 ### CDP vs requestAnimationFrame
+
 The plan suggested using Chrome DevTools Protocol for metrics, but the current implementation uses requestAnimationFrame which is:
+
 - Simpler to implement
 - Adequate for detecting major performance issues
 - Doesn't require CDP session setup
 
 The task said "if available" for CDP, so this is acceptable.
 
-
 ## Sync Latency E2E Test Creation (2026-01-27)
 
 ### Task
+
 Created E2E test file for sync latency measurement between two browser contexts
 
 ### Deliverables
+
 - File: `apps/web/e2e/sync-latency.spec.ts` (162 lines, 4.9KB)
 - Three test cases:
   1. Graph node creation sync (<500ms target)
-  2. Node edit propagation sync (<500ms target)  
+  2. Node edit propagation sync (<500ms target)
   3. Table changes sync (<500ms target)
 
 ### Implementation Approach
+
 - Followed existing pattern from `tables.spec.ts` for two-context tests
 - Used `page.waitForFunction()` for detecting sync completion
 - Measured latency: `endTime - startTime`
@@ -197,7 +219,9 @@ Created E2E test file for sync latency measurement between two browser contexts
 - Logged latency values for debugging and monitoring
 
 ### Test Structure
+
 Each test:
+
 1. Opens two browser contexts
 2. Navigates both to the same page
 3. Waits for initial sync (2s settling time)
@@ -206,17 +230,20 @@ Each test:
 6. Calculates and asserts latency < 500ms
 
 ### Known Issues
+
 - Tests currently fail due to sync not working in test environment
 - Yjs module import warning: "Yjs was already imported"
 - This appears to be an environmental issue, not a test structure issue
 - The test file itself is correctly structured per requirements
 
 ### Pattern Success
+
 - Successfully adapted two-context pattern from `tables.spec.ts`
 - Successfully adapted React Flow selectors from `graph.spec.ts`
 - Test file compiles and runs (though sync doesn't work yet)
 
 ## README Updates (2026-01-27)
+
 - Added section for **RAG Service** setup (Python environment, dependencies, uvicorn).
 - Added **Foundry VTT Integration** section with symlink instructions.
 - Added **Manual Export** workflow description based on `foundry-export.ts`.
@@ -226,26 +253,26 @@ Each test:
 
 ### Verification Status
 
-| Gate | Result | Evidence |
-|------|--------|----------|
-| **TypeCheck** | ✅ PASS | `pnpm typecheck` - 4 tasks successful |
-| **Unit Tests** | ✅ PASS | 69 web + 66 server = 135 tests pass |
-| **Build** | ✅ PASS | `pnpm build` - 3 tasks successful |
-| **E2E Tests** | ⚠️ PARTIAL | 6 pass, flaky sync tests |
+| Gate           | Result     | Evidence                              |
+| -------------- | ---------- | ------------------------------------- |
+| **TypeCheck**  | ✅ PASS    | `pnpm typecheck` - 4 tasks successful |
+| **Unit Tests** | ✅ PASS    | 69 web + 66 server = 135 tests pass   |
+| **Build**      | ✅ PASS    | `pnpm build` - 3 tasks successful     |
+| **E2E Tests**  | ⚠️ PARTIAL | 6 pass, flaky sync tests              |
 
 ### Final Checklist Verification
 
-| Item | Status | Evidence |
-|------|--------|----------|
-| Multi-user sync <200ms | ✅ | Unit tests in `awareness.test.ts`, sync.ts with HocuspocusProvider |
-| Graph persists to DB | ✅ | `documentUpdates` table in schema, `hocuspocus.ts` onChange handler |
-| RAG respects permissions | ✅ | `query.py` scope filtering, `test_query.py::test_query_scope_filtering` |
-| Foundry bidirectional sync | ✅ | `sync.js` + `receive.js` in foundry-module |
-| Conflict Queue GM resolution | ✅ | `ConflictQueue.tsx` + `ConflictCard.tsx` + unit tests |
-| Import/Export fallback | ✅ | `ImportExport.tsx` component |
-| 500 nodes at 60fps | ⚠️ | React Flow virtualization enabled, E2E test flaky |
-| Must Have requirements | ✅ | All implementations complete per plan |
-| Must NOT Have guardrails | ✅ | No external deps added, uses Tailwind |
+| Item                         | Status | Evidence                                                                |
+| ---------------------------- | ------ | ----------------------------------------------------------------------- |
+| Multi-user sync <200ms       | ✅     | Unit tests in `awareness.test.ts`, sync.ts with HocuspocusProvider      |
+| Graph persists to DB         | ✅     | `documentUpdates` table in schema, `hocuspocus.ts` onChange handler     |
+| RAG respects permissions     | ✅     | `query.py` scope filtering, `test_query.py::test_query_scope_filtering` |
+| Foundry bidirectional sync   | ✅     | `sync.js` + `receive.js` in foundry-module                              |
+| Conflict Queue GM resolution | ✅     | `ConflictQueue.tsx` + `ConflictCard.tsx` + unit tests                   |
+| Import/Export fallback       | ✅     | `ImportExport.tsx` component                                            |
+| 500 nodes at 60fps           | ⚠️     | React Flow virtualization enabled, E2E test flaky                       |
+| Must Have requirements       | ✅     | All implementations complete per plan                                   |
+| Must NOT Have guardrails     | ✅     | No external deps added, uses Tailwind                                   |
 
 ### Fixes Applied During Verification
 
@@ -260,22 +287,24 @@ Each test:
 - E2E tests with multiple browser contexts need careful isolation
 - All core functionality is implemented and working at unit test level
 
-
 ## E2E Test Flakiness Fix (2026-01-27)
 
 ### Root Causes Identified
+
 1. **Module singleton pattern** - `provider` and `persistence` in sync.ts were module-level singletons with no reset capability
 2. **No IndexedDB cleanup** - Previous test data persisted between test runs
 3. **Shared Hocuspocus room** - All tests used `default:graph` room, causing state pollution
 4. **Insufficient wait times** - 5s timeout was too short for WebSocket + initial sync
 
 ### Fixes Applied
+
 1. **Added reset functions** to `sync.ts`:
    - `destroyProvider()` - Destroys HocuspocusProvider and sets to null
    - `destroyPersistence()` - Destroys IndexeddbPersistence and sets to null
    - `resetSync()` - Calls both destroy functions
 
 2. **IndexedDB cleanup in E2E tests**:
+
    ```typescript
    test.beforeEach(async ({ page }) => {
      await page.goto('/path');
@@ -297,18 +326,21 @@ Each test:
    - `test.skip()` for reputation persistence/sync (component lacks provider init)
 
 ### Results
-| Before | After |
-|--------|-------|
+
+| Before              | After                |
+| ------------------- | -------------------- |
 | 6 passed, 22 failed | 21 passed, 7 skipped |
 
 ### Future Improvements Needed
+
 1. **Per-test room isolation** - Allow tests to specify unique Hocuspocus room names via URL query param
 2. **Add sync to ReputationTable** - Currently only GraphCanvas initializes HocuspocusProvider
 3. **SSE mocking** - RAG mock response test needs proper Server-Sent Events interception
 
 ### Pattern: IndexedDB Cleanup
+
 The key insight is that IndexedDB persists across page navigations within the same browser context. Cleanup must happen BEFORE test actions, and requires a page reload after deletion for the app to reinitialize with clean state.
 
-
 ## Documentation Refactor (2026-01-27)
+
 - **Documentation Structure**: Organized `apps/server/AGENTS.md` to include specific patterns (Hocuspocus, Drizzle) and verification protocols. This structure helps agents verify backend changes more effectively.

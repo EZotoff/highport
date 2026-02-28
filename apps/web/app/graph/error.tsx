@@ -20,13 +20,11 @@ export default function GraphError({
         <div className="rounded-full bg-red-900/20 p-3">
           <AlertTriangle className="h-6 w-6 text-red-500" />
         </div>
-        
-        <h2 className="text-lg font-semibold text-red-100">
-          Failed to load graph
-        </h2>
-        
+
+        <h2 className="text-lg font-semibold text-red-100">Failed to load graph</h2>
+
         <p className="text-sm text-zinc-400">
-          {error.message || "We encountered an error while loading the campaign graph."}
+          {error.message || 'We encountered an error while loading the campaign graph.'}
         </p>
 
         <button

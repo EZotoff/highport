@@ -11,9 +11,21 @@ interface GlassPanelProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
-  ({ theme = 'cyan', variant = 'default', glow = false, hoverGlow = false, className = '', children, style, ...props }, ref) => {
+  (
+    {
+      theme = 'cyan',
+      variant = 'default',
+      glow = false,
+      hoverGlow = false,
+      className = '',
+      children,
+      style,
+      ...props
+    },
+    ref,
+  ) => {
     const themeHex = THEME_HEX[theme];
-    
+
     const baseStyles: React.CSSProperties = {
       background: 'var(--nebula-mist-80)',
       backdropFilter: 'blur(12px)',
@@ -22,7 +34,7 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
       transition: 'all 0.3s ease',
       ...style,
     };
-    
+
     const variantStyles: Record<string, React.CSSProperties> = {
       default: {
         border: '1px solid var(--asteroid-dust-50)',
@@ -42,25 +54,27 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
         boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.06)',
       },
     };
-    
-    const glowStyle = glow ? {
-      '--neon-color': themeHex,
-      boxShadow: `0 0 15px ${themeHex}66, 0 0 30px ${themeHex}33, inset 0 1px 0 rgba(255, 255, 255, 0.06)`,
-    } as React.CSSProperties : {};
+
+    const glowStyle = glow
+      ? ({
+          '--neon-color': themeHex,
+          boxShadow: `0 0 15px ${themeHex}66, 0 0 30px ${themeHex}33, inset 0 1px 0 rgba(255, 255, 255, 0.06)`,
+        } as React.CSSProperties)
+      : {};
 
     const glowClass = glow ? 'neon-breathe-active' : '';
-    
+
     const combinedStyle = {
       ...baseStyles,
       ...variantStyles[variant],
       ...glowStyle,
     };
-    
+
     // Handle hover glow with CSS custom properties
-    const hoverClass = hoverGlow 
-      ? `hover:shadow-[0_0_20px_${themeHex}80,0_0_40px_${themeHex}40]` 
+    const hoverClass = hoverGlow
+      ? `hover:shadow-[0_0_20px_${themeHex}80,0_0_40px_${themeHex}40]`
       : '';
-    
+
     return (
       <div
         ref={ref}
@@ -79,33 +93,33 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
         {/* Corner accents for bordered variant */}
         {variant === 'bordered' && (
           <>
-            <div 
+            <div
               className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 pointer-events-none"
-              style={{ 
+              style={{
                 borderColor: `${themeHex}50`,
                 animation: 'corner-pulse 3s ease-in-out infinite',
                 animationDelay: '0s',
               }}
             />
-            <div 
+            <div
               className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 pointer-events-none"
-              style={{ 
+              style={{
                 borderColor: `${themeHex}50`,
                 animation: 'corner-pulse 3s ease-in-out infinite',
                 animationDelay: '0.75s',
               }}
             />
-            <div 
+            <div
               className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 pointer-events-none"
-              style={{ 
+              style={{
                 borderColor: `${themeHex}30`,
                 animation: 'corner-pulse 3s ease-in-out infinite',
                 animationDelay: '2.25s',
               }}
             />
-            <div 
+            <div
               className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 pointer-events-none"
-              style={{ 
+              style={{
                 borderColor: `${themeHex}30`,
                 animation: 'corner-pulse 3s ease-in-out infinite',
                 animationDelay: '1.5s',
@@ -113,11 +127,11 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
             />
           </>
         )}
-        
+
         {children}
       </div>
     );
-  }
+  },
 );
 
 GlassPanel.displayName = 'GlassPanel';

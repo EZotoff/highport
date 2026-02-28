@@ -38,7 +38,7 @@ export function broadcastToFoundry(msg: FoundryMessage): void {
 export function broadcastNodeUpdate(
   nodeId: string,
   foundryUuid: string,
-  changes: Record<string, unknown>
+  changes: Record<string, unknown>,
 ): void {
   const message: FoundryMessage = {
     type: 'node_update',

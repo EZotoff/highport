@@ -78,7 +78,7 @@ export function addNode(doc: Y.Doc, node: GraphNode): void {
 export function updateNodePosition(
   doc: Y.Doc,
   nodeId: string,
-  position: { x: number; y: number }
+  position: { x: number; y: number },
 ): void {
   const nodes = getNodesMap(doc);
   const ymap = nodes.get(nodeId);
@@ -150,7 +150,7 @@ export function updateNodeVisibility(doc: Y.Doc, nodeId: string, hidden: boolean
 export function updateNodeMetadata(
   doc: Y.Doc,
   nodeId: string,
-  metadata: Partial<GraphNode['metadata']>
+  metadata: Partial<GraphNode['metadata']>,
 ): void {
   const nodes = getNodesMap(doc);
   const ymap = nodes.get(nodeId);

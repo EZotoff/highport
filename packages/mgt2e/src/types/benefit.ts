@@ -7,6 +7,6 @@ export interface MusteringBenefit {
 }
 
 export interface ShipBenefit {
-  shares: number;         // Ship shares accumulated
-  ship?: string;          // Specific ship if granted directly
+  shares: number; // Ship shares accumulated
+  ship?: string; // Specific ship if granted directly
 }

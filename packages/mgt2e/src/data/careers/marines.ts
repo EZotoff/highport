@@ -3,14 +3,15 @@ import type { CareerDefinition } from '../../types/career.js';
 export const MARINES: CareerDefinition = {
   id: 'marines',
   name: 'Marines',
-  description: 'Members of the armed fighting forces carried aboard starships, trained to fight in space and on planetary surfaces.',
-  
+  description:
+    'Members of the armed fighting forces carried aboard starships, trained to fight in space and on planetary surfaces.',
+
   qualification: {
     characteristic: 'END',
     target: 6,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'support',
@@ -58,7 +59,7 @@ export const MARINES: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 STR' },
@@ -93,7 +94,7 @@ export const MARINES: CareerDefinition = {
       { roll: 6, skill: 'leadership' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Marine' },
     { rank: 1, title: 'Lance Corporal', skill: 'guncombat', skillLevel: 1 },
@@ -103,7 +104,7 @@ export const MARINES: CareerDefinition = {
     { rank: 5, title: 'Gunnery Sergeant', skill: '+1 END' },
     { rank: 6, title: 'Sergeant Major' },
   ],
-  
+
   officerRanks: [
     { rank: 0, title: 'Lieutenant', skill: 'leadership', skillLevel: 1 },
     { rank: 1, title: 'Captain' },
@@ -113,9 +114,9 @@ export const MARINES: CareerDefinition = {
     { rank: 5, title: 'Brigadier' },
     { rank: 6, title: 'General' },
   ],
-  
+
   cashBenefits: [2000, 5000, 10000, 10000, 20000, 30000, 40000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Armour' },
     { roll: 2, benefit: '+1 INT' },
@@ -124,7 +125,7 @@ export const MARINES: CareerDefinition = {
     { roll: 5, benefit: 'TAS Membership', orHighRank: '+2 Ship Shares' },
     { roll: 6, benefit: 'Armour', orHighRank: '+1 SOC' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -134,9 +135,7 @@ export const MARINES: CareerDefinition = {
     {
       roll: 3,
       description: 'Trapped behind enemy lines, you have to survive on your own.',
-      effects: [
-        { type: 'special', target: 'roll', value: 'Stealth or Survival 8+' },
-      ],
+      effects: [{ type: 'special', target: 'roll', value: 'Stealth or Survival 8+' }],
       choices: [
         {
           id: 'survive-success',
@@ -172,9 +171,7 @@ export const MARINES: CareerDefinition = {
     {
       roll: 6,
       description: 'You are assigned to a black ops mission.',
-      spawns: [
-        { type: 'secret', required: false, template: 'black_ops_mission' },
-      ],
+      spawns: [{ type: 'secret', required: false, template: 'black_ops_mission' }],
       effects: [{ type: 'special', target: 'roll', value: 'Stealth or Gun Combat 8+' }],
     },
     {
@@ -185,14 +182,14 @@ export const MARINES: CareerDefinition = {
     {
       roll: 8,
       description: 'You are on the front lines of a planetary assault and occupation.',
-      spawns: [
-        { type: 'location', required: false, template: 'war_zone' },
-      ],
+      spawns: [{ type: 'location', required: false, template: 'war_zone' }],
       choices: [
         {
           id: 'front-lines',
           description: 'Gain one of Recon, Gun Combat, Leadership, or Electronics (comms)',
-          effects: [{ type: 'skill', target: 'recon|guncombat|leadership|electronics.comms', value: 1 }],
+          effects: [
+            { type: 'skill', target: 'recon|guncombat|leadership|electronics.comms', value: 1 },
+          ],
         },
       ],
     },
@@ -207,9 +204,7 @@ export const MARINES: CareerDefinition = {
     {
       roll: 10,
       description: 'You are assigned to protect a VIP.',
-      spawns: [
-        { type: 'npc', relationship: 'contact', required: true, template: 'vip_contact' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'contact', required: true, template: 'vip_contact' }],
       choices: [
         {
           id: 'vip-protection',
@@ -221,12 +216,8 @@ export const MARINES: CareerDefinition = {
     {
       roll: 11,
       description: 'Your commanding officer takes an interest in your career.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'mentor_officer' },
-      ],
-      effects: [
-        { type: 'special', target: 'advancement', value: 'dm+4' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'mentor_officer' }],
+      effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
       roll: 12,
@@ -237,30 +228,31 @@ export const MARINES: CareerDefinition = {
       ],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
-      description: 'Severely injured in action. Roll twice on the Injury table and take the lower result.',
+      description:
+        'Severely injured in action. Roll twice on the Injury table and take the lower result.',
       injury: true,
       forced: true,
       effects: [{ type: 'special', target: 'injury', value: 'severe' }],
     },
     {
       roll: 2,
-      description: 'A mission goes wrong and you are stranded behind enemy lines. Increase Survival or Stealth by one level.',
+      description:
+        'A mission goes wrong and you are stranded behind enemy lines. Increase Survival or Stealth by one level.',
       forced: true,
       injury: false,
       effects: [{ type: 'skill', target: 'survival|stealth', value: 1 }],
     },
     {
       roll: 3,
-      description: 'You are ordered to take part in a black ops mission that goes wrong. You may keep this secret, or it may come to light.',
+      description:
+        'You are ordered to take part in a black ops mission that goes wrong. You may keep this secret, or it may come to light.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'secret', required: true, template: 'black_ops_failure' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'black_ops_failure' }],
     },
     {
       roll: 4,
@@ -274,9 +266,7 @@ export const MARINES: CareerDefinition = {
       description: 'You are tormented by a senior officer or NCO.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'cruel_officer' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'cruel_officer' }],
     },
     {
       roll: 6,

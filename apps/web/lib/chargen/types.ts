@@ -1,6 +1,11 @@
 import type { CharacteristicSet, DiceResult, CareerEvent, CareerMishap } from '@highport/mgt2e';
 
-export type ChargenStatus = 'background' | 'career_selection' | 'term_resolution' | 'mustering_out' | 'finalized';
+export type ChargenStatus =
+  | 'background'
+  | 'career_selection'
+  | 'term_resolution'
+  | 'mustering_out'
+  | 'finalized';
 
 export interface ChargenSession {
   id: string;
@@ -13,20 +18,20 @@ export interface ChargenCharacter {
   id: string;
   playerId: string;
   name: string;
-  
+
   homeworld?: string;
   characteristics: CharacteristicSet;
   backgroundSkills: string[];
-  
+
   terms: CareerTermResult[];
   currentTermIndex: number;
   status: ChargenStatus;
-  
+
   skills: Record<string, number>;
   benefits: string[];
   credits: number;
   age: number;
-  
+
   spawnedEntityIds: string[];
 }
 
@@ -35,27 +40,27 @@ export interface CareerTermResult {
   careerId: string;
   assignmentId: string;
   startAge: number;
-  
+
   survivalRoll?: DiceResult;
   survived: boolean;
-  
+
   eventRoll?: DiceResult;
   event?: CareerEvent;
   eventChoice?: string;
   eventDescription?: string;
-  
+
   mishap?: CareerMishap;
-  
+
   advancementRoll?: DiceResult;
   advanced: boolean;
   rankGained?: number;
   currentRank: number;
-  
+
   commissionRoll?: DiceResult;
   commissioned?: boolean;
-  
+
   skillsGained: Array<{ skill: string; specialty?: string; level: number }>;
-  
+
   spawnedEntities: SpawnedEntityRef[];
 }
 
@@ -82,7 +87,7 @@ export interface MusteringState {
 
 /** Session settings controlled by GM */
 export interface SessionSettings {
-  allowedCareers: string[];  // Empty = all allowed
+  allowedCareers: string[]; // Empty = all allowed
   aiVerbosity: 'minimal' | 'structured' | 'rich';
   requireGMApproval: boolean;
   allowCrossPlayerConnections: boolean;
@@ -94,7 +99,7 @@ export interface ChargenSessionConfig {
   id: string;
   campaignId: string;
   createdAt: number;
-  createdBy: string;  // GM user ID
+  createdBy: string; // GM user ID
   status: 'active' | 'completed' | 'abandoned';
   settings: SessionSettings;
 }
@@ -103,25 +108,31 @@ export interface ChargenSessionConfig {
 export interface SharedSpawnedEntity {
   id: string;
   type: 'npc' | 'location' | 'item' | 'secret';
-  createdBy: string;      // User ID who spawned
-  createdFor: string;     // Character ID it was spawned for
+  createdBy: string; // User ID who spawned
+  createdFor: string; // Character ID it was spawned for
   createdDuring: { termNumber: number; eventRoll: number };
-  ownedBy: string;        // 'gm' or user ID
+  ownedBy: string; // 'gm' or user ID
   name: string;
   description?: string;
   metadata: Record<string, unknown>;
   graphNodeId: string;
-  claimedBy: string[];    // Character IDs that claimed this entity
+  claimedBy: string[]; // Character IDs that claimed this entity
 }
 
-export type ConnectionRelationship = 'ally' | 'contact' | 'rival' | 'enemy' | 'colleague' | 'custom';
+export type ConnectionRelationship =
+  | 'ally'
+  | 'contact'
+  | 'rival'
+  | 'enemy'
+  | 'colleague'
+  | 'custom';
 
 /** Request from one player to connect to another's entity */
 export interface ConnectionRequest {
   id: string;
-  requesterId: string;        // User ID requesting
-  requesterCharId: string;    // Character ID requesting
-  entityId: string;           // Entity being claimed
+  requesterId: string; // User ID requesting
+  requesterCharId: string; // Character ID requesting
+  entityId: string; // Entity being claimed
   relationship: ConnectionRelationship;
   customRelationship?: string;
   status: 'pending' | 'approved' | 'rejected';

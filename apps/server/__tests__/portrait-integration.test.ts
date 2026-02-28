@@ -132,8 +132,13 @@ vi.mock('../src/db/client.js', () => {
 class InMemoryPortraitStorage implements PortraitStorage {
   private readonly store = new Map<string, { data: Buffer; mimeType: string }>();
 
-  async savePortrait(data: Buffer, mimeType: string, portraitId: string): Promise<PortraitStorageResult> {
-    const extension = mimeType === 'image/jpeg' ? 'jpg' : mimeType === 'image/webp' ? 'webp' : 'png';
+  async savePortrait(
+    data: Buffer,
+    mimeType: string,
+    portraitId: string,
+  ): Promise<PortraitStorageResult> {
+    const extension =
+      mimeType === 'image/jpeg' ? 'jpg' : mimeType === 'image/webp' ? 'webp' : 'png';
     const storageKey = `${portraitId}.${extension}`;
     this.store.set(storageKey, { data, mimeType });
     return { storageKey, sizeBytes: data.length };
@@ -303,7 +308,10 @@ describe('PortraitService integration', () => {
     });
     await service.generatePortrait({
       campaignId: 'camp-search',
-      tags: { story: { entity_type: 'npc' }, demographics: { gender: 'female', age_range: 'adult' } },
+      tags: {
+        story: { entity_type: 'npc' },
+        demographics: { gender: 'female', age_range: 'adult' },
+      },
       userId: 'user-1',
     });
 
@@ -386,7 +394,9 @@ describe('PortraitService integration', () => {
     expect(remixRow?.tags.demographics?.age_range).toBe('elder');
     expect(remixed.source_portrait_id).toBe(source.id);
     expect(remixed.anchor_portrait_id).toBe(source.id);
-    expect(imageCall.body.reference_image_base64).toBe(Buffer.from('generated-image').toString('base64'));
+    expect(imageCall.body.reference_image_base64).toBe(
+      Buffer.from('generated-image').toString('base64'),
+    );
     expect(imageCall.body.reference_image_mime_type).toBe('image/png');
   });
 

@@ -24,9 +24,7 @@ describe('ScopeEditor', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    global.fetch = vi.fn(() =>
-      Promise.resolve(new Response('{}', { status: 200 }))
-    );
+    global.fetch = vi.fn(() => Promise.resolve(new Response('{}', { status: 200 })));
   });
 
   it('renders with initial scope selected', () => {
@@ -109,7 +107,7 @@ describe('ScopeEditor', () => {
         expect.objectContaining({
           method: 'PATCH',
           body: expect.any(String),
-        })
+        }),
       );
     });
 
@@ -120,9 +118,7 @@ describe('ScopeEditor', () => {
 
   it('shows error when save fails', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ error: 'Server error' }), { status: 500 })
-      )
+      Promise.resolve(new Response(JSON.stringify({ error: 'Server error' }), { status: 500 })),
     );
 
     const user = userEvent.setup();

@@ -15,12 +15,18 @@ interface ParticipantCardProps {
 
 function calculateProgress(character: ChargenCharacter): number {
   switch (character.status) {
-    case 'background': return character.backgroundSkills.length > 0 ? 15 : 5;
-    case 'career_selection': return 25;
-    case 'term_resolution': return 30 + (character.currentTermIndex * 10);
-    case 'mustering_out': return 90;
-    case 'finalized': return 100;
-    default: return 0;
+    case 'background':
+      return character.backgroundSkills.length > 0 ? 15 : 5;
+    case 'career_selection':
+      return 25;
+    case 'term_resolution':
+      return 30 + character.currentTermIndex * 10;
+    case 'mustering_out':
+      return 90;
+    case 'finalized':
+      return 100;
+    default:
+      return 0;
   }
 }
 
@@ -60,7 +66,8 @@ export default function ParticipantCard({
   }
 
   const progress = calculateProgress(character);
-  const currentTerm = character.terms.length > 0 ? character.terms[character.terms.length - 1] : null;
+  const currentTerm =
+    character.terms.length > 0 ? character.terms[character.terms.length - 1] : null;
 
   return (
     <div

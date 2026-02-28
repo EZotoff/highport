@@ -4,13 +4,13 @@ export const MERCHANT: CareerDefinition = {
   id: 'merchant',
   name: 'Merchant',
   description: 'Members of a commercial enterprise, trading goods between worlds.',
-  
+
   qualification: {
     characteristic: 'INT',
     target: 4,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'merchant-marine',
@@ -58,7 +58,7 @@ export const MERCHANT: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 STR' },
@@ -85,7 +85,7 @@ export const MERCHANT: CareerDefinition = {
       { roll: 6, skill: 'advocate' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Crewman' },
     { rank: 1, title: 'Senior Crewman', skill: 'mechanic', skillLevel: 1 },
@@ -95,9 +95,9 @@ export const MERCHANT: CareerDefinition = {
     { rank: 5, title: '1st Officer', skill: '+1 SOC' },
     { rank: 6, title: 'Captain' },
   ],
-  
+
   cashBenefits: [1000, 5000, 10000, 20000, 20000, 40000, 40000],
-  
+
   benefitTable: [
     { roll: 1, benefit: '+1 INT' },
     { roll: 2, benefit: '+1 EDU' },
@@ -106,7 +106,7 @@ export const MERCHANT: CareerDefinition = {
     { roll: 5, benefit: 'Free Trader' },
     { roll: 6, benefit: 'Free Trader' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -174,10 +174,9 @@ export const MERCHANT: CareerDefinition = {
     },
     {
       roll: 9,
-      description: 'A sudden war, Loss of trade, or other crisis means your ship needs to make a jump with a problem.',
-      effects: [
-        { type: 'special', target: 'roll', value: 'Engineer, Mechanic, or Pilot 8+' },
-      ],
+      description:
+        'A sudden war, Loss of trade, or other crisis means your ship needs to make a jump with a problem.',
+      effects: [{ type: 'special', target: 'roll', value: 'Engineer, Mechanic, or Pilot 8+' }],
     },
     {
       roll: 10,
@@ -198,9 +197,7 @@ export const MERCHANT: CareerDefinition = {
     {
       roll: 11,
       description: 'You are befriended by a corporate leader or wealthy noble.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'wealthy_patron' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'wealthy_patron' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
@@ -209,11 +206,12 @@ export const MERCHANT: CareerDefinition = {
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
-      description: 'Severely injured in action. Roll twice on the Injury table and take the lower result.',
+      description:
+        'Severely injured in action. Roll twice on the Injury table and take the lower result.',
       injury: true,
       forced: true,
       effects: [{ type: 'special', target: 'injury', value: 'severe' }],
@@ -237,18 +235,14 @@ export const MERCHANT: CareerDefinition = {
       description: 'Your ship is captured by pirates or smugglers.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: false, template: 'pirate_enemy' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: false, template: 'pirate_enemy' }],
     },
     {
       roll: 5,
       description: 'You are implicated in illegal activity.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'secret', required: true, template: 'illegal_activity' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'illegal_activity' }],
     },
     {
       roll: 6,

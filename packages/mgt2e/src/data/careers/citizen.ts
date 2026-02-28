@@ -4,13 +4,13 @@ export const CITIZEN: CareerDefinition = {
   id: 'citizen',
   name: 'Citizen',
   description: 'Ordinary members of society, from workers to corporate executives.',
-  
+
   qualification: {
     characteristic: 'EDU',
     target: 5,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'corporate',
@@ -58,7 +58,7 @@ export const CITIZEN: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 EDU' },
@@ -85,7 +85,7 @@ export const CITIZEN: CareerDefinition = {
       { roll: 6, skill: 'medic' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Citizen' },
     { rank: 1, title: 'Citizen' },
@@ -95,9 +95,9 @@ export const CITIZEN: CareerDefinition = {
     { rank: 5, title: 'Manager' },
     { rank: 6, title: 'Director' },
   ],
-  
+
   cashBenefits: [2000, 5000, 10000, 10000, 20000, 50000, 100000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Ship Share' },
     { roll: 2, benefit: '+1 INT' },
@@ -106,7 +106,7 @@ export const CITIZEN: CareerDefinition = {
     { roll: 5, benefit: '+1 SOC' },
     { roll: 6, benefit: 'TAS Membership', orHighRank: 'Yacht' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -124,9 +124,7 @@ export const CITIZEN: CareerDefinition = {
     {
       roll: 4,
       description: 'You learn something you should not have.',
-      spawns: [
-        { type: 'secret', required: true, template: 'corporate_secret' },
-      ],
+      spawns: [{ type: 'secret', required: true, template: 'corporate_secret' }],
       choices: [
         {
           id: 'secret-keep',
@@ -182,9 +180,7 @@ export const CITIZEN: CareerDefinition = {
     {
       roll: 11,
       description: 'You befriend a senior manager or director.',
-      spawns: [
-        { type: 'npc', relationship: 'ally', required: true, template: 'senior_manager' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'senior_manager' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+4' }],
     },
     {
@@ -193,7 +189,7 @@ export const CITIZEN: CareerDefinition = {
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
@@ -207,9 +203,7 @@ export const CITIZEN: CareerDefinition = {
       description: 'You are harassed or assaulted by a coworker.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'harasser' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'harasser' }],
     },
     {
       roll: 3,
@@ -230,9 +224,7 @@ export const CITIZEN: CareerDefinition = {
       description: 'A revolution or war forces you from your home.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'location', required: false, template: 'refugee_origin' },
-      ],
+      spawns: [{ type: 'location', required: false, template: 'refugee_origin' }],
       effects: [{ type: 'skill', target: 'survival|guncombat', value: 1 }],
     },
     {

@@ -25,7 +25,7 @@ export function ContextMenu({ x, y, node, onClose, onAction, isGM }: ContextMenu
         onClose();
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -43,14 +43,14 @@ export function ContextMenu({ x, y, node, onClose, onAction, isGM }: ContextMenu
       <div className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-100 bg-gray-50 truncate max-w-[200px]">
         {node.label}
       </div>
-      
+
       <button
         onClick={() => onAction('edit')}
         className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
       >
         <Edit className="w-4 h-4" /> Edit
       </button>
-      
+
       {isGM && (
         <>
           <button
@@ -60,7 +60,7 @@ export function ContextMenu({ x, y, node, onClose, onAction, isGM }: ContextMenu
             {node.locked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
             {node.locked ? 'Unlock' : 'Lock'}
           </button>
-          
+
           <button
             onClick={() => onAction(node.hidden ? 'unhide' : 'hide')}
             className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
@@ -72,7 +72,7 @@ export function ContextMenu({ x, y, node, onClose, onAction, isGM }: ContextMenu
       )}
 
       <div className="h-px bg-gray-100 my-1" />
-      
+
       <button
         onClick={() => onAction('delete')}
         className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"

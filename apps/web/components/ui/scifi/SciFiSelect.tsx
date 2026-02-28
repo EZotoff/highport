@@ -66,7 +66,7 @@ export const SciFiSelect: React.FC<SciFiSelectProps> = ({
       >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      
+
       <SelectContent
         className={`
           backdrop-blur-xl

@@ -13,7 +13,9 @@ test.describe('Portrait in Chargen', () => {
     await expect(page.locator('text=Background')).toBeVisible();
   });
 
-  test('portrait actions and library modal are available in portrait-enabled states', async ({ page }) => {
+  test('portrait actions and library modal are available in portrait-enabled states', async ({
+    page,
+  }) => {
     const createButton = page.locator('button:has-text("Create New Character")');
     if (await createButton.isVisible()) {
       await createButton.click();
@@ -21,8 +23,11 @@ test.describe('Portrait in Chargen', () => {
     }
 
     const generatePortrait = page.locator('button:has-text("Generate Portrait")').first();
-    if (await generatePortrait.count() === 0) {
-      test.skip(true, 'Portrait controls require entity spawn/finalize state that is not always available in baseline E2E setup.');
+    if ((await generatePortrait.count()) === 0) {
+      test.skip(
+        true,
+        'Portrait controls require entity spawn/finalize state that is not always available in baseline E2E setup.',
+      );
     }
 
     await expect(generatePortrait).toBeVisible();
@@ -46,7 +51,9 @@ test.describe('Portrait API smoke checks', () => {
   });
 
   test('GET /api/portraits/search returns array for campaign query', async ({ request }) => {
-    const response = await request.get('http://localhost:3012/api/portraits/search?campaignId=test-campaign');
+    const response = await request.get(
+      'http://localhost:3012/api/portraits/search?campaignId=test-campaign',
+    );
 
     expect(response.status()).toBe(200);
     const body = await response.json();

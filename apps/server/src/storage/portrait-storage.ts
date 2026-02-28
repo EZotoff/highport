@@ -20,7 +20,11 @@ const DEFAULT_STORAGE_PATH = process.env.PORTRAIT_STORAGE_PATH || 'uploads/portr
 export class LocalPortraitStorage implements PortraitStorage {
   constructor(private basePath: string = DEFAULT_STORAGE_PATH) {}
 
-  async savePortrait(data: Buffer, mimeType: string, portraitId: string): Promise<PortraitStorageResult> {
+  async savePortrait(
+    data: Buffer,
+    mimeType: string,
+    portraitId: string,
+  ): Promise<PortraitStorageResult> {
     const extension = extensionFromMime(mimeType);
     const storageKey = `${portraitId}.${extension}`;
     const fullPath = this.resolvePath(storageKey);

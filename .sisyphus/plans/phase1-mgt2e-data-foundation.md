@@ -9,6 +9,7 @@
 ## Overview
 
 This plan creates the `@planeshift/mgt2e` package containing:
+
 1. TypeScript types for MGT2e skills, careers, events, and benefits
 2. Extracted skill data from the Foundry MGT2e module
 3. CRB career definitions with survival/advancement rolls
@@ -22,6 +23,7 @@ This plan creates the `@planeshift/mgt2e` package containing:
 ### Task 1: Create Package Structure
 
 **Files to create:**
+
 ```
 packages/mgt2e/
 ├── package.json
@@ -65,6 +67,7 @@ packages/mgt2e/
 ### Task 2: Define Core Types
 
 #### `src/types/characteristic.ts`
+
 ```typescript
 export type CharacteristicCode = 'STR' | 'DEX' | 'END' | 'INT' | 'EDU' | 'SOC' | 'PSI';
 
@@ -90,21 +93,22 @@ export function getCharacteristicModifier(value: number): number {
 ```
 
 #### `src/types/skill.ts`
+
 ```typescript
 export interface SkillDefinition {
   id: string;
   name: string;
   defaultCharacteristic: CharacteristicCode;
-  background: boolean;        // Can be taken during background phase
-  combat: boolean;            // Is a combat skill
-  psionic: boolean;           // Requires PSI
+  background: boolean; // Can be taken during background phase
+  combat: boolean; // Is a combat skill
+  psionic: boolean; // Requires PSI
   specialties?: SkillSpecialty[];
 }
 
 export interface SkillSpecialty {
   id: string;
   name: string;
-  defaultCharacteristic?: CharacteristicCode;  // Override parent if different
+  defaultCharacteristic?: CharacteristicCode; // Override parent if different
   combat?: boolean;
 }
 
@@ -116,41 +120,42 @@ export interface CharacterSkill {
 ```
 
 #### `src/types/career.ts`
+
 ```typescript
 export interface CareerDefinition {
   id: string;
   name: string;
   description: string;
-  
+
   // Qualification
   qualification: {
     characteristic: CharacteristicCode;
     target: number;
-    previousCareerPenalty?: number;  // DM per previous career (usually -1)
+    previousCareerPenalty?: number; // DM per previous career (usually -1)
   };
-  
+
   // Assignments within the career
   assignments: CareerAssignment[];
-  
+
   // Skill tables (shared across assignments)
   skillTables: {
     personal: SkillTableEntry[];
     service: SkillTableEntry[];
     advanced: SkillTableEntry[];
-    officer?: SkillTableEntry[];   // Only for military careers with commission
+    officer?: SkillTableEntry[]; // Only for military careers with commission
   };
-  
+
   // Rank structure
   ranks: CareerRank[];
-  officerRanks?: CareerRank[];  // Separate officer track
-  
+  officerRanks?: CareerRank[]; // Separate officer track
+
   // Benefits
-  cashBenefits: number[];       // 1-6 on cash table
+  cashBenefits: number[]; // 1-6 on cash table
   benefitTable: BenefitEntry[]; // 1-6 on benefits table
-  
+
   // Events and mishaps
-  events: CareerEvent[];        // 2-12 on 2d6
-  mishaps: CareerMishap[];      // 1-6 on 1d6
+  events: CareerEvent[]; // 2-12 on 2d6
+  mishaps: CareerMishap[]; // 1-6 on 1d6
 }
 
 export interface CareerAssignment {
@@ -165,36 +170,37 @@ export interface CareerAssignment {
     characteristic: CharacteristicCode;
     target: number;
   };
-  skillTable: SkillTableEntry[];  // Assignment-specific skill table
+  skillTable: SkillTableEntry[]; // Assignment-specific skill table
 }
 
 export interface CareerRank {
   rank: number;
   title: string;
-  skill?: string;       // Automatic skill gain at this rank
-  skillLevel?: number;  // Level of automatic skill
-  benefit?: string;     // Non-skill benefit (e.g., "TAS Membership")
+  skill?: string; // Automatic skill gain at this rank
+  skillLevel?: number; // Level of automatic skill
+  benefit?: string; // Non-skill benefit (e.g., "TAS Membership")
 }
 
 export interface SkillTableEntry {
-  roll: number;          // 1-6 on 1d6
-  skill: string;         // Skill ID or "+1 [characteristic]"
-  specialty?: string;    // Specialty if skill has specialties
+  roll: number; // 1-6 on 1d6
+  skill: string; // Skill ID or "+1 [characteristic]"
+  specialty?: string; // Specialty if skill has specialties
 }
 ```
 
 #### `src/types/event.ts`
+
 ```typescript
 export interface CareerEvent {
-  roll: number;           // 2-12 on 2d6
-  description: string;    // Base event text from CRB
-  
+  roll: number; // 2-12 on 2d6
+  description: string; // Base event text from CRB
+
   // What this event can spawn
   spawns?: EventSpawn[];
-  
+
   // Mechanical effects
   effects?: EventEffect[];
-  
+
   // Choices for the player
   choices?: EventChoice[];
 }
@@ -202,15 +208,15 @@ export interface CareerEvent {
 export interface EventSpawn {
   type: 'npc' | 'location' | 'item' | 'secret';
   relationship?: 'ally' | 'contact' | 'rival' | 'enemy';
-  template?: string;       // AI prompt template for generation
-  required: boolean;       // Must player provide details?
+  template?: string; // AI prompt template for generation
+  required: boolean; // Must player provide details?
 }
 
 export interface EventEffect {
   type: 'skill' | 'characteristic' | 'benefit' | 'special';
-  target: string;          // Skill/characteristic/benefit ID
-  value: number | string;  // +1, -1, or special value
-  condition?: string;      // "if player chooses X"
+  target: string; // Skill/characteristic/benefit ID
+  value: number | string; // +1, -1, or special value
+  condition?: string; // "if player chooses X"
 }
 
 export interface EventChoice {
@@ -220,29 +226,30 @@ export interface EventChoice {
 }
 
 export interface CareerMishap {
-  roll: number;            // 1-6 on 1d6
+  roll: number; // 1-6 on 1d6
   description: string;
-  injury: boolean;         // Does this cause injury roll?
+  injury: boolean; // Does this cause injury roll?
   effects?: EventEffect[];
-  forced: boolean;         // Must leave career after this?
+  forced: boolean; // Must leave career after this?
 }
 ```
 
 #### `src/types/term.ts`
+
 ```typescript
 // State for a single career term during chargen
 export interface CareerTerm {
   termNumber: number;
   careerId: string;
   assignmentId: string;
-  age: number;           // Age at start of term
-  
+  age: number; // Age at start of term
+
   // Rolls made this term
   survivalRoll?: DiceResult;
   eventRoll?: DiceResult;
   advancementRoll?: DiceResult;
   commissionRoll?: DiceResult;
-  
+
   // Outcomes
   survived: boolean;
   mishap?: CareerMishap;
@@ -250,27 +257,27 @@ export interface CareerTerm {
   promoted: boolean;
   commissioned?: boolean;
   rankGained?: number;
-  
+
   // Skills/benefits gained
   skillsGained: CharacterSkill[];
   benefitsGained: string[];
-  
+
   // Entities spawned from events
   spawnedEntities: SpawnedEntity[];
 }
 
 export interface DiceResult {
-  dice: string;          // e.g., "2d6"
-  rolls: number[];       // Individual die results
-  total: number;         // Sum
-  modifier: number;      // DM applied
-  target?: number;       // Target number if applicable
-  success?: boolean;     // If checking against target
+  dice: string; // e.g., "2d6"
+  rolls: number[]; // Individual die results
+  total: number; // Sum
+  modifier: number; // DM applied
+  target?: number; // Target number if applicable
+  success?: boolean; // If checking against target
 }
 
 export interface SpawnedEntity {
   type: 'npc' | 'location' | 'item' | 'secret';
-  id: string;            // Generated UUID
+  id: string; // Generated UUID
   relationship?: string;
   name?: string;
   description?: string;
@@ -286,6 +293,7 @@ export interface SpawnedEntity {
 From `/tmp/mgt2e/mgt2e/module/helpers/config.mjs` (lines 554-828), create:
 
 #### `src/data/skills.ts`
+
 ```typescript
 import type { SkillDefinition } from '../types/skill.js';
 
@@ -327,11 +335,11 @@ export function getSkill(id: string): SkillDefinition | undefined {
 }
 
 export function getBackgroundSkills(): SkillDefinition[] {
-  return Object.values(SKILLS).filter(s => s.background);
+  return Object.values(SKILLS).filter((s) => s.background);
 }
 
 export function getCombatSkills(): SkillDefinition[] {
-  return Object.values(SKILLS).filter(s => s.combat || s.specialties?.some(sp => sp.combat));
+  return Object.values(SKILLS).filter((s) => s.combat || s.specialties?.some((sp) => sp.combat));
 }
 ```
 
@@ -342,6 +350,7 @@ export function getCombatSkills(): SkillDefinition[] {
 Create one file per career. Example for Navy:
 
 #### `src/data/careers/navy.ts`
+
 ```typescript
 import type { CareerDefinition } from '../../types/career.js';
 
@@ -349,13 +358,13 @@ export const NAVY: CareerDefinition = {
   id: 'navy',
   name: 'Navy',
   description: 'Members of the interstellar navy which patrols space between the stars.',
-  
+
   qualification: {
     characteristic: 'INT',
     target: 6,
     previousCareerPenalty: -1,
   },
-  
+
   assignments: [
     {
       id: 'line-crew',
@@ -403,7 +412,7 @@ export const NAVY: CareerDefinition = {
       ],
     },
   ],
-  
+
   skillTables: {
     personal: [
       { roll: 1, skill: '+1 STR' },
@@ -438,7 +447,7 @@ export const NAVY: CareerDefinition = {
       { roll: 6, skill: 'tactics', specialty: 'naval' },
     ],
   },
-  
+
   ranks: [
     { rank: 0, title: 'Crewman' },
     { rank: 1, title: 'Able Spacehand', skill: 'mechanic', skillLevel: 1 },
@@ -448,7 +457,7 @@ export const NAVY: CareerDefinition = {
     { rank: 5, title: 'Chief Petty Officer' },
     { rank: 6, title: 'Master Chief' },
   ],
-  
+
   officerRanks: [
     { rank: 0, title: 'Ensign', skill: 'melee', skillLevel: 1 },
     { rank: 1, title: 'Sublieutenant', skill: 'leadership', skillLevel: 1 },
@@ -458,9 +467,9 @@ export const NAVY: CareerDefinition = {
     { rank: 5, title: 'Admiral', skill: '+1 SOC' },
     { rank: 6, title: 'Fleet Admiral' },
   ],
-  
+
   cashBenefits: [1000, 5000, 10000, 10000, 20000, 50000, 50000],
-  
+
   benefitTable: [
     { roll: 1, benefit: 'Personal Vehicle' },
     { roll: 2, benefit: '+1 INT' },
@@ -469,7 +478,7 @@ export const NAVY: CareerDefinition = {
     { roll: 5, benefit: 'Ship Share', orHighRank: '+2 Ship Shares' },
     { roll: 6, benefit: '+1 SOC', orHighRank: 'Yacht' },
   ],
-  
+
   events: [
     {
       roll: 2,
@@ -508,9 +517,7 @@ export const NAVY: CareerDefinition = {
     {
       roll: 6,
       description: 'Your vessel participates in a notable military engagement.',
-      spawns: [
-        { type: 'location', required: false, template: 'battle_location' },
-      ],
+      spawns: [{ type: 'location', required: false, template: 'battle_location' }],
       effects: [{ type: 'special', target: 'roll', value: 'Pilot/Gunner/Engineer' }],
     },
     {
@@ -535,9 +542,7 @@ export const NAVY: CareerDefinition = {
     {
       roll: 9,
       description: 'You foil an attempted crime on board, such as mutiny, sabotage, or conspiracy.',
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'criminal_enemy' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'criminal_enemy' }],
       effects: [{ type: 'special', target: 'advancement', value: 'dm+2' }],
     },
     {
@@ -568,18 +573,20 @@ export const NAVY: CareerDefinition = {
       effects: [{ type: 'special', target: 'promotion', value: 'automatic' }],
     },
   ],
-  
+
   mishaps: [
     {
       roll: 1,
-      description: 'Severely injured in action. Roll twice on the Injury table and take the lower result.',
+      description:
+        'Severely injured in action. Roll twice on the Injury table and take the lower result.',
       injury: true,
       forced: true,
       effects: [{ type: 'special', target: 'injury', value: 'severe' }],
     },
     {
       roll: 2,
-      description: 'Placed in the frozen watch and revived when your ship arrives in-Loss of one term.',
+      description:
+        'Placed in the frozen watch and revived when your ship arrives in-Loss of one term.',
       forced: true,
       injury: false,
     },
@@ -602,9 +609,7 @@ export const NAVY: CareerDefinition = {
       description: 'You are tormented by a cruel officer, who drives you out.',
       forced: true,
       injury: false,
-      spawns: [
-        { type: 'npc', relationship: 'enemy', required: true, template: 'cruel_officer' },
-      ],
+      spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'cruel_officer' }],
     },
     {
       roll: 6,
@@ -621,6 +626,7 @@ export const NAVY: CareerDefinition = {
 ### Task 5: Create Dice Roller
 
 #### `src/tables/dice.ts`
+
 ```typescript
 export interface DiceResult {
   dice: string;
@@ -633,11 +639,11 @@ export interface DiceResult {
 
 // Simple seedable PRNG (Mulberry32)
 function mulberry32(seed: number): () => number {
-  return function() {
-    let t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  return function () {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
@@ -660,17 +666,17 @@ export function roll(dice: string, modifier: number = 0, target?: number): DiceR
   if (!match) {
     throw new Error(`Invalid dice notation: ${dice}`);
   }
-  
+
   const count = parseInt(match[1] || '1', 10);
   const sides = parseInt(match[2], 10);
-  
+
   const rolls: number[] = [];
   for (let i = 0; i < count; i++) {
     rolls.push(rollDie(sides));
   }
-  
+
   const total = rolls.reduce((a, b) => a + b, 0) + modifier;
-  
+
   return {
     dice,
     rolls,
@@ -704,6 +710,7 @@ export function rollCharacteristic(): number {
 ### Task 6: Create Event/Benefit Table Lookups
 
 #### `src/tables/events.ts`
+
 ```typescript
 import type { CareerEvent, CareerMishap } from '../types/event.js';
 import type { CareerDefinition } from '../types/career.js';
@@ -714,12 +721,12 @@ export function rollCareerEvent(career: CareerDefinition): {
   event: CareerEvent;
 } {
   const result = roll2d6();
-  const event = career.events.find(e => e.roll === result.total);
-  
+  const event = career.events.find((e) => e.roll === result.total);
+
   if (!event) {
     throw new Error(`No event found for roll ${result.total} in career ${career.id}`);
   }
-  
+
   return { roll: result, event };
 }
 
@@ -728,17 +735,18 @@ export function rollMishap(career: CareerDefinition): {
   mishap: CareerMishap;
 } {
   const result = roll1d6();
-  const mishap = career.mishaps.find(m => m.roll === result.total);
-  
+  const mishap = career.mishaps.find((m) => m.roll === result.total);
+
   if (!mishap) {
     throw new Error(`No mishap found for roll ${result.total} in career ${career.id}`);
   }
-  
+
   return { roll: result, mishap };
 }
 ```
 
 #### `src/tables/benefits.ts`
+
 ```typescript
 import type { CareerDefinition } from '../types/career.js';
 import { roll1d6 } from './dice.js';
@@ -751,28 +759,26 @@ export interface BenefitRollResult {
 
 export function rollCashBenefit(
   career: CareerDefinition,
-  gamblingBonus: number = 0
+  gamblingBonus: number = 0,
 ): BenefitRollResult {
   const result = roll1d6(gamblingBonus);
   const index = Math.min(result.total, career.cashBenefits.length) - 1;
   const cash = career.cashBenefits[index];
-  
+
   return { roll: result, cash };
 }
 
 export function rollMusteringBenefit(
   career: CareerDefinition,
   modifier: number = 0,
-  isHighRank: boolean = false
+  isHighRank: boolean = false,
 ): BenefitRollResult {
   const result = roll1d6(modifier);
   const index = Math.min(result.total, career.benefitTable.length) - 1;
   const entry = career.benefitTable[index];
-  
-  const benefit = isHighRank && entry.orHighRank 
-    ? entry.orHighRank 
-    : entry.benefit;
-  
+
+  const benefit = isHighRank && entry.orHighRank ? entry.orHighRank : entry.benefit;
+
   return { roll: result, benefit };
 }
 ```
@@ -782,6 +788,7 @@ export function rollMusteringBenefit(
 ### Task 7: Create Index Files
 
 #### `src/types/index.ts`
+
 ```typescript
 export * from './characteristic.js';
 export * from './skill.js';
@@ -792,12 +799,14 @@ export * from './term.js';
 ```
 
 #### `src/data/index.ts`
+
 ```typescript
 export * from './skills.js';
 export * from './careers/index.js';
 ```
 
 #### `src/data/careers/index.ts`
+
 ```typescript
 import type { CareerDefinition } from '../../types/career.js';
 import { NAVY } from './navy.js';
@@ -834,10 +843,11 @@ export const CRB_CAREER_IDS = [
   'scout',
 ] as const;
 
-export type CrbCareerId = typeof CRB_CAREER_IDS[number];
+export type CrbCareerId = (typeof CRB_CAREER_IDS)[number];
 ```
 
 #### `src/tables/index.ts`
+
 ```typescript
 export * from './dice.js';
 export * from './events.js';
@@ -845,6 +855,7 @@ export * from './benefits.js';
 ```
 
 #### `src/index.ts`
+
 ```typescript
 // Main package exports
 export * from './types/index.js';
@@ -857,6 +868,7 @@ export * from './tables/index.js';
 ### Task 8: Add to Workspace
 
 Update `pnpm-workspace.yaml` if needed:
+
 ```yaml
 packages:
   - 'apps/*'
@@ -887,14 +899,18 @@ After implementation, verify:
 ## Notes for Implementation
 
 ### Skills Extraction
+
 The full skill list is in `/tmp/mgt2e/mgt2e/module/helpers/config.mjs` lines 554-828. Transform this JavaScript object into TypeScript with proper typing.
 
 ### Career Data Source
+
 The CRB careers are NOT in the free Foundry module (they're licensed content). You'll need to define them manually based on the Core Rulebook tables:
+
 - Pages 16-43 (Careers)
 - Pages 44-49 (Benefits, Aging, etc.)
 
 ### Event Entity Spawning
+
 The `spawns` array on events identifies what graph entities should be created. The `template` field references AI prompt templates that will be used in Phase A3 to generate rich descriptions.
 
 ---
@@ -906,5 +922,6 @@ This phase has NO dependencies on other parts of the codebase. It creates a stan
 ## Blocks
 
 Completing this phase unblocks:
+
 - Phase A2: Single-Player Chargen Flow
 - Chunk B: Extended Foundry Sync (needs skill types)

@@ -4,7 +4,7 @@
   --star-metal: #1a1f2e;
   --nebula-mist: #242b3d;
   --asteroid-dust: #3d4555;
-  
+
   /* === BASE COLORS WITH ALPHA === */
   --deep-void-80: rgba(10, 13, 20, 0.8);
   --star-metal-90: rgba(26, 31, 46, 0.9);
@@ -18,51 +18,51 @@
   --nebula-mist-30: rgba(36, 43, 61, 0.3);
   --asteroid-dust-50: rgba(61, 69, 85, 0.5);
   --asteroid-dust-30: rgba(61, 69, 85, 0.3);
-  
+
   /* === NEON ACCENT COLORS === */
   --plasma-cyan: #00f0ff;
   --impulse-violet: #8b5cf6;
   --reactor-amber: #f59e0b;
   --warp-emerald: #10b981;
   --hull-breach-red: #ef4444;
-  
+
   /* === GLOW EFFECTS === */
   --glow-cyan: rgba(0, 240, 255, 0.6);
   --glow-violet: rgba(139, 92, 246, 0.6);
   --glow-amber: rgba(245, 158, 11, 0.6);
   --glow-emerald: rgba(16, 185, 129, 0.6);
   --glow-red: rgba(239, 68, 68, 0.6);
-  
+
   /* === TEXT HIERARCHY === */
   /* WCAG AA compliant on --deep-void (#0a0d14) background */
-  --text-primary: #e2e8f0;      /* 13.8:1 - default body text */
-  --text-secondary: #94a3b8;    /* 6.0:1 - secondary/subtle */
-  --text-muted: #64748b;        /* 3.7:1 - decorative only, not for reading */
+  --text-primary: #e2e8f0; /* 13.8:1 - default body text */
+  --text-secondary: #94a3b8; /* 6.0:1 - secondary/subtle */
+  --text-muted: #64748b; /* 3.7:1 - decorative only, not for reading */
   --text-glow: #00f0ff;
 
   /* Extended hierarchy for better contrast */
-  --text-heading: #f1f5f9;      /* 15.6:1 - headings, emphasis */
-  --text-label: #cbd5e1;        /* 11.0:1 - labels, captions */
-  --text-body: #e2e8f0;         /* 13.8:1 - alias for primary */
-  --text-subtle: #94a3b8;       /* 6.0:1 - alias for secondary */
-  
+  --text-heading: #f1f5f9; /* 15.6:1 - headings, emphasis */
+  --text-label: #cbd5e1; /* 11.0:1 - labels, captions */
+  --text-body: #e2e8f0; /* 13.8:1 - alias for primary */
+  --text-subtle: #94a3b8; /* 6.0:1 - alias for secondary */
+
   /* === SPACING === */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2rem;
-  
+
   /* === TYPOGRAPHY === */
   --font-display: 'Orbitron', 'Exo 2', system-ui, sans-serif;
   --font-body: 'Inter', 'Roboto', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  
+
   /* === ANIMATION TIMING === */
   --transition-fast: 150ms;
   --transition-normal: 300ms;
   --transition-slow: 500ms;
-  
+
   /* === BORDER RADIUS === */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;

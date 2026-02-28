@@ -147,14 +147,16 @@ describe('Foundry Import', () => {
 
     it('handles multiple actors with mixed matching', () => {
       const actors: FoundryActor[] = [
-        { _id: 'a1', name: 'Found Actor', type: 'traveller', system: { hits: { value: 5, max: 10 } } },
+        {
+          _id: 'a1',
+          name: 'Found Actor',
+          type: 'traveller',
+          system: { hits: { value: 5, max: 10 } },
+        },
         { _id: 'a2', name: 'Missing', type: 'npc', system: {} },
         { _id: 'a3', name: 'Another', type: 'traveller', system: {} },
       ];
-      const nodes = [
-        createNode('n1', 'Found Actor'),
-        createNode('n2', 'another'),
-      ];
+      const nodes = [createNode('n1', 'Found Actor'), createNode('n2', 'another')];
 
       const result = matchActorsToNodes(actors, nodes);
       expect(result.matched).toHaveLength(2);

@@ -64,6 +64,7 @@ echo "Fastify (3012): $FASTIFY_STATUS"
 ```
 
 **If services not running**:
+
 ```bash
 # Start PostgreSQL
 docker compose up -d
@@ -113,6 +114,7 @@ echo "TypeCheck: $TYPECHECK_EXIT, Build: $BUILD_EXIT, Test: $TEST_EXIT, E2E: $E2
 ### Phase 2: Execute Structured Scenarios
 
 Read the verification plan:
+
 ```
 Read(".sisyphus/verification/highport-holistic.md")
 ```
@@ -195,7 +197,7 @@ F6: Add Table Row - Add faction button
 
 ```
 delegate_task(
-  category="quick", 
+  category="quick",
   load_skills=["playwright"],
   prompt=`
 ## TASK
@@ -240,14 +242,14 @@ async (page) => {
   const contextB = await browser.newContext();
   const pageA = await contextA.newPage();
   const pageB = await contextB.newPage();
-  
+
   // Navigate both to /graph
   await pageA.goto('http://localhost:3010/graph');
   await pageB.goto('http://localhost:3010/graph');
-  
+
   // Wait for sync establishment
   await pageA.waitForTimeout(3000);
-  
+
   // ... test scenarios
 }
 \`\`\`
@@ -374,14 +376,14 @@ Aggregate all results and generate REPORT.md:
 
 ## Summary
 
-| Category | Passed | Failed | Total |
-|----------|--------|--------|-------|
-| Smoke Tests | X | Y | 3 |
-| Feature Tests | X | Y | 6 |
-| Persistence Tests | X | Y | 3 |
-| Sync Tests | X | Y | 4 |
-| Integration Tests | X | Y | 2 |
-| **Total Structured** | X | Y | 18 |
+| Category             | Passed | Failed | Total |
+| -------------------- | ------ | ------ | ----- |
+| Smoke Tests          | X      | Y      | 3     |
+| Feature Tests        | X      | Y      | 6     |
+| Persistence Tests    | X      | Y      | 3     |
+| Sync Tests           | X      | Y      | 4     |
+| Integration Tests    | X      | Y      | 2     |
+| **Total Structured** | X      | Y      | 18    |
 
 **Exploratory Findings**: N issues (C critical, H high, M medium, L low)
 **Console Errors**: N
@@ -389,12 +391,15 @@ Aggregate all results and generate REPORT.md:
 **Overall Status**: PASS / FAIL / PARTIAL
 
 ## Detailed Results
+
 ...
 
 ## Exploratory Findings
+
 ...
 
 ## Recommendations
+
 ...
 ```
 
@@ -407,6 +412,7 @@ Write to: `.sisyphus/evidence/highport-holistic/REPORT.md`
 ### Phase 7: Cleanup
 
 If we started the dev server:
+
 ```bash
 if [ -f /tmp/verify-app-server.info ]; then
   SERVER_INFO=$(cat /tmp/verify-app-server.info)
@@ -433,7 +439,7 @@ Results:
   Persistence Tests: 3/3 PASS
   Sync Tests:        3/4 PASS (M4 flaky)
   Integration Tests: 2/2 PASS
-  
+
   Structured Total:  17/18 PASS (94%)
 
 Exploratory:
@@ -455,20 +461,23 @@ OVERALL: PASS ✓
 ## Quick Reference
 
 ### Files
+
 - **Plan Template**: `.sisyphus/verification/TEMPLATE.md`
 - **Highport Plan**: `.sisyphus/verification/highport-holistic.md`
 - **Evidence Directory**: `.sisyphus/evidence/highport-holistic/`
 - **Final Report**: `.sisyphus/evidence/highport-holistic/REPORT.md`
 
 ### Service Ports
-| Service | Port |
-|---------|------|
+
+| Service       | Port |
+| ------------- | ---- |
 | Web (Next.js) | 3010 |
-| Hocuspocus | 3011 |
-| Fastify API | 3012 |
-| PostgreSQL | 5432 |
+| Hocuspocus    | 3011 |
+| Fastify API   | 3012 |
+| PostgreSQL    | 5432 |
 
 ### Success Criteria
+
 - All smoke/feature/persistence tests: PASS
 - Sync tests: ≥75% PASS
 - No Critical issues from exploration

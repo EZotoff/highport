@@ -52,7 +52,7 @@ export function initProvider(doc: Y.Doc, campaignId: string = 'default'): Hocusp
   provider.on('synced', () => {
     console.log(`[Sync] Connected to ${campaignId}:graph`);
   });
-  
+
   return provider;
 }
 
@@ -91,7 +91,7 @@ export function waitForPersistenceSync(p: IndexeddbPersistence): Promise<void> {
 
 export async function initAndWaitForPersistence(
   doc: Y.Doc,
-  name: string = 'highport-graph'
+  name: string = 'highport-graph',
 ): Promise<IndexeddbPersistence> {
   const p = initPersistence(doc, name);
   await waitForPersistenceSync(p);

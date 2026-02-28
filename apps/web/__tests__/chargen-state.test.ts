@@ -221,8 +221,8 @@ describe('Chargen Session State', () => {
 
       const entities = getEntityPool(doc);
       expect(entities).toHaveLength(2);
-      expect(entities.map(e => e.name)).toContain('NPC 1');
-      expect(entities.map(e => e.name)).toContain('Location 1');
+      expect(entities.map((e) => e.name)).toContain('NPC 1');
+      expect(entities.map((e) => e.name)).toContain('Location 1');
     });
 
     it('should filter entities by type', () => {
@@ -251,8 +251,8 @@ describe('Chargen Session State', () => {
       });
 
       const entities = getEntityPool(doc);
-      const npcs = entities.filter(e => e.type === 'npc');
-      const locations = entities.filter(e => e.type === 'location');
+      const npcs = entities.filter((e) => e.type === 'npc');
+      const locations = entities.filter((e) => e.type === 'location');
 
       expect(npcs).toHaveLength(1);
       expect(locations).toHaveLength(1);
@@ -322,7 +322,7 @@ describe('Chargen Session State', () => {
         entityId,
         'ally',
         'Want to connect',
-        'user-2'
+        'user-2',
       );
 
       expect(requestId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
@@ -338,21 +338,14 @@ describe('Chargen Session State', () => {
     });
 
     it('should approve a request', () => {
-      const requestId = requestConnection(
-        doc,
-        'char-2',
-        entityId,
-        'contact',
-        undefined,
-        'user-2'
-      );
+      const requestId = requestConnection(doc, 'char-2', entityId, 'contact', undefined, 'user-2');
 
       const beforeTime = Date.now();
       resolveConnectionRequest(doc, requestId, true, 'gm-user-1');
       const afterTime = Date.now();
 
       const requests = getConnectionRequests(doc);
-      const resolved = requests.find(r => r.id === requestId);
+      const resolved = requests.find((r) => r.id === requestId);
 
       expect(resolved?.status).toBe('approved');
       expect(resolved?.resolvedBy).toBe('gm-user-1');
@@ -361,33 +354,19 @@ describe('Chargen Session State', () => {
     });
 
     it('should reject a request', () => {
-      const requestId = requestConnection(
-        doc,
-        'char-2',
-        entityId,
-        'rival',
-        undefined,
-        'user-2'
-      );
+      const requestId = requestConnection(doc, 'char-2', entityId, 'rival', undefined, 'user-2');
 
       resolveConnectionRequest(doc, requestId, false, 'gm-user-1');
 
       const requests = getConnectionRequests(doc);
-      const resolved = requests.find(r => r.id === requestId);
+      const resolved = requests.find((r) => r.id === requestId);
 
       expect(resolved?.status).toBe('rejected');
       expect(resolved?.resolvedBy).toBe('gm-user-1');
     });
 
     it('should add character to entity claimedBy on approval', () => {
-      const requestId = requestConnection(
-        doc,
-        'char-2',
-        entityId,
-        'ally',
-        undefined,
-        'user-2'
-      );
+      const requestId = requestConnection(doc, 'char-2', entityId, 'ally', undefined, 'user-2');
 
       resolveConnectionRequest(doc, requestId, true, 'gm-user-1');
 
@@ -403,19 +382,12 @@ describe('Chargen Session State', () => {
       resolveConnectionRequest(doc, requestId2, true, 'gm-user-1');
 
       const entity = getEntityFromPool(doc, entityId);
-      const char2Count = entity?.claimedBy.filter(id => id === 'char-2').length;
+      const char2Count = entity?.claimedBy.filter((id) => id === 'char-2').length;
       expect(char2Count).toBe(1);
     });
 
     it('should not modify entity claimedBy on rejection', () => {
-      const requestId = requestConnection(
-        doc,
-        'char-2',
-        entityId,
-        'enemy',
-        undefined,
-        'user-2'
-      );
+      const requestId = requestConnection(doc, 'char-2', entityId, 'enemy', undefined, 'user-2');
 
       resolveConnectionRequest(doc, requestId, false, 'gm-user-1');
 

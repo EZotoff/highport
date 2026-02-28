@@ -3,7 +3,12 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { portraits } from '../db/schema.js';
 import { generateId } from '@highport/shared/utils/id';
-import type { PortraitRecord, PortraitSearchResult, PortraitSourcePolicy, PortraitTags } from '@highport/shared/types/portrait';
+import type {
+  PortraitRecord,
+  PortraitSearchResult,
+  PortraitSourcePolicy,
+  PortraitTags,
+} from '@highport/shared/types/portrait';
 import { LocalPortraitStorage, type PortraitStorage } from '../storage/portrait-storage.js';
 
 const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:8000';
@@ -58,8 +63,9 @@ export interface PortraitServiceApi {
 export class PortraitService implements PortraitServiceApi {
   constructor(private storage: PortraitStorage = new LocalPortraitStorage()) {}
 
-  async generatePortrait(input: GeneratePortraitInput): Promise<PortraitRecord & { image_url: string }>
-  {
+  async generatePortrait(
+    input: GeneratePortraitInput,
+  ): Promise<PortraitRecord & { image_url: string }> {
     const baseTags = ensureStoryTags(input.tags);
     const extractedTags = input.appearanceText
       ? await this.extractTags(input.appearanceText, baseTags)
@@ -131,10 +137,7 @@ export class PortraitService implements PortraitServiceApi {
   }
 
   async getPortraitImage(portraitId: string): Promise<PortraitImageResult | null> {
-    const record = await db
-      .select()
-      .from(portraits)
-      .where(eq(portraits.id, portraitId));
+    const record = await db.select().from(portraits).where(eq(portraits.id, portraitId));
 
     if (record.length === 0) return null;
     const portrait = record[0];
@@ -143,10 +146,7 @@ export class PortraitService implements PortraitServiceApi {
   }
 
   async attachPortrait(portraitId: string, subjectNodeId: string): Promise<void> {
-    await db
-      .update(portraits)
-      .set({ subjectNodeId })
-      .where(eq(portraits.id, portraitId));
+    await db.update(portraits).set({ subjectNodeId }).where(eq(portraits.id, portraitId));
   }
 
   async searchPortraits(input: SearchPortraitInput): Promise<PortraitSearchResult[]> {
@@ -329,7 +329,9 @@ export function getPortraitService(): PortraitServiceApi {
   return defaultPortraitService;
 }
 
-export async function generatePortrait(input: GeneratePortraitInput): Promise<PortraitRecord & { image_url: string }> {
+export async function generatePortrait(
+  input: GeneratePortraitInput,
+): Promise<PortraitRecord & { image_url: string }> {
   return defaultPortraitService.generatePortrait(input);
 }
 
@@ -345,7 +347,9 @@ export async function searchPortraits(input: SearchPortraitInput): Promise<Portr
   return defaultPortraitService.searchPortraits(input);
 }
 
-export async function remixPortrait(input: RemixPortraitInput): Promise<PortraitRecord & { image_url: string }> {
+export async function remixPortrait(
+  input: RemixPortraitInput,
+): Promise<PortraitRecord & { image_url: string }> {
   return defaultPortraitService.remixPortrait(input);
 }
 
@@ -359,10 +363,7 @@ export function ensureStoryTags(tags: Partial<PortraitTags>): PortraitTags {
   return tags as PortraitTags;
 }
 
-export function mergeTags(
-  extracted: PortraitTags | null,
-  overrides: PortraitTags,
-): PortraitTags {
+export function mergeTags(extracted: PortraitTags | null, overrides: PortraitTags): PortraitTags {
   if (!extracted) return overrides;
   return deepMerge(
     extracted as unknown as Record<string, unknown>,
@@ -370,7 +371,10 @@ export function mergeTags(
   ) as unknown as PortraitTags;
 }
 
-export function deepMerge(base: Record<string, unknown>, override: Record<string, unknown>): Record<string, unknown> {
+export function deepMerge(
+  base: Record<string, unknown>,
+  override: Record<string, unknown>,
+): Record<string, unknown> {
   const result: Record<string, unknown> = { ...base };
   Object.entries(override).forEach(([key, value]) => {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -383,10 +387,7 @@ export function deepMerge(base: Record<string, unknown>, override: Record<string
   return result;
 }
 
-function toPortraitRecord(
-  record: typeof portraits.$inferSelect,
-  imageUrl: string,
-): PortraitRecord {
+function toPortraitRecord(record: typeof portraits.$inferSelect, imageUrl: string): PortraitRecord {
   return {
     id: record.id,
     campaign_id: record.campaignId,

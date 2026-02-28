@@ -1,14 +1,7 @@
-
 'use client';
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  ColumnDef,
-  Row,
-} from '@tanstack/react-table';
+import { useReactTable, getCoreRowModel, flexRender, ColumnDef, Row } from '@tanstack/react-table';
 import * as Y from 'yjs';
 import { Download, Plus, History, Trash2 } from 'lucide-react';
 import {
@@ -18,7 +11,7 @@ import {
   addResource,
   updateResource,
   resourceFromMap,
-  deleteResource
+  deleteResource,
 } from '../../lib/base-state';
 import { getYDoc } from '../../lib/ydoc';
 import { getOrCreateUser } from '../../lib/identity';
@@ -29,7 +22,7 @@ const EditableCell = ({
   value,
   onChange,
   type = 'text',
-  onContextMenu
+  onContextMenu,
 }: {
   value: string | number;
   onChange: (val: string | number) => void;
@@ -70,7 +63,11 @@ const EditableCell = ({
 export function BaseResources() {
   const [data, setData] = useState<Resource[]>([]);
   const [user, setUser] = useState<{ userId: string; name: string } | null>(null);
-  const [historyView, setHistoryView] = useState<{ resourceId: string; history: any[]; name: string } | null>(null);
+  const [historyView, setHistoryView] = useState<{
+    resourceId: string;
+    history: any[];
+    name: string;
+  } | null>(null);
 
   // Initialize User
   useEffect(() => {
@@ -89,8 +86,8 @@ export function BaseResources() {
       resourcesMap.forEach((map: any) => {
         resources.push(resourceFromMap(map));
       });
-      // Sort by creation or name to keep order stable? 
-      // For now, sorting by name or just letting them be. 
+      // Sort by creation or name to keep order stable?
+      // For now, sorting by name or just letting them be.
       // Map iteration order is insertion order in Yjs usually.
       setData(resources);
     };
@@ -108,11 +105,14 @@ export function BaseResources() {
     };
   }, []);
 
-  const handleUpdate = useCallback((id: string, field: keyof Resource, value: any) => {
-    if (!user) return;
-    const doc = getYDoc();
-    updateResource(doc, id, { [field]: value }, user.userId);
-  }, [user]);
+  const handleUpdate = useCallback(
+    (id: string, field: keyof Resource, value: any) => {
+      if (!user) return;
+      const doc = getYDoc();
+      updateResource(doc, id, { [field]: value }, user.userId);
+    },
+    [user],
+  );
 
   const handleAddResource = useCallback(() => {
     const doc = getYDoc();
@@ -120,17 +120,15 @@ export function BaseResources() {
   }, []);
 
   const handleDeleteResource = useCallback((id: string) => {
-      const doc = getYDoc();
-      deleteResource(doc, id);
+    const doc = getYDoc();
+    deleteResource(doc, id);
   }, []);
 
   const handleExportCSV = useCallback(() => {
     const headers = ['Name', 'Current', 'Max', 'Unit'];
     const csvContent = [
       headers.join(','),
-      ...data.map(r => 
-        `"${r.name}",${r.current},${r.max || ''},"${r.unit}"`
-      )
+      ...data.map((r) => `"${r.name}",${r.current},${r.max || ''},"${r.unit}"`),
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -157,7 +155,7 @@ export function BaseResources() {
               setHistoryView({
                 resourceId: row.original.id,
                 history: row.original.history,
-                name: row.original.name
+                name: row.original.name,
               });
             }}
           />
@@ -171,12 +169,12 @@ export function BaseResources() {
             value={getValue() as number}
             type="number"
             onChange={(val) => handleUpdate(row.original.id, 'current', val)}
-             onContextMenu={(e) => {
+            onContextMenu={(e) => {
               e.preventDefault();
               setHistoryView({
                 resourceId: row.original.id,
                 history: row.original.history,
-                name: row.original.name
+                name: row.original.name,
               });
             }}
           />
@@ -207,32 +205,32 @@ export function BaseResources() {
         id: 'actions',
         header: '',
         cell: ({ row }) => (
-            <div className="flex justify-end gap-2">
-                 <button
-                    onClick={() => {
-                        setHistoryView({
-                            resourceId: row.original.id,
-                            history: row.original.history,
-                            name: row.original.name
-                        });
-                    }}
-                    className="p-1 hover:text-blue-400 text-zinc-500 transition-colors"
-                    title="View History"
-                >
-                    <History size={16} />
-                </button>
-                <button
-                    onClick={() => handleDeleteResource(row.original.id)}
-                    className="p-1 hover:text-red-400 text-zinc-500 transition-colors"
-                    title="Delete Resource"
-                >
-                    <Trash2 size={16} />
-                </button>
-            </div>
-        )
-      }
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setHistoryView({
+                  resourceId: row.original.id,
+                  history: row.original.history,
+                  name: row.original.name,
+                });
+              }}
+              className="p-1 hover:text-blue-400 text-zinc-500 transition-colors"
+              title="View History"
+            >
+              <History size={16} />
+            </button>
+            <button
+              onClick={() => handleDeleteResource(row.original.id)}
+              className="p-1 hover:text-red-400 text-zinc-500 transition-colors"
+              title="Delete Resource"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ),
+      },
     ],
-    [handleUpdate, handleDeleteResource]
+    [handleUpdate, handleDeleteResource],
   );
 
   const table = useReactTable({
@@ -268,10 +266,7 @@ export function BaseResources() {
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th key={header.id} className="px-4 py-3 font-medium">
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
               </tr>
@@ -279,21 +274,21 @@ export function BaseResources() {
           </thead>
           <tbody className="divide-y divide-zinc-800">
             {table.getRowModel().rows.length === 0 ? (
-                <tr>
-                    <td colSpan={columns.length} className="px-4 py-8 text-center text-zinc-600">
-                        No resources defined.
-                    </td>
-                </tr>
+              <tr>
+                <td colSpan={columns.length} className="px-4 py-8 text-center text-zinc-600">
+                  No resources defined.
+                </td>
+              </tr>
             ) : (
-                table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className="hover:bg-zinc-800/30 transition-colors group">
-                    {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-2">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
-                    ))}
+                  ))}
                 </tr>
-                ))
+              ))
             )}
           </tbody>
         </table>

@@ -14,7 +14,7 @@ test.describe('Sync Latency', () => {
     await page1.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page1.reload();
     await page1.waitForSelector('.react-flow', { timeout: 30000 });
-    
+
     await page2.goto('/graph');
     await page2.waitForSelector('.react-flow', { timeout: 30000 });
 
@@ -31,7 +31,7 @@ test.describe('Sync Latency', () => {
         return nodes.length > expectedCount;
       },
       initialNodeCount,
-      { timeout: 10000 }
+      { timeout: 10000 },
     );
 
     const endTime = Date.now();
@@ -56,7 +56,7 @@ test.describe('Sync Latency', () => {
     await page1.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page1.reload();
     await page1.waitForSelector('.react-flow', { timeout: 30000 });
-    
+
     await page2.goto('/graph');
     await page2.waitForSelector('.react-flow', { timeout: 30000 });
 
@@ -92,7 +92,7 @@ test.describe('Sync Latency', () => {
           return Math.abs(rect.x - initialBox.x) > 10 || Math.abs(rect.y - initialBox.y) > 10;
         },
         box2Before,
-        { timeout: 10000 }
+        { timeout: 10000 },
       );
     }
 
@@ -118,7 +118,7 @@ test.describe('Sync Latency', () => {
     await page1.evaluate(() => indexedDB.deleteDatabase('highport-graph'));
     await page1.reload();
     await page1.waitForSelector('table', { timeout: 30000 });
-    
+
     await page2.goto('/reputation');
     await page2.waitForSelector('table', { timeout: 30000 });
 
@@ -129,7 +129,7 @@ test.describe('Sync Latency', () => {
 
     await page1.locator('button:has-text("Add Faction")').click();
     await page1.waitForTimeout(300);
-    
+
     const nameInput = page1.locator('tbody tr').last().locator('td').first().locator('input');
     await nameInput.click();
     await nameInput.fill(testFactionName);
@@ -138,10 +138,10 @@ test.describe('Sync Latency', () => {
     await page2.waitForFunction(
       (name) => {
         const inputs = document.querySelectorAll('input');
-        return Array.from(inputs).some(input => (input as HTMLInputElement).value === name);
+        return Array.from(inputs).some((input) => (input as HTMLInputElement).value === name);
       },
       testFactionName,
-      { timeout: 10000 }
+      { timeout: 10000 },
     );
 
     const endTime = Date.now();

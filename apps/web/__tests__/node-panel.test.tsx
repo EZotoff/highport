@@ -56,7 +56,7 @@ describe('NodePanel', () => {
     addFaction(doc, 'Unlinked Faction');
 
     const { container } = render(<NodePanel nodeId="node-999" onClose={() => {}} />);
-    
+
     // Should be null initially and stay null
     expect(container.firstChild).toBeNull();
   });

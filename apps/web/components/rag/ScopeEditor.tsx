@@ -22,14 +22,16 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
   const [error, setError] = useState<string | null>(null);
 
   const togglePreset = (tag: string) => {
-    setScope(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
+    setScope((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
     setError(null);
   };
 
   const normalizeSecretTag = (input: string): string => {
-    return input.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+    return input
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-');
   };
 
   const addSecret = () => {
@@ -38,7 +40,7 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
 
     const tag = `secret:${normalized}`;
     if (!scope.includes(tag)) {
-      setScope(prev => [...prev, tag]);
+      setScope((prev) => [...prev, tag]);
     }
     setSecretInput('');
     setError(null);
@@ -52,7 +54,7 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
   };
 
   const removeTag = (tag: string) => {
-    setScope(prev => prev.filter(t => t !== tag));
+    setScope((prev) => prev.filter((t) => t !== tag));
     setError(null);
   };
 
@@ -85,7 +87,7 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
     }
   };
 
-  const secretTags = scope.filter(t => t.startsWith('secret:'));
+  const secretTags = scope.filter((t) => t.startsWith('secret:'));
   const hasChanges = JSON.stringify(scope.sort()) !== JSON.stringify(initialScope.sort());
 
   return (
@@ -99,7 +101,7 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
 
       <div className="p-4 space-y-4">
         <div className="grid grid-cols-3 gap-2">
-          {PRESET_SCOPES.map(preset => {
+          {PRESET_SCOPES.map((preset) => {
             const Icon = preset.icon;
             const isActive = scope.includes(preset.tag);
             return (
@@ -108,9 +110,10 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
                 onClick={() => togglePreset(preset.tag)}
                 className={`
                   flex flex-col items-center gap-1 p-3 rounded-lg border transition-all
-                  ${isActive
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-400'
-                    : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-800'
+                  ${
+                    isActive
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                      : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-800'
                   }
                 `}
               >
@@ -135,7 +138,7 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
               <input
                 type="text"
                 value={secretInput}
-                onChange={e => setSecretInput(e.target.value)}
+                onChange={(e) => setSecretInput(e.target.value)}
                 onKeyDown={handleSecretKeyDown}
                 placeholder="ancient-ruins"
                 className="w-full pl-16 pr-4 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
@@ -157,7 +160,7 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
 
         {secretTags.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {secretTags.map(tag => (
+            {secretTags.map((tag) => (
               <span
                 key={tag}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-sm font-mono"
