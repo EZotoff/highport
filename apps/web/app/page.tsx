@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { CosmicBackground } from '@/components/ui/scifi';
+import { UserNav } from '@/components/auth/UserNav';
 
 const navLinks = [
   {
@@ -30,6 +31,10 @@ export default function Home() {
   return (
     <main className="relative min-h-screen flex flex-col items-center justify-center text-center p-8 overflow-hidden">
       <CosmicBackground showStars intensity="medium" />
+
+      <div className="absolute top-4 right-4 z-20">
+        <UserNav />
+      </div>
 
       <div className="relative z-10">
         <h1

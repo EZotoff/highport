@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { CosmicBackground } from '@/components/ui/scifi';
@@ -18,6 +19,7 @@ export default function NewCampaignPage() {
   const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +34,12 @@ export default function NewCampaignPage() {
     try {
       const res = await fetch(`${API_BASE}/api/campaigns`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': session?.user?.id || '',
+        },
         body: JSON.stringify({
           name: trimmedName,
-          ownerId: 'anonymous', // Will be replaced when auth is wired in Task 11
         }),
       });
 

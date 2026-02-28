@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { ArrowLeft, Map, Calendar, User } from 'lucide-react';
 import { CosmicBackground } from '@/components/ui/scifi';
@@ -24,11 +25,15 @@ export default function CampaignDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const { showToast } = useToast();
+  const { data: session } = useSession();
 
   useEffect(() => {
     async function load() {
+      if (!session?.user?.id) return;
       try {
-        const res = await fetch(`${API_BASE}/api/campaigns/${params.id}`);
+        const res = await fetch(`${API_BASE}/api/campaigns/${params.id}`, {
+          headers: { 'X-User-Id': session.user.id },
+        });
         if (res.status === 404) {
           setNotFound(true);
           return;
@@ -43,7 +48,7 @@ export default function CampaignDetailPage() {
       }
     }
     load();
-  }, [params.id, showToast]);
+  }, [params.id, showToast, session?.user?.id]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);

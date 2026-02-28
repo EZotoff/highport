@@ -16,7 +16,7 @@ export default auth((req) => {
   if (isPublicPath || isAuthApi || isNextAsset) {
     // Redirect authenticated users away from login/register
     if (isAuthenticated && isPublicPath) {
-      return NextResponse.redirect(new URL('/', req.url));
+      return NextResponse.redirect(new URL('/campaigns', req.url));
     }
     return NextResponse.next();
   }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Plus, Trash2, Rocket, Calendar } from 'lucide-react';
 import { CosmicBackground } from '@/components/ui/scifi';
 import { SciFiButton } from '@/components/ui/scifi';
@@ -26,10 +27,14 @@ export default function CampaignsPage() {
   const [deleting, setDeleting] = useState(false);
   const { showToast } = useToast();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const fetchCampaigns = useCallback(async () => {
+    if (!session?.user?.id) return;
     try {
-      const res = await fetch(`${API_BASE}/api/campaigns`);
+      const res = await fetch(`${API_BASE}/api/campaigns`, {
+        headers: { 'X-User-Id': session.user.id },
+      });
       if (!res.ok) throw new Error('Failed to fetch campaigns');
       const data = await res.json();
       setCampaigns(data);
@@ -38,7 +43,7 @@ export default function CampaignsPage() {
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, session?.user?.id]);
 
   useEffect(() => {
     fetchCampaigns();
@@ -50,6 +55,7 @@ export default function CampaignsPage() {
     try {
       const res = await fetch(`${API_BASE}/api/campaigns/${deleteTarget.id}`, {
         method: 'DELETE',
+        headers: { 'X-User-Id': session?.user?.id || '' },
       });
       if (!res.ok && res.status !== 204) throw new Error('Failed to delete');
       setCampaigns((prev) => prev.filter((c) => c.id !== deleteTarget.id));

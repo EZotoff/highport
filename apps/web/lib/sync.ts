@@ -38,7 +38,11 @@ export function getPersistence(): IndexeddbPersistence | null {
   return persistence;
 }
 
-export function initProvider(doc: Y.Doc, campaignId: string = 'default'): HocuspocusProvider {
+export function initProvider(
+  doc: Y.Doc,
+  campaignId: string = 'default',
+  token?: string,
+): HocuspocusProvider {
   if (provider) {
     return provider;
   }
@@ -47,6 +51,7 @@ export function initProvider(doc: Y.Doc, campaignId: string = 'default'): Hocusp
     url: 'ws://localhost:3011',
     name: `${campaignId}:graph`,
     document: doc,
+    token: token || undefined,
   });
 
   provider.on('synced', () => {

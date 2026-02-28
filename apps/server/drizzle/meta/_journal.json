@@ -36,6 +36,13 @@
       "when": 1770118509090,
       "tag": "0004_tired_blue_blade",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772304784849,
+      "tag": "0005_hard_stephen_strange",
+      "breakpoints": true
     }
   ]
 }

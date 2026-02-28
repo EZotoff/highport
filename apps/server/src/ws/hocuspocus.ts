@@ -102,6 +102,14 @@ export const hocuspocus = new Hocuspocus({
     });
   },
 
+  async onAuthenticate({ token }) {
+    // MVP auth: reject connections without a token.
+    // The token proves the user passed NextAuth middleware on the frontend.
+    if (!token) {
+      throw new Error('Not authorized');
+    }
+  },
+
   async onConnect({ documentName }) {
     console.log(`[Hocuspocus] Client connected to document: ${documentName}`);
   },
