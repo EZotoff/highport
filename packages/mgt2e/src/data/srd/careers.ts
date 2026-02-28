@@ -1,11 +1,29 @@
+/**
+ * SRD Fallback Career Data
+ *
+ * Contains ONLY content from the Mongoose Traveller 2e System Reference Document
+ * and free quickstart rules. This is the absolute minimum needed for the app to function.
+ *
+ * The Drifter career is included as it appears in the free quickstart rules
+ * and is the most basic career (auto-qualifies, no commission).
+ *
+ * For complete career data (Agent, Army, Citizen, Entertainer, Marines, Merchant,
+ * Navy, Noble, Rogue, Scholar, Scout), install the full game data pack.
+ *
+ * See docs/game-data-format.md for the JSON import format.
+ */
+
 import type { CareerDefinition } from '../../types/career.js';
 
-export const DRIFTER: CareerDefinition = {
+/**
+ * Minimal Drifter career — SRD-safe content only.
+ * Descriptions are kept generic to avoid reproducing copyrighted text.
+ */
+const SRD_DRIFTER: CareerDefinition = {
   id: 'drifter',
   name: 'Drifter',
-  description: 'Those who wander the stars, taking odd jobs and living by their wits.',
+  description: 'Wanderers and vagabonds who travel between the stars, taking odd jobs.',
 
-  // No qualification roll - Drifters automatically qualify
   qualification: {
     characteristic: 'INT',
     target: 0, // Auto-qualify
@@ -15,7 +33,7 @@ export const DRIFTER: CareerDefinition = {
     {
       id: 'barbarian',
       name: 'Barbarian',
-      description: 'You live on a primitive world without technology.',
+      description: 'Living on a primitive world without advanced technology.',
       survival: { characteristic: 'END', target: 7 },
       advancement: { characteristic: 'STR', target: 7 },
       skillTable: [
@@ -30,7 +48,7 @@ export const DRIFTER: CareerDefinition = {
     {
       id: 'wanderer',
       name: 'Wanderer',
-      description: 'You are a homeless traveler, living off the land.',
+      description: 'A homeless traveler moving from world to world.',
       survival: { characteristic: 'END', target: 7 },
       advancement: { characteristic: 'INT', target: 7 },
       skillTable: [
@@ -45,7 +63,7 @@ export const DRIFTER: CareerDefinition = {
     {
       id: 'scavenger',
       name: 'Scavenger',
-      description: 'You scratch a living by salvaging or begging.',
+      description: 'Scraping a living from salvage and scrap.',
       survival: { characteristic: 'DEX', target: 7 },
       advancement: { characteristic: 'END', target: 7 },
       skillTable: [
@@ -120,33 +138,32 @@ export const DRIFTER: CareerDefinition = {
     },
     {
       roll: 4,
-      description: 'You find work as a crewman or labourer.',
+      description: 'You find temporary work.',
       choices: [
         {
           id: 'labour-skill',
-          description: 'Gain one of Mechanic, Drive, Electronics, or Athletics',
+          description: 'Gain a practical skill from the work.',
           effects: [{ type: 'skill', target: 'mechanic|drive|electronics|athletics', value: 1 }],
         },
       ],
     },
     {
       roll: 5,
-      description: 'You are attacked by enemies.',
-      spawns: [{ type: 'npc', relationship: 'enemy', required: false, template: 'random_enemy' }],
+      description: 'You are attacked.',
       effects: [{ type: 'special', target: 'roll', value: 'Melee or Gun Combat 8+' }],
     },
     {
       roll: 6,
-      description: 'You are offered a chance to take part in a risky but rewarding scheme.',
+      description: 'You are offered a risky opportunity.',
       choices: [
         {
           id: 'scheme-accept',
-          description: 'Accept and roll 8+ for an extra benefit roll',
+          description: 'Accept the risk.',
           effects: [{ type: 'special', target: 'roll', value: '8+ for benefit' }],
         },
         {
           id: 'scheme-refuse',
-          description: 'Refuse',
+          description: 'Refuse.',
           effects: [],
         },
       ],
@@ -158,38 +175,33 @@ export const DRIFTER: CareerDefinition = {
     },
     {
       roll: 8,
-      description: 'You manage to get along with local law enforcement.',
-      spawns: [{ type: 'npc', relationship: 'contact', required: false, template: 'law_contact' }],
+      description: 'You make a useful contact.',
       effects: [{ type: 'skill', target: 'streetwise', value: 1 }],
     },
     {
       roll: 9,
-      description: 'You pick up some useful skills here and there.',
+      description: 'You pick up useful skills.',
       choices: [
         {
           id: 'useful-skills',
-          description: 'Gain one of Jack-of-all-Trades, Survival, or Streetwise',
+          description: 'Gain a general skill.',
           effects: [{ type: 'skill', target: 'jackofalltrades|survival|streetwise', value: 1 }],
         },
       ],
     },
     {
       roll: 10,
-      description: 'You are forced into the criminal underworld.',
-      spawns: [
-        { type: 'npc', relationship: 'contact', required: false, template: 'criminal_associate' },
-      ],
+      description: 'You encounter the criminal underworld.',
       effects: [{ type: 'skill', target: 'streetwise|deception', value: 1 }],
     },
     {
       roll: 11,
-      description: 'You save the life of someone important.',
+      description: 'You help someone important.',
       spawns: [{ type: 'npc', relationship: 'ally', required: true, template: 'grateful_ally' }],
     },
     {
       roll: 12,
-      description:
-        'You are offered a proper job. You may automatically qualify for any one career (except Scholar, Psion, or Nobility) next term.',
+      description: 'You are offered a proper job next term.',
       effects: [{ type: 'special', target: 'auto_qualify', value: 'next_term' }],
     },
   ],
@@ -197,44 +209,47 @@ export const DRIFTER: CareerDefinition = {
   mishaps: [
     {
       roll: 1,
-      description: 'Severely injured. Roll twice on the Injury table and take the lower result.',
+      description: 'Severely injured.',
       injury: true,
       forced: true,
       effects: [{ type: 'special', target: 'injury', value: 'severe' }],
     },
     {
       roll: 2,
-      description: 'You run afoul of a criminal gang or crime lord.',
+      description: 'You make a dangerous enemy.',
       forced: true,
       injury: false,
       spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'crime_lord' }],
     },
     {
       roll: 3,
-      description: 'You are severely injured. Roll on the Injury table.',
+      description: 'Injured.',
       forced: true,
       injury: true,
     },
     {
       roll: 4,
-      description:
-        'You are arrested and charged. Roll Streetwise or Advocate 8+ to avoid imprisonment.',
+      description: 'You are arrested.',
       forced: false,
       injury: false,
       effects: [{ type: 'special', target: 'check', value: 'Streetwise or Advocate 8+' }],
     },
     {
       roll: 5,
-      description: 'You are betrayed by a friend.',
+      description: 'Betrayed by someone you trusted.',
       forced: true,
       injury: false,
       spawns: [{ type: 'npc', relationship: 'enemy', required: true, template: 'betrayer' }],
     },
     {
       roll: 6,
-      description: 'Injured. Roll on the Injury table.',
+      description: 'Injured.',
       forced: true,
       injury: true,
     },
   ],
+};
+
+export const SRD_CAREERS: Record<string, CareerDefinition> = {
+  drifter: SRD_DRIFTER,
 };
