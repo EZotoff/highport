@@ -143,8 +143,8 @@ export function loadGameData(pack: GameDataPack): void {
  */
 export async function loadGameDataFromDirectory(dirPath: string): Promise<void> {
   // Dynamic import for Node.js fs (won't be bundled in browser)
-  const fs = await import('node:fs');
-  const path = await import('node:path');
+  const fs = await import(/* webpackIgnore: true */ 'node:fs');
+  const path = await import(/* webpackIgnore: true */ 'node:path');
 
   const readJsonFile = (filename: string): unknown | undefined => {
     const filePath = path.join(dirPath, filename);

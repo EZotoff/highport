@@ -2,6 +2,12 @@
   "name": "highport",
   "private": true,
   "license": "MIT",
+  "description": "Real-time collaborative campaign management for Traveller RPG — AI-powered, open-source, offline-capable",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ezotoff/highport.git"
+  },
+  "homepage": "https://github.com/ezotoff/highport",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
