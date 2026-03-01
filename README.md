@@ -8,24 +8,20 @@
 
 ---
 
-![Screenshot](docs/screenshot.png)
-
-### Graph Editor in Action
-
-![Demo](docs/demo.gif)
+![Screenshot](docs/screenshot-graph-populated.png)
 
 ### Screenshots
 
 <table>
   <tr>
-    <td><img src="docs/screenshot-campaigns.png" width="300" alt="Campaign Management" /></td>
-    <td><img src="docs/screenshot-resources.png" width="300" alt="Resources & Equipment" /></td>
-    <td><img src="docs/screenshot-chat.png" width="300" alt="AI Chat Assistant" /></td>
+    <td><img src="docs/screenshot-chargen-background.png" width="300" alt="Character Creation" /></td>
+    <td><img src="docs/screenshot-chargen-finalize.png" width="300" alt="Character Sheet" /></td>
+    <td><img src="docs/screenshot-graph-character.png" width="300" alt="Campaign Graph" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Campaign Management</b></td>
-    <td align="center"><b>Resources & Equipment</b></td>
-    <td align="center"><b>AI Chat Assistant</b></td>
+    <td align="center"><b>Character Creation</b></td>
+    <td align="center"><b>Character Sheet</b></td>
+    <td align="center"><b>Campaign Graph</b></td>
   </tr>
 </table>
 
@@ -139,13 +135,3 @@ Community input welcome. Open a GitHub Issue with the `feature-request` label to
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
-
----
-
-## Credits
-
-Built with AI-assisted engineering.
-
----
-
-**Future home**: When we gain traction, we will consider moving to a dedicated GitHub organization. For now, development happens at `ezotoff/highport`.
