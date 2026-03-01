@@ -73,3 +73,7 @@ venv/
 credentials.json
 service-account*.json
 *-credentials.json
+
+# AI tooling
+.sisyphus/
+.opencode/

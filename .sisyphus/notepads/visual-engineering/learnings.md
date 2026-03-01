@@ -1,4 +1,0 @@
-- Implemented `GlassPanel` and `THEME_HEX` in `BackgroundStep` component.
-- Used inline styles for fine-grained control over colors and interactions (hover/focus) to match the sci-fi aesthetic.
-- Replaced standard Tailwind `div` containers with `GlassPanel` components.
-- Added pulsing animation for loading state.

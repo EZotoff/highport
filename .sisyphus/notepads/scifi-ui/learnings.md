@@ -1,6 +1,0 @@
-- Replaced standard `input` with `SciFiInput` in `SessionJoinModal.tsx`.
-- `SciFiInput` is a custom component that provides a consistent sci-fi aesthetic.
-- Verified that `SciFiInput` extends standard input attributes, allowing for a drop-in replacement.
-- Replaced standard buttons with SciFiButton in TermResolutionStep.tsx
-- Used scifiVariant and theme props to match the BOLD aesthetic direction
-- Ensured complex button structures (multi-line) are preserved within SciFiButton

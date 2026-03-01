@@ -1,2 +1,0 @@
-- Replaced emoji icons with Lucide icons in EntityPoolPanel.tsx
-- Updated rendering logic to use getTypeIcon helper for better maintainability
