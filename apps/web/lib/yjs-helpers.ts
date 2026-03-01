@@ -163,3 +163,19 @@ export function updateNodeMetadata(
     ymap.set('metadata', updatedMetadata);
   }, 'node-metadata-update');
 }
+
+export function updateNodeLabel(doc: Y.Doc, nodeId: string, label: string): void {
+  const nodes = getNodesMap(doc);
+  const ymap = nodes.get(nodeId);
+  if (ymap) {
+    ymap.set('label', label);
+  }
+}
+
+export function updateNodeType(doc: Y.Doc, nodeId: string, type: string): void {
+  const nodes = getNodesMap(doc);
+  const ymap = nodes.get(nodeId);
+  if (ymap) {
+    ymap.set('type', type);
+  }
+}
