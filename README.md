@@ -10,6 +10,25 @@
 
 ![Screenshot](docs/screenshot.png)
 
+### Graph Editor in Action
+
+![Demo](docs/demo.gif)
+
+### Screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/screenshot-campaigns.png" width="300" alt="Campaign Management" /></td>
+    <td><img src="docs/screenshot-resources.png" width="300" alt="Resources & Equipment" /></td>
+    <td><img src="docs/screenshot-chat.png" width="300" alt="AI Chat Assistant" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Campaign Management</b></td>
+    <td align="center"><b>Resources & Equipment</b></td>
+    <td align="center"><b>AI Chat Assistant</b></td>
+  </tr>
+</table>
+
 ## Features
 
 - 🎮 **Real-time Collaboration** — Multiple users edit simultaneously with Yjs CRDT sync
