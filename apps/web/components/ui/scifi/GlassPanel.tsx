@@ -1,3 +1,4 @@
+'use client';
 import React, { forwardRef } from 'react';
 import { ThemeColor } from '@/lib/design-system/types';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';

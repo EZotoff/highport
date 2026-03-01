@@ -1,3 +1,4 @@
+'use client';
 import React, { forwardRef } from 'react';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { ThemeColor } from '@/lib/design-system/types';

@@ -157,7 +157,7 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
                       term={term}
                       career={{ id: term.careerId, name: careerName }}
                       onExpand={() => {
-                        console.log('Expand term:', term);
+                        // expand term handler placeholder
                       }}
                       onEntityClick={onEntityClick}
                     />

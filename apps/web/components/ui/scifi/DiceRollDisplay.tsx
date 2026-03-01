@@ -1,3 +1,4 @@
+'use client';
 import React, { memo } from 'react';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 

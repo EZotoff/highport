@@ -1,3 +1,4 @@
+'use client';
 import React, { useId, useRef, useState, useLayoutEffect } from 'react';
 
 interface SilkyChevronProps {

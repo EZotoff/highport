@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useReducedMotion } from '@/lib/design-system/animationUtils';

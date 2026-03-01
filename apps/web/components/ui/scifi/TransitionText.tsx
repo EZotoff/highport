@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { useTransitionController } from '@/lib/design-system/animationUtils';
 

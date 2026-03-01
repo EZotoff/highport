@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { User, MapPin, Box, Key } from 'lucide-react';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';

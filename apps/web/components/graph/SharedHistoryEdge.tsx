@@ -59,7 +59,7 @@ export default function SharedHistoryEdge({
         >
           <div
             className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-violet-500 text-[10px] text-white shadow-md transition-transform hover:scale-125"
-            onClick={() => console.log('Shared History Connection:', edgeData)}
+            onClick={() => {}}
           >
             🔗
           </div>
