@@ -1,8 +1,8 @@
 /**
  * Game Data Plugin Loader
  *
- * Provides a runtime data store for Mongoose Traveller 2e game data.
- * Falls back to minimal SRD content when no external data pack is installed.
+ * Provides a runtime data store for sci-fi TTRPG game data.
+ * Falls back to minimal starter content when no external data pack is installed.
  *
  * To load a full data pack, either:
  * 1. Call `loadGameData()` with a GameDataPack object at startup
@@ -122,7 +122,7 @@ export type CrbCareerId = string;
 
 /**
  * Load a complete game data pack, merging with current data.
- * This is the primary way to install a full Mongoose Traveller 2e data pack.
+ * This is the primary way to install a full game data pack.
  */
 export function loadGameData(pack: GameDataPack): void {
   if (pack.careers) {
@@ -249,7 +249,7 @@ export function getDataSource(): 'srd' | 'plugin' {
  */
 export function getDataStatusMessage(): string {
   if (_source === 'srd') {
-    return 'Using SRD fallback content. Install the full Mongoose Traveller 2e data pack for complete content.';
+    return 'Using starter content. Install a full game data pack for complete content.';
   }
   return `Game data loaded from plugin (${Object.keys(_careers).length} careers, ${Object.keys(_skills).length} skills).`;
 }

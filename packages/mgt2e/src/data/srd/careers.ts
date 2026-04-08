@@ -1,14 +1,11 @@
 /**
- * SRD Fallback Career Data
+ * Fallback Career Data
  *
- * Contains ONLY content from the Mongoose Traveller 2e System Reference Document
- * and free quickstart rules. This is the absolute minimum needed for the app to function.
- *
- * The Drifter career is included as it appears in the free quickstart rules
- * and is the most basic career (auto-qualifies, no commission).
+ * Minimal starter content for the app to function out of the box.
+ * This data provides a basic "Drifter" career as a starting point.
  *
  * For complete career data (Agent, Army, Citizen, Entertainer, Marines, Merchant,
- * Navy, Noble, Rogue, Scholar, Scout), install the full game data pack.
+ * Navy, Noble, Rogue, Scholar, Scout), install a full game data pack.
  *
  * See docs/game-data-format.md for the JSON import format.
  */
@@ -16,8 +13,8 @@
 import type { CareerDefinition } from '../../types/career.js';
 
 /**
- * Minimal Drifter career — SRD-safe content only.
- * Descriptions are kept generic to avoid reproducing copyrighted text.
+ * Minimal Drifter career — starter content.
+ * Descriptions are generic to avoid reproducing copyrighted text.
  */
 const SRD_DRIFTER: CareerDefinition = {
   id: 'drifter',

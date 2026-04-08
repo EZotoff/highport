@@ -1,14 +1,14 @@
 /**
- * SRD Fallback Skill Data
+ * Fallback Skill Data
  *
- * Contains skill names and basic metadata from the Mongoose Traveller 2e SRD.
+ * Contains skill names and basic metadata for a sci-fi TTRPG system.
  * Skill names and their categorizations (background, combat, psionic) are
- * game mechanics that are part of the SRD/OGL content.
+ * generic game mechanics.
  *
  * Specialty names are included as they are part of the core mechanics.
  * Detailed descriptions are NOT included — those require the full data pack.
  *
- * For complete skill data with descriptions, install the full game data pack.
+ * For complete skill data with descriptions, install a full game data pack.
  * See docs/game-data-format.md for the JSON import format.
  */
 

@@ -1,7 +1,7 @@
 import type { GraphNode } from '@highport/shared/types/graph';
 
 /**
- * Foundry VTT Actor structure for Mongoose Traveller 2e system
+ * Foundry VTT Actor structure for compatible TTRPG systems
  */
 export interface FoundryActor {
   _id: string;

@@ -1,6 +1,6 @@
 /**
  * Node type enumeration for graph entities
- * Follows Traveller 2e conventions with Highport extensions
+ * Follows character-generation graph conventions with Highport extensions
  */
 export type NodeType =
   | 'traveller'
