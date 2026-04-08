@@ -1,6 +1,6 @@
 # Highport
 
-> The bridge of your campaign. Real-time. Open-source. Traveller-aware.
+> The bridge of your campaign. Real-time. Open-source. Extensible.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
@@ -32,7 +32,7 @@
 - 🕸️ **Graph Visualization** — Interactive node graph for NPCs, locations, factions, and their relationships
 - 📊 **Campaign Management** — Create, manage, and organize your TTRPG campaigns
 - 💾 **Offline Support** — IndexedDB persistence works even when disconnected
-- 🔌 **Extensible Game Data** — Plugin import system with SRD fallback content
+- 🔌 **Extensible Game Data** — Plugin import system with starter content included
 
 ---
 
@@ -100,7 +100,7 @@ Highport uses a real-time CRDT sync engine powered by Yjs and Hocuspocus:
 
 Highport supports custom game system data through a plugin import system. Place JSON files in the data import folder, and the system will load your custom content.
 
-**SRD Fallback**: If no custom data is provided, the system automatically falls back to Mongoose Traveller 2e SRD content (skills, careers, equipment tables) so you can start playing immediately.
+**Starter Content**: A basic "Drifter" career and core skill list are included so you can start exploring immediately. For a full game system experience (additional careers, equipment tables, etc.), install a compatible game data pack.
 
 ---
 

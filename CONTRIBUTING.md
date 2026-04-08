@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Highport! We appreciate your time and effort.
 
-Highport is a real-time collaborative TTRPG campaign management platform for Mongoose Traveller 2e. It helps Game Masters and players collaborate on campaign notes, faction relationships, and character data with seamless sync between multiple users.
+Highport is a real-time collaborative TTRPG campaign management platform. It helps Game Masters and players collaborate on campaign notes, faction relationships, and character data with seamless sync between multiple users.
 
 Please read this guide before submitting issues or pull requests. It will save time for everyone involved.
 
@@ -36,7 +36,7 @@ Please read this guide before submitting issues or pull requests. It will save t
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/highport.git
+   git clone https://github.com/ezotoff/highport.git
    cd highport
    ```
 
@@ -80,8 +80,9 @@ The AI-powered "Ask Computer" feature requires the RAG service:
 cd apps/rag-service
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload
+pip install poetry
+poetry install
+poetry run uvicorn main:app --reload
 ```
 
 ---
