@@ -2,7 +2,7 @@
 
 > Generated: Tue Jan 27 2026
 > Branch: master
-> Overview: Real-time collaborative TTRPG campaign management platform (Mongoose Traveller 2e). Monorepo with Next.js frontend, Hocuspocus/Fastify backend, and Python RAG service.
+> Overview: Real-time collaborative TTRPG campaign management platform. Monorepo with Next.js frontend, Hocuspocus/Fastify backend, and Python RAG service.
 
 ## STRUCTURE
 
@@ -869,3 +869,26 @@ To create a verification plan for a new feature or subsystem:
 4. Add exploratory prompts for edge cases
 5. Define evidence requirements
 6. Run with: `/verify-app --plan=my-plan.md`
+
+---
+
+## DESIGN CONTEXT
+
+### Users
+
+Game Masters (GMs) and players managing sci-fi TTRPG campaigns. Their context is either live collaborative gameplay or focused campaign preparation. The core job to be done is creating, organizing, and cross-referencing complex game data (characters, NPCs, locations, events) in real-time without friction.
+
+### Brand Personality
+
+Immersive, thematic, and industrial. The application should feel like an authentic piece of in-universe technology—like operating a starship bridge console or a gritty, retro-sci-fi terminal.
+
+### Aesthetic Direction
+
+Retro-Sci-Fi / Industrial visual tone. Strictly Dark Mode. The interface should be data-dense but highly readable, leveraging Tailwind CSS and Radix UI. It should emphasize functional, high-contrast, terminal-like UI elements that fit a classic starship-console aesthetic.
+
+### Design Principles
+
+1. **Immersive Utility**: The interface must feel highly thematic while never compromising the speed and efficiency required during live tabletop play.
+2. **High-Contrast Dark Environment**: Rely strictly on dark mode aesthetics with stark, legible typography suited for dense information display.
+3. **Robust Data Organization**: Handle complex, interconnected TTRPG data (graphs, character sheets, logs) cleanly and interactively.
+4. **Authentic "Bridge" Feel**: Use UI components that evoke physical hardware, retro-future terminals, and industrial sci-fi displays without being overly skeuomorphic.

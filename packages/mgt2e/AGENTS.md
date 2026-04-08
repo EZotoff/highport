@@ -1,8 +1,8 @@
-# MGT2E (Mongoose Traveller 2e Data)
+# MGT2E (Sci-Fi TTRPG Game Data)
 
 ## OVERVIEW
 
-Static data tables and TypeScript types for Mongoose Traveller 2e character generation and gameplay. Used by web frontend for character creation workflows.
+Static data tables and TypeScript types for sci-fi TTRPG character generation and gameplay. Used by web frontend for character creation workflows.
 
 ## STRUCTURE
 

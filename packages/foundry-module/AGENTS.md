@@ -5,7 +5,7 @@
 
 ## OVERVIEW
 
-The Highport Foundry VTT module acts as a bridge between the campaign management platform and the virtual tabletop. It enables bidirectional synchronization of character data (Actors) between Highport and Foundry VTT, specifically designed for the **Mongoose Traveller 2e (mgt2e)** system.
+The Highport Foundry VTT module acts as a bridge between the campaign management platform and the virtual tabletop. It enables bidirectional synchronization of character data (Actors) between Highport and Foundry VTT, designed for compatible TTRPG systems (e.g., mgt2e).
 
 ## STRUCTURE
 
