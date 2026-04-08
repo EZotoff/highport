@@ -75,5 +75,15 @@ service-account*.json
 *-credentials.json
 
 # AI tooling
-.sisyphus/
 .opencode/
+
+# Playwright CLI artifacts
+.playwright-cli/
+
+# Sisyphus - ignore transient files, track plans and boulder
+.sisyphus/evidence/
+.sisyphus/drafts/
+.sisyphus/notepads/
+
+# RAG service data
+chroma_data/
