@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { generateId } from '@highport/shared';
 import { db } from '../db/client.js';
 import { campaigns, documents, documentUpdates } from '../db/schema.js';
+import { logger } from '../lib/logger.js';
 
 const HOCUSPOCUS_PORT = 3011;
 const DEFAULT_CAMPAIGN_ID = 'campaign_default';
@@ -111,21 +112,21 @@ export const hocuspocus = new Hocuspocus({
   },
 
   async onConnect({ documentName }) {
-    console.log(`[Hocuspocus] Client connected to document: ${documentName}`);
+    logger.info(`[Hocuspocus] Client connected to document: ${documentName}`);
   },
 
   async onDisconnect({ documentName, clientsCount }) {
-    console.log(`[Hocuspocus] Client disconnected from ${documentName}, ${clientsCount} remaining`);
+    logger.info(`[Hocuspocus] Client disconnected from ${documentName}, ${clientsCount} remaining`);
   },
 
   async onDestroy() {
-    console.log('[Hocuspocus] Server destroyed');
+    logger.info('[Hocuspocus] Server destroyed');
   },
 });
 
 export async function startHocuspocus(): Promise<void> {
   await hocuspocus.listen();
-  console.log(`[Hocuspocus] WebSocket server listening on port ${HOCUSPOCUS_PORT}`);
+  logger.info(`[Hocuspocus] WebSocket server listening on port ${HOCUSPOCUS_PORT}`);
 }
 
 export { HOCUSPOCUS_PORT };

@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import websocket, { type SocketStream } from '@fastify/websocket';
+import { logger } from '../lib/logger.js';
 
 type FoundrySocket = SocketStream['socket'];
 
@@ -49,21 +50,21 @@ export function broadcastNodeUpdate(
 }
 
 function handleFoundryMessage(socket: FoundrySocket, msg: FoundryMessage): void {
-  console.log(`[Foundry] Message received: ${msg.type}`);
+  logger.info(`[Foundry] Message received: ${msg.type}`);
 
   switch (msg.type) {
     case 'handshake':
-      console.log(`[Foundry] Handshake received. API key present: ${!!msg.apiKey}`);
+      logger.info(`[Foundry] Handshake received. API key present: ${!!msg.apiKey}`);
       socket.send(JSON.stringify({ type: 'handshake_ack', status: 'ok' }));
       break;
     case 'actor_update': {
       const payload = msg.payload as ActorUpdatePayload | undefined;
-      console.log(`[Foundry] Actor update: ${payload?.actorId}`, payload?.changes);
+      logger.info(`[Foundry] Actor update: ${payload?.actorId}`, payload?.changes);
       socket.send(JSON.stringify({ type: 'ack', requestId: msg.requestId }));
       break;
     }
     default:
-      console.log(`[Foundry] Unknown message type: ${msg.type}`);
+      logger.info(`[Foundry] Unknown message type: ${msg.type}`);
   }
 }
 
@@ -71,7 +72,7 @@ export async function registerFoundryRoutes(fastify: FastifyInstance): Promise<v
   await fastify.register(websocket);
 
   fastify.get('/foundry', { websocket: true }, (connection: SocketStream, _req) => {
-    console.log('[Foundry] Client connected');
+    logger.info('[Foundry] Client connected');
     const socket = connection.socket;
 
     foundryClients.add(socket);
@@ -81,17 +82,17 @@ export async function registerFoundryRoutes(fastify: FastifyInstance): Promise<v
         const msg: FoundryMessage = JSON.parse(data.toString());
         handleFoundryMessage(socket, msg);
       } catch (e) {
-        console.error('[Foundry] Failed to parse message:', e);
+        logger.error('[Foundry] Failed to parse message:', e);
       }
     });
 
     socket.on('close', () => {
-      console.log('[Foundry] Client disconnected');
+      logger.info('[Foundry] Client disconnected');
       foundryClients.delete(socket);
     });
 
     socket.on('error', (err) => {
-      console.error('[Foundry] Socket error:', err);
+      logger.error('[Foundry] Socket error:', err);
       foundryClients.delete(socket);
     });
   });

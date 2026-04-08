@@ -2,6 +2,7 @@ import { db } from '../db/client.js';
 import { conflictQueue } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import type { ConflictResolution, ConflictItem, ConflictContext, Resolution } from './types.js';
+import { logger } from '../lib/logger.js';
 
 const STAT_FIELDS = [
   'hp.current',
@@ -96,7 +97,7 @@ export async function resolveConflictInDb(
     })
     .where(eq(conflictQueue.id, conflictId));
 
-  console.log(`[Conflict] Resolved ${conflictId}: ${resolution} by ${resolvedBy}`);
+  logger.info(`[Conflict] Resolved ${conflictId}: ${resolution} by ${resolvedBy}`);
 }
 
 export async function dismissConflict(conflictId: string, resolvedBy: string): Promise<void> {

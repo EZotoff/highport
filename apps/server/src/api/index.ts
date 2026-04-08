@@ -3,10 +3,8 @@ import cors from '@fastify/cors';
 import { fetchDocumentState } from '../ws/hocuspocus.js';
 import { registerKnowledgeRoutes } from '../routes/knowledge.js';
 import { registerDocumentRoutes } from '../routes/documents.js';
-// import { registerFoundryRoutes } from '../routes/foundry.js'; // Deferred to roadmap — see ROADMAP.md
 import { registerConflictRoutes } from '../routes/conflicts.js';
 import { registerExportRoutes } from '../routes/export.js';
-// import { registerPortraitRoutes } from '../routes/portraits.js'; // Deferred to roadmap — see ROADMAP.md
 import { registerCampaignRoutes } from '../routes/campaigns.js';
 import { registerAuthRoutes } from '../routes/auth.js';
 
@@ -21,10 +19,8 @@ export async function startFastify(): Promise<void> {
 
   await registerKnowledgeRoutes(fastify);
   await registerDocumentRoutes(fastify);
-  // await registerFoundryRoutes(fastify); // Deferred to roadmap — see ROADMAP.md
   await registerConflictRoutes(fastify);
   await registerExportRoutes(fastify);
-  // await registerPortraitRoutes(fastify); // Deferred to roadmap — see ROADMAP.md
   await registerCampaignRoutes(fastify);
   await registerAuthRoutes(fastify);
 
@@ -51,7 +47,7 @@ export async function startFastify(): Promise<void> {
 
   try {
     await fastify.listen({ port: FASTIFY_PORT, host: '0.0.0.0' });
-    console.log(`[Fastify] REST API listening on port ${FASTIFY_PORT}`);
+    fastify.log.info(`[Fastify] REST API listening on port ${FASTIFY_PORT}`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

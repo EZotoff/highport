@@ -1,7 +1,8 @@
 import * as Y from 'yjs';
-import { eq, lt } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db, sql } from '../db/client.js';
 import { documents, documentUpdates } from '../db/schema.js';
+import { logger } from '../lib/logger.js';
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000;
 const COMPACTION_INTERVAL_MS = FIVE_MINUTES_MS;
@@ -78,9 +79,9 @@ async function runCompactionCycle(): Promise<void> {
     if (updateCount.length > MIN_UPDATES_BEFORE_COMPACTION) {
       try {
         await compactDocument(docId);
-        console.log(`[Compaction] Compacted document: ${docId}`);
+        logger.info(`[Compaction] Compacted document: ${docId}`);
       } catch (error) {
-        console.error(`[Compaction] Error compacting ${docId}:`, error);
+        logger.error(`[Compaction] Error compacting ${docId}:`, error);
       }
     }
   }
@@ -95,17 +96,17 @@ export function startCompactionJob(): void {
 
   compactionTimer = setInterval(() => {
     runCompactionCycle().catch((err) => {
-      console.error('[Compaction] Cycle error:', err);
+      logger.error('[Compaction] Cycle error:', err);
     });
   }, COMPACTION_INTERVAL_MS);
 
-  console.log(`[Compaction] Started job, running every ${COMPACTION_INTERVAL_MS / 1000}s`);
+  logger.info(`[Compaction] Started job, running every ${COMPACTION_INTERVAL_MS / 1000}s`);
 }
 
 export function stopCompactionJob(): void {
   if (compactionTimer) {
     clearInterval(compactionTimer);
     compactionTimer = null;
-    console.log('[Compaction] Stopped job');
+    logger.info('[Compaction] Stopped job');
   }
 }

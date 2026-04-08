@@ -4,6 +4,7 @@ import { db } from '../db/client.js';
 import { conflictQueue } from '../db/schema.js';
 import { generateId } from '@highport/shared/utils/id';
 import type { ConflictResolution } from '../conflicts/types.js';
+import { logger } from '../lib/logger.js';
 
 interface IdParams {
   id: string;
@@ -117,11 +118,8 @@ export async function registerConflictRoutes(fastify: FastifyInstance): Promise<
             ? existing.foundryValue
             : existing.highportValue;
 
-      console.log(
-        `[Conflict] Resolved ${id}: ${resolution}`,
-        existing.fieldPath,
-        '→',
-        resolvedValue,
+      fastify.log.info(
+        `[Conflict] Resolved ${id}: ${resolution} ${existing.fieldPath} → ${JSON.stringify(resolvedValue)}`,
       );
 
       return {
@@ -161,7 +159,7 @@ export async function registerConflictRoutes(fastify: FastifyInstance): Promise<
       })
       .where(eq(conflictQueue.id, id));
 
-    console.log(`[Conflict] Dismissed ${id}:`, existing.fieldPath);
+    fastify.log.info(`[Conflict] Dismissed ${id}: ${existing.fieldPath}`);
 
     return { status: 'dismissed' };
   });
@@ -188,7 +186,7 @@ export async function queueConflict(
     status: 'pending',
   });
 
-  console.log(`[Conflict] Queued ${id}:`, fieldPath, {
+  logger.info(`[Conflict] Queued ${id}: ${fieldPath}`, {
     foundryValue,
     highportValue,
   });

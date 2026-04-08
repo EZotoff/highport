@@ -1,22 +1,23 @@
 import { startHocuspocus, HOCUSPOCUS_PORT } from './ws/hocuspocus.js';
 import { startFastify, FASTIFY_PORT } from './api/index.js';
 import { startCompactionJob } from './jobs/compaction.js';
+import { logger } from './lib/logger.js';
 
 async function main() {
-  console.log('[Highport Server] Starting...');
+  logger.info('[Highport Server] Starting...');
 
-  console.log(`[Hocuspocus] Starting WebSocket server on port ${HOCUSPOCUS_PORT}...`);
+  logger.info(`[Hocuspocus] Starting WebSocket server on port ${HOCUSPOCUS_PORT}...`);
   await startHocuspocus();
 
-  console.log(`[Fastify] Starting REST API on port ${FASTIFY_PORT}...`);
+  logger.info(`[Fastify] Starting REST API on port ${FASTIFY_PORT}...`);
   await startFastify();
 
   startCompactionJob();
 
-  console.log('[Highport Server] All servers started successfully');
+  logger.info('[Highport Server] All servers started successfully');
 }
 
 main().catch((err) => {
-  console.error('[Highport Server] Fatal error:', err);
+  logger.error('[Highport Server] Fatal error:', err);
   process.exit(1);
 });
