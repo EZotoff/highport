@@ -13,6 +13,7 @@ import {
 } from '../../../lib/chargen/finalize';
 import { getRankInfo } from '../../../lib/chargen/term-resolution';
 import { GlassPanel, SciFiButton, SciFiInput, SkillBadge } from '@/components/ui/scifi';
+import BentoGrid from '../BentoGrid';
 import { PortraitGenerationProgress } from '@/components/portrait/PortraitGenerationProgress';
 import { Coins, Gift, UserCheck, Users, UserX, Skull, Circle } from 'lucide-react';
 import {
@@ -106,7 +107,6 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
 
   const handleCreateCharacter = async () => {
     if (!name.trim()) {
-      alert('Please enter a character name');
       return;
     }
 
@@ -143,7 +143,7 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
       career: careerType ? { career_type: careerType } : undefined,
     };
 
-    const appearanceText = `Age ${character.age}. ${career?.name || 'Traveller'} background.`;
+    const appearanceText = `Age ${character.age}. ${career?.name || 'Character'} background.`;
 
     const result = await generatePortrait({
       campaignId: session.campaignId,
@@ -169,40 +169,41 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
       <GlassPanel theme="cyan" variant="default" className="p-6">
         <h2 className="text-2xl font-bold text-heading mb-6 font-display">Character Complete</h2>
 
-        <div className="rounded-lg p-4 mb-6" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
-          <div className="mb-4">
-            <label htmlFor="finalize-character-name" className="block text-sm mb-1 text-subtle">
-              Character Name
-            </label>
-            <SciFiInput
-              id="finalize-character-name"
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="Enter character name..."
-              theme="cyan"
-              className="text-xl font-bold"
-            />
+        <BentoGrid minWidth="280px">
+          <div>
+            <div className="mb-4">
+              <label htmlFor="finalize-character-name" className="block text-sm mb-1 text-subtle">
+                Character Name
+              </label>
+              <SciFiInput
+                id="finalize-character-name"
+                value={name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="Enter character name..."
+                theme="cyan"
+                className="text-xl font-bold"
+              />
+            </div>
+
+            <div className="flex justify-between text-label">
+              <span>
+                Age: <span className="text-heading">{character.age}</span>
+              </span>
+              <span>
+                {career?.name} ({character.terms.length} term
+                {character.terms.length !== 1 ? 's' : ''})
+                {rankInfo && <span className="text-subtle"> • {rankInfo.title}</span>}
+              </span>
+            </div>
           </div>
 
-          <div className="flex justify-between text-label">
-            <span>
-              Age: <span className="text-heading">{character.age}</span>
-            </span>
-            <span>
-              {career?.name} ({character.terms.length} term{character.terms.length !== 1 ? 's' : ''}
-              ){rankInfo && <span className="text-subtle"> • {rankInfo.title}</span>}
-            </span>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-lg font-bold text-heading mb-3 font-display">Portrait</h3>
-          <div className="rounded p-4" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
+          <div>
+            <h3 className="text-lg font-bold text-heading mb-3 font-display">Portrait</h3>
             {portrait ? (
               <div className="flex items-center gap-4">
                 <img
                   src={portrait.image_url || ''}
-                  alt={`Portrait of ${name || 'Traveller'}`}
+                  alt={`Portrait of ${name || 'Character'}`}
                   className="w-24 h-24 rounded-lg object-cover border border-zinc-700"
                 />
                 <SciFiButton
@@ -260,7 +261,7 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
               </div>
             )}
           </div>
-        </div>
+        </BentoGrid>
 
         {session?.campaignId && (
           <>
@@ -293,16 +294,12 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
 
         <div className="mb-6">
           <h3 className="text-lg font-bold text-heading mb-3 font-display">Characteristics</h3>
-          <div className="grid grid-cols-3 gap-3">
+          <BentoGrid minWidth="140px">
             {CHARACTERISTIC_ORDER.map((stat) => {
               const value = character.characteristics[stat] || 0;
               const dm = getCharacteristicModifier(value);
               return (
-                <div
-                  key={stat}
-                  className="rounded p-3 text-center"
-                  style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
-                >
+                <div key={stat} className="text-center">
                   <div className="text-xs mb-1 text-subtle">{stat}</div>
                   <div className="text-2xl font-bold text-heading">{value}</div>
                   <div style={{ color: dm >= 0 ? '#22d3ee' : '#f87171' }} className="text-sm">
@@ -312,34 +309,36 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
                 </div>
               );
             })}
-          </div>
+          </BentoGrid>
         </div>
 
         <div className="mb-6">
           <h3 className="text-lg font-bold text-heading mb-3 font-display">Skills</h3>
-          <div className="rounded p-4" style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}>
-            {trainedSkills.length > 0 ? (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {trainedSkills.map((skillStr, i) => {
-                  const lastSpaceIndex = skillStr.lastIndexOf(' ');
-                  let skillName = skillStr;
-                  let skillLevel = 0;
-                  if (lastSpaceIndex !== -1) {
-                    const levelPart = skillStr.substring(lastSpaceIndex + 1);
-                    if (!isNaN(parseInt(levelPart))) {
-                      skillName = skillStr.substring(0, lastSpaceIndex);
-                      skillLevel = parseInt(levelPart);
+          <BentoGrid>
+            <div>
+              {trainedSkills.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {trainedSkills.map((skillStr, i) => {
+                    const lastSpaceIndex = skillStr.lastIndexOf(' ');
+                    let skillName = skillStr;
+                    let skillLevel = 0;
+                    if (lastSpaceIndex !== -1) {
+                      const levelPart = skillStr.substring(lastSpaceIndex + 1);
+                      if (!isNaN(parseInt(levelPart))) {
+                        skillName = skillStr.substring(0, lastSpaceIndex);
+                        skillLevel = parseInt(levelPart);
+                      }
                     }
-                  }
 
-                  return (
-                    <SkillBadge key={i} skill={skillName} level={skillLevel} theme="emerald" />
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="mb-3 text-subtle">No trained skills</div>
-            )}
+                    return (
+                      <SkillBadge key={i} skill={skillName} level={skillLevel} theme="emerald" />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-subtle">No trained skills</div>
+              )}
+            </div>
 
             {level0Skills.length > 0 && (
               <div>
@@ -351,51 +350,49 @@ export default function FinalizeStep({ characterId }: FinalizeStepProps) {
                 </div>
               </div>
             )}
-          </div>
+          </BentoGrid>
         </div>
 
         <div className="mb-6">
           <h3 className="text-lg font-bold text-heading mb-3 font-display">Benefits</h3>
-          <div
-            className="rounded p-4 space-y-2"
-            style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
-          >
-            <div className="flex items-center gap-2">
-              <Coins className="w-4 h-4 text-amber-400" />
-              <span className="text-heading">Cr{character.credits.toLocaleString()}</span>
-            </div>
-            {character.benefits.map((benefit, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Gift className="w-4 h-4 text-cyan-400" />
-                <span className="text-heading">{benefit}</span>
+          <BentoGrid>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4 text-amber-400" />
+                <span className="text-heading">Cr{character.credits.toLocaleString()}</span>
               </div>
-            ))}
-            {character.benefits.length === 0 && character.credits === 0 && (
-              <div className="text-subtle">No benefits accumulated</div>
-            )}
-          </div>
+              {character.benefits.map((benefit, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-cyan-400" />
+                  <span className="text-heading">{benefit}</span>
+                </div>
+              ))}
+              {character.benefits.length === 0 && character.credits === 0 && (
+                <div className="text-subtle">No benefits accumulated</div>
+              )}
+            </div>
+          </BentoGrid>
         </div>
 
         {connections.length > 0 && (
           <div className="mb-6">
             <h3 className="text-lg font-bold text-heading mb-3 font-display">Connections</h3>
-            <div
-              className="rounded p-4 space-y-2"
-              style={{ backgroundColor: 'rgba(10, 13, 20, 0.8)' }}
-            >
-              {connections.map((conn, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span>
-                    {RELATIONSHIP_ICONS[conn.relationship || ''] || (
-                      <Circle className="w-4 h-4 text-subtle" />
-                    )}
-                  </span>
-                  <span className="capitalize text-subtle">{conn.relationship}:</span>
-                  <span className="text-heading">{conn.name}</span>
-                  <span className="text-sm text-subtle">(Term {conn.termNumber})</span>
-                </div>
-              ))}
-            </div>
+            <BentoGrid>
+              <div className="space-y-2">
+                {connections.map((conn, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span>
+                      {RELATIONSHIP_ICONS[conn.relationship || ''] || (
+                        <Circle className="w-4 h-4 text-subtle" />
+                      )}
+                    </span>
+                    <span className="capitalize text-subtle">{conn.relationship}:</span>
+                    <span className="text-heading">{conn.name}</span>
+                    <span className="text-sm text-subtle">(Term {conn.termNumber})</span>
+                  </div>
+                ))}
+              </div>
+            </BentoGrid>
           </div>
         )}
       </GlassPanel>

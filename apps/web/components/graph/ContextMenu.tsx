@@ -9,9 +9,18 @@ interface ContextMenuProps {
   onClose: () => void;
   onAction: (action: 'edit' | 'delete' | 'lock' | 'unlock' | 'hide' | 'unhide') => void;
   isGM: boolean;
+  canEdit?: boolean;
 }
 
-export function ContextMenu({ x, y, node, onClose, onAction, isGM }: ContextMenuProps) {
+export function ContextMenu({
+  x,
+  y,
+  node,
+  onClose,
+  onAction,
+  isGM,
+  canEdit = false,
+}: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,16 +53,20 @@ export function ContextMenu({ x, y, node, onClose, onAction, isGM }: ContextMenu
         {node.label}
       </div>
 
-      <button
-        onClick={() => onAction('edit')}
-        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-      >
-        <Edit className="w-4 h-4" /> Edit
-      </button>
+      {canEdit && (
+        <button
+          type="button"
+          onClick={() => onAction('edit')}
+          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+        >
+          <Edit className="w-4 h-4" /> Edit
+        </button>
+      )}
 
       {isGM && (
         <>
           <button
+            type="button"
             onClick={() => onAction(node.locked ? 'unlock' : 'lock')}
             className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
           >
@@ -62,6 +75,7 @@ export function ContextMenu({ x, y, node, onClose, onAction, isGM }: ContextMenu
           </button>
 
           <button
+            type="button"
             onClick={() => onAction(node.hidden ? 'unhide' : 'hide')}
             className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
           >
@@ -74,6 +88,7 @@ export function ContextMenu({ x, y, node, onClose, onAction, isGM }: ContextMenu
       <div className="h-px bg-gray-100 my-1" />
 
       <button
+        type="button"
         onClick={() => onAction('delete')}
         className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
       >

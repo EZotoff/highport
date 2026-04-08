@@ -135,7 +135,7 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            placeholder="pilot@highport.space"
+            placeholder="pilot@example.com"
             className="w-full px-4 py-3 rounded-lg border text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-200"
             style={{
               background: 'var(--star-metal)',

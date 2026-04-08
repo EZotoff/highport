@@ -17,6 +17,7 @@ import { getBackgroundSkills, getCharacteristicModifier } from '@highport/mgt2e'
 import type { CharacteristicCode } from '@highport/mgt2e';
 import { GlassPanel, SciFiButton, SciFiInput, SciFiSelect } from '@/components/ui/scifi';
 import { THEME_HEX } from '../../../lib/design-system/themeUtils';
+import BentoGrid from '../BentoGrid';
 
 interface BackgroundStepProps {
   characterId: string | null;
@@ -98,13 +99,18 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
   if (!characterId) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8">
-        <GlassPanel theme="cyan" variant="elevated" className="max-w-md p-8 text-center space-y-6">
+        <GlassPanel
+          theme="cyan"
+          variant="elevated"
+          glint
+          className="max-w-md p-8 text-center space-y-6"
+        >
           <h2 className="text-2xl font-bold text-heading font-display">
             Start Character Generation
           </h2>
           <p className="text-label">
-            Create a new Traveller character. You'll roll for characteristics, choose a background,
-            and embark on a career.
+            Create a new character. You'll roll for characteristics, choose a background, and embark
+            on a career.
           </p>
           <SciFiButton theme="cyan" glow onClick={handleCreate}>
             Create New Character
@@ -139,15 +145,15 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
         />
       </GlassPanel>
 
-      <GlassPanel theme="cyan" variant="bordered" className="p-6 rounded-lg">
-        <div className="flex justify-between items-center mb-6">
+      <div>
+        <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-heading font-display">Characteristics</h3>
           <SciFiButton scifiVariant="outline" theme="violet" onClick={handleReroll}>
             Re-roll All
           </SciFiButton>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <BentoGrid minWidth="140px" className="mb-6">
           {STAT_ORDER.map((stat) => {
             const val = character.characteristics[stat] || 0;
             const mod = getCharacteristicModifier(val);
@@ -155,14 +161,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
             const modColor = mod >= 0 ? '#22d3ee' : '#f87171';
 
             return (
-              <div
-                key={stat}
-                className="rounded p-3 text-center transition-all duration-300"
-                style={{
-                  backgroundColor: 'rgba(10, 13, 20, 0.8)',
-                  border: `1px solid ${THEME_HEX.cyan}30`,
-                }}
-              >
+              <div key={stat} className="text-center">
                 <div className="text-xs font-bold text-subtle mb-1">{stat}</div>
                 <div className="text-2xl font-mono text-heading font-bold">{val}</div>
                 <div className="text-sm font-bold" style={{ color: modColor }}>
@@ -171,47 +170,43 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
               </div>
             );
           })}
-        </div>
+        </BentoGrid>
 
-        <div
-          className="flex flex-col sm:flex-row items-center gap-4 p-3 rounded"
-          style={{
-            backgroundColor: 'rgba(10, 13, 20, 0.6)',
-            border: '1px solid rgba(148, 163, 184, 0.1)',
-          }}
-        >
-          <span className="text-sm text-subtle">Swap:</span>
-          <div className="w-24">
-            <SciFiSelect
-              value={swap1}
-              onValueChange={(val) => setSwap1(val as CharacteristicCode)}
-              options={STAT_ORDER.map((s) => ({ value: s, label: s }))}
-              theme="cyan"
-            />
+        <GlassPanel variant="subtle" className="p-3">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <span className="text-sm text-subtle">Swap:</span>
+            <div className="w-24">
+              <SciFiSelect
+                value={swap1}
+                onValueChange={(val) => setSwap1(val as CharacteristicCode)}
+                options={STAT_ORDER.map((s) => ({ value: s, label: s }))}
+                theme="cyan"
+              />
+            </div>
+            <span className="text-subtle">⟷</span>
+            <div className="w-24">
+              <SciFiSelect
+                value={swap2}
+                onValueChange={(val) => setSwap2(val as CharacteristicCode)}
+                options={STAT_ORDER.map((s) => ({ value: s, label: s }))}
+                theme="cyan"
+              />
+            </div>
+            <div className="ml-auto">
+              <SciFiButton
+                scifiVariant="outline"
+                theme="cyan"
+                onClick={handleSwap}
+                disabled={swap1 === swap2}
+              >
+                Swap
+              </SciFiButton>
+            </div>
           </div>
-          <span className="text-subtle">⟷</span>
-          <div className="w-24">
-            <SciFiSelect
-              value={swap2}
-              onValueChange={(val) => setSwap2(val as CharacteristicCode)}
-              options={STAT_ORDER.map((s) => ({ value: s, label: s }))}
-              theme="cyan"
-            />
-          </div>
-          <div className="ml-auto">
-            <SciFiButton
-              scifiVariant="outline"
-              theme="cyan"
-              onClick={handleSwap}
-              disabled={swap1 === swap2}
-            >
-              Swap
-            </SciFiButton>
-          </div>
-        </div>
-      </GlassPanel>
+        </GlassPanel>
+      </div>
 
-      <GlassPanel theme="violet" variant="bordered" className="p-6 rounded-lg">
+      <div>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-heading font-display">Background Skills</h3>
           <span
@@ -225,7 +220,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
           Choose 3 skills from your background. These starts at Level 0.
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <BentoGrid minWidth="160px" gap={12}>
           {bgSkills.map((skill) => {
             const isSelected = character.backgroundSkills?.includes(skill.id);
             const isDisabled = !isSelected && selectedCount >= 3;
@@ -233,12 +228,12 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
             return (
               <label
                 key={skill.id}
-                className={`flex items-center gap-2 p-2 rounded transition-all select-none ${
-                  isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                className={`flex items-center gap-2 cursor-pointer select-none ${
+                  isDisabled ? 'opacity-50 cursor-not-allowed' : ''
                 } ${!isSelected && !isDisabled ? 'hover:bg-white/5' : ''}`}
                 style={{
                   backgroundColor: isSelected ? `${THEME_HEX.violet}20` : undefined,
-                  border: `1px solid ${isSelected ? THEME_HEX.violet : 'transparent'}`,
+                  borderRadius: '0.5rem',
                   boxShadow: isSelected ? `0 0 10px ${THEME_HEX.violet}20` : 'none',
                 }}
               >
@@ -255,8 +250,8 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
               </label>
             );
           })}
-        </div>
-      </GlassPanel>
+        </BentoGrid>
+      </div>
     </div>
   );
 }

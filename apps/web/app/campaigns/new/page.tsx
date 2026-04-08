@@ -87,7 +87,7 @@ export default function NewCampaignPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <SciFiInput
               label="Campaign Name"
-              placeholder="e.g. Pirates of Drinax"
+              placeholder="e.g. Frontier Trade Network"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required

@@ -8,7 +8,7 @@ const navLinks = [
   {
     href: '/chargen',
     label: 'Character Gen',
-    description: 'Create Traveller characters',
+    description: 'Create character records',
     icon: '👤',
   },
   {
@@ -50,7 +50,7 @@ export default function Home() {
           className="text-lg md:text-xl mb-12 font-light tracking-wide"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Campaign Management for Mongoose Traveller 2e
+          Campaign Management for Sci-Fi TTRPGs
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
@@ -101,7 +101,7 @@ export default function Home() {
           className="mt-16 text-xs tracking-widest uppercase"
           style={{ color: 'var(--text-muted)' }}
         >
-          Traveller is © Mongoose Publishing
+          Open-source campaign management
         </p>
       </div>
     </main>

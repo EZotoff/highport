@@ -336,8 +336,6 @@ function GraphCanvasContent() {
         updateNodeLock(doc, contextMenu.nodeId, action === 'lock');
       } else if (action === 'hide' || action === 'unhide') {
         updateNodeVisibility(doc, contextMenu.nodeId, action === 'hide');
-      } else if (action === 'edit') {
-        alert(`Edit node: ${node.label}`);
       }
 
       closeContextMenu();
@@ -433,6 +431,7 @@ function GraphCanvasContent() {
           onClose={closeContextMenu}
           onAction={handleContextAction}
           isGM={isGM}
+          canEdit={false}
         />
       )}
     </div>

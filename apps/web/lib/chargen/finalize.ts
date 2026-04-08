@@ -34,7 +34,7 @@ export function createCharacterNode(character: ChargenCharacter): FinalizedChara
   const node: GraphNode = {
     id: nodeId,
     type: 'traveller', // Player characters use 'traveller' type
-    label: character.name || 'Unnamed Traveller',
+    label: character.name || 'Unnamed Character',
     position: { x: 0, y: 0 },
     metadata: {
       description: buildCharacterDescription(character),

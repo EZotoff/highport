@@ -141,8 +141,8 @@ export default function CampaignsPage() {
               No campaigns yet
             </h2>
             <p className="mb-8 max-w-md text-center" style={{ color: 'var(--text-secondary)' }}>
-              Create your first campaign to start building your Traveller universe — map factions,
-              track NPCs, and manage your story.
+              Create your first campaign to start building your setting — map factions, track NPCs,
+              and manage your story.
             </p>
             <SciFiButton
               theme="cyan"

@@ -26,7 +26,6 @@ export const ANIMATION_TIMING = {
   GUARDIAN_CYCLE: 3500,
   SHEEN_DURATION: 3, // seconds (CSS animation)
 
-  // Traveller-Specific Timings
   TERM_CARD_ENTER: 800,
   EDGE_FLOW_CYCLE: 2500,
   NODE_PULSE_CYCLE: 4000,
