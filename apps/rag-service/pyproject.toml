@@ -3,6 +3,7 @@ name = "highport-rag-service"
 version = "0.1.0"
 description = "RAG service for Highport TTRPG campaign management"
 authors = ["Highport Team"]
+license = "MIT"
 readme = "README.md"
 packages = [{include = "providers"}, {include = "services"}, {include = "mocks"}]
 
