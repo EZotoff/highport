@@ -66,7 +66,7 @@ class NarrativeGenerator:
         else:
             prior_events_text = "No prior events recorded."
 
-        prompt = f"""You are a narrator for the Traveller tabletop RPG. Generate a dramatic description for a career event.
+        prompt = f"""You are a narrator for a gritty sci-fi tabletop RPG. Generate a dramatic description for a career event.
 
 ## Context
 - Career: {request.career}
@@ -79,7 +79,7 @@ class NarrativeGenerator:
 ## Instructions
 {VERBOSITY_INSTRUCTIONS[request.verbosity]}
 
-Write in second person ("You..."). Set the scene in the gritty, realistic sci-fi universe of Traveller.
+Write in second person ("You..."). Set the scene in a gritty, grounded sci-fi setting.
 If the event mentions gaining an ally, contact, rival, or enemy, briefly describe who they might be.
 
 ## Response Format
@@ -138,7 +138,7 @@ Only include suggested_entities if the event implies new relationships. Keep the
         else:
             existing_info = "None provided."
 
-        prompt = f"""You are a character designer for the Traveller tabletop RPG. Generate details for an NPC.
+        prompt = f"""You are a character designer for a gritty sci-fi tabletop RPG. Generate details for an NPC.
 
 ## Context
 - NPC Type: {request.npc_type} (their relationship to the player character)
@@ -150,7 +150,7 @@ Only include suggested_entities if the event implies new relationships. Keep the
 ## Instructions
 {VERBOSITY_INSTRUCTIONS[request.verbosity]}
 
-Create a believable NPC for the gritty sci-fi Traveller universe. Consider their role as {request.npc_type}.
+Create a believable NPC for a gritty sci-fi setting. Consider their role as {request.npc_type}.
 
 ## Response Format
 Respond with a JSON object:
@@ -213,7 +213,7 @@ Include only the fields appropriate for the verbosity level:
             for e in request.entities
         )
 
-        prompt = f"""You are a story consultant for the Traveller tabletop RPG. Suggest meaningful connections between entities.
+        prompt = f"""You are a story consultant for a gritty sci-fi tabletop RPG. Suggest meaningful connections between entities.
 
 ## Character
 - Name: {request.character.name}

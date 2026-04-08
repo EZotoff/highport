@@ -90,7 +90,7 @@ class PortraitGenerator:
         else:
             characteristics_text = "None provided."
 
-        prompt = f"""You are a character visual designer for the Traveller tabletop RPG. Extract structured portrait tags.
+        prompt = f"""You are a character visual designer for a gritty sci-fi tabletop RPG. Extract structured portrait tags.
 
 ## Context
 - Entity Type: {request.entity_type.value}
@@ -192,7 +192,7 @@ def build_prompt(
     rendering = tag_data.get("rendering", {})
 
     parts = [
-        "Create a Traveller RPG character portrait.",
+        "Create a sci-fi tabletop RPG character portrait.",
         f"Entity: {story.get('entity_type', 'npc')}",
     ]
 
