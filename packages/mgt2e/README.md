@@ -6,7 +6,7 @@ Mongoose Traveller 2e game-data plugin for Highport. Provides career, skill, and
 
 ## Subsystem Status
 
-v0.1 — stable. Loader and types are public API; starter content is intentionally minimal.
+v0.1, stable. Loader and types are public API; starter content is intentionally minimal.
 
 ## Quick Links
 

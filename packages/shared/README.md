@@ -6,7 +6,7 @@ Shared TypeScript types, utilities, and constants used across the Highport monor
 
 ## Subsystem Status
 
-v0.1 — stable. Types are kept in sync as the web and server evolve.
+v0.1, stable. Types are kept in sync as the web and server evolve.
 
 ## Quick Links
 
