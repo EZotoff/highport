@@ -1,9 +1,8 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - '5432:5432'
+      - '18123:5432'
     environment:
       POSTGRES_USER: highport
       POSTGRES_PASSWORD: highport_dev
