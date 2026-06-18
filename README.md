@@ -54,7 +54,8 @@ docker compose up -d
 cp apps/web/.env.example apps/web/.env
 cp apps/server/.env.example apps/server/.env
 cp apps/rag-service/.env.example apps/rag-service/.env
-npx auth secret >> apps/web/.env   # generates NEXTAUTH_SECRET
+# Generate AUTH_SECRET (NextAuth v5 requires a random base64 secret):
+node -e "console.log('AUTH_SECRET=' + require('crypto').randomBytes(32).toString('base64'))" >> apps/web/.env
 
 # 5. Run database migrations
 pnpm --filter server db:migrate
