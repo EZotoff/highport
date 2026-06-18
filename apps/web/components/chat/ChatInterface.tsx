@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { streamQuery } from '../../lib/rag-client';
+import { streamQuery, RagUnavailableError } from '../../lib/rag-client';
 import { ChatMessage } from './ChatMessage';
+import { RagUnavailableNotice } from './RagUnavailableNotice';
 import { useToast } from '../ui/ToastContext';
 import { Send, Loader2 } from 'lucide-react';
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'notice';
   content: string;
 }
 
@@ -34,7 +35,10 @@ export function ChatInterface() {
     setIsLoading(true);
 
     const userMsgId = Date.now().toString();
-    setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: userQuery }]);
+    setMessages((prev) => [
+      ...prev.filter((msg) => msg.role !== 'notice'),
+      { id: userMsgId, role: 'user', content: userQuery },
+    ]);
 
     const assistantMsgId = (Date.now() + 1).toString();
     setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', content: '' }]);
@@ -57,10 +61,20 @@ export function ChatInterface() {
         },
         (error) => {
           console.error('Chat error:', error);
-          showToast('Failed to get response', 'error');
           setIsLoading(false);
-          if (!fullResponse) {
-            setMessages((prev) => prev.filter((msg) => msg.id !== assistantMsgId));
+          if (error instanceof RagUnavailableError) {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMsgId
+                  ? { ...msg, role: 'notice' as const, content: 'rag-unavailable' }
+                  : msg,
+              ),
+            );
+          } else {
+            showToast('Failed to get response', 'error');
+            if (!fullResponse) {
+              setMessages((prev) => prev.filter((msg) => msg.id !== assistantMsgId));
+            }
           }
         },
       );
@@ -84,9 +98,12 @@ export function ChatInterface() {
           </div>
         )}
 
-        {messages.map((msg) => (
-          <ChatMessage key={msg.id} role={msg.role} content={msg.content} />
-        ))}
+        {messages.map((msg) => {
+          if (msg.role === 'notice') {
+            return <RagUnavailableNotice key={msg.id} />;
+          }
+          return <ChatMessage key={msg.id} role={msg.role} content={msg.content} />;
+        })}
 
         {isLoading && messages[messages.length - 1]?.role === 'user' && (
           <div className="flex justify-start w-full mb-4">

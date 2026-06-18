@@ -1,6 +1,13 @@
 import { getOrCreateUser, getActiveCharacter } from './identity';
 
-const RAG_URL = process.env.NEXT_PUBLIC_RAG_URL || 'http://localhost:8000';
+const RAG_URL = process.env.NEXT_PUBLIC_RAG_URL || 'http://localhost:18124';
+
+export class RagUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RagUnavailableError';
+  }
+}
 
 export async function streamQuery(
   query: string,
@@ -25,6 +32,9 @@ export async function streamQuery(
     });
 
     if (!response.ok) {
+      if (response.status >= 500) {
+        throw new RagUnavailableError(`RAG service unavailable (${response.status})`);
+      }
       throw new Error(`Query failed: ${response.status}`);
     }
 
@@ -64,6 +74,10 @@ export async function streamQuery(
     }
     onDone();
   } catch (error) {
-    onError(error as Error);
+    if (error instanceof TypeError) {
+      onError(new RagUnavailableError('RAG service unreachable'));
+    } else {
+      onError(error instanceof Error ? error : new Error(String(error)));
+    }
   }
 }
