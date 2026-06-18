@@ -11,7 +11,14 @@ import type {
 } from '@highport/shared/types/portrait';
 import { LocalPortraitStorage, type PortraitStorage } from '../storage/portrait-storage.js';
 
-const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:8000';
+const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:18124';
+
+export class PortraitUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PortraitUnavailableError';
+  }
+}
 
 export interface GeneratePortraitInput {
   campaignId: string;
@@ -295,20 +302,36 @@ export class PortraitService implements PortraitServiceApi {
     referenceImageMimeType?: string;
     aspectRatio?: string;
   }): Promise<{ imageBase64: string; mimeType: string; promptUsed: string; modelId: string }> {
-    const response = await fetch(`${RAG_SERVICE_URL}/ai/portraits/image`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tags: input.tags,
-        appearance_text: input.appearanceText,
-        prompt_delta: input.promptDelta,
-        reference_image_base64: input.referenceImageBase64,
-        reference_image_mime_type: input.referenceImageMimeType,
-        aspect_ratio: input.aspectRatio,
-      }),
-    });
+    let response: Response | undefined;
+    try {
+      response = await fetch(`${RAG_SERVICE_URL}/ai/portraits/image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tags: input.tags,
+          appearance_text: input.appearanceText,
+          prompt_delta: input.promptDelta,
+          reference_image_base64: input.referenceImageBase64,
+          reference_image_mime_type: input.referenceImageMimeType,
+          aspect_ratio: input.aspectRatio,
+        }),
+      });
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new PortraitUnavailableError(
+          `Portrait generation unavailable: network error (${error.message})`,
+        );
+      }
+      throw error;
+    }
 
     if (!response.ok) {
+      if (response.status >= 500) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new PortraitUnavailableError(
+          errorData.detail || `Portrait generation unavailable (${response.status})`,
+        );
+      }
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || `Portrait generation failed with ${response.status}`);
     }

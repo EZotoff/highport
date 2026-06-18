@@ -11,6 +11,7 @@ import {
 import { SciFiButton, SciFiSelect, SciFiBadge } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { usePortraitGenerator } from '@/lib/portrait/usePortrait';
+import { PortraitUnavailableNotice } from './PortraitUnavailableNotice';
 import { cn } from '@/lib/utils';
 import type {
   PortraitRecord,
@@ -29,7 +30,7 @@ interface PortraitRemixerProps {
   onRemixed: (newPortrait: PortraitRecord) => void;
 }
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3012';
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:18122';
 
 const GENDER_OPTIONS = [
   { value: 'none', label: 'Inherit Gender' },
@@ -80,7 +81,7 @@ export function PortraitRemixer({
   const [careerType, setCareerType] = useState<string>('none');
   const [remixedPortrait, setRemixedPortrait] = useState<PortraitRecord | null>(null);
 
-  const { remix, isLoading, error } = usePortraitGenerator();
+  const { remix, isLoading, error, unavailable } = usePortraitGenerator();
 
   const handleRemix = async () => {
     try {
@@ -198,6 +199,8 @@ export function PortraitRemixer({
             </div>
 
             <div className="space-y-4 pt-2 border-t border-zinc-800">
+              {unavailable && <PortraitUnavailableNotice />}
+
               <div>
                 <label
                   className="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold"

@@ -3,6 +3,7 @@ import {
   attachPortrait,
   generatePortrait,
   getPortraitImage,
+  PortraitUnavailableError,
   remixPortrait,
   searchPortraits,
 } from '../services/portrait-service.js';
@@ -67,22 +68,34 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
         return { error: 'campaignId and tags are required' };
       }
 
-      const result = await generatePortrait({
-        campaignId,
-        subjectNodeId: request.body.subjectNodeId,
-        tags,
-        appearanceText: request.body.appearanceText,
-        promptDelta: request.body.promptDelta,
-        referenceImageBase64: request.body.referenceImageBase64,
-        referenceImageMimeType: request.body.referenceImageMimeType,
-        aspectRatio: request.body.aspectRatio,
-        protected: request.body.protected,
-        sourcePolicy: request.body.sourcePolicy,
-        familyGroupId: request.body.familyGroupId,
-        userId,
-      });
+      try {
+        const result = await generatePortrait({
+          campaignId,
+          subjectNodeId: request.body.subjectNodeId,
+          tags,
+          appearanceText: request.body.appearanceText,
+          promptDelta: request.body.promptDelta,
+          referenceImageBase64: request.body.referenceImageBase64,
+          referenceImageMimeType: request.body.referenceImageMimeType,
+          aspectRatio: request.body.aspectRatio,
+          protected: request.body.protected,
+          sourcePolicy: request.body.sourcePolicy,
+          familyGroupId: request.body.familyGroupId,
+          userId,
+        });
 
-      return result;
+        return result;
+      } catch (error) {
+        if (error instanceof PortraitUnavailableError) {
+          reply.code(503);
+          return { error: 'rag_unavailable', message: error.message };
+        }
+        reply.code(500);
+        return {
+          error: 'internal_error',
+          message: error instanceof Error ? error.message : 'Portrait generation failed',
+        };
+      }
     },
   );
 
@@ -178,6 +191,10 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
 
         return result;
       } catch (error) {
+        if (error instanceof PortraitUnavailableError) {
+          reply.code(503);
+          return { error: 'rag_unavailable', message: error.message };
+        }
         reply.code(400);
         return { error: error instanceof Error ? error.message : 'Remix failed' };
       }

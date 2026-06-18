@@ -8,7 +8,14 @@ import { getOrCreateUser } from '../identity';
 import { getYDoc } from '../ydoc';
 import { updateNodeMetadata } from '../yjs-helpers';
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3012';
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:18122';
+
+export class PortraitUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PortraitUnavailableError';
+  }
+}
 
 export interface GeneratePortraitParams {
   campaignId: string;
@@ -38,10 +45,26 @@ export interface RemixPortraitParams {
 export function usePortraitGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+
+  const checkRagUnavailable = (response: Response): void => {
+    if (response.status === 503) {
+      response
+        .clone()
+        .json()
+        .then((body: { error?: string; message?: string }) => {
+          if (body.error === 'rag_unavailable') {
+            setUnavailable(true);
+          }
+        })
+        .catch(() => {});
+    }
+  };
 
   const generate = async (params: GeneratePortraitParams): Promise<PortraitRecord> => {
     setIsLoading(true);
     setError(null);
+    setUnavailable(false);
     const user = getOrCreateUser();
 
     try {
@@ -55,7 +78,14 @@ export function usePortraitGenerator() {
       });
 
       if (!response.ok) {
+        checkRagUnavailable(response);
+
         const errorData = await response.json().catch(() => ({}));
+        if (response.status === 503 && errorData.error === 'rag_unavailable') {
+          throw new PortraitUnavailableError(
+            errorData.message || 'AI features optional -- portrait generation is unavailable.',
+          );
+        }
         throw new Error(errorData.error || `Portrait generation failed (${response.status})`);
       }
 
@@ -65,6 +95,9 @@ export function usePortraitGenerator() {
         image_url: normalizeImageUrl(portrait.image_url),
       };
     } catch (err) {
+      if (err instanceof PortraitUnavailableError) {
+        throw err;
+      }
       const errorInstance = err instanceof Error ? err : new Error('Unknown error');
       setError(errorInstance);
       throw errorInstance;
@@ -76,6 +109,7 @@ export function usePortraitGenerator() {
   const remix = async (params: RemixPortraitParams): Promise<PortraitRecord> => {
     setIsLoading(true);
     setError(null);
+    setUnavailable(false);
     const user = getOrCreateUser();
 
     try {
@@ -97,7 +131,14 @@ export function usePortraitGenerator() {
       });
 
       if (!response.ok) {
+        checkRagUnavailable(response);
+
         const errorData = await response.json().catch(() => ({}));
+        if (response.status === 503 && errorData.error === 'rag_unavailable') {
+          throw new PortraitUnavailableError(
+            errorData.message || 'AI features optional -- portrait remix is unavailable.',
+          );
+        }
         throw new Error(errorData.error || `Portrait remix failed (${response.status})`);
       }
 
@@ -107,6 +148,9 @@ export function usePortraitGenerator() {
         image_url: normalizeImageUrl(portrait.image_url),
       };
     } catch (err) {
+      if (err instanceof PortraitUnavailableError) {
+        throw err;
+      }
       const errorInstance = err instanceof Error ? err : new Error('Unknown error');
       setError(errorInstance);
       throw errorInstance;
@@ -115,7 +159,7 @@ export function usePortraitGenerator() {
     }
   };
 
-  return { generate, remix, isLoading, error };
+  return { generate, remix, isLoading, error, unavailable };
 }
 
 export function attachPortraitToNode(nodeId: string, portrait: PortraitRecord): void {
