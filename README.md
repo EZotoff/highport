@@ -72,6 +72,12 @@ The web app is now running at `http://localhost:18120`.
 
 To enable the "Ask Computer" AI assistant, you'll need the RAG service running. The fastest path uses free local providers (Ollama + ChromaDB) with no API keys required.
 
+```bash
+# Pull the required Ollama models
+ollama pull llama3.2              # LLM for generation
+ollama pull qwen3-embedding:0.6b  # Embedding model for retrieval
+```
+
 See the complete setup guide: [docs/rag-setup.md](./docs/rag-setup.md)
 
 ---

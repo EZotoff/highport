@@ -26,12 +26,16 @@ uvicorn main:app --reload --port 18124
 
 ## Key Environment Variables
 
-| Variable             | Purpose                                                |
-| -------------------- | ------------------------------------------------------ |
-| `LLM_PROVIDER`       | `ollama` or `gemini`                                    |
-| `VECTORDB_PROVIDER`  | `chroma` or `pinecone`                                  |
-| `OLLAMA_BASE_URL`    | Local Ollama endpoint                                   |
-| `OPENAI_API_KEY`     | Required for embeddings (see docs/rag-setup.md)         |
+| Variable                  | Purpose                                                                     |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `EMBEDDINGS_PROVIDER`     | `ollama` (default, free, local) or `openai` (paid, cloud)                     |
+| `OLLAMA_EMBED_MODEL`      | Ollama embedding model tag (default: `qwen3-embedding:0.6b`)                   |
+| `OPENAI_EMBEDDING_MODEL`  | OpenAI embedding model (default: `text-embedding-3-small`)                     |
+| `EMBEDDING_DIM`           | Optional dim override for MRL truncation (default: provider's native dim)      |
+| `LLM_PROVIDER`            | `ollama` or `gemini`                                                          |
+| `VECTORDB_PROVIDER`       | `chroma` or `pinecone`                                                        |
+| `OLLAMA_BASE_URL`         | Local Ollama endpoint                                                         |
+| `OPENAI_API_KEY`          | Required only when `EMBEDDINGS_PROVIDER=openai` or `LLM_PROVIDER=gemini`        |
 
 See [.env.example](./.env.example) and [../../docs/rag-setup.md](../../docs/rag-setup.md) for the full list and setup walkthrough.
 ## Testing

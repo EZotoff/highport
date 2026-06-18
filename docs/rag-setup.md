@@ -1,6 +1,6 @@
 # Highport RAG Service Setup Guide
 
-Complete setup instructions for Highport's AI features. The LLM and vector DB are free and local (Ollama + ChromaDB). **Embeddings currently require an OpenAI API key** (see [Current Limitation](#current-limitation-embeddings) below). Cloud-provider instructions (Gemini + Pinecone) are included for production deployments.
+Complete setup instructions for Highport's AI features. The default stack is fully free and local: Ollama for LLM and embeddings, plus ChromaDB for vector storage. No API keys required. Cloud-provider instructions (OpenAI embeddings, Gemini LLM, Pinecone) are included for production deployments.
 
 ---
 
@@ -12,8 +12,9 @@ If you know what you are doing:
 # 1. Install Ollama (macOS example, see below for other platforms)
 brew install ollama && ollama serve
 
-# 2. Pull a model
+# 2. Pull models
 ollama pull llama3.2
+ollama pull qwen3-embedding:0.6b
 
 # 3. Set up RAG service
 cd apps/rag-service
@@ -24,10 +25,11 @@ pip install -r requirements.txt
 cat > .env << 'EOF'
 LLM_PROVIDER=ollama
 VECTORDB_PROVIDER=chroma
+EMBEDDINGS_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.2
+OLLAMA_EMBED_MODEL=qwen3-embedding:0.6b
 CHROMA_PERSIST_DIR=./chroma_data
-OPENAI_API_KEY=sk-...your-key-here...
 EOF
 
 # 5. Start the service
@@ -45,9 +47,10 @@ Before starting, ensure you have:
 
 - **Python 3.11+** installed
 - **Ollama** installed (or will be installed below)
-- **OpenAI API key** (currently required for embeddings; see [Current Limitation](#current-limitation-embeddings))
+- **OpenAI API key** (only if you choose OpenAI embeddings or Gemini LLM; default stack needs no API keys)
 - **Highport server running** (Web on port 18120, Fastify API on port 18122)
 - **8GB+ RAM** for running LLMs locally (16GB+ recommended)
+  - The embedding model (`qwen3-embedding:0.6b`) is only 639MB and adds minimal RAM overhead compared to the LLM
 
 ---
 
@@ -84,12 +87,16 @@ Expected response: `Ollama is running`
 
 ---
 
-### Step 2: Pull a Model
+### Step 2: Pull Models
 
-Download the recommended model (Llama 3.2). It balances quality with reasonable hardware requirements.
+You need two models: one for generation (LLM) and one for turning text into searchable vectors (embeddings).
 
 ```bash
+# LLM for generation
 ollama pull llama3.2
+
+# Embedding model for retrieval (required for RAG)
+ollama pull qwen3-embedding:0.6b
 ```
 
 **Why llama3.2?**
@@ -98,7 +105,7 @@ ollama pull llama3.2
 - Runs on consumer hardware (8GB VRAM or 16GB system RAM)
 - Apache 2.0 license (fully free)
 
-**Alternative models:**
+**Alternative LLM models:**
 
 - `ollama pull mistral` - Faster responses, slightly less capable
 - `ollama pull llama3.2:3b` - Smaller, works on 4GB RAM
@@ -143,37 +150,36 @@ cat > .env << 'EOF'
 # Provider configuration
 LLM_PROVIDER=ollama
 VECTORDB_PROVIDER=chroma
+EMBEDDINGS_PROVIDER=ollama
 
-# Ollama settings
+# Ollama settings (LLM)
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.2
+
+# Ollama settings (embeddings)
+OLLAMA_EMBED_MODEL=qwen3-embedding:0.6b
 
 # ChromaDB settings
 CHROMA_PERSIST_DIR=./chroma_data
 CHROMA_COLLECTION_NAME=highport
-
-# OpenAI embeddings (currently required for all setups; see limitation below)
-OPENAI_API_KEY=sk-...your-key-here...
 EOF
 ```
 
 **Available options:**
 
-| Variable                 | Default                  | Description                                         |
-| ------------------------ | ------------------------ | --------------------------------------------------- |
-| `LLM_PROVIDER`           | `ollama`                 | LLM backend: `ollama` or `gemini`                   |
-| `VECTORDB_PROVIDER`      | `chroma`                 | Vector DB: `chroma` or `pinecone`                   |
-| `OLLAMA_BASE_URL`        | `http://localhost:11434` | Ollama server URL                                   |
-| `OLLAMA_MODEL`           | `llama3.2`               | Model name to use                                   |
-| `CHROMA_PERSIST_DIR`     | `./chroma_data`          | Where to store vector data                          |
-| `CHROMA_COLLECTION_NAME` | `highport`               | ChromaDB collection name                            |
-| `OPENAI_API_KEY`         | (required)               | OpenAI key for `text-embedding-ada-002` (see below) |
-
-### Current Limitation: Embeddings
-
-The RAG service uses OpenAI's `text-embedding-ada-002` for vector embeddings (`apps/rag-service/providers/embeddings.py`). This means **every setup requires an `OPENAI_API_KEY`**, even when using Ollama for chat and ChromaDB for vector storage. Embedding API calls are cheap (sub-cent per 1K tokens) but not free.
-
-The target architecture will support local embeddings via Ollama or a self-hosted alternative, eliminating this requirement. For now, OpenAI is the simplest and most portable option. Track progress in [ROADMAP.md](../ROADMAP.md).
+| Variable                 | Default                  | Description                                                              |
+| ------------------------ | ------------------------ | ------------------------------------------------------------------------ |
+| `LLM_PROVIDER`           | `ollama`                 | LLM backend: `ollama` or `gemini`                                        |
+| `VECTORDB_PROVIDER`      | `chroma`                 | Vector DB: `chroma` or `pinecone`                                        |
+| `EMBEDDINGS_PROVIDER`    | `ollama`                 | Embeddings: `ollama` (free, local) or `openai` (paid, cloud)             |
+| `OLLAMA_EMBED_MODEL`     | `qwen3-embedding:0.6b`   | Ollama embedding model tag                                               |
+| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model (used when `EMBEDDINGS_PROVIDER=openai`)          |
+| `EMBEDDING_DIM`          | (provider native)        | Optional dim override for MRL truncation                                 |
+| `OLLAMA_BASE_URL`        | `http://localhost:11434` | Ollama server URL                                                        |
+| `OLLAMA_MODEL`           | `llama3.2`               | Model name to use                                                        |
+| `CHROMA_PERSIST_DIR`     | `./chroma_data`          | Where to store vector data                                               |
+| `CHROMA_COLLECTION_NAME` | `highport`               | ChromaDB collection name                                                 |
+| `OPENAI_API_KEY`         | (conditional)            | Required only when `EMBEDDINGS_PROVIDER=openai` or `LLM_PROVIDER=gemini` |
 
 ---
 
@@ -243,6 +249,71 @@ curl -X POST http://localhost:18124/query \
 ```
 
 Expected: Streaming response with generated text based on the ingested document.
+
+---
+
+## Embeddings Configuration
+
+Highport supports two embeddings providers:
+
+| Provider | Default model          | Dimensions | Cost            | Privacy                            |
+| -------- | ---------------------- | ---------- | --------------- | ---------------------------------- |
+| `ollama` | qwen3-embedding:0.6b   | 1024       | Free (local)    | Full — no data leaves your machine |
+| `openai` | text-embedding-3-small | 1536       | $0.02/1M tokens | Chunk text sent to OpenAI API      |
+
+**Default: `ollama`** — matches the "free local RAG, no API keys required" promise.
+
+### Switching to OpenAI
+
+Set in your `.env`:
+
+```
+EMBEDDINGS_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+```
+
+### Choosing a different local model
+
+```bash
+ollama pull nomic-embed-text   # 768-dim, 274MB, smallest mature option
+# OR
+ollama pull bge-m3              # 1024-dim, 1.2GB, multilingual
+```
+
+Then set `OLLAMA_EMBED_MODEL=nomic-embed-text` (or `bge-m3`) in your `.env`.
+
+See the [Ollama embedding model catalog](https://ollama.com/search?c=embedding) for the full list.
+
+---
+
+## Migration: Changing Your Embedding Model
+
+Embedding models are **not cross-compatible**. Vectors generated by model A cannot be queried by model B — different models map text to different geometric spaces. Switching models requires **re-embedding your entire corpus**.
+
+### For ChromaDB users
+
+ChromaDB adapts to any dimension at runtime. To switch:
+
+1. Stop the RAG service.
+2. Delete or rename your `CHROMA_PERSIST_DIR` (default: `./chroma_data`).
+3. Update your `.env` (e.g., `OLLAMA_EMBED_MODEL=nomic-embed-text`).
+4. Restart the service.
+5. Re-ingest your documents through the Highport web UI.
+
+### For Pinecone users
+
+Pinecone indexes are locked to a specific dimension at creation time. To switch:
+
+1. Create a NEW Pinecone index at the new dimension (e.g., 1024 for `qwen3-embedding:0.6b`, 768 for `nomic-embed-text`). The existing `highport-index` at 1536d cannot be reused.
+2. Update `PINECONE_INDEX_NAME` in your `.env` to point to the new index.
+3. Restart the service.
+4. Re-ingest your documents through the Highport web UI.
+5. (Optional) Delete the old 1536d index from the Pinecone console after verifying the new one works.
+
+### Re-embedding script
+
+A `scripts/re-embed.py` helper is provided for users who want to migrate without re-uploading source documents. It walks existing vector metadata, re-embeds the preserved chunk text, and upserts the new vectors. See `scripts/re-embed.py --help` for usage.
 
 ---
 
@@ -404,8 +475,8 @@ For production deployments or when local hardware is insufficient, you can use c
                     ▼                    ▼                    ▼
             ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
             │    LLM       │    │  Vector DB   │    │  Embeddings  │
-            │  (Ollama)    │    │  (ChromaDB)  │    │  (OpenAI)    │
-            │   Port 11434 │    │  (./chroma)  │    │   (cloud)    │
+            │  (Ollama)    │    │  (ChromaDB)  │    │  (Ollama)    │
+            │   Port 11434 │    │  (./chroma)  │    │   (local)    │
             └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
@@ -426,7 +497,7 @@ The RAG service uses a provider pattern that lets you swap backends without chan
 
 - **LLM Providers:** `ollama` (local), `gemini` (cloud)
 - **Vector DB Providers:** `chroma` (local), `pinecone` (cloud)
-- **Embeddings:** Currently locked to OpenAI `text-embedding-ada-002` (see [Current Limitation](#current-limitation-embeddings)). Will be made pluggable in a future release.
+- **Embeddings Providers:** `ollama` (local, free), `openai` (cloud, paid)
 
 Switch LLM/vector providers by changing environment variables. No code changes required.
 
