@@ -8,8 +8,6 @@ base_module = importlib.import_module("providers.embeddings.base")
 ollama_module = importlib.import_module("providers.embeddings.ollama")
 openai_module = importlib.import_module("providers.embeddings.openai")
 
-EMBEDDING_DIM = getattr(embeddings_module, "EMBEDDING_DIM")
-EmbeddingsClient = getattr(embeddings_module, "EmbeddingsClient")
 EmbeddingsProvider = getattr(base_module, "EmbeddingsProvider")
 OllamaEmbeddingsProvider = getattr(ollama_module, "OllamaEmbeddingsProvider")
 OpenAIEmbeddingsProvider = getattr(openai_module, "OpenAIEmbeddingsProvider")
@@ -64,11 +62,6 @@ def test_get_embedding_dimension_derives_from_provider_when_no_override(monkeypa
     monkeypatch.delenv("EMBEDDINGS_PROVIDER", raising=False)
 
     assert get_embedding_dimension() == get_embeddings_provider().dimension
-
-
-def test_backward_compat_shim_exposes_client_and_dim():
-    assert EmbeddingsClient is OpenAIEmbeddingsProvider
-    assert EMBEDDING_DIM == 1536
 
 
 def test_ollama_provider_reads_env_vars(monkeypatch):

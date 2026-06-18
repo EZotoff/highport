@@ -8,8 +8,12 @@ async def test_health_returns_ok(client):
     data = response.json()
     assert data["status"] == "ok"
     assert "providers" in data
+    assert "embeddings" in data["providers"]
     assert "llm" in data["providers"]
     assert "vectordb" in data["providers"]
+    assert "provider" in data["providers"]["embeddings"]
+    assert "model" in data["providers"]["embeddings"]
+    assert "dimension" in data["providers"]["embeddings"]
 
 
 @pytest.mark.asyncio

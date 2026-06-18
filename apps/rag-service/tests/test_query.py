@@ -32,11 +32,12 @@ async def test_query_flow():
         # So we need to access the one injected
         from routers.query import _get_pinecone
 
+        embeddings = MockEmbeddings()
         pinecone = _get_pinecone()
 
         await pinecone.upsert(
             id="test_doc",
-            vector=[0.1] * 1536,
+            vector=[0.1] * embeddings.dimension,
             metadata={
                 "text": "The ancient artifact is hidden in the cave.",
                 "access_scope": ["public"],

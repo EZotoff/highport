@@ -3,6 +3,7 @@
 import os
 from typing import Optional, Any
 
+from providers.embeddings import get_embedding_dimension
 from providers.vectordb.base import VectorDBProvider, VectorQueryResult
 
 
@@ -121,7 +122,7 @@ class PineconeProvider(VectorDBProvider):
         if index is None:
             raise RuntimeError("Pinecone index not initialized")
         # Use a zero vector since we're filtering, not doing similarity search
-        zero_vector = [0.0] * 1536  # Standard OpenAI embedding dimension
+        zero_vector = [0.0] * get_embedding_dimension()
         results = index.query(
             vector=zero_vector,
             top_k=top_k,

@@ -13,10 +13,9 @@ class OpenAIEmbeddingsProvider(EmbeddingsProvider):
     """OpenAI embeddings provider for generating text embeddings.
 
     Uses the OpenAI API to generate embeddings for text documents.
-    Default model is text-embedding-3-small which produces 1536-dim vectors.
     """
 
-    EMBEDDING_DIM: int = 1536  # text-embedding-3-small dimension
+    DEFAULT_DIMENSION: int = 3 * 512
 
     def __init__(
         self, api_key: str | None = None, model: str | None = None
@@ -34,7 +33,7 @@ class OpenAIEmbeddingsProvider(EmbeddingsProvider):
             "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
         )
         self._dimension: int = int(
-            os.environ.get("EMBEDDING_DIM", str(self.EMBEDDING_DIM))
+            os.environ.get("EMBEDDING_DIM", str(self.DEFAULT_DIMENSION))
         )
         self._client: "AsyncOpenAI | None" = None
 

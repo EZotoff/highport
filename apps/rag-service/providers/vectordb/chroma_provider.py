@@ -3,6 +3,7 @@
 import os
 from typing import Optional, Any
 
+from providers.embeddings import get_embedding_dimension
 from providers.vectordb.base import VectorDBProvider, VectorQueryResult
 
 
@@ -12,10 +13,6 @@ class ChromaProvider(VectorDBProvider):
     Uses ChromaDB with a persistent client for free, local vector storage.
     No API key required.
     """
-
-    # ChromaDB needs an embedding dimension for zero-vector queries.
-    # Default matches OpenAI text-embedding-ada-002.
-    DEFAULT_EMBEDDING_DIM = 1536
 
     def __init__(
         self,
@@ -134,8 +131,7 @@ class ChromaProvider(VectorDBProvider):
             return []
 
         # ChromaDB requires embeddings for query, use zero vector
-        dim = self.DEFAULT_EMBEDDING_DIM
-        zero_vector = [0.0] * dim
+        zero_vector = [0.0] * get_embedding_dimension()
 
         try:
             results = self._collection.query(

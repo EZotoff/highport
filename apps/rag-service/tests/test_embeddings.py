@@ -1,13 +1,11 @@
 import pytest
 
-from mocks.mock_embeddings import EMBEDDING_DIM
-
 
 @pytest.mark.asyncio
-async def test_embed_returns_1536_dim_vector(embeddings):
+async def test_embed_returns_configured_dim_vector(embeddings):
     result = await embeddings.embed("test")
     assert isinstance(result, list)
-    assert len(result) == EMBEDDING_DIM
+    assert len(result) == embeddings.dimension
 
 
 @pytest.mark.asyncio
@@ -35,7 +33,7 @@ async def test_embed_batch_returns_list_of_vectors(embeddings):
     texts = ["first", "second", "third"]
     results = await embeddings.embed_batch(texts)
     assert len(results) == 3
-    assert all(len(v) == EMBEDDING_DIM for v in results)
+    assert all(len(v) == embeddings.dimension for v in results)
 
 
 @pytest.mark.asyncio

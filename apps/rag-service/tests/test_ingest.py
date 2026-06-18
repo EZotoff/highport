@@ -55,7 +55,7 @@ async def test_ingest_stores_in_pinecone(ingest_client):
 
 
 @pytest.mark.asyncio
-async def test_ingest_embeddings_are_1536_dim(ingest_client):
+async def test_ingest_embeddings_are_configured_dim(ingest_client):
     client, mock_embeddings, mock_llm, mock_pinecone = ingest_client
 
     content = "The starship left port at dawn."
@@ -65,7 +65,7 @@ async def test_ingest_embeddings_are_1536_dim(ingest_client):
     )
 
     for vec_data in mock_pinecone.vectors.values():
-        assert len(vec_data["values"]) == 1536
+        assert len(vec_data["values"]) == mock_embeddings.dimension
 
 
 @pytest.mark.asyncio
@@ -129,8 +129,6 @@ async def test_ingest_metadata_has_text(ingest_client):
     for vec_data in mock_pinecone.vectors.values():
         assert "text" in vec_data["metadata"]
         assert len(vec_data["metadata"]["text"]) > 0
-
-
 @pytest.mark.asyncio
 async def test_ingest_rejects_empty_file(ingest_client):
     client, *_ = ingest_client

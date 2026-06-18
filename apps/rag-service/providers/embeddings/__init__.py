@@ -3,11 +3,6 @@
 Supports:
 - ollama: Local Ollama embeddings (free, requires Ollama running)
 - openai: OpenAI embeddings (requires OPENAI_API_KEY)
-
-Backward compatibility:
-Existing callers import ``EmbeddingsClient`` and ``EMBEDDING_DIM`` from this
-module. Those names are intentionally re-exported as a shim until callers move
-to ``get_embeddings_provider()`` and ``get_embedding_dimension()``.
 """
 
 import os
@@ -53,14 +48,7 @@ def get_embedding_dimension() -> int:
             return parsed_dimension
     return get_embeddings_provider().dimension
 
-
-EmbeddingsClient = OpenAIEmbeddingsProvider
-EMBEDDING_DIM = 1536
-
-
 __all__ = [
-    "EMBEDDING_DIM",
-    "EmbeddingsClient",
     "EmbeddingsProvider",
     "OpenAIEmbeddingsProvider",
     "get_embedding_dimension",

@@ -24,6 +24,9 @@ class EmbeddingsProtocol(Protocol):
     async def embed(self, text: str) -> list[float]: ...
     async def embed_batch(self, texts: list[str]) -> list[list[float]]: ...
 
+    @property
+    def model_name(self) -> str: ...
+
 
 class LLMProtocol(Protocol):
     """Protocol for LLM providers."""
@@ -102,9 +105,9 @@ def _get_embeddings() -> EmbeddingsProtocol:
     """Get embeddings client."""
     if _embeddings_override is not None:
         return _embeddings_override
-    from providers.embeddings import EmbeddingsClient
+    from providers.embeddings import get_embeddings_provider
 
-    return EmbeddingsClient()
+    return get_embeddings_provider()
 
 
 def _get_llm() -> LLMProtocol:
@@ -198,6 +201,7 @@ async def ingest_document(
                     "entities": entities.all_entities(),
                     "chunk_index": idx,
                     "text": chunk_text_content,
+                    "embedding_model": embeddings.model_name,
                 },
             }
         )

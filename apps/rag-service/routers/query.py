@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from providers.llm.base import LLMProvider
 from providers.llm import get_llm_provider
-from providers.embeddings import EmbeddingsClient
+from providers.embeddings import get_embeddings_provider
 from providers.vectordb.base import VectorDBProvider
 from providers.vectordb import get_vectordb_provider
 
@@ -47,7 +47,7 @@ def clear_dependencies() -> None:
 def _get_embeddings():
     if _embeddings_override is not None:
         return _embeddings_override
-    return EmbeddingsClient()
+    return get_embeddings_provider()
 
 
 def _get_llm() -> LLMProvider:
