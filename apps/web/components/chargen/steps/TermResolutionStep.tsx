@@ -26,6 +26,7 @@ import type {
 import type { CareerTermResult, SpawnedEntityRef } from '../../../lib/chargen/types';
 import EntitySpawnForm from '../EntitySpawnForm';
 import ConnectionSuggestions from '../ConnectionSuggestions';
+import { NarrativeUnavailableNotice } from '../NarrativeUnavailableNotice';
 import { addEdge } from '../../../lib/yjs-helpers';
 import type { GraphEdge } from '@highport/shared/types/graph';
 
@@ -55,11 +56,13 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   const [currentSpawnIndex, setCurrentSpawnIndex] = useState(0);
 
   const [generatedDescription, setGeneratedDescription] = useState<string | undefined>();
+  const [descriptionEditorOpen, setDescriptionEditorOpen] = useState(false);
   const { isAvailable: narrativeAvailable } = useNarrativeAvailable();
   const {
     generate: generateNarrative,
     isLoading: narrativeLoading,
     error: narrativeError,
+    unavailable: narrativeUnavailable,
   } = useEventNarrative();
 
   if (!character) return <div className="text-subtle">Loading character...</div>;
@@ -313,6 +316,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
         verbosity,
       });
       setGeneratedDescription(result.description);
+      setDescriptionEditorOpen(true);
 
       if (result.suggestedEntities && result.suggestedEntities.length > 0) {
         const validRelationships = ['ally', 'contact', 'rival', 'enemy'];
@@ -328,7 +332,12 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
         setCurrentSpawnIndex(0);
       }
     } catch (e) {
-      console.error(e);
+      if (e instanceof Error && e.name === 'RagUnavailableError') {
+        setGeneratedDescription('');
+        setDescriptionEditorOpen(true);
+      } else {
+        console.error(e);
+      }
     }
   };
 
@@ -456,11 +465,13 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                 </SciFiButton>
               </div>
 
-              {narrativeError && (
+              {narrativeUnavailable ? (
+                <NarrativeUnavailableNotice />
+              ) : narrativeError ? (
                 <div className="text-red-400 text-sm mb-2">{narrativeError.message}</div>
-              )}
+              ) : null}
 
-              {generatedDescription && (
+              {descriptionEditorOpen && (
                 <div className="space-y-2">
                   <textarea
                     aria-label="Event narrative description"

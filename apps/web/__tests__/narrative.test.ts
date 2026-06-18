@@ -7,6 +7,7 @@ import {
   type EventDescriptionResult,
   type NPCDetails,
 } from '../lib/chargen/narrative';
+import { RagUnavailableError } from '../lib/rag-client';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -77,14 +78,39 @@ describe('Narrative API', () => {
       expect(callBody.character_context.prior_events).toEqual(['Joined navy at 18']);
     });
 
-    it('should throw error on API failure', async () => {
+    it('should throw generic Error on 4xx API failure', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
-        status: 500,
-        json: async () => ({ detail: 'GEMINI_API_KEY not set' }),
+        status: 400,
+        json: async () => ({ detail: 'Invalid event_text field' }),
       });
 
-      await expect(generateEventDescription(baseParams)).rejects.toThrow('GEMINI_API_KEY not set');
+      await expect(generateEventDescription(baseParams)).rejects.toThrow(
+        'Invalid event_text field',
+      );
+    });
+
+    it('should throw RagUnavailableError on 5xx response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({ detail: 'Service overloaded' }),
+      });
+
+      try {
+        await generateEventDescription(baseParams);
+        expect.unreachable('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(RagUnavailableError);
+        expect((e as Error).message).toBe('RAG service unavailable (503)');
+      }
+    });
+
+    it('should throw RagUnavailableError on network TypeError', async () => {
+      mockFetch.mockRejectedValueOnce(new TypeError('fetch failed'));
+
+      await expect(generateEventDescription(baseParams)).rejects.toThrow(RagUnavailableError);
+      await expect(generateEventDescription(baseParams)).rejects.toThrow('RAG service unreachable');
     });
 
     it('should handle network errors gracefully', async () => {
@@ -153,6 +179,39 @@ describe('Narrative API', () => {
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(callBody.existing_fields).toEqual({ name: 'Lt. Cmdr Vasquez' });
+    });
+
+    it('should throw RagUnavailableError on 5xx response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 502,
+        json: async () => ({}),
+      });
+
+      try {
+        await generateNPCDetails(baseParams);
+        expect.unreachable('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(RagUnavailableError);
+        expect((e as Error).message).toBe('RAG service unavailable (502)');
+      }
+    });
+
+    it('should throw RagUnavailableError on network TypeError', async () => {
+      mockFetch.mockRejectedValueOnce(new TypeError('fetch failed'));
+
+      await expect(generateNPCDetails(baseParams)).rejects.toThrow(RagUnavailableError);
+      await expect(generateNPCDetails(baseParams)).rejects.toThrow('RAG service unreachable');
+    });
+
+    it('should throw generic Error on 4xx response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ detail: 'NPC type not found' }),
+      });
+
+      await expect(generateNPCDetails(baseParams)).rejects.toThrow('NPC type not found');
     });
   });
 

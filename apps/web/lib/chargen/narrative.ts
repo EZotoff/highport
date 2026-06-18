@@ -1,4 +1,6 @@
-const RAG_SERVICE_URL = process.env.NEXT_PUBLIC_RAG_SERVICE_URL || 'http://localhost:8000';
+import { RagUnavailableError } from '../rag-client';
+
+const RAG_SERVICE_URL = process.env.NEXT_PUBLIC_RAG_SERVICE_URL || 'http://localhost:18124';
 
 export type VerbosityLevel = 'minimal' | 'structured' | 'rich';
 
@@ -69,12 +71,18 @@ export async function generateEventDescription(params: {
     });
 
     if (!response.ok) {
+      if (response.status >= 500) {
+        throw new RagUnavailableError(`RAG service unavailable (${response.status})`);
+      }
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || `API request failed with status ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
+    if (error instanceof TypeError) {
+      throw new RagUnavailableError('RAG service unreachable');
+    }
     console.error('Narrative generation failed:', error);
     throw error;
   }
@@ -111,12 +119,18 @@ export async function generateNPCDetails(params: {
     });
 
     if (!response.ok) {
+      if (response.status >= 500) {
+        throw new RagUnavailableError(`RAG service unavailable (${response.status})`);
+      }
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || `API request failed with status ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
+    if (error instanceof TypeError) {
+      throw new RagUnavailableError('RAG service unreachable');
+    }
     console.error('NPC generation failed:', error);
     throw error;
   }

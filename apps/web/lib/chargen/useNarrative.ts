@@ -12,6 +12,7 @@ export function useEventNarrative() {
   const [result, setResult] = useState<EventDescriptionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
 
   const generate = useCallback(
     async (params: {
@@ -24,6 +25,7 @@ export function useEventNarrative() {
     }) => {
       setIsLoading(true);
       setError(null);
+      setUnavailable(false);
       try {
         const data = await narrativeApi.generateEventDescription(params);
         setResult(data);
@@ -31,6 +33,9 @@ export function useEventNarrative() {
       } catch (e) {
         const err = e instanceof Error ? e : new Error('Generation failed');
         setError(err);
+        if (err.name === 'RagUnavailableError') {
+          setUnavailable(true);
+        }
         throw err;
       } finally {
         setIsLoading(false);
@@ -42,15 +47,17 @@ export function useEventNarrative() {
   const reset = useCallback(() => {
     setResult(null);
     setError(null);
+    setUnavailable(false);
   }, []);
 
-  return { generate, result, isLoading, error, reset };
+  return { generate, result, isLoading, error, unavailable, reset };
 }
 
 export function useNPCNarrative() {
   const [result, setResult] = useState<NPCDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
 
   const generate = useCallback(
     async (params: {
@@ -61,6 +68,7 @@ export function useNPCNarrative() {
     }) => {
       setIsLoading(true);
       setError(null);
+      setUnavailable(false);
       try {
         const data = await narrativeApi.generateNPCDetails(params);
         setResult(data);
@@ -68,6 +76,9 @@ export function useNPCNarrative() {
       } catch (e) {
         const err = e instanceof Error ? e : new Error('Generation failed');
         setError(err);
+        if (err.name === 'RagUnavailableError') {
+          setUnavailable(true);
+        }
         throw err;
       } finally {
         setIsLoading(false);
@@ -79,9 +90,10 @@ export function useNPCNarrative() {
   const reset = useCallback(() => {
     setResult(null);
     setError(null);
+    setUnavailable(false);
   }, []);
 
-  return { generate, result, isLoading, error, reset };
+  return { generate, result, isLoading, error, unavailable, reset };
 }
 
 export function useNarrativeAvailable() {

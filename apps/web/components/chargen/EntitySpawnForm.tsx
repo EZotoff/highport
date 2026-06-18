@@ -5,6 +5,7 @@ import { spawnEntity } from '../../lib/chargen/entity-spawner';
 import type { EventSpawn } from '@highport/mgt2e';
 import type { SpawnedEntityRef } from '../../lib/chargen/types';
 import { useNPCNarrative, useNarrativeAvailable } from '../../lib/chargen/useNarrative';
+import { NarrativeUnavailableNotice } from './NarrativeUnavailableNotice';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { SciFiInput, SciFiButton } from '@/components/ui/scifi';
 import {
@@ -83,7 +84,12 @@ export default function EntitySpawnForm({
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [remixerOpen, setRemixerOpen] = useState(false);
   const { isAvailable: narrativeAvailable } = useNarrativeAvailable();
-  const { generate: generateNPC, isLoading: generating, error: generateError } = useNPCNarrative();
+  const {
+    generate: generateNPC,
+    isLoading: generating,
+    error: generateError,
+    unavailable: npcUnavailable,
+  } = useNPCNarrative();
   const {
     generate: generatePortrait,
     isLoading: generatingPortrait,
@@ -318,9 +324,11 @@ export default function EntitySpawnForm({
             >
               {generating ? 'Generating...' : '✨ Generate NPC Details'}
             </SciFiButton>
-            {generateError && (
+            {npcUnavailable ? (
+              <NarrativeUnavailableNotice />
+            ) : generateError ? (
               <div className="text-red-400 text-xs mt-1">{generateError.message}</div>
-            )}
+            ) : null}
           </div>
         )}
 
