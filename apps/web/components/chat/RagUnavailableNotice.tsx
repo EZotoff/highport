@@ -10,7 +10,7 @@ export function RagUnavailableNotice() {
           <p className="leading-relaxed">
             AI features are optional. To enable the Ask Computer assistant, see{' '}
             <a
-              href="https://github.com/EZotoff/highport/blob/master/docs/rag-setup.md"
+              href="https://github.com/EZotoff/highport/blob/main/docs/rag-setup.md"
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-foreground transition-colors"

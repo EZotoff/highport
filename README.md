@@ -122,7 +122,7 @@ Look for issues labeled `good first issue` to get started.
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for what is shipping now, what is coming next, and our long-term vision. Foundry VTT integration is experimental — see [`packages/foundry-module/`](./packages/foundry-module/).
+See [ROADMAP.md](./ROADMAP.md) for what is shipping now, what is coming next, and our long-term vision. Foundry VTT integration is experimental; see [`packages/foundry-module/`](./packages/foundry-module/).
 
 Community input welcome. Open a GitHub Issue with the `feature-request` label to share what matters most to you.
 

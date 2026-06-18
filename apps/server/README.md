@@ -25,10 +25,10 @@ pnpm --filter server dev   # Hocuspocus 18121 + Fastify 18122
 
 ## Key Environment Variables
 
-| Variable       | Purpose                          |
-| -------------- | -------------------------------- |
-| `DATABASE_URL` | PostgreSQL connection (required) |
-| `AUTH_SECRET`  | NextAuth secret                  |
+| Variable          | Purpose                                   |
+| ----------------- | ----------------------------------------- |
+| `DATABASE_URL`    | PostgreSQL connection (required)          |
+| `RAG_SERVICE_URL` | RAG service URL (for portrait generation) |
 
 See [.env.example](./.env.example) for the full list.
 

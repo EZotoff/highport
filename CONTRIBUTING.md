@@ -163,7 +163,7 @@ test(sync): add multi-user conflict resolution tests
 
 1. **Fork** the repository (if external contributor)
 
-2. **Create a branch** from `master` using the naming conventions above
+2. **Create a branch** from `main` using the naming conventions above
 
 3. **Make your changes** following the code style guidelines
 

@@ -132,7 +132,7 @@ describe('ChatInterface', () => {
     const link = screen.getByRole('link', { name: /docs\/rag-setup\.md/ });
     expect(link).toBeDefined();
     expect(link.getAttribute('href')).toBe(
-      'https://github.com/EZotoff/highport/blob/master/docs/rag-setup.md',
+      'https://github.com/EZotoff/highport/blob/main/docs/rag-setup.md',
     );
 
     expect(screen.getByText('Where is the spaceport?')).toBeDefined();

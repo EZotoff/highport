@@ -144,23 +144,7 @@ Then in project settings, create secrets for each environment.
 
 ## Git Workflow
 
-The `vercel.json` includes:
-
-```json
-{
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  }
-}
-```
-
-This means:
-
-- Main branch → automatically deploys to Production
-- Other branches → automatically create Preview deployments
-- Disable auto-deploy in settings if needed
+Pushes to `main` trigger Production deployments. All other branches create Preview deployments automatically. You can disable auto-deploy in the Vercel project settings if needed.
 
 ## Security Notes
 
