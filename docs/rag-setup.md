@@ -1,6 +1,6 @@
 # Highport RAG Service Setup Guide
 
-Complete setup instructions for Highport's AI features using free local providers (Ollama + ChromaDB). Cloud provider instructions included for production deployments.
+Complete setup instructions for Highport's AI features. The LLM and vector DB are free and local (Ollama + ChromaDB). **Embeddings currently require an OpenAI API key** (see [Current Limitation](#current-limitation-embeddings) below). Cloud-provider instructions (Gemini + Pinecone) are included for production deployments.
 
 ---
 
@@ -27,6 +27,7 @@ VECTORDB_PROVIDER=chroma
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.2
 CHROMA_PERSIST_DIR=./chroma_data
+OPENAI_API_KEY=sk-...your-key-here...
 EOF
 
 # 5. Start the service
@@ -44,6 +45,7 @@ Before starting, ensure you have:
 
 - **Python 3.11+** installed
 - **Ollama** installed (or will be installed below)
+- **OpenAI API key** (currently required for embeddings; see [Current Limitation](#current-limitation-embeddings))
 - **Highport server running** (Web on port 18120, Fastify API on port 18122)
 - **8GB+ RAM** for running LLMs locally (16GB+ recommended)
 
@@ -149,19 +151,29 @@ OLLAMA_MODEL=llama3.2
 # ChromaDB settings
 CHROMA_PERSIST_DIR=./chroma_data
 CHROMA_COLLECTION_NAME=highport
+
+# OpenAI embeddings (currently required for all setups; see limitation below)
+OPENAI_API_KEY=sk-...your-key-here...
 EOF
 ```
 
 **Available options:**
 
-| Variable                 | Default                  | Description                       |
-| ------------------------ | ------------------------ | --------------------------------- |
-| `LLM_PROVIDER`           | `ollama`                 | LLM backend: `ollama` or `gemini` |
-| `VECTORDB_PROVIDER`      | `chroma`                 | Vector DB: `chroma` or `pinecone` |
-| `OLLAMA_BASE_URL`        | `http://localhost:11434` | Ollama server URL                 |
-| `OLLAMA_MODEL`           | `llama3.2`               | Model name to use                 |
-| `CHROMA_PERSIST_DIR`     | `./chroma_data`          | Where to store vector data        |
-| `CHROMA_COLLECTION_NAME` | `highport`               | ChromaDB collection name          |
+| Variable                 | Default                  | Description                                         |
+| ------------------------ | ------------------------ | --------------------------------------------------- |
+| `LLM_PROVIDER`           | `ollama`                 | LLM backend: `ollama` or `gemini`                   |
+| `VECTORDB_PROVIDER`      | `chroma`                 | Vector DB: `chroma` or `pinecone`                   |
+| `OLLAMA_BASE_URL`        | `http://localhost:11434` | Ollama server URL                                   |
+| `OLLAMA_MODEL`           | `llama3.2`               | Model name to use                                   |
+| `CHROMA_PERSIST_DIR`     | `./chroma_data`          | Where to store vector data                          |
+| `CHROMA_COLLECTION_NAME` | `highport`               | ChromaDB collection name                            |
+| `OPENAI_API_KEY`         | (required)               | OpenAI key for `text-embedding-ada-002` (see below) |
+
+### Current Limitation: Embeddings
+
+The RAG service uses OpenAI's `text-embedding-ada-002` for vector embeddings (`apps/rag-service/providers/embeddings.py`). This means **every setup requires an `OPENAI_API_KEY`**, even when using Ollama for chat and ChromaDB for vector storage. Embedding API calls are cheap (sub-cent per 1K tokens) but not free.
+
+The target architecture will support local embeddings via Ollama or a self-hosted alternative, eliminating this requirement. For now, OpenAI is the simplest and most portable option. Track progress in [ROADMAP.md](../ROADMAP.md).
 
 ---
 
@@ -392,8 +404,8 @@ For production deployments or when local hardware is insufficient, you can use c
                     ▼                    ▼                    ▼
             ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
             │    LLM       │    │  Vector DB   │    │  Embeddings  │
-            │  (Ollama)    │    │  (ChromaDB)  │    │  (local)     │
-            │   Port 11434 │    │  (./chroma)  │    │              │
+            │  (Ollama)    │    │  (ChromaDB)  │    │  (OpenAI)    │
+            │   Port 11434 │    │  (./chroma)  │    │   (cloud)    │
             └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
@@ -414,8 +426,9 @@ The RAG service uses a provider pattern that lets you swap backends without chan
 
 - **LLM Providers:** `ollama` (local), `gemini` (cloud)
 - **Vector DB Providers:** `chroma` (local), `pinecone` (cloud)
+- **Embeddings:** Currently locked to OpenAI `text-embedding-ada-002` (see [Current Limitation](#current-limitation-embeddings)). Will be made pluggable in a future release.
 
-Switch providers by changing environment variables. No code changes required.
+Switch LLM/vector providers by changing environment variables. No code changes required.
 
 ---
 

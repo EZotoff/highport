@@ -26,13 +26,14 @@ uvicorn main:app --reload --port 18124
 
 ## Key Environment Variables
 
-| Variable | Purpose |
-| --- | --- |
-| `LLM_PROVIDER` | `ollama` or `gemini` |
-| `VECTORDB_PROVIDER` | `chroma` or `pinecone` |
-| `OLLAMA_BASE_URL` | Local Ollama endpoint |
+| Variable             | Purpose                                                |
+| -------------------- | ------------------------------------------------------ |
+| `LLM_PROVIDER`       | `ollama` or `gemini`                                    |
+| `VECTORDB_PROVIDER`  | `chroma` or `pinecone`                                  |
+| `OLLAMA_BASE_URL`    | Local Ollama endpoint                                   |
+| `OPENAI_API_KEY`     | Required for embeddings (see docs/rag-setup.md)         |
 
-See [.env.example](./.env.example) and [../../docs/rag-setup.md](../../docs/rag-setup.md) for the full list.
+See [.env.example](./.env.example) and [../../docs/rag-setup.md](../../docs/rag-setup.md) for the full list and setup walkthrough.
 ## Testing
 
 ```bash
