@@ -1,36 +1,49 @@
-"""OpenAI embeddings client for vector generation."""
+"""OpenAI embeddings provider implementation."""
 
 import os
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+from .base import EmbeddingsProvider
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
 
 
-class EmbeddingsClient:
-    """OpenAI embeddings client for generating text embeddings.
+class OpenAIEmbeddingsProvider(EmbeddingsProvider):
+    """OpenAI embeddings provider for generating text embeddings.
 
     Uses the OpenAI API to generate embeddings for text documents.
-    Default model is text-embedding-ada-002 which produces 1536-dim vectors.
+    Default model is text-embedding-3-small which produces 1536-dim vectors.
     """
 
-    EMBEDDING_DIM = 1536  # text-embedding-ada-002 dimension
+    EMBEDDING_DIM: int = 1536  # text-embedding-3-small dimension
 
     def __init__(
-        self, api_key: Optional[str] = None, model: str = "text-embedding-ada-002"
+        self, api_key: str | None = None, model: str | None = None
     ):
-        """Initialize the embeddings client.
+        """Initialize the embeddings provider.
 
         Args:
             api_key: OpenAI API key. If not provided, reads from
                 OPENAI_API_KEY environment variable.
-            model: The embedding model to use. Defaults to text-embedding-ada-002.
+            model: The embedding model to use. Defaults to
+                OPENAI_EMBEDDING_MODEL env var or text-embedding-3-small.
         """
-        self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
-        self.model = model
+        self.api_key: str | None = api_key or os.environ.get("OPENAI_API_KEY")
+        self.model: str = model or os.environ.get(
+            "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
+        )
+        self._dimension: int = int(
+            os.environ.get("EMBEDDING_DIM", str(self.EMBEDDING_DIM))
+        )
         self._client: "AsyncOpenAI | None" = None
 
-    def _ensure_client(self):
+    @property
+    def dimension(self) -> int:
+        """Return the embedding dimension produced by this provider."""
+        return self._dimension
+
+    def _ensure_client(self) -> None:
         """Lazily initialize the OpenAI client."""
         if self._client is None:
             if not self.api_key:
