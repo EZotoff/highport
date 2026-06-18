@@ -44,8 +44,6 @@ The following dependencies are commonly distributed under MIT-style terms. Verif
 
 ### Database & Server
 
-- **drizzle-orm** - TypeScript ORM for SQL databases (^0.38.0)
-- **drizzle-kit** - CLI tool for Drizzle ORM (^0.28.0)
 - **fastify** - Fast and low overhead web framework for Node.js (^4.26.0)
 - **@fastify/cors** - Fastify CORS plugin (^9.0.0)
 - **@fastify/websocket** - WebSocket support for Fastify (^8.3.0)
@@ -92,6 +90,8 @@ The following dependencies are commonly distributed under Apache-2.0 terms. Veri
 - **@aws-sdk/s3-request-presigner** - AWS SDK for JavaScript S3 Request Presigner (^3.985.0)
 - **next-auth** - Authentication for Next.js (5.0.0-beta.30)
 - **google-generativeai** - Google Generative AI Python SDK (^0.3.0)
+- **drizzle-orm** - TypeScript ORM for SQL databases (^0.38.0)
+- **drizzle-kit** - CLI tool for Drizzle ORM (^0.28.0)
 
 ## Commonly BSD-Licensed Dependencies
 
@@ -128,7 +128,7 @@ The following packages interface with hosted/commercial products and should be r
 
 4. **Development Dependencies**: All development dependencies are included in this list as they are part of the development and build process.
 
-5. **Python Dependencies**: Python dependencies are managed via Poetry and are included in the appropriate license categories.
+5. **Python Dependencies**: Python dependencies are managed via `pip` from `apps/rag-service/requirements.txt` and are included in the appropriate license categories.
 
 ## Acknowledgments
 

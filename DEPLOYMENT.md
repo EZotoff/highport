@@ -22,7 +22,7 @@ This guide covers deploying the Highport frontend (apps/web) to Vercel.
 In your Vercel project settings (Project Settings > Environment Variables), add:
 
 ```
-NEXT_PUBLIC_HOCUSPOCUS_URL=https://your-hocuspocus-server.com
+NEXT_PUBLIC_WS_URL=wss://your-hocuspocus-server.com
 NEXT_PUBLIC_API_URL=https://api.yourdomain.com
 NEXT_PUBLIC_RAG_URL=https://rag.yourdomain.com  # optional
 ```
@@ -58,22 +58,22 @@ The Highport frontend requires three backend services:
 - **Service**: REST API endpoints
 - **Recommended**: Same host as Hocuspocus
 - **Environment**: Node.js 20+
-- **Port**: 3012 locally (configure via environment)
+- **Port**: 18122 locally (configure via environment)
 
 ### RAG Service (Optional)
 
 - **Service**: AI chat and knowledge queries
 - **Recommended**: Railway, Fly.io, AWS Lambda
 - **Environment**: Python 3.11+
-- **Command**: `uvicorn apps/rag-service/main:app --host 0.0.0.0 --port 8000`
+- **Command**: `uvicorn apps/rag-service/main:app --host 0.0.0.0 --port 18124`
 
 ## Environment Variable Reference
 
-| Variable                     | Purpose                               | Example                  |
-| ---------------------------- | ------------------------------------- | ------------------------ |
-| `NEXT_PUBLIC_HOCUSPOCUS_URL` | WebSocket endpoint for real-time sync | `https://sync.myapp.com` |
-| `NEXT_PUBLIC_API_URL`        | REST API base URL                     | `https://api.myapp.com`  |
-| `NEXT_PUBLIC_RAG_URL`        | RAG service endpoint (optional)       | `https://rag.myapp.com`  |
+| Variable              | Purpose                               | Example                 |
+| --------------------- | ------------------------------------- | ----------------------- |
+| `NEXT_PUBLIC_WS_URL`  | WebSocket endpoint for real-time sync | `wss://sync.myapp.com`  |
+| `NEXT_PUBLIC_API_URL` | REST API base URL                     | `https://api.myapp.com` |
+| `NEXT_PUBLIC_RAG_URL` | RAG service endpoint (optional)       | `https://rag.myapp.com` |
 
 ## Troubleshooting
 
@@ -181,7 +181,7 @@ The Next.js app benefits from Vercel's optimizations:
 - **Image Optimization**: Automatic image processing
 - **Code Splitting**: Only load JavaScript needed for each page
 
-See `.next/` configuration in `next.config.js` for advanced settings.
+See `.next/` configuration in `apps/web/next.config.mjs` for advanced settings.
 
 ## Support
 

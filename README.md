@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![CI](https://github.com/EZotoff/highport/actions/workflows/ci.yml/badge.svg)](https://github.com/EZotoff/highport/actions/workflows/ci.yml)
 [![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-lightgrey)](https://github.com/sponsors/EZotoff)
 
 ---
@@ -50,14 +50,20 @@ pnpm install
 # 3. Start PostgreSQL
 docker compose up -d
 
-# 4. Run database migrations
+# 4. Copy environment files and generate auth secret
+cp apps/web/.env.example apps/web/.env
+cp apps/server/.env.example apps/server/.env
+cp apps/rag-service/.env.example apps/rag-service/.env
+npx auth secret >> apps/web/.env   # generates NEXTAUTH_SECRET
+
+# 5. Run database migrations
 pnpm --filter server db:migrate
 
-# 5. Start development servers
+# 6. Start development servers
 pnpm dev
 ```
 
-The web app is now running at `http://localhost:3010`.
+The web app is now running at `http://localhost:18120`.
 
 ---
 
@@ -76,8 +82,8 @@ Highport uses a real-time CRDT sync engine powered by Yjs and Hocuspocus:
 ```
 ┌─────────────┐     WebSocket      ┌─────────────┐     SQL       ┌─────────────┐
 │   Web App   │ ◄────────────────► │  Hocuspocus │ ◄───────────► │  PostgreSQL │
-│  (Next.js)  │      Port 3011     │   Server    │               │   Port 5432 │
-│   Port 3010 │                    │   Port 3012 │               │             │
+│  (Next.js)  │      Port 18121    │   Server    │               │  Port 18123 │
+│  Port 18120 │                    │  Port 18122 │               │             │
 └──────┬──────┘                    └─────────────┘               └─────────────┘
        │
        │ HTTP/SSE
@@ -85,15 +91,15 @@ Highport uses a real-time CRDT sync engine powered by Yjs and Hocuspocus:
 ┌─────────────┐
 │    RAG      │     LLM        ┌─────────────┐
 │  Service    │ ◄────────────► │   Ollama    │
-│  Port 8000  │   (local)      │  Port 11434 │
+│  Port 18124 │   (local)      │  Port 11434 │
 └─────────────┘                └─────────────┘
 ```
 
-- **Web** (3010): Next.js 14 frontend with React Flow graph visualization
-- **Hocuspocus** (3011): Yjs WebSocket server for real-time sync
-- **Fastify** (3012): REST API for campaigns and user management
-- **RAG Service** (8000): Python FastAPI for AI queries with knowledge gating
-- **PostgreSQL** (5432): Document persistence and user data
+- **Web** (18120): Next.js 14 frontend with React Flow graph visualization
+- **Hocuspocus** (18121): Yjs WebSocket server for real-time sync
+- **Fastify** (18122): REST API for campaigns and user management
+- **RAG Service** (18124): Python FastAPI for AI queries with knowledge gating
+- **PostgreSQL** (18123 host → 5432 container): Document persistence and user data
 
 ---
 
@@ -115,7 +121,7 @@ Look for issues labeled `good first issue` to get started.
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for what is shipping now, what is coming next, and our long-term vision. Foundry VTT integration is planned for a future release.
+See [ROADMAP.md](./ROADMAP.md) for what is shipping now, what is coming next, and our long-term vision. Foundry VTT integration is experimental — see [`packages/foundry-module/`](./packages/foundry-module/).
 
 Community input welcome. Open a GitHub Issue with the `feature-request` label to share what matters most to you.
 
@@ -123,13 +129,13 @@ Community input welcome. Open a GitHub Issue with the `feature-request` label to
 
 ## Services
 
-| Service     | Port | Description           |
-| ----------- | ---- | --------------------- |
-| Web         | 3010 | Next.js frontend      |
-| Hocuspocus  | 3011 | WebSocket sync server |
-| Fastify     | 3012 | REST API              |
-| RAG Service | 8000 | Python FastAPI for AI |
-| PostgreSQL  | 5432 | Database              |
+| Service     | Port  | Description                      |
+| ----------- | ----- | -------------------------------- |
+| Web         | 18120 | Next.js frontend                 |
+| Hocuspocus  | 18121 | WebSocket sync server            |
+| Fastify     | 18122 | REST API                         |
+| RAG Service | 18124 | Python FastAPI for AI            |
+| PostgreSQL  | 18123 | Database (host → 5432 container) |
 
 ---
 

@@ -28,7 +28,7 @@ What we are actively working toward:
 - **Campaign sharing and invite links** `[Medium]`
 - **Character sheet management and NPC stat blocks** `[Hard]`
 - **Password reset flow** `[Easy]`
-- **Foundry VTT bidirectional sync** `[Hard]`
+- **Foundry VTT bidirectional sync** `[Hard]` — _experimental, in active development in [`packages/foundry-module/`](./packages/foundry-module/)_
 - **Portrait management improvements** `[Medium]`
 - **Campaign edit** (rename, description update) `[Easy]`
 
@@ -87,4 +87,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions and contribution
 
 ---
 
-_For technical details about architecture, see [AGENTS.md](./AGENTS.md)._
+_For technical details about architecture, see the per-app `README.md` files under `apps/` and `packages/`._

@@ -52,25 +52,35 @@ Please read this guide before submitting issues or pull requests. It will save t
    docker compose up -d
    ```
 
-4. Run database migrations:
+4. Copy environment files and generate auth secret:
+
+   ```bash
+   cp apps/web/.env.example apps/web/.env
+   cp apps/server/.env.example apps/server/.env
+   cp apps/rag-service/.env.example apps/rag-service/.env
+   # Generate NextAuth secret and append to apps/web/.env:
+   npx auth secret >> apps/web/.env
+   ```
+
+5. Run database migrations:
 
    ```bash
    pnpm --filter server db:migrate
    ```
 
-5. Start development servers:
+6. Start development servers:
    ```bash
    pnpm dev
    ```
 
 The services will be available at:
 
-| Service       | Port | Description               |
-| ------------- | ---- | ------------------------- |
-| Web (Next.js) | 3010 | Frontend UI               |
-| Hocuspocus    | 3011 | WebSocket sync server     |
-| Fastify API   | 3012 | REST API                  |
-| RAG Service   | 8000 | Python FastAPI (optional) |
+| Service       | Port  | Description               |
+| ------------- | ----- | ------------------------- |
+| Web (Next.js) | 18120 | Frontend UI               |
+| Hocuspocus    | 18121 | WebSocket sync server     |
+| Fastify API   | 18122 | REST API                  |
+| RAG Service   | 18124 | Python FastAPI (optional) |
 
 ### Running the RAG Service (Optional)
 
@@ -80,10 +90,11 @@ The AI-powered "Ask Computer" feature requires the RAG service:
 cd apps/rag-service
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install poetry
-poetry install
-poetry run uvicorn main:app --reload
+pip install -r requirements.txt
+uvicorn main:app --reload --port 18124
 ```
+
+For full setup (including Ollama for local AI), see [docs/rag-setup.md](./docs/rag-setup.md).
 
 ---
 
@@ -152,7 +163,7 @@ test(sync): add multi-user conflict resolution tests
 
 1. **Fork** the repository (if external contributor)
 
-2. **Create a branch** from `main` using the naming conventions above
+2. **Create a branch** from `master` using the naming conventions above
 
 3. **Make your changes** following the code style guidelines
 
@@ -351,7 +362,7 @@ Before creating a new issue, please search existing issues to avoid duplicates.
 
 ### GitHub Discussions
 
-For general questions, brainstorming, or community chat, use GitHub Discussions (when enabled).
+For general questions, brainstorming, or community chat, use [GitHub Discussions](../../discussions).
 
 ### Good Issue Reports
 

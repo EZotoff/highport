@@ -30,10 +30,10 @@ CHROMA_PERSIST_DIR=./chroma_data
 EOF
 
 # 5. Start the service
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 18124
 
 # 6. Test it
-curl http://localhost:8000/health
+curl http://localhost:18124/health
 ```
 
 ---
@@ -44,7 +44,7 @@ Before starting, ensure you have:
 
 - **Python 3.11+** installed
 - **Ollama** installed (or will be installed below)
-- **Highport server running** (Web on port 3010, Fastify API on port 3012)
+- **Highport server running** (Web on port 18120, Fastify API on port 18122)
 - **8GB+ RAM** for running LLMs locally (16GB+ recommended)
 
 ---
@@ -167,17 +167,17 @@ EOF
 
 ### Step 5: Start the Service
 
-Start the RAG service on port 8000:
+Start the RAG service on port 18124:
 
 ```bash
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 18124
 ```
 
 You should see output similar to:
 
 ```
 INFO:     Will watch for changes in these directories: ['/path/to/apps/rag-service']
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Uvicorn running on http://0.0.0.0:18124 (Press CTRL+C to quit)
 ```
 
 The service is now running and will auto-reload when you change code.
@@ -189,7 +189,7 @@ The service is now running and will auto-reload when you change code.
 **Health check** (verifies providers are configured):
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:18124/health
 ```
 
 Expected response:
@@ -208,7 +208,7 @@ Expected response:
 
 ```bash
 # First, ingest some test data
-curl -X POST http://localhost:8000/ingest \
+curl -X POST http://localhost:18124/ingest \
   -H "Content-Type: application/json" \
   -H "X-User-Id: test-user" \
   -H "X-Is-GM: true" \
@@ -223,7 +223,7 @@ curl -X POST http://localhost:8000/ingest \
   }'
 
 # Then query it
-curl -X POST http://localhost:8000/query \
+curl -X POST http://localhost:18124/query \
   -H "Content-Type: application/json" \
   -H "X-User-Id: test-user" \
   -H "X-Is-GM: false" \
@@ -266,24 +266,24 @@ Expected: Streaming response with generated text based on the ingested document.
 ollama pull llama3.2
 ```
 
-### Port 8000 Already in Use
+### Port 18124 Already in Use
 
-**Problem:** Another service is using port 8000.
+**Problem:** Another service is using port 18124.
 
 **Solutions:**
 
 1. Use a different port:
 
    ```bash
-   uvicorn main:app --reload --port 8001
+   uvicorn main:app --reload --port 18125
    ```
 
-   Then update Highport web to use port 8001 (set `RAG_SERVICE_URL` in web app).
+   Then update Highport web to use port 18125 (set `RAG_SERVICE_URL` in web app).
 
-2. Find and stop the process using port 8000:
+2. Find and stop the process using port 18124:
    ```bash
    # macOS/Linux
-   lsof -i :8000
+   lsof -i :18124
    kill -9 <PID>
    ```
 
@@ -360,12 +360,13 @@ For production deployments or when local hardware is insufficient, you can use c
    VECTORDB_PROVIDER=pinecone
    GEMINI_API_KEY=your-key-here
    PINECONE_API_KEY=your-key-here
-   PINECONE_INDEX=highport-index
+   PINECONE_INDEX_NAME=highport-index
+   PINECONE_ENVIRONMENT=us-east-1-aws
    ```
 
 3. Restart the service:
    ```bash
-   uvicorn main:app --reload --port 8000
+   uvicorn main:app --reload --port 18124
    ```
 
 **Cost notes:**
@@ -382,7 +383,7 @@ For production deployments or when local hardware is insufficient, you can use c
 ```
 ┌─────────────┐     HTTP/SSE      ┌─────────────┐
 │  Highport   │ ◄───────────────► │    RAG      │
-│   Web App   │   Port 8000       │  Service    │
+│   Web App   │   Port 18124      │  Service    │
 │  (Next.js)  │                   │  (FastAPI)  │
 └─────────────┘                   └──────┬──────┘
                                          │
