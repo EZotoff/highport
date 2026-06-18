@@ -87,3 +87,6 @@ service-account*.json
 
 # RAG service data
 chroma_data/
+
+# Internal engineering docs (AI tooling, design briefs) — not for public release
+docs-internal/
