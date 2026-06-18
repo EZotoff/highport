@@ -47,5 +47,4 @@ pytest
 - `providers/` holds LLM and vector database adapters.
 - `services/` contains chunking, embedding, and retrieval logic.
 ## License
-
 MIT - see [root LICENSE](../../LICENSE).
