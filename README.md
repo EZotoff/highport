@@ -1,6 +1,8 @@
 # Highport
 
-> The bridge of your campaign. Real-time. Open-source. Extensible.
+> The main terminal of your Traveller campaign.
+
+Highport is an open-source companion for **Mongoose Traveller 2nd Edition** (MGT2E). It begins where Traveller is most distinctive, in the shipyard of character creation, and grows with your table into a living campaign memory, a ship's intelligence that speaks to your crew, and eventually a sector that breathes while you sleep in jump space.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
@@ -26,14 +28,46 @@
   </tr>
 </table>
 
+---
+
+## The Three Tiers
+
+Highport is designed as three stages of a single tool:
+
+| Tier  | Name                | What it is                                                                                | Status                                                                           |
+| ----- | ------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **A** | Character Creation  | A collaborative, replayable backstory engine built on MGT2E chargen.                      | In progress — mechanics near-complete, AI integration live, gamification pending |
+| **B** | Campaign Management | A gated, voice-aware campaign memory for accepted characters and lore.                    | Foundations in place — RAG + knowledge scopes + portraits shipped                |
+| **C** | World Simulation    | A living sector where factions move, resources shift, and borders bleed between sessions. | Research stage — architecture only                                               |
+
+For the full vision, see [CONCEPT.md](./CONCEPT.md). For delivery status, see [ROADMAP.md](./ROADMAP.md).
+
+---
+
 ## Features
 
-- 🎮 **Real-time Collaboration** — Multiple users edit simultaneously with Yjs CRDT sync
-- 🤖 **AI-powered Research** — Ask questions about your campaign lore with knowledge gating
-- 🕸️ **Graph Visualization** — Interactive node graph for NPCs, locations, factions, and their relationships
-- 📊 **Campaign Management** — Create, manage, and organize your TTRPG campaigns
-- 💾 **Offline Support** — IndexedDB persistence works even when disconnected
-- 🔌 **Extensible Game Data** — Plugin import system with starter content included
+### Shipped
+
+- **[Shipped] MGT2E Character Creation** — Lifepath mechanics engine: characteristics, qualification, 4-phase term resolution, survival, events, advancement, mishaps, mustering out, rank, aging, and connections. All dice-driven; all immutable once rolled. Starter data: the Drifter career and 44 core skills ship in-repo. Full 12 careers require an external game data pack (see [Game Data](#game-data)).
+- **[Shipped] Configurable AI Invasiveness** — Three modes control how much texture the AI adds to your chargen: **Brief** (a 1-2 sentence gloss), **Inspiration** (several concrete hooks to pick from), and **Full** (a drafted scene with named NPCs and relationship implications). The default is Inspiration. The dice own the facts; the AI owns the texture. Every AI output is draft until you accept, edit, or reject it.
+- **[Shipped] Real-time Collaborative Chargen** — Multiple players and a GM work in the same session simultaneously. Powered by Yjs CRDT (Conflict-free Replicated Data Type — a sync protocol that lets multiple clients edit shared state without conflicts) via Hocuspocus (the WebSocket server that relays Yjs updates), with participant panels, entity pools, connection requests, GM control, and live notifications.
+- **[Shipped] Portrait Generation** — Gemini image model with remix support, integrated into character finalization and entity spawning.
+- **[Prototype] Knowledge Gating** — Campaign memory is partitioned by scope: `public`, `party`, `gm`, and `char:<id>`. Scope metadata and retrieval filtering are implemented; the current trust model relies on client-supplied headers (`X-Is-GM`, `X-Character-Id`), which is acceptable for local play but must be replaced with a server-side authenticated resolver before serious multi-user deployment. Per-character secrets (`char:<id>`) are a target, not fully enforced yet. See [ROADMAP.md](./ROADMAP.md) Known Issues.
+- **[Shipped] Multi-provider RAG** — RAG (Retrieval-Augmented Generation — querying an AI with a knowledge base of your campaign documents). Defaults to free local stack: Ollama (`llama3.2`) + ChromaDB + Ollama embeddings (`qwen3-embedding:0.6b`). Cloud options (Gemini, Pinecone, OpenAI) are opt-in.
+- **[Shipped] Graph Visualization** — Interactive node graph for NPCs, locations, factions, and their relationships.
+- **[Shipped] Offline Support** — IndexedDB persistence works even when disconnected.
+
+### Experimental
+
+- **[Experimental] Foundry VTT Integration** — Architecture designed for bidirectional sync of accepted characters and NPCs. Runtime maturity is being proven. See [`packages/foundry-module/`](./packages/foundry-module/).
+
+### Planned
+
+- **[Planned] Gamified Chargen Flow** — A Tyranny-style replayable backstory experience where each term feels like a chapter and your service record becomes something you want to revisit. This is a North Star, not a current feature.
+- **[Planned] Ship's AI Persona** — A diegetic player-facing assistant (default persona: _The Steward_) that answers from ship's logs and campaign memory. Architectural seams are in place; the persona itself is not yet in code.
+- **[Planned] GM's AI Assistant** — An omniscient prep assistant that sees GM-only records, proposes secrets, summarizes factions, and generates NPC dialogue.
+- **[Planned] Voice / TTS / Audio** — Experimental and long-term. The system will never promise real-time speech it cannot deliver.
+- **[Planned] Tier C — World Simulation** — Faction turns, resource ledgers, goal hierarchies, and a sector that changes between sessions. Architectural research only.
 
 ---
 
@@ -90,22 +124,22 @@ Highport uses a real-time CRDT sync engine powered by Yjs and Hocuspocus:
 ┌─────────────┐     WebSocket      ┌─────────────┐     SQL       ┌─────────────┐
 │   Web App   │ ◄────────────────► │  Hocuspocus │ ◄───────────► │  PostgreSQL │
 │  (Next.js)  │      Port 18121    │   Server    │               │  Port 18123 │
-│  Port 18120 │                    │  Port 18122 │               │             │
-└──────┬──────┘                    └─────────────┘               └─────────────┘
-       │
-       │ HTTP/SSE
-       ▼
-┌─────────────┐
-│    RAG      │     LLM        ┌─────────────┐
-│  Service    │ ◄────────────► │   Ollama    │
-│  Port 18124 │   (local)      │  Port 11434 │
-└─────────────┘                └─────────────┘
+│  Port 18120 │                    │  Port 18121 │               │             │
+└──┬───────┬──┘                    └─────────────┘               └─────────────┘
+   │       │
+   │ HTTP  │ HTTP/SSE (direct)
+   ▼       ▼
+┌─────────┐ ┌─────────────┐     LLM        ┌─────────────┐
+│ Fastify │ │    RAG      │ ◄────────────► │   Ollama    │
+│  Port   │ │  Service    │   (local)      │  Port 11434 │
+│ 18122   │ │  Port 18124 │                └─────────────┘
+└─────────┘ └─────────────┘
 ```
 
 - **Web** (18120): Next.js 14 frontend with React Flow graph visualization
 - **Hocuspocus** (18121): Yjs WebSocket server for real-time sync
 - **Fastify** (18122): REST API for campaigns and user management
-- **RAG Service** (18124): Python FastAPI for AI queries with knowledge gating
+- **RAG Service** (18124): Python FastAPI for AI queries with knowledge gating. The web app streams queries directly to the RAG service over SSE (Server-Sent Events) for real-time token streaming; Fastify handles non-streaming REST.
 - **PostgreSQL** (18123 host → 5432 container): Document persistence and user data
 
 ---
@@ -114,7 +148,9 @@ Highport uses a real-time CRDT sync engine powered by Yjs and Hocuspocus:
 
 Highport supports custom game system data through a plugin import system. Place JSON files in the data import folder, and the system will load your custom content.
 
-**Starter Content**: A basic "Drifter" career and core skill list are included so you can start exploring immediately. For a full game system experience (additional careers, equipment tables, etc.), install a compatible game data pack.
+**Starter Content**: The repository ships a starter Drifter career and 44 core skill stubs so you can explore character creation immediately.
+
+**Full Careers**: The complete set of 12 MGT2E Core Rulebook careers is loaded via an external game data pack you provide through the `GAME_DATA_DIR` environment variable. This is a licensing constraint — Highport cannot redistribute Mongoose Publishing's proprietary career tables. You will need the _Mongoose Traveller 2nd Edition Core Rulebook_ to build or obtain a compatible data pack.
 
 ---
 
@@ -123,14 +159,6 @@ Highport supports custom game system data through a plugin import system. Place 
 We welcome contributions. See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions, branch naming conventions, and our pull request process.
 
 Look for issues labeled `good first issue` to get started.
-
----
-
-## Roadmap
-
-See [ROADMAP.md](./ROADMAP.md) for what is shipping now, what is coming next, and our long-term vision. Foundry VTT integration is experimental; see [`packages/foundry-module/`](./packages/foundry-module/).
-
-Community input welcome. Open a GitHub Issue with the `feature-request` label to share what matters most to you.
 
 ---
 
@@ -149,3 +177,5 @@ Community input welcome. Open a GitHub Issue with the `feature-request` label to
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
+
+_Highport is a fan-made companion tool and is not affiliated with or endorsed by Mongoose Publishing. Mongoose Traveller 2nd Edition rule references require the_ Mongoose Traveller 2nd Edition Core Rulebook*. Full career data is loaded via an external game data pack you provide; the repository ships starter content (the Drifter career and core skills) so you can explore immediately.*
