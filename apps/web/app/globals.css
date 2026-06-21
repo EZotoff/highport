@@ -732,3 +732,35 @@ body {
 .neon-breathe-active {
   animation: neon-breathe 3s ease-in-out infinite;
 }
+
+/* === CHARGEN BENTO LAYOUT TOKENS ===
+   Consumed by BentoGrid (var(--chargen-gap), var(--bento-min)) and other
+   chargen layout primitives. Safe to override per-instance via inline styles.
+*/
+:root {
+  /* Layout dimensions */
+  --chargen-sidebar-w: 280px;
+  --chargen-rail-w: 64px;
+  --chargen-header-h: 48px;
+  --chargen-gap: 12px;
+  --bento-min: 280px;
+
+  /* Motion timings */
+  --motion-step-wipe: 180ms;
+  --motion-boot: 800ms;
+  --motion-glitch: 300ms;
+
+  /* Stepper states */
+  --stepper-completed: #8b5cf6;
+  --stepper-active: #00f0ff;
+  --stepper-upcoming: rgba(255, 255, 255, 0.3);
+}
+
+/* Reduced motion media query */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-step-wipe: 0ms;
+    --motion-boot: 0ms;
+    --motion-glitch: 0ms;
+  }
+}
