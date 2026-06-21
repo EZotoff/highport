@@ -15,9 +15,10 @@ import ParticipantPanel from './ParticipantPanel';
 import { EntityPoolPanel } from './EntityPoolPanel';
 import { useCharacter } from '../../lib/chargen/hooks';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
-import { getActiveCharacter } from '../../lib/identity';
+import { getActiveCharacter, getOrCreateUser } from '../../lib/identity';
 import { getSessionId, initAndWaitForPersistence, initProvider } from '../../lib/sync';
 import { getYDoc } from '../../lib/ydoc';
+import { createSession, getSession } from '../../lib/chargen/state';
 import { GlassPanel, SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { GMControlPanel } from './GMControlPanel';
@@ -51,6 +52,14 @@ export default function ChargenWizard() {
         initProvider(doc, sessionId);
         clearTimeout(fallbackTimer);
         setIsSynced(true);
+
+        setTimeout(() => {
+          if (!isMounted) return;
+          if (!getSession(doc)) {
+            const user = getOrCreateUser();
+            createSession(doc, sessionId, user.userId);
+          }
+        }, 500);
       }
     });
     return () => {

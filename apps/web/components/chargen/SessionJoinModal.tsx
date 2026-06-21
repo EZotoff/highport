@@ -32,7 +32,7 @@ export default function SessionJoinModal() {
 
   useEffect(() => {
     if (session) return;
-    const timer = setTimeout(() => setConnectionTimedOut(true), 5000);
+    const timer = setTimeout(() => setConnectionTimedOut(true), 15000);
     return () => clearTimeout(timer);
   }, [session]);
 
