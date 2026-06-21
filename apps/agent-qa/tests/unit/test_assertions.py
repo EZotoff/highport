@@ -5,12 +5,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from agent_qa.charters.schema import BoundaryInvariant
 from agent_qa.reporting.assertions import (
+    AssertionResult,
     BoundaryViolation,
     ConsoleErrorExceeded,
     DOMAssertionFailure,
     FSMViolation,
     assert_all_invariants,
     assert_boundary_invariant,
+    assert_boundary_invariant_dom,
     assert_dom_text_absent,
     assert_dom_text_matches,
     assert_fsm_transition,
@@ -176,6 +178,85 @@ async def test_assert_boundary_invariant_regex_present_and_absent() -> None:
     await assert_boundary_invariant(
         absent_page, BoundaryInvariant(id="no_crash", kind="regex_absent", pattern="Crash")
     )
+
+
+async def test_assert_boundary_invariant_dom_regex_uses_body_inner_text() -> None:
+    page = AsyncMock()
+    page.evaluate = AsyncMock(return_value="Character Gen Background")
+
+    result = await assert_boundary_invariant_dom(
+        BoundaryInvariant(id="shell", kind="regex_present", pattern="Background"), page, "fallback"
+    )
+
+    assert result == AssertionResult(True, "Character Gen Background", None)
+    page.evaluate.assert_awaited_once_with("(...args) => document.body.innerText")
+
+
+async def test_assert_boundary_invariant_dom_element_visible_waits_for_selector() -> None:
+    locator = AsyncMock()
+    page = AsyncMock()
+    page.locator = Mock(return_value=locator)
+
+    result = await assert_boundary_invariant_dom(
+        BoundaryInvariant(id="create", kind="element_visible", filter='button:has-text("Create")'),
+        page,
+        "",
+    )
+
+    assert result.passed is True
+    locator.wait_for.assert_awaited_once_with(timeout=2000)
+
+
+async def test_assert_boundary_invariant_dom_element_has_text_counts_matches() -> None:
+    filtered = AsyncMock()
+    filtered.count = AsyncMock(return_value=1)
+    locator = Mock()
+    locator.filter = Mock(return_value=filtered)
+    page = AsyncMock()
+    page.locator = Mock(return_value=locator)
+
+    result = await assert_boundary_invariant_dom(
+        BoundaryInvariant(id="step", kind="element_has_text", filter="nav", expect="Step 1"),
+        page,
+        "",
+    )
+
+    assert result.passed is True
+    locator.filter.assert_called_once_with(has_text="Step 1")
+
+
+async def test_assert_boundary_invariant_dom_reads_fsm_state_attribute() -> None:
+    page = AsyncMock()
+    page.evaluate = AsyncMock(return_value="background")
+
+    result = await assert_boundary_invariant_dom(
+        BoundaryInvariant(id="status", kind="fsm_state_is", expect="background"), page, ""
+    )
+
+    assert result.passed is True
+    assert result.observed == "background"
+
+
+async def test_assert_boundary_invariant_dom_url_matches_page_url() -> None:
+    page = AsyncMock()
+    page.url = "http://localhost:18120/chargen"
+
+    result = await assert_boundary_invariant_dom(
+        BoundaryInvariant(id="url", kind="url_matches", pattern="/chargen"), page, ""
+    )
+
+    assert result.passed is True
+    assert result.observed == "http://localhost:18120/chargen"
+
+
+async def test_assert_boundary_invariant_dom_falls_back_without_page() -> None:
+    result = await assert_boundary_invariant_dom(
+        BoundaryInvariant(id="url", kind="url_matches", pattern="/chargen"),
+        None,
+        "http://localhost:18120/chargen",
+    )
+
+    assert result.passed is True
 
 
 @pytest.mark.parametrize(

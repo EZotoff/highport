@@ -13,6 +13,12 @@ ENV_VARS = [
     "AGENT_QA_PLANNER_MODEL",
     "AGENT_QA_DRIVER_MODEL",
     "AGENT_QA_CRITIC_MODEL",
+    "AGENT_QA_LLM_MODEL",
+    "AGENT_QA_LLM_PROVIDER_PREF",
+    "AGENT_QA_TEST_USER_EMAIL_FMT",
+    "AGENT_QA_TEST_USER_PASSWORD",
+    "AGENT_QA_TEST_USER_ROLES",
+    "AGENT_QA_BROWSER_USER_DATA_ROOT",
     "AGENT_QA_LOG_LEVEL",
     "ANTHROPIC_API_KEY",
 ]
@@ -79,3 +85,7 @@ def test_model_defaults_are_configured(monkeypatch, tmp_path: Path) -> None:
     assert settings.planner_model == "claude-haiku-4-5"
     assert settings.driver_model == "claude-sonnet-4-5"
     assert settings.critic_model == "claude-sonnet-4-5"
+    assert settings.llm_model == "gemini-2.5-flash"
+    assert settings.llm_provider_pref == "auto"
+    assert settings.test_user_roles == ("player1", "player2", "gm")
+    assert settings.browser_user_data_root == Path(".sisyphus/evidence/browser-profiles")

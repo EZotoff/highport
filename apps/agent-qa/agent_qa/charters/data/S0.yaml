@@ -6,8 +6,7 @@ tags: [smoke, harness]
 areas: [boot]
 timebox_minutes: 5
 mission: |
-  Explore /chargen route with a single client to discover whether the Highport
-  web app boots and renders the wizard shell within harness budget.
+  Sign in as a test player, navigate to /chargen, and verify the wizard shell renders with the background step visible.
 
 persona:
   primary: player
@@ -15,26 +14,40 @@ persona:
   critic: null
 
 preconditions:
-  services_required: [web]
-  services_optional: [hocuspocus, fastify, postgres, rag, ollama]
+  services_required: [web, fastify]
+  services_optional: [hocuspocus, postgres, rag, ollama]
   services_prohibited: []
   seed_data: {}
   session_config: {}
 
 fsm_expectations: []
 boundary_invariants:
-  - { id: page_title_present, kind: regex_present, pattern: 'Chargen|Highport' }
+  - {
+      id: chargen_shell_text,
+      kind: regex_present,
+      pattern: 'Background|Character Gen|ChargenWizard',
+    }
+  - {
+      id: wizard_shell_visible,
+      kind: element_visible,
+      filter: 'button:has-text("Create New Character")',
+    }
+  - { id: chargen_url, kind: url_matches, pattern: '/chargen' }
   - { id: no_uncaught_exception, kind: exact, expect: 0 }
 behavioral_checks: []
 
 success_criteria:
-  required: [page_loaded, screenshot_captured, tape_written, report_written]
+  required: [login_completed, chargen_page_loaded, wizard_shell_visible, report_written]
+
+login:
+  required: true
+  user_role: player1
 
 budget:
-  max_steps: 5
+  max_steps: 8
   max_tokens_per_step: 500
   max_total_tokens: 5000
-  max_wall_clock_s: 60
+  max_wall_clock_s: 120
   retry_on_infra_failure: 0
 
 evidence:

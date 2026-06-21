@@ -11,7 +11,9 @@ def test_s0_loads_via_charter_loader() -> None:
 
     assert charter.id == "S0"
     assert charter.title == "Harness smoke test"
-    assert charter.budget.max_steps == 5
+    assert charter.budget.max_steps == 8
+    assert charter.login is not None
+    assert charter.login.user_role == "player1"
 
 
 def test_charter_load_all_includes_s0() -> None:

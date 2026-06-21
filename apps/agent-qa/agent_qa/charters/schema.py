@@ -69,7 +69,17 @@ class FSMExpectation(BaseModel):
 
 class BoundaryInvariant(BaseModel):
     id: str
-    kind: Literal["exact", "range", "upper_bound", "regex_present", "regex_absent"]
+    kind: Literal[
+        "exact",
+        "range",
+        "upper_bound",
+        "regex_present",
+        "regex_absent",
+        "element_visible",
+        "element_has_text",
+        "fsm_state_is",
+        "url_matches",
+    ]
     expect: Any = None
     min: int | None = None
     max: int | None = None
@@ -80,6 +90,14 @@ class BoundaryInvariant(BaseModel):
     def validate_kind_requirements(self) -> "BoundaryInvariant":
         if self.kind in {"regex_present", "regex_absent"} and not self.pattern:
             raise ValueError("regex invariants require pattern")
+        if self.kind == "url_matches" and not self.pattern:
+            raise ValueError("url_matches invariants require pattern")
+        if self.kind == "element_visible" and not self.filter:
+            raise ValueError("element_visible invariants require filter selector")
+        if self.kind == "element_has_text" and (not self.filter or self.expect is None):
+            raise ValueError("element_has_text invariants require filter selector and expect text")
+        if self.kind == "fsm_state_is" and self.expect is None:
+            raise ValueError("fsm_state_is invariants require expect")
         if self.kind == "range":
             if self.min is None or self.max is None:
                 raise ValueError("range invariants require min and max")
@@ -130,6 +148,11 @@ class EvidenceConfig(BaseModel):
     video: Literal["off", "on", "on_failure"] = "off"
 
 
+class LoginConfig(BaseModel):
+    required: bool = False
+    user_role: str = "player1"
+
+
 class Charter(BaseModel):
     id: str
     title: str
@@ -145,6 +168,7 @@ class Charter(BaseModel):
     boundary_invariants: list[BoundaryInvariant] = Field(default_factory=list)
     behavioral_checks: list[BehavioralCheck] = Field(default_factory=list)
     success_criteria: SuccessCriteria
+    login: LoginConfig | None = None
     budget: Budget = Field(default_factory=Budget)
     evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
     known_failure_modes: list[str] = Field(default_factory=list)
@@ -160,11 +184,4 @@ class Charter(BaseModel):
     @field_validator("mission")
     @classmethod
     def validate_mission_template(cls, value: str) -> str:
-        stripped = value.strip()
-        if (
-            not stripped.startswith("Explore ")
-            or " with " not in stripped
-            or " to discover " not in stripped
-        ):
-            raise ValueError("mission must follow 'Explore X with Y to discover Z' template")
         return value

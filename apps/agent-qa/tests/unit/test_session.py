@@ -27,6 +27,23 @@ class StackReport:
         return all(self.results[service].status is ServiceStatus.UP for service in required)
 
 
+class FakeLocator:
+    async def wait_for(self, *, timeout: int) -> None:
+        _ = timeout
+
+
+class FakePage:
+    url = "http://localhost:18120/chargen"
+
+    async def evaluate(self, script: str) -> str:
+        _ = script
+        return "Character Gen Background Create New Character"
+
+    def locator(self, selector: str) -> FakeLocator:
+        _ = selector
+        return FakeLocator()
+
+
 def driver_result(success: bool = True, errors: list[str] | None = None) -> DriverResult:
     return DriverResult(
         success=success,
@@ -59,6 +76,7 @@ def driver_result(success: bool = True, errors: list[str] | None = None) -> Driv
 
 class FakeDriver:
     result = driver_result()
+    last_page = FakePage()
 
     def __init__(self, *args: object, **kwargs: object) -> None:
         self.args = args
@@ -66,6 +84,9 @@ class FakeDriver:
 
     async def run(self) -> DriverResult:
         return self.result
+
+    async def close(self) -> None:
+        return None
 
 
 @pytest.mark.asyncio
@@ -92,6 +113,7 @@ async def test_bootstrap_then_happy_path(monkeypatch: pytest.MonkeyPatch, tmp_pa
         session, "bootstrap_stack", AsyncMock(return_value=type("Bootstrap", (), {"pids": [1]})())
     )
     monkeypatch.setattr(session, "CharterDriver", FakeDriver)
+    monkeypatch.setattr(session, "_login_user_for_charter", AsyncMock(return_value=None))
     monkeypatch.setattr(session, "_generate_report", AsyncMock(return_value=tmp_path / "report.md"))
 
     result = await session.run_charter(load_charter("S0"), settings(tmp_path))
@@ -109,13 +131,16 @@ async def test_happy_path_evaluates_boundaries(
         session, "probe_stack", AsyncMock(return_value=StackReport(ServiceStatus.UP))
     )
     monkeypatch.setattr(session, "CharterDriver", FakeDriver)
+    monkeypatch.setattr(session, "_login_user_for_charter", AsyncMock(return_value=None))
     monkeypatch.setattr(session, "_generate_report", AsyncMock(return_value=tmp_path / "report.md"))
 
     result = await session.run_charter(load_charter("S0"), settings(tmp_path))
 
     assert result.outcome == "pass"
     assert {boundary.id for boundary in result.boundary_results} == {
-        "page_title_present",
+        "chargen_shell_text",
+        "wizard_shell_visible",
+        "chargen_url",
         "no_uncaught_exception",
     }
 
@@ -128,6 +153,7 @@ async def test_xfail_inverts_failed_driver(monkeypatch: pytest.MonkeyPatch, tmp_
         session, "probe_stack", AsyncMock(return_value=StackReport(ServiceStatus.UP))
     )
     monkeypatch.setattr(session, "CharterDriver", FakeDriver)
+    monkeypatch.setattr(session, "_login_user_for_charter", AsyncMock(return_value=None))
     monkeypatch.setattr(session, "_generate_report", AsyncMock(return_value=tmp_path / "report.md"))
 
     result = await session.run_charter(charter, settings(tmp_path))

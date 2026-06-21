@@ -1,21 +1,27 @@
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
+from agent_qa.auth import TestUser, ensure_test_users, test_user_by_role, verify_user
 from agent_qa.charters.loader import load_charter
 from agent_qa.charters.schema import BoundaryInvariant, Charter
 from agent_qa.config import Settings
 from agent_qa.health.probes import ProbeResult, ServiceName
 from agent_qa.personas.loader import load_persona
+from agent_qa.reporting.assertions import assert_boundary_invariant_dom
 from agent_qa.reporting.evidence import EvidenceDir
 from agent_qa.runtime.driver import CharterDriver, DriverResult
 from agent_qa.stack import bootstrap_stack, probe_stack, teardown_stack
+
+if TYPE_CHECKING:
+    from playwright.async_api import Page
 
 
 @dataclass
@@ -54,6 +60,7 @@ async def run_charter(
     evidence_dir = EvidenceDir.create(active_settings.evidence_root, charter.id, started_at)
     precondition_status: dict[str, str] = {}
     bootstrap_pids: list[int] = []
+    driver: CharterDriver | None = None
     driver_result: DriverResult | None = None
     report_path: Path | None = None
     boundary_results: list[BoundaryCheckResult] = []
@@ -98,9 +105,20 @@ async def run_charter(
         if persona_id is None:
             raise ValueError(f"charter {charter.id} has no primary persona")
         persona = load_persona(persona_id)
-        driver = CharterDriver(charter, persona, evidence_dir)
+        login_user = await _login_user_for_charter(charter, active_settings)
+        user_data_dir = _browser_user_data_dir(active_settings, evidence_dir, charter, login_user)
+        driver = CharterDriver(
+            charter,
+            persona,
+            evidence_dir,
+            user_data_dir=user_data_dir,
+            login_user=login_user,
+            close_browser_on_finish=False,
+        )
         driver_result = await driver.run()
-        boundary_results = _evaluate_boundary_invariants(charter.boundary_invariants, driver_result)
+        boundary_results = await _evaluate_boundary_invariants(
+            charter.boundary_invariants, driver_result, driver.last_page
+        )
         invariants_pass = all(result.passed for result in boundary_results)
         if driver_result.success and invariants_pass:
             outcome = "pass"
@@ -148,6 +166,8 @@ async def run_charter(
             result.report_path = None
         return result
     finally:
+        if driver is not None:
+            await driver.close()
         if teardown_after and bootstrap_pids:
             await teardown_stack(bootstrap_pids)
 
@@ -173,8 +193,8 @@ async def run_many(
     return results
 
 
-def _evaluate_boundary_invariants(
-    invariants: list[BoundaryInvariant], driver_result: DriverResult
+async def _evaluate_boundary_invariants(
+    invariants: list[BoundaryInvariant], driver_result: DriverResult, page: object | None = None
 ) -> list[BoundaryCheckResult]:
     haystack = "\n".join(
         value
@@ -191,8 +211,14 @@ def _evaluate_boundary_invariants(
     for invariant in invariants:
         kind = str(invariant.kind)
         expected = _expected(invariant)
-        observed = _observed(invariant, driver_result, haystack)
-        passed = _boundary_passed(invariant, observed)
+        fallback_text = _observed(invariant, driver_result, haystack)
+        assertion = await assert_boundary_invariant_dom(
+            invariant, cast("Page | None", page), fallback_text
+        )
+        observed = assertion.observed
+        passed = assertion.passed
+        if assertion.error:
+            observed = f"{observed} ({assertion.error})" if observed else assertion.error
         results.append(
             BoundaryCheckResult(
                 id=invariant.id,
@@ -218,9 +244,11 @@ def _expected(invariant: BoundaryInvariant) -> str:
 def _observed(invariant: BoundaryInvariant, driver_result: DriverResult, haystack: str) -> str:
     if invariant.kind in {"regex_present", "regex_absent"}:
         return haystack
+    if invariant.kind == "url_matches":
+        return driver_result.final_url or haystack
     if "error" in invariant.id or "exception" in invariant.id:
         return str(len(driver_result.errors))
-    return ""
+    return haystack
 
 
 def _boundary_passed(invariant: BoundaryInvariant, observed: str) -> bool:
@@ -246,6 +274,31 @@ def _boundary_passed(invariant: BoundaryInvariant, observed: str) -> bool:
         except ValueError:
             return False
     return False
+
+
+async def _login_user_for_charter(charter: Charter, settings: Settings) -> TestUser | None:
+    if charter.login is None or not charter.login.required:
+        return None
+    ensure_result = await ensure_test_users(settings)
+    role = charter.login.user_role
+    user = test_user_by_role(role, settings)
+    failed_roles = {failed_user.role: message for failed_user, message in ensure_result.failed}
+    if role in failed_roles:
+        raise RuntimeError(f"failed to ensure test user {role}: {failed_roles[role]}")
+    user_id = await verify_user(user, settings)
+    if user_id is None:
+        raise RuntimeError(f"test user {role} could not be verified through Fastify auth")
+    return dataclasses.replace(user, user_id=user_id)
+
+
+def _browser_user_data_dir(
+    settings: Settings, evidence_dir: EvidenceDir, charter: Charter, login_user: TestUser | None
+) -> Path | None:
+    root = settings.browser_user_data_root
+    if root is None:
+        return None
+    role = login_user.role if login_user is not None else "anonymous"
+    return root / evidence_dir.root.name / charter.id / role
 
 
 def _failure_summary(

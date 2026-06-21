@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import re
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol, cast
 from weakref import WeakKeyDictionary
 
@@ -74,8 +76,27 @@ class BoundaryViolation(AssertionFailure):
         )
 
 
+@dataclass(frozen=True)
+class AssertionResult:
+    passed: bool
+    observed: str
+    error: str | None = None
+
+
 class _TextLocator(Protocol):
     async def inner_text(self, *, timeout: int | None = None) -> str: ...
+
+
+class _VisibleLocator(Protocol):
+    async def wait_for(self, *, timeout: int) -> None: ...
+
+
+class _CountLocator(Protocol):
+    async def count(self) -> int: ...
+
+
+class _FilterableLocator(Protocol):
+    def filter(self, *, has_text: str) -> _CountLocator: ...
 
 
 def assert_fsm_transition(
@@ -243,9 +264,74 @@ async def assert_no_console_errors(
         )
 
 
-async def assert_boundary_invariant(
-    page: Page,
+async def assert_boundary_invariant_dom(
     invariant: BoundaryInvariant,
+    page: Page | None,
+    fallback_text: str,
+) -> AssertionResult:
+    """Evaluate a BoundaryInvariant using real DOM when a Playwright page is available."""
+    kind = cast(str, invariant.kind)
+    if page is None:
+        return _assert_boundary_fallback(invariant, fallback_text)
+
+    try:
+        match kind:
+            case "regex_present":
+                observed = await _read_body_text(page)
+                pattern = _required_pattern(invariant)
+                passed = bool(re.search(pattern, observed, re.IGNORECASE))
+                return AssertionResult(passed, observed, None if passed else f"missing {pattern}")
+            case "regex_absent":
+                observed = await _read_body_text(page)
+                pattern = _required_pattern(invariant)
+                passed = not bool(re.search(pattern, observed, re.IGNORECASE))
+                return AssertionResult(
+                    passed, observed, None if passed else f"unexpected {pattern}"
+                )
+            case "element_visible":
+                selector = _required_selector(invariant)
+                await _wait_for_element_visible(page, selector)
+                return AssertionResult(True, selector)
+            case "element_has_text":
+                selector = _required_selector(invariant)
+                expected = _expected_text(invariant)
+                count = await _element_has_text_count(page, selector, expected)
+                passed = count > 0
+                return AssertionResult(
+                    passed,
+                    f"{selector} has_text={expected} count={count}",
+                    None if passed else "matching element not found",
+                )
+            case "fsm_state_is":
+                observed = await _read_chargen_status(page)
+                expected = _expected_text(invariant)
+                passed = observed == expected
+                return AssertionResult(passed, observed, None if passed else f"expected {expected}")
+            case "url_matches":
+                observed = _page_url(page) or fallback_text
+                pattern = _required_pattern(invariant)
+                passed = bool(re.search(pattern, observed, re.IGNORECASE))
+                return AssertionResult(
+                    passed, observed, None if passed else f"url missing {pattern}"
+                )
+            case "exact":
+                observed = await _exact_observed(page, invariant, fallback_text)
+                expected = _expected_text(invariant)
+                passed = observed == expected
+                return AssertionResult(passed, observed, None if passed else f"expected {expected}")
+            case "range" | "upper_bound":
+                observed = await _read_boundary_text(page, invariant.filter or "body")
+                return _assert_boundary_fallback(invariant, observed.strip())
+            case _:
+                raise ValueError(f"Unknown boundary invariant kind: {kind}")
+    except _playwright_timeout_types() as exc:
+        return AssertionResult(False, fallback_text, f"{type(exc).__name__}: {exc}")
+
+
+async def assert_boundary_invariant(
+    page: Page | None,
+    invariant: BoundaryInvariant,
+    fallback_text: str = "",
 ) -> None:
     """Evaluate a single BoundaryInvariant against current page state.
     Dispatch by `kind`:
@@ -257,8 +343,23 @@ async def assert_boundary_invariant(
     Raise BoundaryViolation on failure with invariant.id, kind, expected, actual.
     Raise ValueError on unknown kind.
     """
-    selector = invariant.filter or "body"
+    if page is None or cast(str, invariant.kind) in {
+        "element_visible",
+        "element_has_text",
+        "fsm_state_is",
+        "url_matches",
+    }:
+        result = await assert_boundary_invariant_dom(invariant, page, fallback_text)
+        if not result.passed:
+            raise BoundaryViolation(
+                invariant.id,
+                cast(str, invariant.kind),
+                _expected(invariant),
+                result.error or result.observed,
+            )
+        return
 
+    selector = invariant.filter or "body"
     kind = cast(str, invariant.kind)
 
     match kind:
@@ -371,6 +472,26 @@ def _required_pattern(invariant: BoundaryInvariant) -> str:
     return invariant.pattern
 
 
+def _required_selector(invariant: BoundaryInvariant) -> str:
+    if not invariant.filter:
+        raise BoundaryViolation(
+            invariant.id, cast(str, invariant.kind), "selector", "missing filter"
+        )
+    return invariant.filter
+
+
+def _expected(invariant: BoundaryInvariant) -> str:
+    if invariant.kind in {"regex_present", "regex_absent", "url_matches"}:
+        return invariant.pattern or ""
+    if invariant.kind == "range":
+        return f"{invariant.min}..{invariant.max}"
+    if invariant.kind == "upper_bound":
+        return f"<= {invariant.expect}"
+    if invariant.kind == "element_visible":
+        return invariant.filter or ""
+    return str(cast(object, invariant.expect))
+
+
 def _expected_text(invariant: BoundaryInvariant) -> str:
     return str(cast(object, invariant.expect))
 
@@ -378,6 +499,128 @@ def _expected_text(invariant: BoundaryInvariant) -> str:
 async def _read_boundary_text(page: Page, selector: str) -> str:
     locator: _TextLocator = page.locator(selector)
     return await locator.inner_text(timeout=3000)
+
+
+async def _read_body_text(page: Page) -> str:
+    text = await page.evaluate("(...args) => document.body.innerText")
+    return "" if text is None else str(text)
+
+
+async def _wait_for_element_visible(page: Page, selector: str) -> None:
+    locator_method = getattr(page, "locator", None)
+    if callable(locator_method):
+        locator = cast(_VisibleLocator, locator_method(selector))
+        await locator.wait_for(timeout=2000)
+        return
+    visible = await page.evaluate(_visible_script(selector))
+    if not visible:
+        raise TimeoutError(f"element not visible: {selector}")
+
+
+async def _element_has_text_count(page: Page, selector: str, expected: str) -> int:
+    locator_method = getattr(page, "locator", None)
+    if callable(locator_method):
+        locator = cast(_FilterableLocator, locator_method(selector)).filter(has_text=expected)
+        count = await locator.count()
+        return int(count)
+    count = await page.evaluate(_has_text_count_script(selector, expected))
+    return int(count) if isinstance(count, int | float) else 0
+
+
+def _visible_script(selector: str) -> str:
+    css_selector, text = _split_has_text_selector(selector)
+    return f"""(...args) => {{
+        const selector = {json.dumps(css_selector)};
+        const text = {json.dumps(text)};
+        const elements = Array.from(document.querySelectorAll(selector));
+        return elements.some((element) => {{
+            const rect = element.getBoundingClientRect();
+            const style = window.getComputedStyle(element);
+            const visible = rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+            const textMatches = text === null || (element.innerText || '').includes(text);
+            return visible && textMatches;
+        }});
+    }}"""
+
+
+def _has_text_count_script(selector: str, expected: str) -> str:
+    return f"""(...args) => {{
+        const selector = {json.dumps(selector)};
+        const expected = {json.dumps(expected)};
+        return Array.from(document.querySelectorAll(selector)).filter((element) =>
+            (element.innerText || '').includes(expected)
+        ).length;
+    }}"""
+
+
+def _split_has_text_selector(selector: str) -> tuple[str, str | None]:
+    match = re.fullmatch(r"(.+):has-text\((['\"])(.+)\2\)", selector)
+    if match is None:
+        return selector, None
+    return match.group(1), match.group(3)
+
+
+async def _read_chargen_status(page: Page) -> str:
+    status = await page.evaluate(
+        '(...args) => document.querySelector("[data-chargen-status]")?.getAttribute("data-chargen-status")'
+    )
+    return "" if status is None else str(status)
+
+
+async def _exact_observed(page: Page, invariant: BoundaryInvariant, fallback_text: str) -> str:
+    if invariant.filter:
+        return (await _read_boundary_text(page, invariant.filter)).strip()
+    return fallback_text
+
+
+def _page_url(page: Page) -> str | None:
+    url = getattr(page, "url", None)
+    return str(url) if url is not None else None
+
+
+def _assert_boundary_fallback(invariant: BoundaryInvariant, observed: str) -> AssertionResult:
+    kind = cast(str, invariant.kind)
+    match kind:
+        case "regex_present":
+            pattern = _required_pattern(invariant)
+            passed = bool(re.search(pattern, observed, re.IGNORECASE))
+            return AssertionResult(passed, observed, None if passed else f"missing {pattern}")
+        case "regex_absent":
+            pattern = _required_pattern(invariant)
+            passed = not bool(re.search(pattern, observed, re.IGNORECASE))
+            return AssertionResult(passed, observed, None if passed else f"unexpected {pattern}")
+        case "url_matches":
+            pattern = _required_pattern(invariant)
+            passed = bool(re.search(pattern, observed, re.IGNORECASE))
+            return AssertionResult(passed, observed, None if passed else f"url missing {pattern}")
+        case "exact":
+            expected = _expected_text(invariant)
+            passed = observed == expected
+            return AssertionResult(passed, observed, None if passed else f"expected {expected}")
+        case "range":
+            try:
+                value = _parse_boundary_number(invariant, observed)
+            except BoundaryViolation as exc:
+                return AssertionResult(False, observed, str(exc))
+            minimum, maximum = _required_range(invariant)
+            passed = minimum <= value <= maximum
+            return AssertionResult(
+                passed, observed, None if passed else f"expected {minimum}..{maximum}"
+            )
+        case "upper_bound":
+            try:
+                value = _parse_boundary_number(invariant, observed)
+                upper_bound = _parse_expected_number(invariant)
+            except BoundaryViolation as exc:
+                return AssertionResult(False, observed, str(exc))
+            passed = value <= upper_bound
+            return AssertionResult(
+                passed, observed, None if passed else f"expected <= {upper_bound:g}"
+            )
+        case "element_visible" | "element_has_text" | "fsm_state_is":
+            return AssertionResult(False, observed, "Playwright page unavailable")
+        case _:
+            raise ValueError(f"Unknown boundary invariant kind: {kind}")
 
 
 def _parse_boundary_number(invariant: BoundaryInvariant, actual_text: str) -> float:

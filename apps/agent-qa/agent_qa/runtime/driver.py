@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Protocol, cast
 
+from agent_qa.auth import TestUser, build_login_task
 from agent_qa.charters.schema import Charter
 from agent_qa.config import Settings
 from agent_qa.personas.schema import Persona
@@ -30,6 +31,7 @@ class StepCapture:
     actions: list[dict[str, object]]
     screenshot_b64: str | None
     fsm_state_observed: str | None
+    tokens_used: int = 0
 
 
 @dataclass
@@ -43,6 +45,7 @@ class DriverResult:
     wall_clock_s: float
     budget_snapshot: dict[str, int | float]
     termination_reason: str
+    login_completed: bool = False
 
 
 class _ChatClass(Protocol):
@@ -77,12 +80,17 @@ class CharterDriver:
         *,
         headless: bool = True,
         user_data_dir: Path | None = None,
+        login_user: TestUser | None = None,
+        close_browser_on_finish: bool = True,
     ):
         self.charter: Charter = charter
         self.persona: Persona = persona
         self.evidence_dir: EvidenceDir = evidence_dir
         self.headless: bool = headless
         self.user_data_dir: Path | None = user_data_dir
+        self.login_user: TestUser | None = login_user
+        self.close_browser_on_finish: bool = close_browser_on_finish
+        self.last_page: object | None = None
         self.tape: Tape = Tape(evidence_dir.tape)
         self.steps: list[StepCapture] = []
         self.errors: list[str] = []
@@ -99,6 +107,7 @@ class CharterDriver:
         self._termination_reason: str = "done"
         self._url_window: list[str] = []
         self._history: object | None = None
+        self._browser: object | None = None
 
     async def run(self) -> DriverResult:
         """Build Agent with hooks, call agent.run(max_steps=...), return DriverResult."""
@@ -108,16 +117,23 @@ class CharterDriver:
         final_result: str | None = None
         final_url: str | None = None
         success = False
+        login_completed = self.login_user is None
         self._budget.start()
 
         try:
-            llm = build_llm(self.persona)
-            browser = await build_browser(headless=self.headless, user_data_dir=self.user_data_dir)
+            settings = Settings.from_env()
+            llm = build_llm(self.persona, settings)
+            browser = await build_browser(
+                headless=self.headless,
+                user_data_dir=self.user_data_dir,
+                keep_alive=not self.close_browser_on_finish,
+            )
+            self._browser = browser
             agent_class = _agent_class()
             agent = agent_class(
                 task=self._task_text(),
                 llm=llm,
-                fallback_llm=build_fallback_llm(self.persona),
+                fallback_llm=build_fallback_llm(self.persona, settings),
                 browser=browser,
                 register_new_step_callback=self._capture_step,
                 register_done_callback=self._capture_done,
@@ -133,6 +149,7 @@ class CharterDriver:
             final_result = _history_final_result(history)
             final_url = _history_final_url(history) or self._latest_url()
             total_tokens = _history_total_tokens(history) or self._budget.snapshot().tokens_used
+            login_completed = self._login_completed(final_url)
             if self._termination_reason == "done" and not _history_done(history):
                 self._termination_reason = "stopped" if self._stop_requested else "max_steps"
             success = self._termination_reason == "done" and _history_success(history)
@@ -143,8 +160,9 @@ class CharterDriver:
             self._termination_reason = "error"
             self.errors.append(f"{type(exc).__name__}: {exc}")
         finally:
-            if browser is not None:
+            if browser is not None and self.close_browser_on_finish:
                 await _close_browser(browser)
+                self._browser = None
 
         snapshot = self._budget.snapshot()
         if total_tokens == 0:
@@ -159,7 +177,14 @@ class CharterDriver:
             wall_clock_s=time.monotonic() - started,
             budget_snapshot=_snapshot_dict(snapshot),
             termination_reason=self._termination_reason,
+            login_completed=self.login_user is None or login_completed,
         )
+
+    async def close(self) -> None:
+        """Close the Browser-Use browser retained for post-run DOM assertions."""
+        if self._browser is not None:
+            await _close_browser(self._browser)
+            self._browser = None
 
     async def _capture_step(self, browser_state: object, model_output: object, step: int) -> None:
         timestamp = datetime.now(UTC)
@@ -180,6 +205,7 @@ class CharterDriver:
             actions=actions,
             screenshot_b64=screenshot_b64,
             fsm_state_observed=None,
+            tokens_used=tokens,
         )
         self.steps.append(capture)
         self._url_window.append(url)
@@ -208,9 +234,14 @@ class CharterDriver:
     async def _on_step_start(self, _agent: object) -> None:
         self._budget.check_time()
 
-    async def _on_step_end(self, _agent: object) -> None:
+    async def _on_step_end(self, agent: object) -> None:
         self._budget.check_time()
-        if len(self._url_window) == 3 and len(set(self._url_window)) == 1:
+        self.last_page = await _extract_playwright_page(agent) or self.last_page
+        if (
+            len(self._url_window) == 3
+            and len(set(self._url_window)) == 1
+            and not self._login_form_in_progress()
+        ):
             self._stop_requested = True
             self._termination_reason = "stopped"
 
@@ -235,7 +266,7 @@ class CharterDriver:
         base_url = settings.web_url.rstrip("/")
         constraints = "\n".join(f"- {item}" for item in self.persona.behavioral_constraints)
         success = "\n".join(f"- {item}" for item in self.charter.success_criteria.required)
-        return (
+        task = (
             f"Open {base_url}/chargen and execute charter {self.charter.id}: {self.charter.title}.\n"
             f"Mission: {self.charter.mission.strip()}\n"
             f"Role: {self.persona.role}.\n"
@@ -244,42 +275,82 @@ class CharterDriver:
             "For this smoke harness, stop and mark the task done as soon as the page is loaded, "
             "a Highport or Chargen title/shell is visible, and no obvious browser error page is shown."
         )
+        if self.login_user is None:
+            return task
+        return f"{build_login_task(self.login_user, base_url)}\n\nThen:\n{task}"
+
+    def _login_completed(self, final_url: str | None) -> bool:
+        if self.login_user is None:
+            return True
+        urls = [step.url for step in self.steps if step.url]
+        if final_url:
+            urls.append(final_url)
+        return any("/chargen" in url and "/login" not in url for url in urls)
+
+    def _login_form_in_progress(self) -> bool:
+        return (
+            self.login_user is not None
+            and bool(self._url_window)
+            and "/login" in self._url_window[-1]
+        )
 
 
-def build_llm(persona: Persona) -> object:
+def build_llm(persona: Persona, settings: Settings | None = None) -> object:
     """Construct the LLM per persona.model + env API keys."""
     _load_env_files()
+    active_settings = settings or Settings.from_env()
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
     gemini_key = os.environ.get("GEMINI_API_KEY")
     groq_key = os.environ.get("GROQ_API_KEY")
     chat_anthropic, chat_google, chat_groq = _chat_classes()
     temperature = persona.model.temperature
+    provider_pref = active_settings.llm_provider_pref.lower()
+    provider = _select_provider(provider_pref, anthropic_key, gemini_key, groq_key)
+    model = active_settings.llm_model
 
-    if anthropic_key:
-        model = persona.model.driver or persona.model.critic or persona.model.planner
+    if provider == "anthropic" and anthropic_key:
         return chat_anthropic(model=model, temperature=temperature, api_key=anthropic_key)
-    if gemini_key:
-        return chat_google(
-            model="gemini-2.0-flash-exp", temperature=temperature, api_key=gemini_key
-        )
-    if groq_key:
-        return chat_groq(model="llama-3.3-70b-versatile", temperature=temperature, api_key=groq_key)
+    if provider == "gemini" and gemini_key:
+        return chat_google(model=model, temperature=temperature, api_key=gemini_key)
+    if provider == "groq" and groq_key:
+        return chat_groq(model=model, temperature=temperature, api_key=groq_key)
     raise RuntimeError(
         "No LLM API key found. Set ANTHROPIC_API_KEY, GEMINI_API_KEY, or GROQ_API_KEY."
     )
 
 
-def build_fallback_llm(persona: Persona) -> object | None:
+def build_fallback_llm(persona: Persona, settings: Settings | None = None) -> object | None:
     _load_env_files()
+    active_settings = settings or Settings.from_env()
     if os.environ.get("ANTHROPIC_API_KEY"):
         return None
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if gemini_key:
         _chat_anthropic, chat_google, _chat_groq = _chat_classes()
         return chat_google(
-            model="gemini-2.5-flash", temperature=persona.model.temperature, api_key=gemini_key
+            model=active_settings.llm_model,
+            temperature=persona.model.temperature,
+            api_key=gemini_key,
         )
     return None
+
+
+def _select_provider(
+    provider_pref: str, anthropic_key: str | None, gemini_key: str | None, groq_key: str | None
+) -> str:
+    if provider_pref not in {"auto", "anthropic", "gemini", "groq"}:
+        raise RuntimeError(
+            "AGENT_QA_LLM_PROVIDER_PREF must be one of: auto, anthropic, gemini, groq"
+        )
+    if provider_pref != "auto":
+        return provider_pref
+    if anthropic_key:
+        return "anthropic"
+    if gemini_key:
+        return "gemini"
+    if groq_key:
+        return "groq"
+    return "none"
 
 
 async def build_browser(
@@ -287,13 +358,16 @@ async def build_browser(
     headless: bool = True,
     user_data_dir: Path | None = None,
     cdp_url: str | None = None,
+    keep_alive: bool = False,
 ) -> object:
     """Construct Browser-Use Browser with isolation profile."""
     browser_class, profile_class = _browser_classes()
+    if user_data_dir is not None:
+        user_data_dir.mkdir(parents=True, exist_ok=True)
     profile = profile_class(
         headless=headless,
         user_data_dir=user_data_dir,
-        keep_alive=False,
+        keep_alive=keep_alive,
         cdp_url=cdp_url,
     )
     browser = browser_class(browser_profile=profile)
@@ -351,6 +425,54 @@ def _find_repo_file(relative_path: Path) -> Path | None:
 def _provider_has_vision() -> bool:
     _load_env_files()
     return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("GEMINI_API_KEY"))
+
+
+async def _extract_playwright_page(agent: object) -> object | None:
+    """Best-effort Browser-Use internals probe for the active Playwright Page."""
+    for root_name in ("browser_session", "browser", "browser_context", "context"):
+        root = getattr(agent, root_name, None)
+        page = await _page_from_root(root)
+        if page is not None:
+            return page
+    return None
+
+
+async def _page_from_root(root: object | None) -> object | None:
+    if root is None:
+        return None
+    for method_name in ("get_current_page", "must_get_current_page"):
+        method = getattr(root, method_name, None)
+        if callable(method):
+            try:
+                page = method()
+                if isinstance(page, Awaitable):
+                    page = await page
+            except Exception:
+                page = None
+            if page is not None:
+                return page
+    get_pages = getattr(root, "get_pages", None)
+    if callable(get_pages):
+        try:
+            pages = get_pages()
+            if isinstance(pages, Awaitable):
+                pages = await pages
+        except Exception:
+            pages = None
+        if isinstance(pages, list) and pages:
+            return pages[-1]
+    pages = getattr(root, "pages", None)
+    if isinstance(pages, list) and pages:
+        return pages[-1]
+    ctx = getattr(root, "_ctx", None)
+    pages = getattr(ctx, "pages", None)
+    if isinstance(pages, list) and pages:
+        return pages[-1]
+    session = getattr(root, "session", None)
+    pages = getattr(session, "pages", None)
+    if isinstance(pages, list) and pages:
+        return pages[-1]
+    return None
 
 
 def _optional_attr_str(obj: object, name: str) -> str | None:

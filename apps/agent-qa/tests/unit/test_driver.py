@@ -5,7 +5,9 @@ from typing import Any, ClassVar
 from unittest.mock import AsyncMock
 
 import pytest
+from agent_qa.auth import TestUser
 from agent_qa.charters.loader import load_charter
+from agent_qa.config import Settings
 from agent_qa.personas.loader import load_persona
 from agent_qa.reporting.evidence import EvidenceDir
 from agent_qa.runtime import driver
@@ -104,7 +106,7 @@ def test_build_llm_uses_gemini_default(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert isinstance(llm, BuiltLLM)
     assert llm.provider == "gemini"
-    assert llm.kwargs["model"] == "gemini-2.0-flash-exp"
+    assert llm.kwargs["model"] == "gemini-2.5-flash"
 
 
 def test_build_llm_falls_back_to_groq(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -118,7 +120,24 @@ def test_build_llm_falls_back_to_groq(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert isinstance(llm, BuiltLLM)
     assert llm.provider == "groq"
-    assert llm.kwargs["model"] == "llama-3.3-70b-versatile"
+    assert llm.kwargs["model"] == "gemini-2.5-flash"
+
+
+def test_build_llm_honors_provider_pref_and_configured_model(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "anthropic")
+    monkeypatch.setenv("GEMINI_API_KEY", "gemini")
+    monkeypatch.setattr(driver, "_chat_classes", fake_chat_classes)
+    monkeypatch.setattr(driver, "_load_env_files", lambda: None)
+
+    llm = driver.build_llm(
+        persona(), Settings(llm_provider_pref="gemini", llm_model="gemini-custom")
+    )
+
+    assert isinstance(llm, BuiltLLM)
+    assert llm.provider == "gemini"
+    assert llm.kwargs["model"] == "gemini-custom"
 
 
 def test_build_llm_fails_without_key(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -139,20 +158,26 @@ async def test_run_populates_result_and_tape(
     captured: dict[str, Any] = {}
     browser = FakeBrowser()
 
+    page = object()
+
     class FakeAgent:
         def __init__(self, **kwargs: Any) -> None:
             captured.update(kwargs)
+            self.browser = type(
+                "AgentBrowser", (), {"_ctx": type("Ctx", (), {"pages": [page]})()}
+            )()
 
         async def run(
             self, max_steps: int, on_step_start: object, on_step_end: object
         ) -> FakeHistory:
-            assert max_steps == 5
+            assert max_steps == 8
             await captured["register_new_step_callback"](State(), Output(), 1)
             await on_step_start(self)
             await on_step_end(self)
             return FakeHistory()
 
-    monkeypatch.setattr(driver, "build_llm", lambda _persona: object())
+    monkeypatch.setattr(driver, "build_llm", lambda _persona, _settings=None: object())
+    monkeypatch.setattr(driver, "build_fallback_llm", lambda _persona, _settings=None: None)
     monkeypatch.setattr(driver, "build_browser", AsyncMock(return_value=browser))
     monkeypatch.setattr(driver, "_agent_class", lambda: FakeAgent)
     monkeypatch.setattr(driver, "_provider_has_vision", lambda: True)
@@ -163,8 +188,42 @@ async def test_run_populates_result_and_tape(
     assert result.final_result == "Loaded Highport Chargen"
     assert result.total_tokens == 42
     assert result.steps[0].title == "Highport Chargen"
+    assert result.steps[0].tokens_used == 10
     assert (tmp_path / next(tmp_path.iterdir()).name / "S0" / "tape.jsonl").exists()
     assert browser.closed is True
+
+
+@pytest.mark.asyncio
+async def test_login_user_prepends_task_and_marks_login_completed(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    captured: dict[str, Any] = {}
+
+    class FakeAgent:
+        def __init__(self, **kwargs: Any) -> None:
+            captured.update(kwargs)
+
+        async def run(
+            self, max_steps: int, on_step_start: object, on_step_end: object
+        ) -> FakeHistory:
+            _ = max_steps, on_step_start, on_step_end
+            await captured["register_new_step_callback"](State(), Output(), 1)
+            return FakeHistory()
+
+    monkeypatch.setattr(driver, "build_llm", lambda _persona, _settings=None: object())
+    monkeypatch.setattr(driver, "build_fallback_llm", lambda _persona, _settings=None: None)
+    monkeypatch.setattr(driver, "build_browser", AsyncMock(return_value=FakeBrowser()))
+    monkeypatch.setattr(driver, "_agent_class", lambda: FakeAgent)
+    monkeypatch.setattr(driver, "_provider_has_vision", lambda: True)
+    user = TestUser("player1@agent-qa.test", "agent-qa-test-1234", "Agent QA player1", "player1")
+
+    result = await driver.CharterDriver(
+        load_charter("S0"), persona(), evidence(tmp_path), login_user=user
+    ).run()
+
+    assert "First, sign in" in captured["task"]
+    assert "player1@agent-qa.test" in captured["task"]
+    assert result.login_completed is True
 
 
 @pytest.mark.asyncio
@@ -186,7 +245,8 @@ async def test_budget_exceeded_terminates(monkeypatch: pytest.MonkeyPatch, tmp_p
     charter = load_charter("S0").model_copy(
         update={"budget": load_charter("S0").budget.model_copy(update={"max_tokens_per_step": 1})}
     )
-    monkeypatch.setattr(driver, "build_llm", lambda _persona: object())
+    monkeypatch.setattr(driver, "build_llm", lambda _persona, _settings=None: object())
+    monkeypatch.setattr(driver, "build_fallback_llm", lambda _persona, _settings=None: None)
     monkeypatch.setattr(driver, "build_browser", AsyncMock(return_value=FakeBrowser()))
     monkeypatch.setattr(driver, "_agent_class", lambda: FakeAgent)
     monkeypatch.setattr(driver, "_provider_has_vision", lambda: True)
@@ -208,3 +268,19 @@ async def test_stuck_detection_requests_stop(tmp_path: Path) -> None:
 
     assert await harness._should_stop() is True
     assert harness._termination_reason == "stopped"
+
+
+@pytest.mark.asyncio
+async def test_on_step_end_exposes_playwright_page(tmp_path: Path) -> None:
+    page = object()
+    agent = type(
+        "Agent",
+        (),
+        {"browser": type("Browser", (), {"_ctx": type("Ctx", (), {"pages": [page]})()})()},
+    )()
+    harness = driver.CharterDriver(load_charter("S0"), persona(), evidence(tmp_path))
+    harness._budget.start()
+
+    await harness._on_step_end(agent)
+
+    assert harness.last_page is page

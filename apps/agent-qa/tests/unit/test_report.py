@@ -94,7 +94,7 @@ def test_boundary_and_budget_tables_render(tmp_path: Path) -> None:
     content = generate_report(charter, result, result.evidence_dir).read_text(encoding="utf-8")
 
     assert "page_title_present" in content
-    assert "| steps | 1.00 | 5 | 20.0% |" in content
+    assert "| steps | 1.00 | 8 | 12.5% |" in content
     assert "| tokens | 22.00 | 5000 | 0.4% |" in content
 
 
