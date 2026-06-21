@@ -75,7 +75,11 @@ service-account*.json
 *-credentials.json
 
 # AI tooling
-.opencode/
+.opencode/*
+# Allow project-authored skills (so collaborators can use them)
+!.opencode/skills/
+.opencode/skills/*
+!.opencode/skills/chargen-qa/
 
 # Playwright CLI artifacts
 .playwright-cli/
