@@ -1,0 +1,12 @@
+id: gm
+role: gm
+model:
+  planner: claude-haiku-4-5
+  driver: claude-sonnet-4-5
+  temperature: 0.2
+system_prompt_includes: [you_are_the_gm, use_gm_control_panel_only]
+behavioral_constraints: [never_use_player_ui, only_gm_controls]
+access:
+  chargen: gm_controls_only
+  graph: read_write
+  chat: false

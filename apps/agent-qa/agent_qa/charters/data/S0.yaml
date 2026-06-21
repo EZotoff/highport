@@ -1,0 +1,47 @@
+id: S0
+title: Harness smoke test
+version: 1
+enabled: true
+tags: [smoke, harness]
+areas: [boot]
+timebox_minutes: 5
+mission: |
+  Explore /chargen route with a single client to discover whether the Highport
+  web app boots and renders the wizard shell within harness budget.
+
+persona:
+  primary: player
+  secondary: null
+  critic: null
+
+preconditions:
+  services_required: [web]
+  services_optional: [hocuspocus, fastify, postgres, rag, ollama]
+  services_prohibited: []
+  seed_data: {}
+  session_config: {}
+
+fsm_expectations: []
+boundary_invariants:
+  - { id: page_title_present, kind: regex_present, pattern: 'Chargen|Highport' }
+  - { id: no_uncaught_exception, kind: exact, expect: 0 }
+behavioral_checks: []
+
+success_criteria:
+  required: [page_loaded, screenshot_captured, tape_written, report_written]
+
+budget:
+  max_steps: 5
+  max_tokens_per_step: 500
+  max_total_tokens: 5000
+  max_wall_clock_s: 60
+  retry_on_infra_failure: 0
+
+evidence:
+  screenshots: per_step
+  action_tape: jsonl
+  dom_snapshots: on_assertion_failure
+  video: 'off'
+
+known_failure_modes: []
+xfail: false

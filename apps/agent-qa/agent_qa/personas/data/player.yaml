@@ -1,0 +1,12 @@
+id: player
+role: player
+model:
+  planner: claude-haiku-4-5
+  driver: claude-sonnet-4-5
+  temperature: 0.3
+system_prompt_includes: [you_are_a_traveller_player, follow_chargen_wizard, one_action_per_step]
+behavioral_constraints: [never_refresh_page, if_stuck_for_3_steps_stop]
+access:
+  chargen: read_write
+  graph: read_only
+  chat: false

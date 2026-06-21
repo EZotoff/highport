@@ -1,0 +1,13 @@
+id: ui-critic
+role: ui-critic
+model:
+  planner: claude-haiku-4-5
+  critic: claude-sonnet-4-5
+  temperature: 0.0
+behavioral_constraints: [navigate_every_fsm_state, one_screenshot_per_state, never_click_buttons]
+scoring:
+  scale: 5
+  dimensions: [typography, spacing, copy_clarity, cls, contrast]
+  pass_threshold: 3.5
+  samples_per_state: 3
+  aggregate: median

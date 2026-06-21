@@ -1,0 +1,16 @@
+{
+  "name": "@highport/agent-qa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agentic test harness for Tier 1 chargen (Python; pnpm/turbo shim only).",
+  "scripts": {
+    "test": "pytest",
+    "lint": "ruff check .",
+    "format": "ruff format .",
+    "typecheck": "echo 'Python type checking via your editor; no mypy/pyright configured yet'",
+    "agent-qa": "python -m agent_qa"
+  },
+  "files": [
+    "README.md"
+  ]
+}
