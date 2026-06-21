@@ -19,7 +19,7 @@ def test_s0_loads_via_charter_loader() -> None:
 def test_charter_load_all_includes_s0() -> None:
     charters = charter_loader.load_all()
 
-    assert [charter.id for charter in charters] == ["S0"]
+    assert {charter.id for charter in charters} >= {"S0", "A1", "B1"}
 
 
 def test_persona_loader_loads_all_three_personas() -> None:

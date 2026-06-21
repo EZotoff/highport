@@ -1,0 +1,77 @@
+id: B1
+title: Collaborative character creation — entity visibility
+mission: >
+  Verify that when player1 creates a character and selects a background,
+  player2 can observe the character appearing in the entity pool or wizard.
+version: 1
+enabled: true
+tags: [creation, multiplayer, entity-pool]
+areas: [chargen, collaboration]
+timebox_minutes: 8
+
+persona:
+  primary: player
+  secondary: null
+  critic: null
+
+personas:
+  mode: sequential
+  roles:
+    - persona_id: player
+      user_role: player1
+      mission: >
+        Sign in as player1, navigate to /chargen, click "Create New Character",
+        wait for the wizard to advance to the background step, then SELECT
+        any background (e.g., "Drifter" or whichever is available). Wait 10
+        seconds for the selection to sync, then take a screenshot.
+      max_steps: 12
+    - persona_id: player
+      user_role: player2
+      mission: >
+        Sign in as player2, navigate to /chargen. Look for the entity pool
+        panel (usually on the right side) or any shared character display.
+        Take a screenshot. Report what characters or entities you can see,
+        and whether any belong to player1.
+      max_steps: 8
+
+preconditions:
+  services_required: [web, fastify, hocuspocus]
+  services_optional: [postgres, ollama]
+  services_prohibited: []
+  seed_data: {}
+  session_config: {}
+
+fsm_expectations: []
+boundary_invariants:
+  - id: player2_sees_shared_state
+    kind: regex_present
+    description: Player 2's browser shows evidence of shared character state
+    expected: 'Drifter|player1|Agent QA player1'
+    target: player2
+    selector: "[data-testid='entity-pool'], .entity-pool-panel, [data-testid='chargen-wizard'], main"
+  - id: no_uncaught_exception
+    kind: exact
+    expected: 0
+behavioral_checks: []
+
+success_criteria:
+  required:
+    - Player 1 successfully creates a character and selects a background
+    - Player 2 can see evidence of the shared state (entity in pool or wizard)
+    - No uncaught exceptions in either browser
+
+budget:
+  max_steps: 25
+  max_tokens_per_step: 2000
+  max_total_tokens: 60000
+  max_wall_clock_s: 240
+  retry_on_infra_failure: 0
+
+evidence:
+  screenshots: per_step
+  action_tape: jsonl
+  dom_snapshots: on_assertion_failure
+  video: 'off'
+
+known_failure_modes: []
+xfail: false

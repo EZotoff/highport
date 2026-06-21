@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
@@ -198,3 +199,36 @@ async def test_run_many_fail_fast(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert results == [first]
     assert runner.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_multiplayer_charter_routes_to_orchestrator(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    mp_result = SimpleNamespace(
+        success=True,
+        players=[SimpleNamespace(role="player1", driver_result=driver_result())],
+        cross_player_assertions=[
+            {
+                "id": "player2_sees_player1",
+                "kind": "regex_present",
+                "expected": "player1",
+                "observed": "Agent QA player1",
+                "passed": True,
+            }
+        ],
+        total_wall_clock_s=2.0,
+        termination_reason="done",
+    )
+    runner = AsyncMock(return_value=mp_result)
+    monkeypatch.setattr(
+        session, "probe_stack", AsyncMock(return_value=StackReport(ServiceStatus.UP))
+    )
+    monkeypatch.setattr(session, "_run_multiplayer_charter", runner)
+    monkeypatch.setattr(session, "_generate_report", AsyncMock(return_value=tmp_path / "report.md"))
+
+    result = await session.run_charter(load_charter("A1"), settings(tmp_path))
+
+    assert result.outcome == "pass"
+    assert result.boundary_results[0].id == "player2_sees_player1"
+    assert runner.await_count == 1

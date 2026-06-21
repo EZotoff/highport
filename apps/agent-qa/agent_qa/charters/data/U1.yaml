@@ -1,0 +1,121 @@
+id: U1
+title: UI critique — chargen wizard design quality
+version: 1
+enabled: true
+tags: [ui-critique, design, readability, accessibility]
+areas: [chargen, ui]
+timebox_minutes: 10
+mission: |
+  Operational constraints for this Browser-Use run:
+  - The harness automatically captures screenshots after every browser step; DO NOT use save_as_pdf.
+  - DO NOT create or edit todo files, scratch files, or notes. Keep all critique notes in your memory.
+  - The "Create New Character" click is required for this charter and is an explicit exception to the persona's no-click preference.
+  - Complete the critique quickly: login, navigate to /chargen, inspect the wizard shell, click "Create New Character", inspect the resulting page, then immediately use the final done response with the structured critique below.
+  - DO NOT scroll. Evaluate the participant panel, entity pool, AI Assistance controls, and notifications area from the visible state after clicking "Create New Character"; if something is not visible, report that as a design finding.
+  - If the participant panel, entity pool, AI Assistance control, or notifications area is not visible after the background step appears, record that as a discoverability/design finding instead of continuing to search.
+
+  Sign in as player1, navigate to /chargen, and perform a thorough design critique
+  of the character generation interface. You MUST:
+
+  1. On the wizard shell (before creating a character):
+     - Take a screenshot of the full page
+     - Evaluate: overall layout, navigation clarity, the "Create New Character" button visibility
+     - Note any readability issues (contrast, font size, spacing)
+
+  2. Click "Create New Character" and evaluate the background step:
+     - Take a screenshot
+     - Evaluate: form labels, input field clarity, spacing between sections
+     - Check: are career options clearly presented? Is there visual hierarchy?
+
+  3. Look at the AI Assistance controls (verbosity selector):
+     - Take a screenshot
+     - Evaluate: is it clear what this control does? Are the options (Minimal/Structured/Rich) explained?
+
+  4. Look at the participant panel (left sidebar):
+     - Take a screenshot
+     - Evaluate: does it show who's in the session? Is presence clear?
+
+  5. Look at the entity pool panel (right sidebar) if visible:
+     - Take a screenshot
+     - Evaluate: is it clear what this panel is for? Are entities readable?
+
+  6. Check the notifications area:
+     - Evaluate: where would notifications appear? Is there a clear feedback mechanism?
+
+  OUTPUT FORMAT — end your task with a structured critique:
+  ```
+  ## Design Quality Score: X/100
+
+  ## Summary
+  (2-3 sentences)
+
+  ## Dimension Scores
+  - Readability: X/5 — (rationale)
+  - Visual Hierarchy: X/5 — (rationale)
+  - Layout & Spacing: X/5 — (rationale)
+  - Color & Mood: X/5 — (rationale)
+  - Interaction Design: X/5 — (rationale)
+  - Accessibility: X/5 — (rationale)
+
+  ## Findings
+  ### P0 Critical
+  (list, or "None")
+  ### P1 Major
+  (list, or "None")
+  ### P2 Minor
+  (list)
+  ### P3 Nit
+  (list)
+  ```
+
+  Take screenshots at EACH step. Be specific about what elements have issues and where they are on the page.
+
+persona:
+  primary: ui-critic
+  secondary: null
+  critic: null
+
+preconditions:
+  services_required: [web, fastify]
+  services_optional: [hocuspocus, postgres, rag, ollama]
+  services_prohibited: []
+  seed_data: {}
+  session_config: {}
+
+fsm_expectations: []
+boundary_invariants:
+  - id: reached_chargen
+    kind: url_matches
+    description: Agent reached the chargen page
+    pattern: '/chargen'
+  - id: no_uncaught_exception
+    kind: exact
+    description: No uncaught JavaScript exceptions
+    expect: 0
+behavioral_checks: []
+
+success_criteria:
+  required:
+    - Agent reached /chargen and captured ≥3 screenshots
+    - Agent produced a structured critique with dimension scores
+    - Agent identified at least 2 specific design findings
+
+login:
+  required: true
+  user_role: player1
+
+budget:
+  max_steps: 20
+  max_tokens_per_step: 3000
+  max_total_tokens: 80000
+  max_wall_clock_s: 300
+  retry_on_infra_failure: 0
+
+evidence:
+  screenshots: per_step
+  action_tape: jsonl
+  dom_snapshots: on_assertion_failure
+  video: 'off'
+
+known_failure_modes: []
+xfail: false

@@ -23,6 +23,8 @@ from agent_qa.stack import bootstrap_stack, probe_stack, teardown_stack
 if TYPE_CHECKING:
     from playwright.async_api import Page
 
+    from agent_qa.runtime.multiplayer import MultiPlayerResult
+
 
 @dataclass
 class BoundaryCheckResult:
@@ -101,6 +103,36 @@ async def run_charter(
             result.report_path = await _generate_report(charter, result, evidence_dir)
             return result
 
+        if _is_multiplayer_charter(charter):
+            mp_result = await _run_multiplayer_charter(charter, active_settings, evidence_dir)
+            driver_result = _aggregate_multiplayer_driver_result(mp_result)
+            boundary_results = _multiplayer_boundary_results(mp_result)
+            if mp_result.success:
+                outcome = "pass"
+                summary = "all players completed and cross-player assertions passed"
+            elif charter.xfail:
+                outcome = "xfail"
+                summary = "expected failure reproduced"
+            else:
+                outcome = "fail"
+                summary = mp_result.termination_reason
+
+            completed_at = datetime.now(UTC)
+            result = CharterRunResult(
+                charter_id=charter.id,
+                started_at=started_at,
+                completed_at=completed_at,
+                precondition_status=precondition_status,
+                driver_result=driver_result,
+                report_path=report_path,
+                evidence_dir=evidence_dir,
+                outcome=outcome,
+                summary=summary,
+                boundary_results=boundary_results,
+            )
+            result.report_path = await _generate_report(charter, result, evidence_dir)
+            return result
+
         persona_id = charter.persona.primary
         if persona_id is None:
             raise ValueError(f"charter {charter.id} has no primary persona")
@@ -120,9 +152,14 @@ async def run_charter(
             charter.boundary_invariants, driver_result, driver.last_page
         )
         invariants_pass = all(result.passed for result in boundary_results)
-        if driver_result.success and invariants_pass:
+        ui_critique_completed = _ui_critique_completed(charter, driver_result)
+        if (driver_result.success or ui_critique_completed) and invariants_pass:
             outcome = "pass"
-            summary = "driver completed and invariants passed"
+            summary = (
+                "ui critique completed and invariants passed"
+                if ui_critique_completed and not driver_result.success
+                else "driver completed and invariants passed"
+            )
         elif charter.xfail:
             outcome = "xfail"
             summary = "expected failure reproduced"
@@ -276,6 +313,79 @@ def _boundary_passed(invariant: BoundaryInvariant, observed: str) -> bool:
     return False
 
 
+def _is_multiplayer_charter(charter: Charter) -> bool:
+    return bool(charter.personas and len(charter.personas.roles) >= 2)
+
+
+async def _run_multiplayer_charter(
+    charter: Charter, settings: Settings, evidence_dir: EvidenceDir
+) -> MultiPlayerResult:
+    from agent_qa.runtime.multiplayer import MultiPlayerOrchestrator, build_players_from_charter
+
+    players = build_players_from_charter(charter, settings)
+    execution_mode = charter.personas.mode if charter.personas else "sequential"
+    orchestrator = MultiPlayerOrchestrator(
+        charter, players, evidence_dir, execution_mode=execution_mode
+    )
+    return await orchestrator.run()
+
+
+def _aggregate_multiplayer_driver_result(mp_result: MultiPlayerResult) -> DriverResult:
+    players = list(mp_result.players)
+    driver_results = [player.driver_result for player in players]
+    steps = [step for result in driver_results for step in result.steps]
+    errors = [error for result in driver_results for error in result.errors]
+    final_url = next(
+        (result.final_url for result in reversed(driver_results) if result.final_url), None
+    )
+    final_result = next(
+        (result.final_result for result in reversed(driver_results) if result.final_result), None
+    )
+    wall_clock_s = mp_result.total_wall_clock_s
+    total_tokens = sum(result.total_tokens for result in driver_results)
+    return DriverResult(
+        success=mp_result.success,
+        steps=steps,
+        final_url=final_url,
+        final_result=final_result,
+        errors=errors,
+        total_tokens=total_tokens,
+        wall_clock_s=wall_clock_s,
+        budget_snapshot={
+            "steps_used": len(steps),
+            "tokens_used": total_tokens,
+            "wall_clock_s": wall_clock_s,
+            "last_step_tokens": steps[-1].tokens_used if steps else 0,
+        },
+        termination_reason=mp_result.termination_reason,
+        login_completed=all(result.login_completed for result in driver_results)
+        if driver_results
+        else False,
+    )
+
+
+def _multiplayer_boundary_results(mp_result: MultiPlayerResult) -> list[BoundaryCheckResult]:
+    rows = mp_result.cross_player_assertions
+    results: list[BoundaryCheckResult] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        observed = str(row.get("observed", ""))
+        error = row.get("error")
+        if error:
+            observed = f"{observed} ({error})" if observed else str(error)
+        results.append(
+            BoundaryCheckResult(
+                id=str(row.get("id", "unknown")),
+                kind=str(row.get("kind", "unknown")),
+                expected=str(row.get("expected", "")),
+                observed=observed,
+                passed=bool(row.get("passed", False)),
+            )
+        )
+    return results
+
+
 async def _login_user_for_charter(charter: Charter, settings: Settings) -> TestUser | None:
     if charter.login is None or not charter.login.required:
         return None
@@ -334,9 +444,33 @@ def _repo_root() -> Path:
 async def _generate_report(
     charter: Charter, result: CharterRunResult, evidence_dir: EvidenceDir
 ) -> Path:
+    from agent_qa.reporting.critique import generate_critique_report
     from agent_qa.reporting.report import generate_report
 
-    return await asyncio_to_thread(generate_report, charter, result, evidence_dir)
+    report_path = await asyncio_to_thread(generate_report, charter, result, evidence_dir)
+    if _is_ui_critique_charter(charter):
+        _ = await asyncio_to_thread(
+            generate_critique_report,
+            charter,
+            result.driver_result,
+            evidence_dir,
+        )
+    return report_path
+
+
+def _is_ui_critique_charter(charter: Charter) -> bool:
+    return charter.persona.primary == "ui-critic" or "ui-critique" in charter.tags
+
+
+def _ui_critique_completed(charter: Charter, driver_result: DriverResult) -> bool:
+    if not _is_ui_critique_charter(charter):
+        return False
+    final_result = driver_result.final_result or ""
+    return bool(
+        "## Dimension Scores" in final_result
+        and "## Findings" in final_result
+        and re.search(r"Readability\s*:\s*[0-5]\s*/\s*5", final_result, re.IGNORECASE)
+    )
 
 
 async def asyncio_to_thread(function: Callable[..., Path], *args: object) -> Path:

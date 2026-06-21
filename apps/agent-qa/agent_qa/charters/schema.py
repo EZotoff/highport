@@ -12,6 +12,18 @@ class PersonaRef(BaseModel):
     critic: str | None = None
 
 
+class PlayerRole(BaseModel):
+    persona_id: str
+    user_role: str
+    mission: str
+    max_steps: int = Field(default=15, gt=0)
+
+
+class PlayersConfig(BaseModel):
+    mode: Literal["sequential", "concurrent"] = "sequential"
+    roles: list[PlayerRole] = Field(default_factory=list)
+
+
 class Preconditions(BaseModel):
     services_required: list[str]
     services_optional: list[str]
@@ -85,6 +97,22 @@ class BoundaryInvariant(BaseModel):
     max: int | None = None
     pattern: str | None = None
     filter: str | None = None
+    description: str | None = None
+    target: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_aliases(cls, value: object) -> object:
+        if not isinstance(value, dict):
+            return value
+        normalized = dict(value)
+        if "expected" in normalized and "expect" not in normalized:
+            normalized["expect"] = normalized["expected"]
+        if "expected" in normalized and "pattern" not in normalized:
+            normalized["pattern"] = str(normalized["expected"])
+        if "selector" in normalized and "filter" not in normalized:
+            normalized["filter"] = normalized["selector"]
+        return normalized
 
     @model_validator(mode="after")
     def validate_kind_requirements(self) -> "BoundaryInvariant":
@@ -163,6 +191,7 @@ class Charter(BaseModel):
     timebox_minutes: int = Field(default=90, gt=0)
     mission: str
     persona: PersonaRef
+    personas: PlayersConfig | None = None
     preconditions: Preconditions
     fsm_expectations: list[FSMExpectation] = Field(default_factory=list)
     boundary_invariants: list[BoundaryInvariant] = Field(default_factory=list)
