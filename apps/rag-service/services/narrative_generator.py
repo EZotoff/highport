@@ -3,9 +3,9 @@
 import json
 import logging
 import re
-from typing import Optional
 
-from providers.gemini import GeminiProvider
+from providers.llm import get_llm_provider
+from providers.llm.base import LLMProvider
 from schemas.narrative import (
     VerbosityLevel,
     EventDescriptionRequest,
@@ -31,18 +31,18 @@ VERBOSITY_INSTRUCTIONS = {
 class NarrativeGenerator:
     """Service for generating narrative content using AI."""
 
-    def __init__(self, llm: Optional[GeminiProvider] = None):
+    def __init__(self, llm: LLMProvider | None = None):
         """Initialize the narrative generator.
 
         Args:
-            llm: Optional LLM provider. If not provided, creates a new GeminiProvider.
+            llm: Optional LLM provider. If not provided, creates the configured provider.
         """
-        self._llm = llm
+        self._llm: LLMProvider | None = llm
 
-    def _get_llm(self) -> GeminiProvider:
+    def _get_llm(self) -> LLMProvider:
         """Get or create the LLM provider."""
         if self._llm is None:
-            self._llm = GeminiProvider()
+            self._llm = get_llm_provider()
         return self._llm
 
     async def generate_event_description(
@@ -98,6 +98,7 @@ Respond with a JSON object:
 
 Only include suggested_entities if the event implies new relationships. Keep the array empty otherwise."""
 
+        response_text = ""
         try:
             response_text = await llm.generate(prompt)
             # Parse JSON from response
@@ -167,6 +168,7 @@ Include only the fields appropriate for the verbosity level:
 - structured: name, personality, motivation
 - rich: all fields"""
 
+        response_text = ""
         try:
             response_text = await llm.generate(prompt)
             json_match = re.search(r"\{[\s\S]*\}", response_text)

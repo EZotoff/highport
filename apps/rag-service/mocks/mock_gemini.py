@@ -1,18 +1,19 @@
-from typing import AsyncGenerator
-from providers.base import LLMProvider
+from typing import AsyncGenerator, ClassVar
+
+from providers.llm.base import LLMProvider
 
 
 class MockGeminiProvider(LLMProvider):
     """Mock Gemini provider for testing without API calls."""
 
-    CANNED_RESPONSES = {
+    CANNED_RESPONSES: ClassVar[dict[str, str]] = {
         "Hello": "Hello! How can I help you today?",
         "default": "This is a mocked response from MockGeminiProvider.",
     }
 
-    def __init__(self, responses: dict | None = None):
-        self.responses = responses or self.CANNED_RESPONSES
-        self.call_history: list[dict] = []
+    def __init__(self, responses: dict[str, str] | None = None):
+        self.responses: dict[str, str] = responses or self.CANNED_RESPONSES
+        self.call_history: list[dict[str, object]] = []
 
     async def generate(self, prompt: str) -> str:
         self.call_history.append({"method": "generate", "prompt": prompt})
