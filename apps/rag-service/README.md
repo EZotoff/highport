@@ -32,10 +32,13 @@ uvicorn main:app --reload --port 18124
 | `OLLAMA_EMBED_MODEL`      | Ollama embedding model tag (default: `qwen3-embedding:0.6b`)                   |
 | `OPENAI_EMBEDDING_MODEL`  | OpenAI embedding model (default: `text-embedding-3-small`)                     |
 | `EMBEDDING_DIM`           | Optional dim override for MRL truncation (default: provider's native dim)      |
-| `LLM_PROVIDER`            | `ollama` or `gemini`                                                          |
+| `LLM_PROVIDER`            | `ollama` (default, local text) or `gemini` (cloud text + portrait images)      |
 | `VECTORDB_PROVIDER`       | `chroma` or `pinecone`                                                        |
 | `OLLAMA_BASE_URL`         | Local Ollama endpoint                                                         |
-| `OPENAI_API_KEY`          | Required only when `EMBEDDINGS_PROVIDER=openai` or `LLM_PROVIDER=gemini`        |
+| `GEMINI_API_KEY`          | Required only when `LLM_PROVIDER=gemini`                                       |
+| `OPENAI_API_KEY`          | Required only when `EMBEDDINGS_PROVIDER=openai`                                |
+
+Narrative text generation follows `LLM_PROVIDER`. Portrait tag extraction also follows `LLM_PROVIDER`, but portrait image generation requires Gemini's image API; when `LLM_PROVIDER=ollama`, portrait images return an unavailable response instead of falling back to Gemini.
 
 See [.env.example](./.env.example) and [../../docs/rag-setup.md](../../docs/rag-setup.md) for the full list and setup walkthrough.
 ## Testing
