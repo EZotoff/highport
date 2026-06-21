@@ -58,9 +58,14 @@ export default function VerbositySelector({
             role="radio"
             aria-checked={value === option.value}
             aria-label={`${option.label}: ${option.description}`}
-            className="flex-1 min-w-[90px] min-h-[44px]"
+            className={`flex-1 min-w-[90px] min-h-[56px] ${
+              value === option.value ? '[&_*]:!text-[#e2e8f0]' : ''
+            }`}
           >
-            {option.label}
+            <span className="flex flex-col items-center leading-tight">
+              <span className="text-sm font-medium">{option.label}</span>
+              <span className="text-[10px] text-subtle opacity-80">{option.description}</span>
+            </span>
           </SciFiButton>
         ))}
       </div>

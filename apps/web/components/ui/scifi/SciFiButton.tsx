@@ -52,7 +52,7 @@ export const SciFiButton = forwardRef<HTMLButtonElement, SciFiButtonProps>(
         variant={mapToShadcnVariant()}
         className={cn(
           'font-orbitron tracking-wide min-h-[44px] min-w-[44px] relative',
-          'focus-visible:ring-2 focus-visible:ring-cyan-500/50',
+          'focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50',
           'transition-all duration-200',
           'hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]',
           themeStyle.className,

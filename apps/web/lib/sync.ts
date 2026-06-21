@@ -51,7 +51,7 @@ export function initProvider(
     url: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:18121',
     name: `${campaignId}:graph`,
     document: doc,
-    token: token || undefined,
+    token: token || 'dev-token', // TODO: replace with NextAuth JWT for production
   });
 
   provider.on('synced', () => {

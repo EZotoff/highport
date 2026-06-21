@@ -166,7 +166,11 @@ export default function ChargenWizard() {
 
   if (!isSynced) {
     return (
-      <div className="flex flex-col h-full max-w-7xl mx-auto items-center justify-center">
+      <div
+        className="flex flex-col h-full max-w-7xl mx-auto items-center justify-center"
+        data-chargen-status="loading"
+        data-testid="chargen-wizard"
+      >
         <GlassPanel theme="cyan" variant="default" className="p-8 text-center">
           <div
             className="animate-pulse mb-2 text-lg font-medium"
@@ -182,7 +186,11 @@ export default function ChargenWizard() {
   }
 
   return (
-    <div className="flex flex-col h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div
+      className="flex flex-col h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"
+      data-chargen-status={character?.status ?? 'none'}
+      data-testid="chargen-wizard"
+    >
       <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-4 lg:gap-6 mb-6">
         <div className="w-full lg:flex-1 lg:min-w-0">
           <StepNavigation steps={STEPS} currentStep={currentStep} onStepClick={setCurrentStep} />
