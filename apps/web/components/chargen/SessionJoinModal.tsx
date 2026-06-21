@@ -231,7 +231,8 @@ export default function SessionJoinModal() {
           {gmParticipant && (
             <div className="mt-1 text-subtle text-xs flex items-center gap-1">
               <Shield className="w-3 h-3" />
-              GM: {gmParticipant.character?.name || 'Game Master'}
+              GM: Game Master
+              {gmParticipant.character?.name ? ` (${gmParticipant.character.name})` : ''}
             </div>
           )}
         </div>

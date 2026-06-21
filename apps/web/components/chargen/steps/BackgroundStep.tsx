@@ -141,7 +141,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
           onChange={handleNameChange}
           placeholder="Enter character name"
           theme="cyan"
-          label="Name"
+          label="Character Name *"
         />
       </GlassPanel>
 
@@ -217,7 +217,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
         </div>
 
         <p className="text-sm text-label mb-6">
-          Choose 3 skills from your background. These starts at Level 0.
+          Choose 3 background skills. These start at Level 0.
         </p>
 
         <BentoGrid minWidth="160px" gap={12}>
