@@ -20,6 +20,7 @@ import { getSessionId, initAndWaitForPersistence, initProvider } from '../../lib
 import { getYDoc } from '../../lib/ydoc';
 import { GlassPanel, SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
+import { GMControlPanel } from './GMControlPanel';
 
 const STEPS = [
   { id: 'background', label: 'Background' },
@@ -229,6 +230,8 @@ export default function ChargenWizard() {
           </div>
         </div>
       </div>
+
+      <GMControlPanel currentUserId={characterId || ''} />
     </div>
   );
 }
