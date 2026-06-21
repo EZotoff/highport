@@ -2,9 +2,10 @@
 
 import json
 import re
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from providers.gemini import GeminiProvider
+from providers.llm import get_llm_provider, get_llm_provider_name
+from providers.llm.base import LLMProvider
 from schemas.portrait import (
     ExtractTagsRequest,
     ExtractTagsResponse,
@@ -14,23 +15,48 @@ from schemas.portrait import (
     PortraitTags,
 )
 
+if TYPE_CHECKING:
+    from providers.llm.gemini import GeminiProvider
+
+
+class PortraitProviderUnavailableError(RuntimeError):
+    """Raised when the configured LLM provider cannot generate portrait images."""
+
 
 class PortraitGenerator:
     """Service for generating character portraits and tags using AI."""
 
-    def __init__(self, llm: Optional[GeminiProvider] = None):
+    def __init__(self, llm: LLMProvider | None = None):
         """Initialize the portrait generator.
 
         Args:
-            llm: Optional LLM provider. If not provided, creates a new GeminiProvider.
+            llm: Optional LLM provider. If not provided, creates the configured provider.
         """
-        self._llm = llm
+        self._llm: LLMProvider | None = llm
 
-    def _get_llm(self) -> GeminiProvider:
+    def _get_llm(self) -> LLMProvider:
         """Get or create the LLM provider."""
         if self._llm is None:
-            self._llm = GeminiProvider()
+            self._llm = get_llm_provider()
         return self._llm
+
+    def _get_image_llm(self) -> "GeminiProvider":
+        """Get the configured provider if it supports Gemini image generation."""
+        llm = self._get_llm()
+        if get_llm_provider_name() != "gemini":
+            raise PortraitProviderUnavailableError(
+                "Portrait image generation requires LLM_PROVIDER=gemini. "
+                "The configured LLM provider does not support image generation."
+            )
+
+        from providers.llm.gemini import GeminiProvider
+
+        if not isinstance(llm, GeminiProvider):
+            raise PortraitProviderUnavailableError(
+                "Portrait image generation requires LLM_PROVIDER=gemini. "
+                "The configured LLM provider does not support image generation."
+            )
+        return llm
 
     async def generate_portrait_image(
         self, request: GeneratePortraitRequest
@@ -43,7 +69,7 @@ class PortraitGenerator:
         Returns:
             GeneratePortraitResponse with image data and metadata.
         """
-        llm = self._get_llm()
+        llm = self._get_image_llm()
         prompt = build_prompt(
             request.tags, request.appearance_text, request.prompt_delta
         )
@@ -178,8 +204,8 @@ Respond with a JSON object:
 
 def build_prompt(
     tags: PortraitTags,
-    appearance_text: Optional[str],
-    prompt_delta: Optional[str],
+    appearance_text: str | None,
+    prompt_delta: str | None,
 ) -> str:
     """Build a portrait prompt from tags and optional appearance text."""
     tag_data = tags.dict(exclude_none=True)
