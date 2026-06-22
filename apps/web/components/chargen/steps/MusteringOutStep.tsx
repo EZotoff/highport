@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
+import type { MusteringState } from '../../../lib/chargen/types';
 import { getYDoc } from '../../../lib/ydoc';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
@@ -31,36 +32,15 @@ const MAX_CASH_ROLLS = 3;
 export default function MusteringOutStep({ characterId }: MusteringOutStepProps) {
   const character = useCharacter(characterId);
   const [collectedBenefits, setCollectedBenefits] = useState<CollectedBenefit[]>([]);
-  const [cashRollsUsed, setCashRollsUsed] = useState(0);
   const [lastRollResult, setLastRollResult] = useState<BenefitRollResult | null>(null);
   const [showRollResult, setShowRollResult] = useState(false);
-
-  // Initialize state from character if returning to page
-  useEffect(() => {
-    if (character) {
-      // We can't easily reconstruct the exact roll history from just the benefits list and credits,
-      // but we can track the count. For a real implementation we might want to store the roll history in the character state.
-      // For now, we will rely on local state for the session, but persist the results.
-      // If the user refreshes, they might lose the history of rolls displayed, but the character sheet is correct.
-      // To fix this properly, we should probably add a 'benefitRolls' array to the character schema.
-      // But per instructions, we just persist credits and benefits array.
-    }
-  }, [character]);
 
   if (!character) return <div className="text-subtle">Loading...</div>;
 
   const totalRolls = calculateTotalBenefitRolls(character);
-  const rollsUsed = collectedBenefits.length; // This is local state only. Ideally should be persisted.
-  // Actually, we should check against the character's existing benefits count if we reload.
-  // But since the task doesn't ask for schema changes to support roll history, I'll stick to the requested implementation.
-  // Wait, if I reload, I lose "rollsUsed".
-  // The prompt says "Benefits include cash, equipment...".
-  // If I reload, `character.benefits` has the strings. `character.credits` has the money.
-  // So I can count `character.benefits.length`. But cash rolls don't add to benefits array in my code above?
-  // "credits: character.credits + (result.result as number)" -> simply updates total.
-  // So we lose track of how many cash rolls were made if we refresh.
-  // I will just implement as requested. The user can just be careful not to refresh during mustering out, or we accept that limitation for now.
-
+  const mustering = character.mustering;
+  const cashRollsUsed = mustering?.cashRollsUsed ?? 0;
+  const rollsUsed = mustering?.rollsUsed ?? collectedBenefits.length;
   const rollsRemaining = totalRolls - rollsUsed;
 
   const finalTerm = character.terms[character.terms.length - 1];
@@ -73,12 +53,15 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
     .filter((b) => b.type === 'cash')
     .reduce((sum, b) => sum + (b.result as number), character.credits);
 
-  const shipShares = collectedBenefits
-    .filter((b) => b.type === 'benefit' && String(b.result).includes('Ship Share'))
-    .reduce((sum, b) => {
-      const match = String(b.result).match(/(\d+)\s*Ship/i);
-      return sum + (match ? parseInt(match[1]) : 1);
-    }, 0);
+  const shipShares =
+    collectedBenefits.length > 0
+      ? collectedBenefits
+          .filter((b) => b.type === 'benefit' && String(b.result).includes('Ship Share'))
+          .reduce((sum, b) => {
+            const match = String(b.result).match(/(\d+)\s*Ship/i);
+            return sum + (match ? parseInt(match[1]) : 1);
+          }, 0)
+      : (mustering?.shipShares ?? 0);
 
   const handleRoll = (type: 'cash' | 'benefit') => {
     if (rollsRemaining <= 0) return;
@@ -86,30 +69,61 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
 
     const result = rollBenefit(character, type);
 
+    const currentMustering: MusteringState = character.mustering ?? {
+      totalRolls: calculateTotalBenefitRolls(character),
+      rollsUsed: 0,
+      cashRollsUsed: 0,
+      benefits: [],
+      credits: 0,
+      shipShares: 0,
+    };
+
+    const resultVal = result.result;
+    const isShipShare =
+      type === 'benefit' && typeof resultVal === 'string' && resultVal.includes('Ship Share');
+    let shipShareCount = 0;
+    if (isShipShare) {
+      const match = String(resultVal).match(/(\d+)\s*Ship/i);
+      shipShareCount = match ? parseInt(match[1], 10) : 1;
+    }
+
+    const newMustering: MusteringState = {
+      totalRolls: currentMustering.totalRolls,
+      rollsUsed: currentMustering.rollsUsed + 1,
+      cashRollsUsed:
+        type === 'cash' ? currentMustering.cashRollsUsed + 1 : currentMustering.cashRollsUsed,
+      benefits:
+        type === 'benefit'
+          ? [...currentMustering.benefits, resultVal as string]
+          : currentMustering.benefits,
+      credits:
+        type === 'cash'
+          ? currentMustering.credits + (resultVal as number)
+          : currentMustering.credits,
+      shipShares: currentMustering.shipShares + shipShareCount,
+    };
+
     const newBenefit: CollectedBenefit = {
-      rollNumber: rollsUsed + 1,
+      rollNumber: currentMustering.rollsUsed + 1,
       type,
       roll: result.roll.total,
-      result: result.result,
+      result: resultVal,
     };
 
     setCollectedBenefits((prev) => [...prev, newBenefit]);
     setLastRollResult(result);
     setShowRollResult(true);
 
-    if (type === 'cash') {
-      setCashRollsUsed((prev) => prev + 1);
-    }
-
-    // Persist to CRDT
     const doc = getYDoc();
     if (type === 'cash') {
       updateCharacterFields(doc, character.id, {
-        credits: character.credits + (result.result as number),
+        mustering: newMustering,
+        credits: character.credits + (resultVal as number),
       });
     } else {
       updateCharacterFields(doc, character.id, {
-        benefits: [...character.benefits, result.result as string],
+        mustering: newMustering,
+        benefits: [...character.benefits, resultVal as string],
       });
     }
 

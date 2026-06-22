@@ -8,6 +8,7 @@ import type {
   ChargenStatus,
   CareerTermResult,
   ConnectionRequest,
+  MusteringState,
   SessionSettings,
   SharedSpawnedEntity,
 } from './types';
@@ -104,6 +105,8 @@ export function yMapToCharacter(yMap: Y.Map<unknown>): ChargenCharacter {
     credits: (yMap.get('credits') as number) || 0,
     age: (yMap.get('age') as number) || 18,
     spawnedEntityIds: (yMap.get('spawnedEntityIds') as string[]) || [],
+    dismissedSuggestions: (yMap.get('dismissedSuggestions') as string[]) || [],
+    mustering: yMap.get('mustering') as MusteringState | undefined,
   };
 }
 

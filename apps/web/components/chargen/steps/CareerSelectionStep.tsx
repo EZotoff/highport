@@ -31,8 +31,10 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
     const stat = career.qualification.characteristic;
     const statValue = character.characteristics[stat] || 0;
     const charDM = getCharacteristicModifier(statValue);
+    const otherCareerTermCount =
+      character.terms?.filter((t) => t.careerId !== career.id).length || 0;
     const prevCareerPenalty =
-      (character.terms?.length || 0) * (career.qualification.previousCareerPenalty || -1); // Default -1 if not specified
+      otherCareerTermCount * (career.qualification.previousCareerPenalty || -1); // Default -1 if not specified
     return charDM + prevCareerPenalty;
   };
 

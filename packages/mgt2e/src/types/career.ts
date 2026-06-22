@@ -57,6 +57,7 @@ export interface CareerRank {
   title: string;
   skill?: string; // Automatic skill gain at this rank
   skillLevel?: number; // Level of automatic skill
+  specialty?: string; // Specialty if skill has specialties
   benefit?: string; // Non-skill benefit (e.g., "TAS Membership")
 }
 

@@ -1,4 +1,13 @@
-import type { CharacteristicSet, DiceResult, CareerEvent, CareerMishap } from '@highport/mgt2e';
+import type {
+  AgingEffectTier,
+  CareerEvent,
+  CareerMishap,
+  CharacteristicSet,
+  DiceResult,
+  MentalCharacteristicCode,
+  PhysicalCharacteristicCode,
+} from '@highport/mgt2e';
+import type { VerbosityLevel } from './narrative';
 
 export type ChargenStatus =
   | 'background'
@@ -33,6 +42,42 @@ export interface ChargenCharacter {
   age: number;
 
   spawnedEntityIds: string[];
+  dismissedSuggestions?: string[];
+
+  mustering?: MusteringState;
+}
+
+/**
+ * Provenance wrapper for AI-generated content.
+ * Tracks source, generation mode, acceptance status, and derivation.
+ */
+export interface AIProvenance<T> {
+  /** The actual content value */
+  value: T;
+  /** Who/what produced this: 'ai' | 'dice' | 'player' | 'gm' */
+  source: 'ai' | 'dice' | 'player' | 'gm';
+  /** Which AI mode was used: 'brief' | 'inspiration' | 'full' */
+  mode: VerbosityLevel;
+  /** Lifecycle status of this content */
+  status: 'draft' | 'accepted' | 'rejected' | 'edited';
+  /** What this was generated from (e.g., event roll result, dice values) */
+  derivedFrom?: string;
+  /** Optional: when this was generated */
+  generatedAt?: number;
+}
+
+/**
+ * Unwrap an AI field that may be either AIProvenance<T> or a bare T.
+ * Handles backwards compatibility with Yjs persistence of old data.
+ */
+export function unwrapAIField<T>(field: AIProvenance<T> | T | undefined): T | undefined {
+  if (field === undefined) return undefined;
+  if (typeof field === 'object' && field !== null && 'value' in field) {
+    const prov = field as AIProvenance<T>;
+    if (prov.status === 'rejected') return undefined;
+    return prov.value;
+  }
+  return field as T;
 }
 
 export interface CareerTermResult {
@@ -47,7 +92,7 @@ export interface CareerTermResult {
   eventRoll?: DiceResult;
   event?: CareerEvent;
   eventChoice?: string;
-  eventDescription?: string;
+  eventDescription?: AIProvenance<string> | string;
 
   mishap?: CareerMishap;
 
@@ -58,6 +103,11 @@ export interface CareerTermResult {
 
   commissionRoll?: DiceResult;
   commissioned?: boolean;
+
+  agingRoll?: DiceResult;
+  agingEffect?: AgingEffectTier;
+  agingPhysicalLosses?: PhysicalCharacteristicCode[];
+  agingMentalLosses?: MentalCharacteristicCode[];
 
   skillsGained: Array<{ skill: string; specialty?: string; level: number }>;
 
@@ -88,7 +138,7 @@ export interface MusteringState {
 /** Session settings controlled by GM */
 export interface SessionSettings {
   allowedCareers: string[]; // Empty = all allowed
-  aiVerbosity: 'minimal' | 'structured' | 'rich';
+  aiVerbosity: 'brief' | 'inspiration' | 'full';
   requireGMApproval: boolean;
   allowCrossPlayerConnections: boolean;
   isLocked: boolean;
@@ -145,7 +195,7 @@ export interface ConnectionRequest {
 /** Default session settings */
 export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   allowedCareers: [],
-  aiVerbosity: 'structured',
+  aiVerbosity: 'inspiration',
   requireGMApproval: false,
   allowCrossPlayerConnections: true,
   isLocked: false,

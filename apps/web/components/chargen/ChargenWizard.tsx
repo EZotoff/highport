@@ -8,8 +8,6 @@ import CareerSelectionStep from './steps/CareerSelectionStep';
 import TermResolutionStep from './steps/TermResolutionStep';
 import MusteringOutStep from './steps/MusteringOutStep';
 import FinalizeStep from './steps/FinalizeStep';
-import SkillsStep from './steps/SkillsStep';
-import BenefitsStep from './steps/BenefitsStep';
 import VerbositySelector from './VerbositySelector';
 import ParticipantPanel from './ParticipantPanel';
 import { EntityPoolPanel } from './EntityPoolPanel';
@@ -32,11 +30,19 @@ const STEPS = [
 ];
 
 export default function ChargenWizard() {
-  const [currentStep, setCurrentStep] = useState(0);
   const [characterId, setCharacterId] = useState<string | null>(null);
-  const [verbosity, setVerbosity] = useState<VerbosityLevel>('structured');
+  const [verbosity, setVerbosity] = useState<VerbosityLevel>('inspiration');
   const [isSynced, setIsSynced] = useState(false);
   const character = useCharacter(characterId);
+
+  const statusToStep: Record<string, number> = {
+    background: 0,
+    career_selection: 1,
+    term_resolution: 2,
+    mustering_out: 3,
+    finalized: 4,
+  };
+  const currentStep = statusToStep[character?.status ?? 'background'] ?? 0;
 
   useEffect(() => {
     const doc = getYDoc();
@@ -90,23 +96,6 @@ export default function ChargenWizard() {
     return () => clearTimeout(timer);
   }, [isSynced, characterId, character]);
 
-  useEffect(() => {
-    if (!character) return;
-
-    const statusToStep: Record<string, number> = {
-      background: 0,
-      career_selection: 1,
-      term_resolution: 1,
-      mustering_out: 1,
-      finalized: 4,
-    };
-
-    const targetStep = statusToStep[character.status] ?? 0;
-    if (currentStep !== targetStep) {
-      setCurrentStep(targetStep);
-    }
-  }, [character?.status]);
-
   const isStepValid = () => {
     switch (currentStep) {
       case 0:
@@ -119,15 +108,11 @@ export default function ChargenWizard() {
   };
 
   const handleNext = () => {
-    if (currentStep < STEPS.length - 1 && isStepValid()) {
-      setCurrentStep((prev) => prev + 1);
-    }
+    // Status advancement is handled by step components internally
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
+    // Navigation follows character status
   };
 
   const renderStepContent = () => {
@@ -139,17 +124,11 @@ export default function ChargenWizard() {
       case 0:
         return <BackgroundStep characterId={characterId} onCharacterCreated={setCharacterId} />;
       case 1:
-        if (character?.status === 'term_resolution') {
-          return <TermResolutionStep characterId={characterId} verbosity={verbosity} />;
-        }
-        if (character?.status === 'mustering_out') {
-          return <MusteringOutStep characterId={characterId} />;
-        }
         return <CareerSelectionStep characterId={characterId} />;
       case 2:
-        return <SkillsStep characterId={characterId} />;
+        return <TermResolutionStep characterId={characterId} verbosity={verbosity} />;
       case 3:
-        return <BenefitsStep characterId={characterId} />;
+        return <MusteringOutStep characterId={characterId} />;
       case 4:
         return <FinalizeStep characterId={characterId} />;
       default:
@@ -193,7 +172,7 @@ export default function ChargenWizard() {
     >
       <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-4 lg:gap-6 mb-6">
         <div className="w-full lg:flex-1 lg:min-w-0">
-          <StepNavigation steps={STEPS} currentStep={currentStep} onStepClick={setCurrentStep} />
+          <StepNavigation steps={STEPS} currentStep={currentStep} />
         </div>
         <div className="w-full lg:w-[320px] lg:shrink-0">
           <VerbositySelector value={verbosity} onChange={setVerbosity} />
