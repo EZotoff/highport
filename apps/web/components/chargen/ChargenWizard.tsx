@@ -16,7 +16,7 @@ import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { getActiveCharacter, getOrCreateUser } from '../../lib/identity';
 import { getSessionId, initAndWaitForPersistence, initProvider } from '../../lib/sync';
 import { getYDoc } from '../../lib/ydoc';
-import { createSession, getSession } from '../../lib/chargen/state';
+import { createSession, getSession, updateCharacterFields } from '../../lib/chargen/state';
 import { GlassPanel, SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { GMControlPanel } from './GMControlPanel';
@@ -108,11 +108,17 @@ export default function ChargenWizard() {
   };
 
   const handleNext = () => {
-    // Status advancement is handled by step components internally
+    if (!character || !characterId || !isStepValid()) return;
+    if (character.status === 'background') {
+      updateCharacterFields(getYDoc(), characterId, { status: 'career_selection' });
+    }
   };
 
   const handleBack = () => {
-    // Navigation follows character status
+    if (!character || !characterId) return;
+    if (character.status === 'career_selection') {
+      updateCharacterFields(getYDoc(), characterId, { status: 'background' });
+    }
   };
 
   const renderStepContent = () => {
