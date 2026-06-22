@@ -20,11 +20,41 @@ from schemas.narrative import (
 
 logger = logging.getLogger(__name__)
 
+# Structurally different system prompts per verbosity mode.
+# BRIEF: atmospheric color, no NPCs, no action prescription.
+# INSPIRATION: numbered list of hooks the player may pick from.
+# FULL: drafted scene with named NPCs and relationship implications.
+EVENT_SYSTEM_PROMPTS = {
+    VerbosityLevel.BRIEF: (
+        "Write exactly 1-2 sentences of atmospheric color for this event. "
+        "Do not introduce named NPCs. Do not prescribe specific actions. "
+        "The dice own the facts; you own the texture."
+    ),
+    VerbosityLevel.INSPIRATION: (
+        "Write 3-5 concrete adventure hooks or angles inspired by this event. "
+        "Each hook should be 1 sentence. Format as a numbered list. "
+        "These are optional flavor that the player may pick from or ignore."
+    ),
+    VerbosityLevel.FULL: (
+        "Write a rich narrative scene (2-4 paragraphs) for this event. "
+        "You may introduce named NPCs, sensory details, and implied relationships. "
+        "This is a drafted scene the player may accept, edit, or reject."
+    ),
+}
 
-VERBOSITY_INSTRUCTIONS = {
-    VerbosityLevel.MINIMAL: "Keep your response very brief - just 1-2 sentences. Only essential facts.",
-    VerbosityLevel.STRUCTURED: "Provide a medium-length response with key details - 2-4 sentences with clear structure.",
-    VerbosityLevel.RICH: "Provide a detailed, immersive response - full paragraph with vivid descriptions, atmosphere, and character.",
+NPC_SYSTEM_PROMPTS = {
+    VerbosityLevel.BRIEF: (
+        "Provide exactly the NPC's full name. No extra details."
+    ),
+    VerbosityLevel.INSPIRATION: (
+        "Provide the NPC's name, 2-3 personality traits, and their core motivation "
+        "regarding the player character. Keep each field to 1-2 sentences."
+    ),
+    VerbosityLevel.FULL: (
+        "Provide a full NPC write-up: name, personality (2-3 sentences), "
+        "motivation (2-3 sentences about what drives them), physical appearance "
+        "(1-2 sentences), and 2-3 quirks or habits."
+    ),
 }
 
 
@@ -32,114 +62,162 @@ class NarrativeGenerator:
     """Service for generating narrative content using AI."""
 
     def __init__(self, llm: LLMProvider | None = None):
-        """Initialize the narrative generator.
-
-        Args:
-            llm: Optional LLM provider. If not provided, creates the configured provider.
-        """
         self._llm: LLMProvider | None = llm
 
     def _get_llm(self) -> LLMProvider:
-        """Get or create the LLM provider."""
         if self._llm is None:
             self._llm = get_llm_provider()
         return self._llm
 
+    @staticmethod
+    def _build_guidance_suffix(guidance: str | None) -> str:
+        """Return a guidance appendix for the system prompt, or empty string."""
+        if guidance and guidance.strip():
+            return (
+                "\n\nPlayer direction: " + guidance.strip() + "\n"
+                "Incorporate this guidance into the narrative while "
+                "respecting the event's mechanical outcome."
+            )
+        return ""
+
     async def generate_event_description(
         self, request: EventDescriptionRequest
     ) -> EventDescriptionResponse:
-        """Generate a narrative description for a career event.
-
-        Args:
-            request: The event description request with context.
-
-        Returns:
-            EventDescriptionResponse with description and suggested entities.
-        """
         llm = self._get_llm()
+        mode = request.verbosity
+        guidance_suffix = self._build_guidance_suffix(request.guidance)
 
-        prior_events_text = ""
-        if request.character_context.prior_events:
-            prior_events_text = "\n".join(
-                f"- {event}" for event in request.character_context.prior_events[-3:]
+        prior_events_text = (
+            "\n".join(f"- {e}" for e in request.character_context.prior_events[-3:])
+            if request.character_context.prior_events
+            else "No prior events recorded."
+        )
+
+        system_instruction = EVENT_SYSTEM_PROMPTS[mode] + guidance_suffix
+
+        # Different response format per mode
+        if mode == VerbosityLevel.BRIEF:
+            format_block = (
+                'Respond with a JSON object: {"description": "Your 1-2 sentence gloss here"}'
             )
-        else:
-            prior_events_text = "No prior events recorded."
+            expect_entities = False
+        elif mode == VerbosityLevel.INSPIRATION:
+            format_block = (
+                'Respond with a JSON object: '
+                '{"description": "Numbered list of hooks (one per line)", '
+                '"suggested_entities": []}'
+            )
+            expect_entities = False
+        else:  # FULL
+            format_block = (
+                'Respond with a JSON object:\n'
+                '{\n'
+                '  "description": "Your narrative scene (2-4 paragraphs)...",\n'
+                '  "suggested_entities": [\n'
+                '    {\n'
+                '      "type": "npc",\n'
+                '      "relationship": "ally|contact|rival|enemy",\n'
+                '      "suggested_name": "Name if introduced",\n'
+                '      "suggested_motivation": "Brief motivation"\n'
+                '    }\n'
+                '  ]\n'
+                '}\n'
+                'Populate suggested_entities with any NPCs you introduce in the scene.'
+            )
+            expect_entities = True
 
-        prompt = f"""You are a narrator for a gritty sci-fi tabletop RPG. Generate a dramatic description for a career event.
+        prompt = f"""You are a narrator for a gritty sci-fi tabletop RPG.
 
 ## Context
 - Career: {request.career}
-- Assignment: {request.assignment}  
+- Assignment: {request.assignment}
 - Term: {request.term}
 - Character Name: {request.character_context.name}
 - Event Text: "{request.event_text}"
 - Recent Events: {prior_events_text}
 
 ## Instructions
-{VERBOSITY_INSTRUCTIONS[request.verbosity]}
+{system_instruction}
 
 Write in second person ("You..."). Set the scene in a gritty, grounded sci-fi setting.
-If the event mentions gaining an ally, contact, rival, or enemy, briefly describe who they might be.
+The dice determine outcomes — you add texture, not mechanics.
 
 ## Response Format
-Respond with a JSON object:
-{{
-  "description": "Your narrative text here...",
-  "suggested_entities": [
-    {{
-      "type": "npc",
-      "relationship": "ally|contact|rival|enemy",
-      "suggested_name": "Name if appropriate",
-      "suggested_motivation": "Brief motivation"
-    }}
-  ]
-}}
+{format_block}"""
 
-Only include suggested_entities if the event implies new relationships. Keep the array empty otherwise."""
-
-        response_text = ""
         try:
             response_text = await llm.generate(prompt)
-            # Parse JSON from response
             json_match = re.search(r"\{[\s\S]*\}", response_text)
             if json_match:
                 data = json.loads(json_match.group())
+                entities = []
+                if expect_entities:
+                    entities = [
+                        SuggestedEntity(**e)
+                        for e in data.get("suggested_entities", [])
+                    ]
                 return EventDescriptionResponse(
                     description=data.get("description", response_text),
-                    suggested_entities=[
-                        SuggestedEntity(**e) for e in data.get("suggested_entities", [])
-                    ],
+                    suggested_entities=entities,
+                    mode=mode,
+                    guidance_used=request.guidance,
                 )
-            else:
-                return EventDescriptionResponse(description=response_text)
+            return EventDescriptionResponse(
+                description=response_text,
+                mode=mode,
+                guidance_used=request.guidance,
+            )
         except json.JSONDecodeError:
-            return EventDescriptionResponse(description=response_text)
+            return EventDescriptionResponse(
+                description=response_text,
+                mode=mode,
+                guidance_used=request.guidance,
+            )
         except Exception as e:
             raise RuntimeError(f"Event description generation failed: {e}")
 
     async def generate_npc_details(
         self, request: NPCDetailsRequest
     ) -> NPCDetailsResponse:
-        """Generate detailed NPC information.
-
-        Args:
-            request: The NPC details request with context.
-
-        Returns:
-            NPCDetailsResponse with personality, motivation, etc.
-        """
         llm = self._get_llm()
+        mode = request.verbosity
+        guidance_suffix = self._build_guidance_suffix(request.guidance)
 
-        existing_info = ""
-        if request.existing_fields:
-            existing_info = "\n".join(
+        existing_info = (
+            "\n".join(
                 f"- {k}: {v}" for k, v in request.existing_fields.items() if v
             )
-        else:
-            existing_info = "None provided."
+            if request.existing_fields
+            else "None provided."
+        )
 
-        prompt = f"""You are a character designer for a gritty sci-fi tabletop RPG. Generate details for an NPC.
+        system_instruction = NPC_SYSTEM_PROMPTS[mode] + guidance_suffix
+
+        # Different response format per mode
+        if mode == VerbosityLevel.BRIEF:
+            format_block = 'Respond with a JSON object: {"name": "Full Name"}'
+        elif mode == VerbosityLevel.INSPIRATION:
+            format_block = (
+                'Respond with a JSON object:\n'
+                '{\n'
+                '  "name": "Full name (only if not already provided)",\n'
+                '  "personality": "2-3 key personality traits",\n'
+                '  "motivation": "What drives this person regarding the PC"\n'
+                '}'
+            )
+        else:  # FULL
+            format_block = (
+                'Respond with a JSON object:\n'
+                '{\n'
+                '  "name": "Full name (only if not already provided)",\n'
+                '  "personality": "2-3 sentences about personality",\n'
+                '  "motivation": "2-3 sentences about what drives them",\n'
+                '  "appearance": "1-2 sentence physical description",\n'
+                '  "quirks": ["habit1", "habit2", "habit3"]\n'
+                '}'
+            )
+
+        prompt = f"""You are a character designer for a gritty sci-fi tabletop RPG.
 
 ## Context
 - NPC Type: {request.npc_type} (their relationship to the player character)
@@ -149,32 +227,18 @@ Only include suggested_entities if the event implies new relationships. Keep the
 - Already Known About NPC: {existing_info}
 
 ## Instructions
-{VERBOSITY_INSTRUCTIONS[request.verbosity]}
+{system_instruction}
 
 Create a believable NPC for a gritty sci-fi setting. Consider their role as {request.npc_type}.
 
 ## Response Format
-Respond with a JSON object:
-{{
-  "name": "Full name (only if not already provided)",
-  "personality": "2-3 key personality traits",
-  "motivation": "What drives this person, especially regarding the PC",
-  "appearance": "Physical description (only for rich verbosity)",
-  "quirks": ["habit1", "habit2"]
-}}
+{format_block}"""
 
-Include only the fields appropriate for the verbosity level:
-- minimal: just name
-- structured: name, personality, motivation
-- rich: all fields"""
-
-        response_text = ""
         try:
             response_text = await llm.generate(prompt)
             json_match = re.search(r"\{[\s\S]*\}", response_text)
             if json_match:
                 data = json.loads(json_match.group())
-                # Use existing name if provided
                 name = data.get("name", "Unknown")
                 if request.existing_fields and request.existing_fields.get("name"):
                     name = request.existing_fields["name"]
@@ -184,27 +248,28 @@ Include only the fields appropriate for the verbosity level:
                     motivation=data.get("motivation"),
                     appearance=data.get("appearance"),
                     quirks=data.get("quirks"),
+                    mode=mode,
+                    guidance_used=request.guidance,
                 )
-            else:
-                return NPCDetailsResponse(
-                    name="Generated NPC", motivation=response_text
-                )
+            return NPCDetailsResponse(
+                name="Generated NPC",
+                motivation=response_text,
+                mode=mode,
+                guidance_used=request.guidance,
+            )
         except json.JSONDecodeError:
-            return NPCDetailsResponse(name="Generated NPC", motivation=response_text)
+            return NPCDetailsResponse(
+                name="Generated NPC",
+                motivation=response_text,
+                mode=mode,
+                guidance_used=request.guidance,
+            )
         except Exception as e:
             raise RuntimeError(f"NPC details generation failed: {e}")
 
     async def suggest_connections(
         self, request: SuggestConnectionsRequest
     ) -> SuggestConnectionsResponse:
-        """Suggest connections between entities based on context.
-
-        Args:
-            request: The connection suggestion request.
-
-        Returns:
-            SuggestConnectionsResponse with suggested connections.
-        """
         if len(request.entities) < 2:
             return SuggestConnectionsResponse(suggestions=[])
 
@@ -237,7 +302,7 @@ Respond with a JSON object:
   "suggestions": [
     {{
       "source": "entity_id",
-      "target": "entity_id", 
+      "target": "entity_id",
       "relationship": "works_for|rivals_with|stationed_at|etc",
       "description": "Brief explanation of the connection"
     }}
@@ -254,8 +319,7 @@ Respond with a JSON object:
                         ConnectionSuggestion(**s) for s in data.get("suggestions", [])
                     ]
                 )
-            else:
-                return SuggestConnectionsResponse(suggestions=[])
+            return SuggestConnectionsResponse(suggestions=[])
         except (json.JSONDecodeError, Exception) as e:
             logger.warning("Failed to generate connection suggestions: %s", e)
             return SuggestConnectionsResponse(suggestions=[])

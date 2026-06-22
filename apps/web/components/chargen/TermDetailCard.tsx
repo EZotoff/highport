@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import type { CareerTermResult, SpawnedEntityRef } from '../../lib/chargen/types';
+import { unwrapAIField } from '../../lib/chargen/types';
 import { GlassPanel, ProcessFlowSheen, DiceRollDisplay } from '../ui/scifi';
 import { THEME_HEX, TYPOGRAPHY } from '@/lib/design-system/themeUtils';
 import { ANIMATION_TIMING } from '@/lib/design-system/visualConfig';
@@ -213,7 +214,7 @@ export function TermDetailCard({
             </div>
           </section>
 
-          {(term.eventDescription || term.mishap) && (
+          {(unwrapAIField(term.eventDescription) || term.mishap) && (
             <section className="space-y-3">
               <h3
                 className={`flex items-center gap-2 ${TYPOGRAPHY.label}`}
@@ -230,7 +231,7 @@ export function TermDetailCard({
                 }}
               >
                 <p className="text-default leading-relaxed">
-                  {term.eventDescription ||
+                  {unwrapAIField(term.eventDescription) ||
                     term.mishap?.description ||
                     term.eventChoice ||
                     'No details available.'}

@@ -22,6 +22,7 @@ export function useEventNarrative() {
       term: number;
       characterContext: CharacterContext;
       verbosity: VerbosityLevel;
+      guidance?: string;
     }) => {
       setIsLoading(true);
       setError(null);

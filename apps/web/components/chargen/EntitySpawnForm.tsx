@@ -122,7 +122,7 @@ export default function EntitySpawnForm({
           motivation: motivation || undefined,
           personality: personality || undefined,
         },
-        verbosity: 'minimal',
+        verbosity,
       });
 
       switch (field) {

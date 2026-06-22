@@ -24,7 +24,7 @@ describe('useEventNarrative', () => {
     assignment: 'line_crew',
     term: 1,
     characterContext: { name: 'Test', characteristics: {} },
-    verbosity: 'structured' as const,
+    verbosity: 'inspiration' as const,
   };
 
   it('should return result on successful generation', async () => {
@@ -122,7 +122,7 @@ describe('useNPCNarrative', () => {
       career: 'navy',
       characterName: 'Test',
     },
-    verbosity: 'rich' as const,
+    verbosity: 'full' as const,
   };
 
   it('should return result on successful generation', async () => {

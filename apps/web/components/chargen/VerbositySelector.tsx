@@ -14,19 +14,19 @@ const VERBOSITY_OPTIONS: Array<{
   description: string;
 }> = [
   {
-    value: 'minimal',
-    label: 'Minimal',
-    description: 'Names only',
+    value: 'brief',
+    label: 'Brief',
+    description: '1-2 sentence gloss',
   },
   {
-    value: 'structured',
-    label: 'Structured',
-    description: 'Names + 1-liners',
+    value: 'inspiration',
+    label: 'Inspiration',
+    description: 'Several concrete hooks to pick from',
   },
   {
-    value: 'rich',
-    label: 'Rich',
-    description: 'Full prose',
+    value: 'full',
+    label: 'Full',
+    description: 'A drafted scene with named NPCs',
   },
 ];
 

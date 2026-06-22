@@ -33,7 +33,7 @@ describe('Narrative API', () => {
         characteristics: { STR: 7, DEX: 9, END: 8, INT: 10, EDU: 7, SOC: 8 },
         priorEvents: ['Joined navy at 18'],
       },
-      verbosity: 'structured' as VerbosityLevel,
+      verbosity: 'inspiration' as VerbosityLevel,
     };
 
     it('should parse successful API response correctly', async () => {
@@ -129,7 +129,7 @@ describe('Narrative API', () => {
         characterName: 'Zara',
       },
       existingFields: { name: 'Lt. Cmdr Vasquez' },
-      verbosity: 'rich' as VerbosityLevel,
+      verbosity: 'full' as VerbosityLevel,
     };
 
     it('should parse successful NPC response correctly', async () => {
@@ -245,7 +245,7 @@ describe('Narrative API', () => {
   });
 
   describe('verbosity level validation', () => {
-    it('should accept minimal verbosity', async () => {
+    it('should accept brief verbosity', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ description: 'Short desc.', suggestedEntities: [] }),
@@ -257,14 +257,14 @@ describe('Narrative API', () => {
         assignment: 'line_crew',
         term: 1,
         characterContext: { name: 'Test', characteristics: {} },
-        verbosity: 'minimal',
+        verbosity: 'brief',
       });
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(callBody.verbosity).toBe('minimal');
+      expect(callBody.verbosity).toBe('brief');
     });
 
-    it('should accept structured verbosity', async () => {
+    it('should accept inspiration verbosity', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ description: 'Medium desc with details.', suggestedEntities: [] }),
@@ -276,14 +276,14 @@ describe('Narrative API', () => {
         assignment: 'line_crew',
         term: 1,
         characterContext: { name: 'Test', characteristics: {} },
-        verbosity: 'structured',
+        verbosity: 'inspiration',
       });
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(callBody.verbosity).toBe('structured');
+      expect(callBody.verbosity).toBe('inspiration');
     });
 
-    it('should accept rich verbosity', async () => {
+    it('should accept full verbosity', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ description: 'A long, detailed prose...', suggestedEntities: [] }),
@@ -295,11 +295,11 @@ describe('Narrative API', () => {
         assignment: 'line_crew',
         term: 1,
         characterContext: { name: 'Test', characteristics: {} },
-        verbosity: 'rich',
+        verbosity: 'full',
       });
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(callBody.verbosity).toBe('rich');
+      expect(callBody.verbosity).toBe('full');
     });
   });
 });

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useSelectedLifepath } from '../../lib/graph/useSelectedLifepath';
 import type { CareerTermResult, SpawnedEntityRef } from '../../lib/chargen/types';
+import { unwrapAIField } from '../../lib/chargen/types';
 
 interface LifepathPanelProps {
   selectedNodeId: string | null;
@@ -108,7 +109,7 @@ function CompactTermCard({
       </div>
 
       <div className="text-xs text-gray-400 leading-relaxed line-clamp-2 mb-3">
-        {term.eventDescription || term.eventChoice || 'No event details.'}
+        {unwrapAIField(term.eventDescription) || term.eventChoice || 'No event details.'}
       </div>
 
       {term.spawnedEntities.length > 0 && (

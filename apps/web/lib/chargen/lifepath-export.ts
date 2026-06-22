@@ -1,4 +1,5 @@
 import type { ChargenCharacter, CareerTermResult, SpawnedEntityRef } from './types';
+import { unwrapAIField } from './types';
 
 /**
  * Export character lifepath as plain text
@@ -26,8 +27,9 @@ export function exportLifepathAsText(character: ChargenCharacter): string {
     lines.push(`- Career: ${term.careerId} (${term.assignmentId})`);
     lines.push(`- Survived: ${term.survived ? 'Yes' : 'No'}`);
 
-    if (term.eventDescription) {
-      lines.push(`- Event: ${term.eventDescription}`);
+    const desc = unwrapAIField(term.eventDescription);
+    if (desc) {
+      lines.push(`- Event: ${desc}`);
 
       // Spawned entities from this event
       if (term.spawnedEntities.length > 0) {
@@ -130,8 +132,9 @@ export function exportLifepathAsMarkdown(character: ChargenCharacter): string {
     lines.push(`- **Career:** ${term.careerId} (${term.assignmentId})`);
     lines.push(`- **Survived:** ${term.survived ? '✓' : '✗'}`);
 
-    if (term.eventDescription) {
-      lines.push(`- **Event:** ${term.eventDescription}`);
+    const desc = unwrapAIField(term.eventDescription);
+    if (desc) {
+      lines.push(`- **Event:** ${desc}`);
 
       // Spawned entities from this event
       if (term.spawnedEntities.length > 0) {

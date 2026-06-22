@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SciFiButton } from '@/components/ui/scifi';
 import type { SpawnedEntityRef } from '../../lib/chargen/types';
+import { updateCharacterFields } from '../../lib/chargen/state';
+import { getYDoc } from '../../lib/ydoc';
 
 interface ConnectionSuggestion {
   source: string;
@@ -14,7 +16,9 @@ interface ConnectionSuggestion {
 interface ConnectionSuggestionsProps {
   entities: SpawnedEntityRef[];
   characterName: string;
+  characterId: string;
   careerHistory: string[];
+  dismissedSuggestions: string[];
   onAccept: (connection: ConnectionSuggestion) => void;
 }
 
@@ -29,13 +33,14 @@ const RAG_SERVICE_URL = process.env.NEXT_PUBLIC_RAG_SERVICE_URL || 'http://local
 export default function ConnectionSuggestions({
   entities,
   characterName,
+  characterId,
   careerHistory,
+  dismissedSuggestions,
   onAccept,
 }: ConnectionSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<ConnectionSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ConnectionSuggestionsError | null>(null);
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   const fetchSuggestions = useCallback(async () => {
     if (entities.length < 2) {
@@ -99,10 +104,16 @@ export default function ConnectionSuggestions({
 
   const handleDismiss = (suggestion: ConnectionSuggestion) => {
     const key = `${suggestion.source}-${suggestion.target}`;
-    setDismissed((prev) => new Set([...prev, key]));
+    const doc = getYDoc();
+    updateCharacterFields(doc, characterId, {
+      dismissedSuggestions: [...dismissedSuggestions, key],
+    });
   };
 
-  const visibleSuggestions = suggestions.filter((s) => !dismissed.has(`${s.source}-${s.target}`));
+  const dismissedSet = new Set(dismissedSuggestions);
+  const visibleSuggestions = suggestions.filter(
+    (s) => !dismissedSet.has(`${s.source}-${s.target}`),
+  );
 
   if (visibleSuggestions.length === 0 && !isLoading && !error) {
     return null;

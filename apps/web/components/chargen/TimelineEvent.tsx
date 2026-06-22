@@ -5,7 +5,7 @@ import { THEME_HEX } from '@/lib/design-system/themeUtils';
 
 interface TimelineEventProps {
   event?: CareerEvent;
-  eventDescription?: string;
+  eventDescription?: string | { value: string };
   mishap?: CareerMishap;
 }
 
@@ -37,7 +37,13 @@ export const TimelineEvent = memo(function TimelineEvent({
   }
 
   if (event || eventDescription) {
-    const description = eventDescription || event?.description || 'Life event';
+    const rawDesc =
+      typeof eventDescription === 'object' &&
+      eventDescription !== null &&
+      'value' in eventDescription
+        ? (eventDescription as { value: string }).value
+        : eventDescription;
+    const description = rawDesc || event?.description || 'Life event';
 
     return (
       <div className="flex items-start gap-2 group relative" style={{ color: THEME_HEX.cyan }}>

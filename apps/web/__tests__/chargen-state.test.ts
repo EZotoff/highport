@@ -42,7 +42,7 @@ describe('Chargen Session State', () => {
 
       expect(session?.settings).toEqual(DEFAULT_SESSION_SETTINGS);
       expect(session?.settings.allowedCareers).toEqual([]);
-      expect(session?.settings.aiVerbosity).toBe('structured');
+      expect(session?.settings.aiVerbosity).toBe('inspiration');
       expect(session?.settings.requireGMApproval).toBe(false);
       expect(session?.settings.allowCrossPlayerConnections).toBe(true);
       expect(session?.settings.isLocked).toBe(false);
@@ -115,10 +115,10 @@ describe('Chargen Session State', () => {
     });
 
     it('should update aiVerbosity', () => {
-      updateSessionSettings(doc, { aiVerbosity: 'rich' });
+      updateSessionSettings(doc, { aiVerbosity: 'full' });
       const session = getSession(doc);
 
-      expect(session?.settings.aiVerbosity).toBe('rich');
+      expect(session?.settings.aiVerbosity).toBe('full');
     });
 
     it('should update multiple settings at once', () => {

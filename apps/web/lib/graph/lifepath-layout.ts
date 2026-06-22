@@ -1,5 +1,5 @@
 import { Node, Edge, MarkerType } from '@xyflow/react';
-import { ChargenCharacter, CareerTermResult } from '../chargen/types';
+import { ChargenCharacter, CareerTermResult, unwrapAIField } from '../chargen/types';
 
 export interface LifepathLayoutInput {
   character: ChargenCharacter;
@@ -99,7 +99,7 @@ export function calculateLifepathLayout({
         data: {
           termNumber: term.termNumber,
           age: term.startAge + 4,
-          eventSummary: term.eventDescription || term.eventChoice || 'No event',
+          eventSummary: unwrapAIField(term.eventDescription) || term.eventChoice || 'No event',
           survived: term.survived,
           advanced: term.advanced,
           rankGained: term.rankGained,

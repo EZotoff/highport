@@ -2,7 +2,7 @@ import { RagUnavailableError } from '../rag-client';
 
 const RAG_SERVICE_URL = process.env.NEXT_PUBLIC_RAG_SERVICE_URL || 'http://localhost:18124';
 
-export type VerbosityLevel = 'minimal' | 'structured' | 'rich';
+export type VerbosityLevel = 'brief' | 'inspiration' | 'full';
 
 export interface CharacterContext {
   name: string;
@@ -46,6 +46,7 @@ export async function generateEventDescription(params: {
   term: number;
   characterContext: CharacterContext;
   verbosity: VerbosityLevel;
+  guidance?: string;
 }): Promise<EventDescriptionResult> {
   try {
     // Convert to snake_case for Python API
@@ -60,6 +61,7 @@ export async function generateEventDescription(params: {
         prior_events: params.characterContext.priorEvents,
       },
       verbosity: params.verbosity,
+      guidance: params.guidance || undefined,
     };
 
     const response = await fetch(`${RAG_SERVICE_URL}/narrative/event-description`, {

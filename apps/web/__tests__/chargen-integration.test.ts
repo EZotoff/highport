@@ -431,13 +431,13 @@ describe('Chargen Integration Tests', () => {
 
       // Second update (partial)
       updateSessionSettings(doc, {
-        aiVerbosity: 'rich',
+        aiVerbosity: 'full',
       });
 
       const session = getSession(doc);
       expect(session?.settings.allowedCareers).toEqual(['Navy']);
       expect(session?.settings.requireGMApproval).toBe(true);
-      expect(session?.settings.aiVerbosity).toBe('rich');
+      expect(session?.settings.aiVerbosity).toBe('full');
     });
   });
 });
