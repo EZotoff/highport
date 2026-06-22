@@ -49,9 +49,9 @@ const RELATIONSHIP_ICONS: Record<string, React.ReactNode> = {
   enemy: <Skull className="w-4 h-4 text-red-400" />,
 };
 
-const CAREER_TYPES: PortraitCareerType[] = [
+const CAREER_TYPES = [
   'navy',
-  'marines',
+  'marine',
   'scout',
   'merchant',
   'army',
@@ -63,7 +63,7 @@ const CAREER_TYPES: PortraitCareerType[] = [
   'citizen',
   'entertainer',
   'other',
-];
+] as PortraitCareerType[];
 
 export default function FinalizeStep({ characterId }: FinalizeStepProps) {
   const router = useRouter();

@@ -1,20 +1,35 @@
 /**
- * Fallback Career Data
+ * Built-in Career Data
  *
- * Minimal starter content for the app to function out of the box.
- * This data provides a basic "Drifter" career as a starting point.
+ * All 12 MGT2E Core Rulebook careers are included in-repo:
+ * Agent, Army, Citizen, Drifter, Entertainer, Marine, Merchant,
+ * Navy, Noble, Rogue, Scholar, Scout.
  *
- * For complete career data (Agent, Army, Citizen, Entertainer, Marines, Merchant,
- * Navy, Noble, Rogue, Scholar, Scout), install a full game data pack.
+ * Mechanical data (die targets, skill tables, ranks, benefits, events, mishaps)
+ * is drawn from the Mongoose Traveller 2nd Edition Core Rulebook.
+ * Creative text (event and mishap descriptions) is paraphrased to respect
+ * Mongoose Publishing's proprietary content.
  *
- * See docs/game-data-format.md for the JSON import format.
+ * Users can override with custom data by setting the GAME_DATA_DIR environment
+ * variable. See docs/game-data-format.md for the JSON import format.
  */
 
 import type { CareerDefinition } from '../../types/career.js';
+import { AGENT_CAREER } from './careers/agent.js';
+import { ARMY_CAREER } from './careers/army.js';
+import { CITIZEN_CAREER } from './careers/citizen.js';
+import { ENTERTAINER_CAREER } from './careers/entertainer.js';
+import { MARINE_CAREER } from './careers/marine.js';
+import { MERCHANT_CAREER } from './careers/merchant.js';
+import { NAVY_CAREER } from './careers/navy.js';
+import { NOBLE_CAREER } from './careers/noble.js';
+import { ROGUE_CAREER } from './careers/rogue.js';
+import { SCHOLAR_CAREER } from './careers/scholar.js';
+import { SCOUT_CAREER } from './careers/scout.js';
 
 /**
- * Minimal Drifter career — starter content.
- * Descriptions are generic to avoid reproducing copyrighted text.
+ * Drifter career — included in-repo.
+ * Descriptions are paraphrased to respect Mongoose Publishing's proprietary content.
  */
 const SRD_DRIFTER: CareerDefinition = {
   id: 'drifter',
@@ -248,5 +263,16 @@ const SRD_DRIFTER: CareerDefinition = {
 };
 
 export const SRD_CAREERS: Record<string, CareerDefinition> = {
+  agent: AGENT_CAREER,
+  army: ARMY_CAREER,
+  citizen: CITIZEN_CAREER,
   drifter: SRD_DRIFTER,
+  entertainer: ENTERTAINER_CAREER,
+  marine: MARINE_CAREER,
+  merchant: MERCHANT_CAREER,
+  navy: NAVY_CAREER,
+  noble: NOBLE_CAREER,
+  rogue: ROGUE_CAREER,
+  scholar: SCHOLAR_CAREER,
+  scout: SCOUT_CAREER,
 };

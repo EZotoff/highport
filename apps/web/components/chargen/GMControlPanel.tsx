@@ -132,10 +132,11 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
             <div className="grid grid-cols-2 gap-2">
               {ALL_CAREERS.map((career) => {
                 const isAllowed =
-                  settings.allowedCareers.length === 0 || settings.allowedCareers.includes(career);
+                  settings.allowedCareers.length === 0 ||
+                  settings.allowedCareers.includes(career.id);
                 return (
                   <label
-                    key={career}
+                    key={career.id}
                     className={`
                       flex items-center gap-2 px-2 py-1.5 rounded text-xs border cursor-pointer transition-colors
                       ${
@@ -148,7 +149,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                     <input
                       type="checkbox"
                       checked={isAllowed}
-                      onChange={() => actions.toggleCareer(career)}
+                      onChange={() => actions.toggleCareer(career.id)}
                       className="hidden"
                     />
                     <div
@@ -156,7 +157,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                     >
                       {isAllowed && <Check className="w-2.5 h-2.5 text-heading" />}
                     </div>
-                    {career}
+                    {career.name}
                   </label>
                 );
               })}

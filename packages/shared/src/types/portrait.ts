@@ -59,7 +59,7 @@ export type PortraitDistinguishingFeature =
 
 export type PortraitCareerType =
   | 'navy'
-  | 'marines'
+  | 'marine'
   | 'scout'
   | 'merchant'
   | 'army'

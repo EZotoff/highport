@@ -19,7 +19,7 @@ import type {
 } from '@highport/shared/types/portrait';
 import { Search, Loader2, Image as ImageIcon } from 'lucide-react';
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3012';
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:18122';
 
 interface PortraitLibraryProps {
   open: boolean;
@@ -258,7 +258,7 @@ export function PortraitLibrary({
                 options={[
                   { value: 'all', label: 'All' },
                   { value: 'navy', label: 'Navy' },
-                  { value: 'marines', label: 'Marines' },
+                  { value: 'marine', label: 'Marine' },
                   { value: 'scout', label: 'Scout' },
                   { value: 'merchant', label: 'Merchant' },
                   { value: 'rogue', label: 'Rogue' },

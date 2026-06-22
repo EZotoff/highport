@@ -1,24 +1,12 @@
 import { useCallback, useMemo } from 'react';
+import { getAllCareers } from '@highport/mgt2e';
 import { getYDoc } from '../ydoc';
 import { updateSessionSettings, endSession, getAllCharacters } from './state';
 import { useSession } from './hooks';
 import { useConnectionRequests } from './useConnectionRequests';
 import type { SessionSettings } from './types';
 
-export const ALL_CAREERS = [
-  'Navy',
-  'Army',
-  'Marines',
-  'Scout',
-  'Merchant',
-  'Agent',
-  'Noble',
-  'Rogue',
-  'Scholar',
-  'Entertainer',
-  'Drifter',
-  'Citizen',
-];
+export const ALL_CAREERS = getAllCareers();
 
 export function useGMControls(currentUserId: string) {
   const session = useSession();
@@ -52,7 +40,7 @@ export function useGMControls(currentUserId: string) {
       // According to types: "Empty = all allowed".
       // To disable one, we must explicitly list all others.
 
-      const allCareers = ALL_CAREERS;
+      const allCareers = ALL_CAREERS.map((c) => c.id);
       const effectivelyAllowed = currentAllowed.length === 0 ? allCareers : currentAllowed;
 
       if (effectivelyAllowed.includes(career)) {

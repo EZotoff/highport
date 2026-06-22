@@ -50,10 +50,10 @@ const AGE_OPTIONS = [
   { value: 'elder', label: 'Elder' },
 ];
 
-const CAREER_OPTIONS = [
+const CAREER_OPTIONS: { value: PortraitCareerType | 'none'; label: string }[] = [
   { value: 'none', label: 'Inherit Career' },
   { value: 'navy', label: 'Navy' },
-  { value: 'marines', label: 'Marines' },
+  { value: 'marine', label: 'Marine' },
   { value: 'scout', label: 'Scout' },
   { value: 'merchant', label: 'Merchant' },
   { value: 'army', label: 'Army' },

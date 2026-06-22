@@ -6,6 +6,9 @@ export * from './tables/index.js';
 export {
   type GameDataPack,
   getCareers,
+  getAllCareers,
+  getCareerIds,
+  getCareer,
   loadGameData,
   loadGameDataFromDirectory,
   initGameData,

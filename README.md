@@ -48,7 +48,7 @@ For the full vision, see [CONCEPT.md](./CONCEPT.md). For delivery status, see [R
 
 ### Shipped
 
-- **[Shipped] MGT2E Character Creation** — Lifepath mechanics engine: characteristics, qualification, 4-phase term resolution, survival, events, advancement, mishaps, mustering out, rank, aging, and connections. All dice-driven; all immutable once rolled. Starter data: the Drifter career and 44 core skills ship in-repo. Full 12 careers require an external game data pack (see [Game Data](#game-data)).
+- **[Shipped] MGT2E Character Creation** — Lifepath mechanics engine: characteristics, qualification, 4-phase term resolution, survival, events, advancement, mishaps, mustering out, rank, aging, and connections. All dice-driven; all immutable once rolled. All 12 MGT2E Core Rulebook careers ship in-repo: Agent, Army, Citizen, Drifter, Entertainer, Marine, Merchant, Navy, Noble, Rogue, Scholar, Scout. 44 core skill stubs are also included.
 - **[Shipped] Configurable AI Invasiveness** — Three modes control how much texture the AI adds to your chargen: **Brief** (a 1-2 sentence gloss), **Inspiration** (several concrete hooks to pick from), and **Full** (a drafted scene with named NPCs and relationship implications). The default is Inspiration. The dice own the facts; the AI owns the texture. Every AI output is draft until you accept, edit, or reject it.
 - **[Shipped] Real-time Collaborative Chargen** — Multiple players and a GM work in the same session simultaneously. Powered by Yjs CRDT (Conflict-free Replicated Data Type — a sync protocol that lets multiple clients edit shared state without conflicts) via Hocuspocus (the WebSocket server that relays Yjs updates), with participant panels, entity pools, connection requests, GM control, and live notifications.
 - **[Shipped] Portrait Generation** — Gemini image model with remix support, integrated into character finalization and entity spawning.
@@ -148,9 +148,9 @@ Highport uses a real-time CRDT sync engine powered by Yjs and Hocuspocus:
 
 Highport supports custom game system data through a plugin import system. Place JSON files in the data import folder, and the system will load your custom content.
 
-**Starter Content**: The repository ships a starter Drifter career and 44 core skill stubs so you can explore character creation immediately.
+**Career Data**: All 12 MGT2E Core Rulebook careers are included: Agent, Army, Citizen, Drifter, Entertainer, Marine, Merchant, Navy, Noble, Rogue, Scholar, Scout. Mechanical data (die targets, skill tables, ranks, benefits, events, mishaps) is drawn from the _Mongoose Traveller 2nd Edition Core Rulebook_. Creative text (event and mishap descriptions) is paraphrased to respect Mongoose Publishing's proprietary content.
 
-**Full Careers**: The complete set of 12 MGT2E Core Rulebook careers is loaded via an external game data pack you provide through the `GAME_DATA_DIR` environment variable. This is a licensing constraint — Highport cannot redistribute Mongoose Publishing's proprietary career tables. You will need the _Mongoose Traveller 2nd Edition Core Rulebook_ to build or obtain a compatible data pack.
+**Custom Overrides**: If you prefer to use your own data pack, set the `GAME_DATA_DIR` environment variable. The loader will use your external files instead of the built-in careers. The _Mongoose Traveller 2nd Edition Core Rulebook_ remains the authoritative source for all rule references.
 
 ---
 
@@ -178,4 +178,4 @@ Look for issues labeled `good first issue` to get started.
 
 This project is licensed under the [MIT License](./LICENSE).
 
-_Highport is a fan-made companion tool and is not affiliated with or endorsed by Mongoose Publishing. Mongoose Traveller 2nd Edition rule references require the_ Mongoose Traveller 2nd Edition Core Rulebook*. Full career data is loaded via an external game data pack you provide; the repository ships starter content (the Drifter career and core skills) so you can explore immediately.*
+_Highport is a fan-made companion tool and is not affiliated with or endorsed by Mongoose Publishing. Mongoose Traveller 2nd Edition rule references require the_ Mongoose Traveller 2nd Edition Core Rulebook*. All 12 Core Rulebook careers ship in-repo with paraphrased descriptions; mechanical data is derived from the CRB. Custom data packs can still be loaded via `GAME_DATA_DIR`.*
