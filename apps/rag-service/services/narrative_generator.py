@@ -156,14 +156,27 @@ The dice determine outcomes — you add texture, not mechanics.
                         SuggestedEntity(**e)
                         for e in data.get("suggested_entities", [])
                     ]
+                raw_desc = data.get("description", response_text)
+                if isinstance(raw_desc, list):
+                    raw_desc = "\n".join(str(item) for item in raw_desc)
+                elif not isinstance(raw_desc, str):
+                    raw_desc = str(raw_desc)
                 return EventDescriptionResponse(
-                    description=data.get("description", response_text),
+                    description=raw_desc,
                     suggested_entities=entities,
                     mode=mode,
                     guidance_used=request.guidance,
                 )
+            desc_match = re.search(
+                r'"description"\s*:\s*"((?:[^"\\]|\\.)*)"', response_text
+            )
+            fallback_desc = (
+                desc_match.group(1).encode().decode("unicode_escape")
+                if desc_match
+                else response_text
+            )
             return EventDescriptionResponse(
-                description=response_text,
+                description=fallback_desc,
                 mode=mode,
                 guidance_used=request.guidance,
             )

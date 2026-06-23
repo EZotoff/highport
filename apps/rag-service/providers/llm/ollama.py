@@ -56,6 +56,7 @@ class OllamaProvider(LLMProvider):
             response = await self._client.chat(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
+                think=False,
             )
             return response.message.content
         except Exception as e:
