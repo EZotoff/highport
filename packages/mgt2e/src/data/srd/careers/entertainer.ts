@@ -214,6 +214,18 @@ export const ENTERTAINER_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'A performance, broadcast, or exposé cuts too close to power, turning applause into scrutiny.',
+    ],
+    '5': [
+      'One piece of work catches the public mood, and suddenly venues, feeds, and patrons repeat your name.',
+    ],
+    '9': [
+      'The tour circuit carries you through crowded ports and private rooms, leaving a trail of new faces and obligations.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

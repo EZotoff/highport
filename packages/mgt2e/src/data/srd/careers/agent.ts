@@ -204,6 +204,18 @@ export const AGENT_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'The assignment goes sideways fast, turning routine surveillance into a test of nerves, cover stories, and practiced fieldcraft.',
+    ],
+    '5': [
+      'An informant chain widens around you, bringing names, debts, and quiet favors that may matter later.',
+    ],
+    '8': [
+      'You spend the term behind a false identity, close enough to hostile actors that one careless word could burn the whole operation.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

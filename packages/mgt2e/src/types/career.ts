@@ -34,6 +34,7 @@ export interface CareerDefinition {
 
   // Events and mishaps
   events: CareerEvent[]; // 2-12 on 2d6
+  flavorTemplates?: Record<string, string[]>;
   mishaps: CareerMishap[]; // 1-6 on 1d6
 }
 

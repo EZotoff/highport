@@ -227,6 +227,18 @@ export const MARINE_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'Cut off from the landing plan, you survive by rationing ammo, lying low, and reading enemy movement before it finds you.',
+    ],
+    '6': [
+      'The assault order sends you straight at hardened defenses, where training and aggression decide what you carry away.',
+    ],
+    '10': [
+      'A deniable mission succeeds well enough that command notices, even if the official record stays thin.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

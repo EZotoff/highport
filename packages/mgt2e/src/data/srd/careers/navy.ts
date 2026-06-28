@@ -245,6 +245,18 @@ export const NAVY_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'Off watch, the mess decks become a betting floor where reputation, credits, and judgment all sit on the table.',
+    ],
+    '6': [
+      'The ship goes to battle stations, and drills become real work under alarms, recoil, and damage reports.',
+    ],
+    '9': [
+      'You break open a shipboard crime before it spreads, earning command approval and someone else’s lasting hatred.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

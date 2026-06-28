@@ -238,6 +238,16 @@ export const SCHOLAR_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': ['A sponsor asks you to cross a line your training never prepared you to ignore.'],
+    '5': [
+      'Your work receives serious recognition, and with the applause comes envy from people who understand its value.',
+    ],
+    '9': [
+      'The data finally resolves into a discovery important enough to change your standing in the field.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

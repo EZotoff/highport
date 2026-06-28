@@ -228,6 +228,18 @@ export const CITIZEN_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'Local unrest stops being background noise and pulls your workplace, neighbours, and future into the same fight.',
+    ],
+    '5': [
+      'The business, settlement, or public office around you enters a rare upswing, giving your efforts room to matter.',
+    ],
+    '8': [
+      'A compromising secret lands in your hands, and the safest civic choice may not be the most profitable one.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

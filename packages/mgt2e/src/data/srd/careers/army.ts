@@ -216,6 +216,18 @@ export const ARMY_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'Your orders carry you to a frontier posting where bad weather, thin supply lines, and hostile ground teach survival the hard way.',
+    ],
+    '4': [
+      'The regiment pushes through broken streets and ruined utilities, where every doorway and intersection demands caution.',
+    ],
+    '9': [
+      'Your unit is surrounded and outnumbered, but discipline holds long enough for relief to punch through.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

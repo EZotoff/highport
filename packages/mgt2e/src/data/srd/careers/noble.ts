@@ -247,6 +247,18 @@ export const NOBLE_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'A public slight threatens your name, and every advisor has an opinion on whether honour is worth blood.',
+    ],
+    '6': [
+      'Court business turns poisonous as factions, petitions, and private promises compete for your signature.',
+    ],
+    '10': [
+      'You cross salons, ceremonies, and back rooms with practiced grace, trading influence without letting the mask slip.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

@@ -242,6 +242,18 @@ export const ROGUE_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'The law finally puts your name on paper, and the next move depends on favors, nerve, and courtroom improvisation.',
+    ],
+    '5': [
+      'A score pays out beyond expectation, but the mark survives with enough memory and money to make trouble.',
+    ],
+    '9': [
+      'A feud with another outfit spills into the open, making every safehouse and familiar street feel contested.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

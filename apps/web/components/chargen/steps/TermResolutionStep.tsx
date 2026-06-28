@@ -13,6 +13,7 @@ import type {
 } from '@highport/mgt2e';
 import {
   getCareer,
+  getCareerFlavor,
   getCommissionModifier,
   roll1d6,
   rollAgingCheck,
@@ -754,6 +755,9 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   );
 
   const renderEvent = () => {
+    const flavorText = event
+      ? getCareerFlavor(career.id, String(event.roll), currentTerm.termNumber)
+      : undefined;
     const eventDescriptionField = currentTerm?.eventDescription;
     let descriptionStatus: 'none' | 'draft' | 'accepted' | 'rejected' | 'edited' = 'none';
     if (eventDescriptionField) {
@@ -783,7 +787,14 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
             <div className="flex justify-between text-subtle font-mono text-sm border-b border-zinc-800 pb-2">
               <span>Roll: {eventRoll.total}</span>
             </div>
-            <div className="text-heading text-lg">{event?.description}</div>
+            {event && (
+              <div className="space-y-2">
+                {flavorText && flavorText !== event.description && (
+                  <div className="text-label italic text-base">{flavorText}</div>
+                )}
+                <div className="text-heading text-lg">{event.description}</div>
+              </div>
+            )}
 
             {event && narrativeAvailable && (
               <div className="mt-4 p-4 bg-zinc-950 border border-zinc-800 rounded">

@@ -230,6 +230,18 @@ export const MERCHANT_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'A quiet cargo offer comes with too few questions and too much profit, forcing you to price the risk before launch.',
+    ],
+    '5': [
+      'A speculative deal opens on short notice, and the margin looks good enough to tempt careful people into gambling.',
+    ],
+    '10': [
+      'One run lands perfectly: buyers pay, crews stay loyal, and the accounts finally show breathing room.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

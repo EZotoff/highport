@@ -242,6 +242,18 @@ export const SCOUT_CAREER: CareerDefinition = {
     },
   ],
 
+  flavorTemplates: {
+    '3': [
+      'Hostile craft appear where the charts promised quiet space, turning the scout ship into a lonely target.',
+    ],
+    '4': [
+      'The survey takes you below the orbital map, into living terrain where every sample and settlement changes the picture.',
+    ],
+    '10': [
+      'Long jumps beyond familiar routes test your judgment, supplies, and instinct for when the frontier is watching back.',
+    ],
+  },
+
   mishaps: [
     {
       roll: 1,

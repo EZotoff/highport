@@ -135,22 +135,24 @@ const SRD_DRIFTER: CareerDefinition = {
     { roll: 4, benefit: 'Weapon' },
     { roll: 5, benefit: '+1 EDU' },
     { roll: 6, benefit: 'Ship Share' },
+    { roll: 7, benefit: 'TAS Membership' },
   ],
 
   events: [
     {
       roll: 2,
-      description: 'Disaster! Roll on the Mishap table but you are not ejected from this career.',
+      description:
+        'A serious setback hits; resolve a Mishap roll, but the term does not automatically end.',
       effects: [{ type: 'special', target: 'mishap', value: 'roll' }],
     },
     {
       roll: 3,
-      description: 'You find something of value.',
+      description: 'You come across a useful opportunity or salvageable resource.',
       effects: [{ type: 'benefit', target: 'dm', value: 1 }],
     },
     {
       roll: 4,
-      description: 'You find temporary work.',
+      description: 'Short-term employment gives you a chance to learn a practical trade.',
       choices: [
         {
           id: 'labour-skill',
@@ -182,7 +184,7 @@ const SRD_DRIFTER: CareerDefinition = {
     },
     {
       roll: 7,
-      description: 'Life Event. Roll on the Life Events table.',
+      description: 'A personal turning point occurs; resolve a Life Event.',
       effects: [{ type: 'special', target: 'life_event', value: 'roll' }],
     },
     {
@@ -217,6 +219,18 @@ const SRD_DRIFTER: CareerDefinition = {
       effects: [{ type: 'special', target: 'auto_qualify', value: 'next_term' }],
     },
   ],
+
+  flavorTemplates: {
+    '3': [
+      'A scrap of luck turns up in the margins: salvage, gossip, or a temporary opening that might keep you moving.',
+    ],
+    '4': [
+      'A short contract gives you honest work for once, along with a skill that may outlast the pay.',
+    ],
+    '10': [
+      'The wrong people notice you, and street sense becomes the difference between opportunity and a new problem.',
+    ],
+  },
 
   mishaps: [
     {
