@@ -32,7 +32,7 @@
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "../../apps/server/node_modules/.bin/vitest"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

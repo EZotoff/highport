@@ -8,13 +8,13 @@ import { registerExportRoutes } from '../routes/export.js';
 import { registerCampaignRoutes } from '../routes/campaigns.js';
 import { registerAuthRoutes } from '../routes/auth.js';
 
-const FASTIFY_PORT = 3012;
+const FASTIFY_PORT = 18122;
 
 export const fastify = Fastify({ logger: true });
 
 export async function startFastify(): Promise<void> {
   await fastify.register(cors, {
-    origin: ['http://localhost:3010'],
+    origin: ['http://localhost:18120'],
   });
 
   await registerKnowledgeRoutes(fastify);

@@ -244,8 +244,8 @@ describe.skip('PortraitService integration', () => {
     const rows = getRows();
     expect(result.id).toMatch(/^portrait_/);
     expect(fetchCalls.map((call) => call.url)).toEqual([
-      'http://localhost:8000/ai/portraits/tags',
-      'http://localhost:8000/ai/portraits/image',
+      'http://localhost:18124/ai/portraits/tags',
+      'http://localhost:18124/ai/portraits/image',
     ]);
     expect(fetchCalls[0].body.appearance_text).toBe('A weathered merchant with silver eyes');
     expect(rows).toHaveLength(1);
@@ -263,7 +263,7 @@ describe.skip('PortraitService integration', () => {
     });
 
     expect(fetchCalls).toHaveLength(1);
-    expect(fetchCalls[0].url).toBe('http://localhost:8000/ai/portraits/image');
+    expect(fetchCalls[0].url).toBe('http://localhost:18124/ai/portraits/image');
   });
 
   it('generates portrait with protected flag and persists protected=true', async () => {

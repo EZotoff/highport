@@ -11,7 +11,7 @@ import { SciFiDialog } from '@/components/ui/scifi';
 import { GlassPanel } from '@/components/ui/scifi';
 import { useToast } from '@/components/ui/ToastContext';
 
-const API_BASE = 'http://localhost:3012';
+const API_BASE = 'http://localhost:18122';
 
 interface Campaign {
   id: string;

@@ -3,7 +3,7 @@
     "Settings": {
       "ServerUrl": {
         "Name": "Highport Server URL",
-        "Hint": "The WebSocket URL of your Highport server (e.g., ws://localhost:3012)"
+        "Hint": "The WebSocket URL of your Highport server (e.g., ws://localhost:18122)"
       },
       "ApiKey": {
         "Name": "API Key",

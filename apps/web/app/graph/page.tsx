@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ExportButton } from '@/components/entity/ExportButton';
 import GraphCanvas from '../../components/graph/GraphCanvas';
 
 export default function GraphPage() {
@@ -30,6 +31,9 @@ export default function GraphPage() {
         >
           Reputation
         </Link>
+        <div className="ml-2 pointer-events-auto">
+          <ExportButton />
+        </div>
       </nav>
       <div className="h-screen w-full">
         <GraphCanvas />

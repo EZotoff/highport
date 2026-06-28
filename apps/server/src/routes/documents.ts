@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { ingestedDocuments } from '../db/schema.js';
 
-const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:8000';
+const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:18124';
 
 interface ScopeParams {
   sourceId: string;

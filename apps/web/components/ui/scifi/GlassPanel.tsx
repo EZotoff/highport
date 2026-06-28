@@ -7,6 +7,7 @@ interface GlassPanelProps extends React.HTMLAttributes<HTMLDivElement> {
   theme?: ThemeColor;
   variant?: 'default' | 'elevated' | 'bordered' | 'subtle';
   glow?: boolean;
+  glint?: boolean;
   hoverGlow?: boolean;
   children: React.ReactNode;
 }

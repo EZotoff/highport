@@ -1,11 +1,20 @@
 import { IndexeddbPersistence } from 'y-indexeddb';
 import * as Y from 'yjs';
 import { HocuspocusProvider } from '@hocuspocus/provider';
+import { getSession } from 'next-auth/react';
 
 let persistence: IndexeddbPersistence | null = null;
 let provider: HocuspocusProvider | null = null;
 
 const SESSION_KEY = 'highport_session_id';
+
+async function getHocuspocusToken(): Promise<string> {
+  const session = await getSession();
+  if (!session?.hocuspocusToken) {
+    throw new Error('Not authenticated');
+  }
+  return session.hocuspocusToken;
+}
 
 export function getSessionId(scope: string): string {
   if (typeof window === 'undefined') {
@@ -51,7 +60,7 @@ export function initProvider(
     url: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:18121',
     name: `${campaignId}:graph`,
     document: doc,
-    token: token || 'dev-token', // TODO: replace with NextAuth JWT for production
+    token: token ?? getHocuspocusToken,
   });
 
   provider.on('synced', () => {

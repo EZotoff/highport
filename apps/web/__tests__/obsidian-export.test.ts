@@ -135,4 +135,43 @@ describe('exportObsidianVault', () => {
       'the-broker-3',
     ]);
   });
+
+  it('handles mixed node types with consistent markdown shape', async () => {
+    const nodes = [
+      makeNode({ id: 't', label: 'Traveller Node', type: 'traveller' }),
+      makeNode({ id: 'n', label: 'NPC Node', type: 'npc' }),
+      makeNode({ id: 'l', label: 'Location Node', type: 'location' }),
+      makeNode({ id: 'i', label: 'Spacecraft Node', type: 'spacecraft' }),
+      makeNode({ id: 's', label: 'Faction Node', type: 'faction' }),
+    ];
+
+    const { zip, manifest } = await exportAndOpenZip(nodes);
+
+    // All five types produce a note file with the expected slug
+    const expectedSlugs = [
+      'notes/faction-node.md',
+      'notes/location-node.md',
+      'notes/npc-node.md',
+      'notes/spacecraft-node.md',
+      'notes/traveller-node.md',
+    ];
+    for (const slug of expectedSlugs) {
+      const file = zip.file(slug);
+      if (!file) {
+        throw new Error(`${slug} missing`);
+      }
+    }
+
+    // Each type is faithfully reflected in the manifest
+    const typesInManifest = manifest.entities.map((e) => e.type).sort();
+    expect(typesInManifest).toEqual(['faction', 'location', 'npc', 'spacecraft', 'traveller']);
+  });
+
+  it('produces deterministic output for an empty node list', async () => {
+    const { files, manifest } = await exportAndOpenZip([]);
+
+    expect(files).toEqual(['manifest.json']);
+    expect(manifest.entities).toEqual([]);
+    expect(manifest.campaignId).toBe('campaign-123');
+  });
 });

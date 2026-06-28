@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GraphNode, NodeType } from '@highport/shared';
 import { SciFiButton, SciFiDialog, SciFiInput, SciFiSelect } from '@/components/ui/scifi';
+import { ExportButton } from '@/components/entity/ExportButton';
 import { ThemeColor } from '@/lib/design-system/types';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { getNodeConfig } from './nodes/node-config';
@@ -96,13 +97,22 @@ export function NodeEditDialog({ open, onClose, node }: NodeEditDialogProps) {
       theme={theme}
       className="max-w-xl"
       footer={
-        <div className="flex w-full items-center justify-end gap-2">
-          <SciFiButton type="button" onClick={onClose} scifiVariant="outline" theme={theme}>
-            Cancel
-          </SciFiButton>
-          <SciFiButton type="button" onClick={handleSave} scifiVariant="primary" theme={theme} glow>
-            Save
-          </SciFiButton>
+        <div className="flex w-full items-center justify-between gap-2">
+          <ExportButton />
+          <div className="flex items-center gap-2">
+            <SciFiButton type="button" onClick={onClose} scifiVariant="outline" theme={theme}>
+              Cancel
+            </SciFiButton>
+            <SciFiButton
+              type="button"
+              onClick={handleSave}
+              scifiVariant="primary"
+              theme={theme}
+              glow
+            >
+              Save
+            </SciFiButton>
+          </div>
         </div>
       }
     >

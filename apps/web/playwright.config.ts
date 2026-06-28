@@ -12,7 +12,7 @@ export default defineConfig({
   },
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3010',
+    baseURL: 'http://localhost:18120',
     trace: 'on-first-retry',
     launchOptions: {
       args: [
@@ -29,9 +29,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm build && PORT=3010 pnpm start',
-    url: 'http://localhost:3010',
-    reuseExistingServer: false,
+    command: 'pnpm build && PORT=18120 pnpm start',
+    url: 'http://localhost:18120',
+    reuseExistingServer: true,
     timeout: 120 * 1000,
   },
   globalSetup: './e2e/global-setup.ts',

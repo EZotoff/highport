@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3012';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18122';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');

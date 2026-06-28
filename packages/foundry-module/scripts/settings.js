@@ -13,7 +13,7 @@ export function registerSettings() {
     scope: 'world',
     config: true,
     type: String,
-    default: 'ws://localhost:3012',
+    default: 'ws://localhost:18122',
   });
 
   game.settings.register('highport-bridge', 'apiKey', {

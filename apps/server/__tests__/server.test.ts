@@ -7,7 +7,7 @@ describe('Fastify Server', () => {
 
   beforeAll(async () => {
     await fastify.register(cors, {
-      origin: ['http://localhost:3010'],
+      origin: ['http://localhost:18120'],
     });
 
     fastify.get('/health', async () => {
@@ -51,6 +51,6 @@ describe('Hocuspocus Server', () => {
 
   it('exports HOCUSPOCUS_PORT constant', async () => {
     const { HOCUSPOCUS_PORT } = await import('../src/ws/hocuspocus.js');
-    expect(HOCUSPOCUS_PORT).toBe(3011);
+    expect(HOCUSPOCUS_PORT).toBe(18121);
   });
 });

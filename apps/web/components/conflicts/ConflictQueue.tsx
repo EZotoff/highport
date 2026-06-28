@@ -13,7 +13,7 @@ interface ConflictItem {
   status: 'pending' | 'resolved' | 'dismissed';
 }
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3012';
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:18122';
 
 export function ConflictQueue() {
   const [conflicts, setConflicts] = useState<ConflictItem[]>([]);
