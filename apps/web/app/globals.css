@@ -5,9 +5,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@source "../app";
+@source "../components";
+@source "../lib";
+@source inline("{sm:,md:,lg:,xl:,}grid-cols-{1,2,3,4,5,6}");
+@source inline("{sm:,md:,lg:,xl:,}grid-rows-1");
+@source inline("{sm:,md:,lg:,xl:,}col-span-{1,2,3,4,5,6}");
+
+@import 'tailwindcss';
 
 /* === BASE STYLES === */
 html,
@@ -23,21 +28,30 @@ body {
 }
 
 /* === SCROLLBAR CUSTOMIZATION === */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--plasma-cyan) 60%, transparent) var(--star-metal);
+}
+
+*::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
+*::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track {
   background: var(--star-metal);
-  border-radius: 3px;
+  border-radius: 0px;
 }
 
+*::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--asteroid-dust);
+  background: color-mix(in srgb, var(--plasma-cyan) 60%, transparent);
   border-radius: 3px;
 }
 
+*::-webkit-scrollbar-thumb:hover,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--plasma-cyan);
 }

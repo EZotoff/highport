@@ -4,10 +4,18 @@ import React, { useState } from 'react';
 import { getYDoc } from '../../../lib/ydoc';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
-import { SciFiButton, SciFiCard } from '@/components/ui/scifi';
-import { getAllCareers, getCareer, roll2d6, getCharacteristicModifier } from '@highport/mgt2e';
+import { SciFiButton, SciFiCard, SciFiDialog } from '@/components/ui/scifi';
+import {
+  getAllCareers,
+  getCareer,
+  roll2d6,
+  getCharacteristicModifier,
+  rollDraftCareer,
+} from '@highport/mgt2e';
 import type { CareerDefinition } from '@highport/mgt2e';
 import type { CareerTermResult } from '../../../lib/chargen/types';
+
+const CONSCRIPTION_SURVIVAL_DM = 2;
 
 interface CareerSelectionStepProps {
   characterId: string | null;
@@ -21,6 +29,9 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
     target: number;
     success: boolean;
   } | null>(null);
+  const [draftDialogOpen, setDraftDialogOpen] = useState(false);
+  const [draftResult, setDraftResult] = useState<ReturnType<typeof rollDraftCareer> | null>(null);
+  const [draftRolling, setDraftRolling] = useState(false);
 
   const character = useCharacter(characterId);
   const careers = getAllCareers();
@@ -100,6 +111,49 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
       careerId: 'drifter',
       assignmentId: 'barbarian', // Default per instructions
       startAge: character.age,
+      survived: false,
+      advanced: false,
+      currentRank: 0,
+      skillsGained: [],
+      spawnedEntities: [],
+    };
+
+    const doc = getYDoc();
+    updateCharacterFields(doc, character.id, {
+      terms: [...(character.terms || []), newTerm],
+      currentTermIndex: character.terms?.length || 0,
+      status: 'term_resolution',
+    });
+  };
+
+  const submitToDraft = () => {
+    setDraftDialogOpen(true);
+    setDraftResult(null);
+    setDraftRolling(false);
+  };
+
+  const rollDraft = () => {
+    setDraftRolling(true);
+    const result = rollDraftCareer();
+    setDraftResult(result);
+    setDraftRolling(false);
+  };
+
+  const beginDraftedTerm = () => {
+    if (!character || !draftResult) return;
+
+    const career = getCareer(draftResult.careerId);
+    const assignment = career?.assignments[0];
+    if (!career || !assignment) return;
+
+    const newTerm: CareerTermResult = {
+      termNumber: (character.terms?.length || 0) + 1,
+      careerId: career.id,
+      assignmentId: assignment.id,
+      startAge: character.age,
+      drafted: true,
+      draftRoll: draftResult.roll,
+      survivalDmBonus: CONSCRIPTION_SURVIVAL_DM,
       survived: false,
       advanced: false,
       currentRank: 0,
@@ -257,16 +311,66 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
               </SciFiButton>
 
               <SciFiButton
-                theme="slate"
-                scifiVariant="ghost"
-                disabled
-                className="h-auto flex flex-col p-4 opacity-50 cursor-not-allowed"
+                theme="cyan"
+                scifiVariant="outline"
+                onClick={submitToDraft}
+                className="h-auto flex flex-col p-4"
               >
                 <div className="font-bold mb-1">Submit to Draft</div>
-                <div className="text-xs font-sans normal-case">Coming soon</div>
+                <div className="text-xs font-sans normal-case">Roll 1d6 for assigned service</div>
               </SciFiButton>
             </div>
           </SciFiCard>
+
+          <SciFiDialog
+            open={draftDialogOpen}
+            onOpenChange={setDraftDialogOpen}
+            title="Submit to Draft"
+            description="The draft assigns a service by 1d6. Your first term still requires a survival roll, with a +2 conscription DM."
+            theme="cyan"
+            footer={
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:justify-end">
+                <SciFiButton
+                  theme="slate"
+                  scifiVariant="ghost"
+                  onClick={() => setDraftDialogOpen(false)}
+                >
+                  Cancel
+                </SciFiButton>
+                {!draftResult ? (
+                  <SciFiButton theme="cyan" glow onClick={rollDraft} disabled={draftRolling}>
+                    Confirm Draft Submission
+                  </SciFiButton>
+                ) : (
+                  <SciFiButton theme="cyan" glow onClick={beginDraftedTerm}>
+                    Begin Drafted Term
+                  </SciFiButton>
+                )}
+              </div>
+            }
+          >
+            <div className="space-y-4">
+              {!draftResult ? (
+                <div className="rounded-lg border border-cyan-900/50 bg-cyan-950/20 p-4 text-sm text-subtle">
+                  {draftRolling
+                    ? 'Rolling draft channel...'
+                    : 'Confirm to roll 1d6 and accept the assigned draft career.'}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-cyan-700/50 bg-cyan-950/30 p-4">
+                  <div className="text-sm text-subtle font-mono mb-2">
+                    Draft roll: {draftResult.roll.rolls[0]}
+                  </div>
+                  <div className="text-xl font-bold text-cyan-200 font-orbitron">
+                    Assigned to {getCareer(draftResult.careerId)?.name ?? draftResult.careerId}
+                  </div>
+                  <div className="text-sm text-subtle mt-2">
+                    First term survival DM +{CONSCRIPTION_SURVIVAL_DM}; survival is not skipped.
+                  </div>
+                </div>
+              )}
+            </div>
+          </SciFiDialog>
         </div>
       );
     }
@@ -298,7 +402,7 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
                 variant="bordered"
                 title={career.name}
                 subtitle={
-                  <span className="font-mono text-xs text-cyan-500/80 bg-cyan-950/30 px-2 py-0.5 rounded border border-cyan-900/50">
+                  <span className="font-mono text-xs text-cyan-400 bg-cyan-950/50 px-2 py-0.5 rounded border border-cyan-900/50">
                     {career.qualification.characteristic} {career.qualification.target}+
                   </span>
                 }
@@ -306,7 +410,7 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
                 footer={
                   <div className="w-full">
                     <div className="flex justify-between items-center mb-3 text-sm">
-                      <span className="text-subtle">Your DM:</span>
+                      <span className="text-label">Your DM:</span>
                       <span
                         className={`font-mono font-bold ${dm >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
                       >

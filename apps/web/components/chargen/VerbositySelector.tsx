@@ -64,7 +64,7 @@ export default function VerbositySelector({
           >
             <span className="flex flex-col items-center leading-tight">
               <span className="text-sm font-medium">{option.label}</span>
-              <span className="text-[10px] text-subtle opacity-80">{option.description}</span>
+              <span className="text-[10px] text-label">{option.description}</span>
             </span>
           </SciFiButton>
         ))}

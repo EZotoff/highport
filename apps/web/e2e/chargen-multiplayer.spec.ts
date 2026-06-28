@@ -59,6 +59,9 @@ test.describe('Multiplayer Chargen', () => {
   });
 
   test.describe('Multi-User Sync Tests', () => {
+    // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #1
+    // Requires Hocuspocus server + DB; Playwright webServer only starts Next.js
+    // Validates core Yjs CRDT sync. Restore when full-stack infra covers Hocuspocus.
     test.fixme('entity creation syncs between two users', async ({ browser }) => {
       // Fixme: Multi-user sync tests require server running and room isolation
       const context1 = await browser.newContext();
@@ -112,6 +115,9 @@ test.describe('Multiplayer Chargen', () => {
       await context2.close();
     });
 
+    // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #2
+    // Same Hocuspocus infra gap as entity sync test. Also needs verified UI selectors
+    // for the "Request to Join" button — labels may differ from current build.
     test.fixme('participant join request syncs to GM', async ({ browser }) => {
       // Fixme: Multi-user sync tests require server running and room isolation
       const contextGM = await browser.newContext();
@@ -156,6 +162,10 @@ test.describe('Multiplayer Chargen', () => {
   });
 
   test.describe('Persistence Tests', () => {
+    // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #3
+    // Entity spawning is dice-driven via career events, not a direct UI button.
+    // Test body only verifies panel renders, not actual persistence.
+    // Needs seeded RNG or career term helper to properly test persistence.
     test.fixme('entities persist after page reload', async ({ page }) => {
       // Fixme: Entities are spawned automatically during career events (not via button)
       // This test needs to go through the full character creation flow to spawn an entity

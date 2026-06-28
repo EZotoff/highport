@@ -40,7 +40,7 @@ test.describe('Portrait in Chargen', () => {
 
 test.describe('Portrait API smoke checks', () => {
   test('POST /api/portraits/generate returns 401 without X-User-Id', async ({ request }) => {
-    const response = await request.post('http://localhost:3012/api/portraits/generate', {
+    const response = await request.post('http://localhost:18122/api/portraits/generate', {
       data: {
         campaignId: 'test-campaign',
         tags: { story: { entity_type: 'npc' } },
@@ -52,7 +52,7 @@ test.describe('Portrait API smoke checks', () => {
 
   test('GET /api/portraits/search returns array for campaign query', async ({ request }) => {
     const response = await request.get(
-      'http://localhost:3012/api/portraits/search?campaignId=test-campaign',
+      'http://localhost:18122/api/portraits/search?campaignId=test-campaign',
     );
 
     expect(response.status()).toBe(200);
@@ -61,7 +61,7 @@ test.describe('Portrait API smoke checks', () => {
   });
 
   test('GET /api/portraits/:id/image returns 404 for missing portrait', async ({ request }) => {
-    const response = await request.get('http://localhost:3012/api/portraits/nonexistent/image');
+    const response = await request.get('http://localhost:18122/api/portraits/nonexistent/image');
 
     expect(response.status()).toBe(404);
   });

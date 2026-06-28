@@ -77,6 +77,9 @@ test.describe('RAG Chat Interface', () => {
 });
 
 test.describe('RAG Chat with Mock Response', () => {
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #13
+  // Mock route '**/api/rag/query' may not match actual SSE endpoint used by the app.
+  // SSE response format (data: ...) needs verified against chat component parser.
   test.skip('intercepts API and displays mocked response', async ({ page }) => {
     await page.route('**/api/rag/query', async (route) => {
       await route.fulfill({

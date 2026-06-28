@@ -117,7 +117,7 @@ export default function ParticipantPanel({
           <span className="text-subtle text-sm italic">Waiting for session sync...</span>
         </div>
       ) : (
-        <div className="p-4 space-y-3 overflow-y-auto flex-1">
+        <div className="p-4 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
           <div className="bg-zinc-950/50 border border-zinc-800 rounded-lg p-3 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-2">
               <Crown className="w-4 h-4 text-amber-400" />
@@ -160,7 +160,7 @@ export default function ParticipantPanel({
                         {char.name ? `"${char.name}"` : 'Unnamed Character'}
                       </span>
                     </div>
-                    <div className="text-subtle text-xs ml-5 mt-0.5">
+                    <div className="text-label text-xs ml-5 mt-0.5">
                       {currentTerm
                         ? `${currentTerm.careerId} (Term ${currentTerm.termNumber})`
                         : 'Not started'}
@@ -175,7 +175,7 @@ export default function ParticipantPanel({
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] text-subtle uppercase font-medium">
+                  <div className="flex justify-between text-[10px] text-label uppercase font-medium">
                     <span>{char.status.replace('_', ' ')}</span>
                     <span>{progress}%</span>
                   </div>

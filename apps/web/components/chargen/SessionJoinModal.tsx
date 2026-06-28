@@ -244,7 +244,7 @@ export default function SessionJoinModal() {
             <h3 className="text-sm font-medium text-subtle mb-2">
               Current Participants: {players.length}
             </h3>
-            <div className="bg-zinc-950/50 rounded border border-zinc-800/50 p-3 max-h-32 overflow-y-auto space-y-2">
+            <div className="bg-zinc-950/50 rounded border border-zinc-800/50 p-3 max-h-32 overflow-y-auto space-y-2 custom-scrollbar">
               {players.length === 0 ? (
                 <p className="text-subtle text-sm italic">No other players yet.</p>
               ) : (

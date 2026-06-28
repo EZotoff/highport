@@ -22,7 +22,7 @@ interface GMControlPanelProps {
 }
 
 export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const { isGM, settings, pendingRequests, actions } = useGMControls(currentUserId);
   const allCharacters = useAllCharacters();
 
@@ -42,24 +42,24 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
         aria-label={isOpen ? 'Collapse GM controls' : 'Expand GM controls'}
         className="flex items-center justify-between w-full px-4 py-3 min-h-[44px] bg-zinc-900 border-b border-zinc-800 hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2"
       >
-        <div className="flex items-center gap-2 text-heading font-semibold">
+        <div className="flex items-center gap-2 text-white font-bold">
           <Shield className="w-4 h-4 text-blue-500" />
           <span>GM CONTROLS</span>
           {pendingRequests.length > 0 && (
-            <span className="px-1.5 py-0.5 text-xs font-bold bg-blue-600 text-heading rounded-full">
+            <span className="px-1.5 py-0.5 text-xs font-bold bg-blue-600 text-white rounded-full">
               {pendingRequests.length}
             </span>
           )}
         </div>
         {isOpen ? (
-          <ChevronDown className="w-4 h-4 text-subtle" />
+          <ChevronDown className="w-4 h-4 text-label" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-subtle" />
+          <ChevronRight className="w-4 h-4 text-label" />
         )}
       </button>
 
       {isOpen && (
-        <div className="overflow-y-auto p-4 space-y-6">
+        <div className="overflow-y-auto p-4 space-y-6 custom-scrollbar">
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-subtle uppercase tracking-wider">
               Session Settings

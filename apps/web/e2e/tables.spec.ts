@@ -67,6 +67,9 @@ test.describe('Reputation Table', () => {
     expect(style).toContain('background-color');
   });
 
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #7
+  // Reputation table stores data in-memory only — no IndexedDB or Yjs persistence.
+  // Needs persistence layer feature work before this test can pass.
   test.skip('data persists after page reload', async ({ page }) => {
     // Skip: Reputation table doesn't initialize sync/persistence - only GraphCanvas does
     await page.locator('button:has-text("Add Faction")').click();
@@ -85,6 +88,9 @@ test.describe('Reputation Table', () => {
 });
 
 test.describe('Two-User Table Sync', () => {
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #8
+  // Reputation table has no Hocuspocus provider; cross-context sync is impossible.
+  // Architecturally blocked — same issue as sync-latency.ts entry #6.
   test.skip('changes sync between two browser contexts', async ({ browser }) => {
     // Skip: Reputation table doesn't initialize Hocuspocus provider - only GraphCanvas does
     const context1 = await browser.newContext();

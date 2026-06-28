@@ -41,6 +41,7 @@ const SciFiInput = React.forwardRef<HTMLInputElement, SciFiInputProps>(
             'bg-[var(--star-metal)]',
             'border border-[var(--asteroid-dust-50)]',
             'text-gray-100 placeholder:text-gray-500',
+            'disabled:text-label disabled:opacity-100',
             'focus:outline-none focus:ring-2',
             themeFocusClasses[theme] || themeFocusClasses.cyan,
             'transition-all duration-200',

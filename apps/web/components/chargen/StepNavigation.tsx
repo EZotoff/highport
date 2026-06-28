@@ -49,7 +49,7 @@ export default function StepNavigation({ steps, currentStep, onStepClick }: Step
                     : isCurrent
                       ? THEME_HEX.violet
                       : 'rgba(148, 163, 184, 0.4)',
-                  color: isCompleted ? '#0a0d14' : isCurrent ? THEME_HEX.violet : '#cbd5e1',
+                  color: isCompleted ? '#0a0d14' : isCurrent ? THEME_HEX.violet : '#e2e8f0',
                   boxShadow: isCompleted
                     ? `0 0 12px ${THEME_HEX.cyan}60`
                     : isCurrent
@@ -75,7 +75,7 @@ export default function StepNavigation({ steps, currentStep, onStepClick }: Step
               <span
                 className="hidden sm:block mt-2 text-xs sm:text-sm font-medium font-display text-center leading-tight max-w-[7rem] sm:max-w-[8rem] break-words transition-colors duration-200 pointer-events-none"
                 style={{
-                  color: isCurrent ? THEME_HEX.violet : isCompleted ? THEME_HEX.cyan : '#cbd5e1',
+                  color: isCurrent ? THEME_HEX.violet : isCompleted ? THEME_HEX.cyan : '#e2e8f0',
                 }}
               >
                 {step.label}

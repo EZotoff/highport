@@ -10,10 +10,11 @@ import type { ChargenCharacter } from './types';
 export function rollSurvival(
   character: ChargenCharacter,
   assignment: CareerAssignment,
+  bonusDm: number = 0,
 ): DiceResult {
   const stat = assignment.survival.characteristic;
   const statValue = character.characteristics[stat] || 0;
-  const dm = getCharacteristicModifier(statValue);
+  const dm = getCharacteristicModifier(statValue) + bonusDm;
   return roll2d6(dm, assignment.survival.target);
 }
 

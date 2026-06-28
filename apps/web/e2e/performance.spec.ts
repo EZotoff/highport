@@ -94,6 +94,9 @@ test.describe('Performance', () => {
     expect(panTime).toBeLessThan(2000);
   });
 
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #9
+  // Requires 5 Hocuspocus-connected contexts — infra not covered by Playwright webServer.
+  // Memory-heavy; consider reducing to 2-3 contexts if restored.
   test.fixme('concurrent users with moderate node count', async ({ browser }) => {
     // Fixme: Multi-user sync tests are flaky due to shared Hocuspocus room (default:graph)
     const contexts = await Promise.all([

@@ -149,6 +149,8 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     career.officerRanks !== undefined && !isCommissioned && commissionEligibility.eligible;
   const shouldRenderCommission =
     canAttemptCommission || commissionRoll !== undefined || commissionSkipped;
+  const conscriptionSurvivalDM =
+    currentTerm.drafted === true ? (currentTerm.survivalDmBonus ?? 0) : 0;
 
   const finishTerm = (termsOverride?: CareerTermResult[], statusAfterAging?: ChargenStatus) => {
     const doc = getYDoc();
@@ -246,7 +248,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   };
 
   const handleSurvivalRoll = () => {
-    const roll = rollSurvival(character, assignment);
+    const roll = rollSurvival(character, assignment, conscriptionSurvivalDM);
     setSurvivalRoll(roll);
 
     const survived = roll.total >= assignment.survival.target;
@@ -705,6 +707,11 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
           <p className="text-subtle mb-6">
             Make a survival roll to avoid mishaps and continue your career.
           </p>
+          {conscriptionSurvivalDM > 0 && (
+            <p className="text-cyan-300 font-mono text-sm mb-6">
+              Conscription survival DM +{conscriptionSurvivalDM}
+            </p>
+          )}
           <SciFiButton theme="cyan" glow onClick={handleSurvivalRoll}>
             Roll Survival
           </SciFiButton>
@@ -721,8 +728,13 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
             </span>
           </div>
           <div className="text-sm text-subtle mb-2">
-            Roll: {survivalRoll.dice[0]} + {survivalRoll.dice[1]} + DM {survivalRoll.modifier}
+            Roll: {survivalRoll.rolls[0]} + {survivalRoll.rolls[1]} + DM {survivalRoll.modifier}
           </div>
+          {conscriptionSurvivalDM > 0 && (
+            <div className="text-xs text-cyan-300 mb-2">
+              Includes conscription survival DM +{conscriptionSurvivalDM}
+            </div>
+          )}
           {survivalRoll.total >= assignment.survival.target ? (
             <div className="text-green-400 font-bold">✓ SURVIVED</div>
           ) : (
@@ -1145,7 +1157,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
             </span>
           </div>
           <div className="text-sm text-subtle mb-2">
-            Roll: {advancementRoll.dice[0]} + {advancementRoll.dice[1]} + DM{' '}
+            Roll: {advancementRoll.rolls[0]} + {advancementRoll.rolls[1]} + DM{' '}
             {advancementRoll.modifier}
           </div>
           {advanced ? (

@@ -40,7 +40,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
   const transitionDuration = `${ANIMATION_TIMING.TRANSITION_ENTER}ms`;
 
   return (
-    <GlassPanel theme="cyan" variant="default" className="p-4 h-full flex flex-col">
+    <GlassPanel theme="cyan" variant="default" className="p-3 h-full flex flex-col">
       <ProcessFlowSheen duration={5} />
 
       <div
@@ -51,47 +51,51 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
         <h3 className="text-lg font-bold text-heading font-display">Character Sheet</h3>
       </div>
 
-      <div className="space-y-4 flex-1 overflow-y-auto">
-        <div>
-          <div
-            className="block text-xs uppercase font-mono tracking-wider mb-1"
-            style={{ color: THEME_HEX.cyan }}
-          >
-            Name
-          </div>
-          <div
-            className={`text-lg font-semibold ${character.name ? 'text-heading' : 'text-subtle italic'}`}
-          >
-            {character.name || 'Unnamed Character'}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <div
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-            style={{
-              backgroundColor: `${THEME_HEX.violet}15`,
-              border: `1px solid ${THEME_HEX.violet}30`,
-            }}
-          >
-            <Calendar className="w-4 h-4" style={{ color: THEME_HEX.violet }} />
-            <div>
-              <div className="text-[10px] uppercase text-subtle">Age</div>
-              <div className="text-lg font-mono text-heading">{character.age}</div>
+      <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div
+              className="block text-[10px] uppercase font-mono tracking-wider mb-0.5"
+              style={{ color: THEME_HEX.cyan }}
+            >
+              Name
+            </div>
+            <div
+              className={`text-base font-semibold truncate ${character.name ? 'text-heading' : 'text-subtle italic'}`}
+            >
+              {character.name || 'Unnamed Character'}
             </div>
           </div>
-          <div
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-            style={{
-              backgroundColor: `${THEME_HEX.amber}15`,
-              border: `1px solid ${THEME_HEX.amber}30`,
-            }}
-          >
-            <Coins className="w-4 h-4" style={{ color: THEME_HEX.amber }} />
-            <div>
-              <div className="text-[10px] uppercase text-subtle">Credits</div>
-              <div className="text-lg font-mono text-heading">
-                Cr{character.credits.toLocaleString()}
+
+          <div className="flex gap-1.5 shrink-0">
+            <div
+              className="flex items-center gap-1 px-2 py-1 rounded-lg"
+              style={{
+                backgroundColor: `${THEME_HEX.violet}15`,
+                border: `1px solid ${THEME_HEX.violet}30`,
+              }}
+            >
+              <Calendar className="w-3.5 h-3.5" style={{ color: THEME_HEX.violet }} />
+              <div>
+                <div className="text-[9px] uppercase text-subtle leading-none">Age</div>
+                <div className="text-sm font-mono text-heading leading-none mt-0.5">
+                  {character.age}
+                </div>
+              </div>
+            </div>
+            <div
+              className="flex items-center gap-1 px-2 py-1 rounded-lg"
+              style={{
+                backgroundColor: `${THEME_HEX.amber}15`,
+                border: `1px solid ${THEME_HEX.amber}30`,
+              }}
+            >
+              <Coins className="w-3.5 h-3.5" style={{ color: THEME_HEX.amber }} />
+              <div>
+                <div className="text-[9px] uppercase text-subtle leading-none">Credits</div>
+                <div className="text-sm font-mono text-heading leading-none mt-0.5">
+                  Cr{character.credits.toLocaleString()}
+                </div>
               </div>
             </div>
           </div>
@@ -99,12 +103,12 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
 
         <div>
           <div
-            className="block text-xs uppercase font-mono tracking-wider mb-2"
+            className="block text-[10px] uppercase font-mono tracking-wider mb-1.5"
             style={{ color: THEME_HEX.cyan }}
           >
             Characteristics
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5">
             {PREVIEW_STATS.map((stat) => {
               const val = character.characteristics[stat] ?? 0;
               const mod = getCharacteristicModifier(val);
@@ -114,7 +118,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
               return (
                 <div
                   key={stat}
-                  className="p-2 rounded-lg text-center transition-all"
+                  className="p-1.5 rounded-lg text-center transition-all"
                   style={{
                     backgroundColor: isHigh
                       ? `${THEME_HEX.emerald}10`
@@ -125,16 +129,18 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
                   }}
                 >
                   <div
-                    className="text-xs font-mono font-bold"
+                    className="text-[10px] font-mono font-bold"
                     style={{
                       color: isHigh ? THEME_HEX.emerald : isLow ? THEME_HEX.red : THEME_HEX.cyan,
                     }}
                   >
                     {stat}
                   </div>
-                  <div className="text-xl font-mono font-bold text-heading">{val}</div>
+                  <div className="text-lg font-mono font-bold text-heading leading-none my-0.5">
+                    {val}
+                  </div>
                   <div
-                    className="text-xs font-mono"
+                    className="text-[10px] font-mono leading-none"
                     style={{ color: mod >= 0 ? THEME_HEX.emerald : THEME_HEX.red }}
                   >
                     {mod >= 0 ? '+' + mod : mod}
@@ -147,7 +153,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
 
         <div>
           <div
-            className="block text-xs uppercase font-mono tracking-wider mb-1"
+            className="block text-[10px] uppercase font-mono tracking-wider mb-1"
             style={{ color: THEME_HEX.cyan }}
           >
             Current Career
@@ -155,7 +161,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
           <div className="text-label text-sm">
             {character.terms.length > 0 ? (
               <span
-                className="px-2 py-1 rounded"
+                className="px-2 py-0.5 rounded text-xs inline-block"
                 style={{
                   backgroundColor: `${THEME_HEX.violet}15`,
                   border: `1px solid ${THEME_HEX.violet}30`,
@@ -167,22 +173,22 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
                 </span>
               </span>
             ) : (
-              <span className="text-subtle italic">None</span>
+              <span className="text-subtle italic text-xs">None</span>
             )}
           </div>
         </div>
 
         <div>
           <div
-            className="block text-xs uppercase font-mono tracking-wider mb-2"
+            className="block text-[10px] uppercase font-mono tracking-wider mb-1"
             style={{ color: THEME_HEX.cyan }}
           >
             Skills ({skillCount})
           </div>
           {skillCount === 0 ? (
-            <div className="text-subtle text-sm italic">No skills learned yet</div>
+            <div className="text-subtle text-xs italic">No skills learned yet</div>
           ) : (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1">
               {Object.entries(character.skills || {}).map(([skill, level]) => (
                 <SkillBadge key={skill} skill={skill} level={level as number} theme="emerald" />
               ))}
@@ -191,13 +197,13 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
         </div>
 
         {character.terms.length > 0 && (
-          <div className="pt-4 border-t" style={{ borderColor: 'var(--asteroid-dust-30)' }}>
+          <div className="pt-2.5 border-t" style={{ borderColor: 'var(--asteroid-dust-30)' }}>
             <button
               onClick={() => setShowLifepath(!showLifepath)}
               type="button"
               aria-expanded={showLifepath}
               aria-controls="character-preview-lifepath"
-              className="flex items-center gap-2 text-xs uppercase font-mono tracking-wider transition-colors w-full group min-h-[44px] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 rounded"
+              className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-wider transition-colors w-full group min-h-[36px] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 rounded"
               style={{ color: THEME_HEX.violet }}
             >
               <span

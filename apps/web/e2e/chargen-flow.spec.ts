@@ -48,6 +48,9 @@ test.describe('Chargen Flow', () => {
     );
   });
 
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #10
+  // Empty stub. Entity spawning requires dice-driven career events.
+  // Needs seeded RNG + Page Object Model helpers for the full chargen flow.
   test.fixme('entity spawning creates visible graph nodes', async () => {
     // This test requires:
     // 1. Creating a character (Background step)
@@ -58,6 +61,9 @@ test.describe('Chargen Flow', () => {
     // and require the full career term resolution flow to trigger.
   });
 
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #11
+  // Empty stub. Finalize step calls createCharacterNode() but the full 5-step wizard flow
+  // (Background → Career → Skills → Benefits → Finalize) has no Page Object helpers yet.
   test.fixme('character appears in graph after finalization', async () => {
     // This test requires:
     // 1. Completing the entire chargen wizard (Background -> Career -> Skills -> Benefits -> Finalize)

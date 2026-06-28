@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sync Latency', () => {
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #4
+  // Requires Hocuspocus infra (Playwright webServer only starts Next.js).
+  // 500ms latency assertion is inherently flaky due to polling and wall-clock timing.
   test.fixme('graph changes sync within 500ms between two users', async ({ browser }) => {
     // Fixme: Multi-user sync tests are flaky due to shared Hocuspocus room (default:graph)
     // Proper fix requires per-test room isolation on the server side
@@ -44,6 +47,8 @@ test.describe('Sync Latency', () => {
     await context2.close();
   });
 
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #5
+  // Same infra + timing flakiness as entry #4. Drag interaction is position-sensitive.
   test.fixme('node edit propagation syncs within 500ms between two users', async ({ browser }) => {
     // Fixme: Multi-user sync tests are flaky due to shared Hocuspocus room (default:graph)
     const context1 = await browser.newContext();
@@ -106,6 +111,9 @@ test.describe('Sync Latency', () => {
     await context2.close();
   });
 
+  // Triage: KEEP-WITH-RATIONALE — see TRIAGE-REPORT.md entry #6
+  // Reputation table component has no Hocuspocus provider — only GraphCanvas does.
+  // Architectural limitation: no Yjs document to sync. Needs feature work before restore.
   test.skip('table changes sync within 500ms between two users', async ({ browser }) => {
     // Skip: Reputation table doesn't initialize Hocuspocus provider - only GraphCanvas does
     const context1 = await browser.newContext();
