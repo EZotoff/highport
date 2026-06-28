@@ -36,6 +36,7 @@ function makeCharacter(overrides: Partial<ChargenCharacter> = {}): ChargenCharac
     },
     backgroundSkills: [],
     terms: [makeTerm(1, 0)],
+    chapters: [],
     currentTermIndex: 0,
     status: 'term_resolution',
     skills: {},

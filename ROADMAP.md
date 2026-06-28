@@ -17,20 +17,17 @@ Turn procedural Traveller chargen into a collaborative, replayable backstory eng
 - **Three AI invasiveness modes** — Brief, Inspiration, and Full generation per event, connection, and skill origin `[Shipped]` `[Hard]`
 - **Portrait generation** — Gemini-backed character portraits with remix `[Shipped]` `[Medium]`
 - **Drifter starter career** — core skills and a single career so you can explore immediately `[Shipped]` `[Easy]`
+- **Full MGT2E career data** — all 12 Core Rulebook careers ship in-repo (Agent, Army, Citizen, Drifter, Entertainer, Marine, Merchant, Navy, Noble, Rogue, Scholar, Scout) `[Shipped]` `[Medium]`
+- **Skeleton/meat provenance contract formalization** — traceable `source`, `mode`, `status`, and `derivedFrom` on every generated fragment; immutability guarantees for dice output `[Shipped]` `[Hard]`
+- **UI polish** — spacing, typography, dark-mode contrast, and responsive refinements across the chargen wizard `[Shipped]` `[Easy]`
+- **"Submit to Draft" conscription mechanic** — optional re-enlistment tension with visual and narrative weight `[Shipped]` `[Medium]`
 
 ### In Progress
 
-- **Full MGT2E career data via external pack** — load all careers, tables, and benefits from a user-provided game data pack `[In Progress]` `[Medium]`
-- **Skeleton/meat provenance contract formalization** — traceable `source`, `mode`, `status`, and `derivedFrom` on every generated fragment; immutability guarantees for dice output `[In Progress]` `[Hard]`
-- **UI polish** — spacing, typography, dark-mode contrast, and responsive refinements across the chargen wizard `[In Progress]` `[Easy]`
+- **Gamified Tyranny-style replayable flow** — each term feels like a chapter; accepted scenes build a scrapbook-style service record `[In Progress]` `[Hard]` (ships after Task 9 completion)
+- **Per-career event flavor** — career-specific scene templates so a Navy event reads differently than a Rogue event `[In Progress]` `[Medium]` (ships after Task 10 completion)
 
-### Planned
-
-- **Gamified Tyranny-style replayable flow** — each term feels like a chapter; accepted scenes build a scrapbook-style service record `[Planned]` `[Hard]`
-- **"Submit to Draft" conscription mechanic** — optional re-enlistment tension with visual and narrative weight `[Planned]` `[Medium]`
-- **Per-career event flavor** — career-specific scene templates so a Navy event reads differently than a Rogue event `[Planned]` `[Medium]`
-
-> **Ground truth:** Mechanics are roughly 95% complete. Game data (careers, tables, equipment) is roughly 10% — only the Drifter career ships in-repo. Gamification is aspirational and not yet in code.
+> **Ground truth:** Mechanics are 100% complete. Game data (all 12 Core Rulebook careers) is 100% in-repo. Gamification ships after Task 9 completion; per-career flavor ships after Task 10 completion.
 
 ---
 

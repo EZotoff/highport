@@ -60,6 +60,7 @@ const mockCharacter: ChargenCharacter = {
       spawnedEntities: [],
     },
   ],
+  chapters: [],
   currentTermIndex: 1,
   status: 'finalized',
   skills: {

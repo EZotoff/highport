@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronRight, User, Coins, Calendar } from 'lucide-react';
+import { BookMarked, ChevronRight, User, Coins, Calendar } from 'lucide-react';
 import { useCharacter } from '../../lib/chargen/hooks';
 import { getCharacteristicModifier, CharacteristicCode } from '@highport/mgt2e';
 import { LifepathTimeline } from './LifepathTimeline';
+import { ServiceRecord } from './ServiceRecord';
 import { GlassPanel, ProcessFlowSheen, SkillBadge } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { ANIMATION_TIMING } from '@/lib/design-system/visualConfig';
@@ -18,6 +19,7 @@ const PREVIEW_STATS: CharacteristicCode[] = ['STR', 'DEX', 'END', 'INT', 'EDU', 
 export default function CharacterPreview({ characterId }: CharacterPreviewProps) {
   const character = useCharacter(characterId || null);
   const [showLifepath, setShowLifepath] = useState(false);
+  const [showServiceRecord, setShowServiceRecord] = useState(false);
 
   if (!character) {
     return (
@@ -236,10 +238,41 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
             </div>
           </div>
         )}
+
+        {character.status === 'finalized' && (
+          <div className="pt-2.5 border-t" style={{ borderColor: 'var(--asteroid-dust-30)' }}>
+            <button
+              onClick={() => setShowServiceRecord(!showServiceRecord)}
+              type="button"
+              aria-expanded={showServiceRecord}
+              aria-controls="character-preview-service-record"
+              className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-wider transition-colors w-full group min-h-[36px] focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus-visible:ring-2 rounded"
+              style={{ color: THEME_HEX.violet }}
+            >
+              <BookMarked className="w-4 h-4" />
+              <span className="group-hover:brightness-125 transition-all">
+                Service Record ({character.chapters.length} chapters)
+              </span>
+            </button>
+            <div
+              id="character-preview-service-record"
+              className="overflow-hidden"
+              style={{
+                maxHeight: showServiceRecord ? '700px' : '0px',
+                opacity: showServiceRecord ? 1 : 0,
+                transition: `all ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`,
+              }}
+            >
+              <div className="mt-3">
+                <ServiceRecord chapters={character.chapters} characterName={character.name} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div
-        className="mt-3 pt-2 border-t text-center text-xs font-mono text-subtle"
+        className="mt-2 pt-1.5 border-t text-center text-xs font-mono text-subtle"
         style={{ borderColor: 'var(--asteroid-dust-30)' }}
       >
         ID: {character.id.slice(0, 8)}

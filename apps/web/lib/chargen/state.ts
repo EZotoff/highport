@@ -1,8 +1,9 @@
 import * as Y from 'yjs';
 import type { CharacteristicSet } from '@highport/mgt2e';
-import { roll2d6, setRandomSeed, resetRandomSeed } from '@highport/mgt2e';
-import { DEFAULT_SESSION_SETTINGS } from './types';
+import { getCareer, roll2d6, setRandomSeed, resetRandomSeed } from '@highport/mgt2e';
+import { DEFAULT_SESSION_SETTINGS, unwrapAIField } from './types';
 import type {
+  ChapterSummary,
   ChargenCharacter,
   ChargenSessionConfig,
   ChargenStatus,
@@ -12,6 +13,75 @@ import type {
   SessionSettings,
   SharedSpawnedEntity,
 } from './types';
+
+function formatChapterSkill(skillGain: CareerTermResult['skillsGained'][number]): string {
+  const skillName = skillGain.specialty
+    ? `${skillGain.skill} (${skillGain.specialty})`
+    : skillGain.skill;
+  return `${skillName} ${skillGain.level}`;
+}
+
+function describeRankChange(term: CareerTermResult): string | undefined {
+  if (term.rankGained && term.rankGained > 0) {
+    return `Promoted to Rank ${term.currentRank}`;
+  }
+  if (term.advancementRoll) {
+    return 'No promotion recorded';
+  }
+  return undefined;
+}
+
+function describeTermEvent(term: CareerTermResult, careerName: string): string {
+  const narrativeDescription = unwrapAIField(term.eventDescription);
+  if (narrativeDescription) return narrativeDescription;
+  if (term.mishap?.description) return term.mishap.description;
+  if (term.event?.description) return term.event.description;
+  if (term.drafted)
+    return `Conscripted into ${careerName}, the term passed into the official rolls.`;
+  return `A term in ${careerName} passed into the official rolls.`;
+}
+
+function summarizeCompletedTerm(term: CareerTermResult): ChapterSummary {
+  const careerName = getCareer(term.careerId)?.name ?? term.careerId;
+  return {
+    termNumber: term.termNumber,
+    careerId: term.careerId,
+    careerName,
+    age: term.startAge + 4,
+    keyEventDescription: describeTermEvent(term, careerName),
+    skillsGained: term.skillsGained.map(formatChapterSkill),
+    rankChange: describeRankChange(term),
+    mishap: term.mishap?.description,
+    agingEffect: term.agingEffect,
+    drafted: term.drafted === true,
+  };
+}
+
+function mirrorCompletedChapters(
+  character: ChargenCharacter,
+  updates: Partial<ChargenCharacter>,
+): Partial<ChargenCharacter> {
+  if (updates.chapters || (!updates.terms && updates.age === undefined)) {
+    return updates;
+  }
+
+  const terms = updates.terms ?? character.terms;
+  const age = updates.age ?? character.age;
+  const existingChapters = character.chapters ?? [];
+  const completedTerms = terms.filter((term) => term.startAge + 4 <= age);
+
+  if (completedTerms.length === 0 || existingChapters.length >= completedTerms.length) {
+    return updates;
+  }
+
+  const existingByTerm = new Map(existingChapters.map((chapter) => [chapter.termNumber, chapter]));
+  return {
+    ...updates,
+    chapters: completedTerms.map(
+      (term) => existingByTerm.get(term.termNumber) ?? summarizeCompletedTerm(term),
+    ),
+  };
+}
 
 export function getChargenMap(doc: Y.Doc): Y.Map<unknown> {
   return doc.getMap('chargen');
@@ -57,6 +127,7 @@ export function createCharacter(doc: Y.Doc, playerId: string, name?: string): st
     characteristics: rollInitialCharacteristics(),
     backgroundSkills: [],
     terms: [],
+    chapters: [],
     currentTermIndex: 0,
     status: 'background',
     skills: {},
@@ -98,6 +169,7 @@ export function yMapToCharacter(yMap: Y.Map<unknown>): ChargenCharacter {
     characteristics: yMap.get('characteristics') as CharacteristicSet,
     backgroundSkills: (yMap.get('backgroundSkills') as string[]) || [],
     terms: (yMap.get('terms') as CareerTermResult[]) || [],
+    chapters: (yMap.get('chapters') as ChapterSummary[]) || [],
     currentTermIndex: (yMap.get('currentTermIndex') as number) || 0,
     status: (yMap.get('status') as ChargenStatus) || 'background',
     skills: (yMap.get('skills') as Record<string, number>) || {},
@@ -137,9 +209,10 @@ export function updateCharacterFields(
   const characters = getCharactersMap(doc);
   const charMap = characters.get(charId);
   if (!charMap) return;
+  const updatesWithChapters = mirrorCompletedChapters(yMapToCharacter(charMap), updates);
 
   doc.transact(() => {
-    Object.entries(updates).forEach(([key, value]) => {
+    Object.entries(updatesWithChapters).forEach(([key, value]) => {
       if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
         charMap.set(key, JSON.parse(JSON.stringify(value)));
       } else {

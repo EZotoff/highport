@@ -45,6 +45,7 @@ import type {
 import { useEventNarrative, useNarrativeAvailable } from '../../../lib/chargen/useNarrative';
 import { getYDoc } from '../../../lib/ydoc';
 import { addEdge } from '../../../lib/yjs-helpers';
+import { ChapterCard } from '../ChapterCard';
 import ConnectionSuggestions from '../ConnectionSuggestions';
 import EntitySpawnForm from '../EntitySpawnForm';
 import { NarrativeUnavailableNotice } from '../NarrativeUnavailableNotice';
@@ -1269,29 +1270,39 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     );
   };
 
-  const renderComplete = () => (
-    <div className="mt-8 flex gap-4 justify-center animate-in slide-in-from-bottom-4">
-      <SciFiButton
-        onClick={handleContinue}
-        theme="violet"
-        scifiVariant="outline"
-        className="h-auto py-4 flex flex-col items-center min-w-[200px]"
-      >
-        <span className="font-bold text-lg">Continue Career</span>
-        <span className="text-sm text-subtle">Term {character.terms.length + 1}</span>
-      </SciFiButton>
+  const renderComplete = () => {
+    const chapter = character.chapters.find(
+      (summary) => summary.termNumber === currentTerm.termNumber,
+    );
 
-      <SciFiButton
-        onClick={handleMusterOut}
-        theme="cyan"
-        glow
-        className="h-auto py-4 flex flex-col items-center min-w-[200px]"
-      >
-        <span className="font-bold text-lg">Muster Out</span>
-        <span className="text-sm text-blue-200">End Service</span>
-      </SciFiButton>
-    </div>
-  );
+    return (
+      <div className="mt-8 space-y-6 animate-in slide-in-from-bottom-4">
+        {chapter && <ChapterCard chapter={chapter} />}
+
+        <div className="flex flex-col gap-4 justify-center sm:flex-row">
+          <SciFiButton
+            onClick={handleContinue}
+            theme="violet"
+            scifiVariant="outline"
+            className="h-auto py-4 flex flex-col items-center min-w-[200px]"
+          >
+            <span className="font-bold text-lg">Continue Career</span>
+            <span className="text-sm text-subtle">Term {character.terms.length + 1}</span>
+          </SciFiButton>
+
+          <SciFiButton
+            onClick={handleMusterOut}
+            theme="cyan"
+            glow
+            className="h-auto py-4 flex flex-col items-center min-w-[200px]"
+          >
+            <span className="font-bold text-lg">Muster Out</span>
+            <span className="text-sm text-blue-200">End Service</span>
+          </SciFiButton>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20">
@@ -1299,7 +1310,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
         <div>
           <h2 className="text-2xl font-bold text-heading font-display">{career.name}</h2>
           <div className="text-subtle">
-            {assignment.name} • Term {character.terms.length}
+            {career.name} — Term {character.terms.length}
           </div>
         </div>
         <div className="text-right">

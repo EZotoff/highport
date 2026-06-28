@@ -33,6 +33,7 @@ export interface ChargenCharacter {
   backgroundSkills: string[];
 
   terms: CareerTermResult[];
+  chapters: ChapterSummary[];
   currentTermIndex: number;
   status: ChargenStatus;
 
@@ -45,6 +46,19 @@ export interface ChargenCharacter {
   dismissedSuggestions?: string[];
 
   mustering?: MusteringState;
+}
+
+export interface ChapterSummary {
+  termNumber: number;
+  careerId: string;
+  careerName: string;
+  age: number;
+  keyEventDescription: string;
+  skillsGained: string[];
+  rankChange?: string;
+  mishap?: string;
+  agingEffect?: AgingEffectTier;
+  drafted: boolean;
 }
 
 /**
@@ -85,6 +99,10 @@ export interface CareerTermResult {
   careerId: string;
   assignmentId: string;
   startAge: number;
+
+  drafted?: boolean;
+  draftRoll?: DiceResult;
+  survivalDmBonus?: number;
 
   survivalRoll?: DiceResult;
   survived: boolean;
