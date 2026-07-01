@@ -21,13 +21,10 @@ Turn procedural Traveller chargen into a collaborative, replayable backstory eng
 - **Skeleton/meat provenance contract formalization** — traceable `source`, `mode`, `status`, and `derivedFrom` on every generated fragment; immutability guarantees for dice output `[Shipped]` `[Hard]`
 - **UI polish** — spacing, typography, dark-mode contrast, and responsive refinements across the chargen wizard `[Shipped]` `[Easy]`
 - **"Submit to Draft" conscription mechanic** — optional re-enlistment tension with visual and narrative weight `[Shipped]` `[Medium]`
+- **Gamified Tyranny-style chapter summaries** — each completed term renders as a chapter card (term number, career, key event, skills, rank, mishap, aging); finalize produces a stitched Service Record scrapbook `[Shipped]` `[Hard]`
+- **Per-career event flavor templates** — career-specific scene framing so a Navy event reads differently than a Rogue event; 3+ original paraphrased templates per career `[Shipped]` `[Medium]`
 
-### In Progress
-
-- **Gamified Tyranny-style replayable flow** — each term feels like a chapter; accepted scenes build a scrapbook-style service record `[In Progress]` `[Hard]` (ships after Task 9 completion)
-- **Per-career event flavor** — career-specific scene templates so a Navy event reads differently than a Rogue event `[In Progress]` `[Medium]` (ships after Task 10 completion)
-
-> **Ground truth:** Mechanics are 100% complete. Game data (all 12 Core Rulebook careers) is 100% in-repo. Gamification ships after Task 9 completion; per-career flavor ships after Task 10 completion.
+> **Ground truth:** Mechanics are 100% complete. Game data (all 12 Core Rulebook careers) is 100% in-repo. Gamification (chapter summaries + Service Record) has shipped. Per-career event flavor has shipped. Tier A is feature-complete; remaining work is the open e2e triage list (see `apps/web/e2e/TRIAGE-REPORT.md`).
 
 ---
 

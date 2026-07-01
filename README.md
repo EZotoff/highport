@@ -34,11 +34,11 @@ Highport is an open-source companion for **Mongoose Traveller 2nd Edition** (MGT
 
 Highport is designed as three stages of a single tool:
 
-| Tier  | Name                | What it is                                                                                | Status                                                                           |
-| ----- | ------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| **A** | Character Creation  | A collaborative, replayable backstory engine built on MGT2E chargen.                      | In progress — mechanics near-complete, AI integration live, gamification pending |
-| **B** | Campaign Management | A gated, voice-aware campaign memory for accepted characters and lore.                    | Foundations in place — RAG + knowledge scopes + portraits shipped                |
-| **C** | World Simulation    | A living sector where factions move, resources shift, and borders bleed between sessions. | Research stage — architecture only                                               |
+| Tier  | Name                | What it is                                                                                | Status                                                                                              |
+| ----- | ------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **A** | Character Creation  | A collaborative, replayable backstory engine built on MGT2E chargen.                      | Feature-complete — mechanics, 12 careers, gamified chapter summaries, and per-career flavor shipped |
+| **B** | Campaign Management | A gated, voice-aware campaign memory for accepted characters and lore.                    | Foundations in place — RAG + knowledge scopes + portraits shipped                                   |
+| **C** | World Simulation    | A living sector where factions move, resources shift, and borders bleed between sessions. | Research stage — architecture only                                                                  |
 
 For the full vision, see [CONCEPT.md](./CONCEPT.md). For delivery status, see [ROADMAP.md](./ROADMAP.md).
 
@@ -56,6 +56,7 @@ For the full vision, see [CONCEPT.md](./CONCEPT.md). For delivery status, see [R
 - **[Shipped] Multi-provider RAG** — RAG (Retrieval-Augmented Generation — querying an AI with a knowledge base of your campaign documents). Defaults to free local stack: Ollama (`llama3.2`) + ChromaDB + Ollama embeddings (`qwen3-embedding:0.6b`). Cloud options (Gemini, Pinecone, OpenAI) are opt-in.
 - **[Shipped] Graph Visualization** — Interactive node graph for NPCs, locations, factions, and their relationships.
 - **[Shipped] Offline Support** — IndexedDB persistence works even when disconnected.
+- **[Shipped] Gamified Chargen Flow** — Each completed term renders as a Tyranny-style chapter card (career, key event, skills, rank, mishap, aging); finalize produces a stitched Service Record scrapbook. Per-career event flavor templates give each career its own voice. The dice own the facts; the chapters own the memory.
 
 ### Experimental
 
@@ -63,7 +64,6 @@ For the full vision, see [CONCEPT.md](./CONCEPT.md). For delivery status, see [R
 
 ### Planned
 
-- **[Planned] Gamified Chargen Flow** — A Tyranny-style replayable backstory experience where each term feels like a chapter and your service record becomes something you want to revisit. This is a North Star, not a current feature.
 - **[Planned] Ship's AI Persona** — A diegetic player-facing assistant (default persona: _The Steward_) that answers from ship's logs and campaign memory. Architectural seams are in place; the persona itself is not yet in code.
 - **[Planned] GM's AI Assistant** — An omniscient prep assistant that sees GM-only records, proposes secrets, summarizes factions, and generates NPC dialogue.
 - **[Planned] Voice / TTS / Audio** — Experimental and long-term. The system will never promise real-time speech it cannot deliver.
