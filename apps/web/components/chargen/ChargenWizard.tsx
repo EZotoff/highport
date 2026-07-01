@@ -206,7 +206,7 @@ export default function ChargenWizard() {
           </div>
 
           <div
-            className="mt-4 pt-4 flex justify-between"
+            className="mt-4 pt-4 flex justify-between items-center"
             style={{ borderTop: `1px solid rgba(148, 163, 184, 0.2)` }}
           >
             <SciFiButton
@@ -236,7 +236,7 @@ export default function ChargenWizard() {
           <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
             <CharacterPreview characterId={characterId} />
           </div>
-          <div className="h-36 shrink-0 overflow-hidden">
+          <div className="h-24 shrink-0 overflow-hidden">
             <EntityPoolPanel currentCharId={characterId || undefined} />
           </div>
         </div>

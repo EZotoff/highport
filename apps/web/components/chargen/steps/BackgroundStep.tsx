@@ -103,7 +103,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
           theme="cyan"
           variant="elevated"
           glint
-          className="max-w-md p-8 text-center space-y-6"
+          className="max-w-md p-6 text-center space-y-4 overflow-visible"
         >
           <h2 className="text-2xl font-bold text-heading font-display">
             Start Character Generation
@@ -134,26 +134,24 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
   const selectedCount = character.backgroundSkills?.length || 0;
 
   return (
-    <div className="space-y-8 p-6">
-      <GlassPanel theme="violet" variant="bordered" className="p-6 rounded-lg">
-        <SciFiInput
-          value={character.name}
-          onChange={handleNameChange}
-          placeholder="Enter character name"
-          theme="cyan"
-          label="Character Name *"
-        />
-      </GlassPanel>
+    <div className="space-y-3 p-4">
+      <SciFiInput
+        value={character.name}
+        onChange={handleNameChange}
+        placeholder="Enter character name"
+        theme="cyan"
+        label="Character Name *"
+      />
 
       <div>
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-2">
           <h3 className="text-lg font-bold text-heading font-display">Characteristics</h3>
           <SciFiButton scifiVariant="outline" theme="violet" onClick={handleReroll}>
             Re-roll All
           </SciFiButton>
         </div>
 
-        <BentoGrid minWidth="140px" className="mb-6">
+        <div className="grid grid-cols-6 gap-2 mb-3">
           {STAT_ORDER.map((stat) => {
             const val = character.characteristics[stat] || 0;
             const mod = getCharacteristicModifier(val);
@@ -162,15 +160,15 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
 
             return (
               <div key={stat} className="text-center">
-                <div className="text-xs font-bold text-subtle mb-1">{stat}</div>
-                <div className="text-2xl font-mono text-heading font-bold">{val}</div>
-                <div className="text-sm font-bold" style={{ color: modColor }}>
+                <div className="text-[10px] font-bold text-subtle">{stat}</div>
+                <div className="text-xl font-mono text-heading font-bold leading-tight">{val}</div>
+                <div className="text-xs font-bold" style={{ color: modColor }}>
                   {modStr}
                 </div>
               </div>
             );
           })}
-        </BentoGrid>
+        </div>
 
         <GlassPanel variant="subtle" className="p-3">
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -216,11 +214,11 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
           </span>
         </div>
 
-        <p className="text-sm text-label mb-6">
+        <p className="text-xs text-label mb-2">
           Choose 3 background skills. These start at Level 0.
         </p>
 
-        <BentoGrid minWidth="160px" gap={12}>
+        <BentoGrid minWidth="100px" gap={8}>
           {bgSkills.map((skill) => {
             const isSelected = character.backgroundSkills?.includes(skill.id);
             const isDisabled = !isSelected && selectedCount >= 3;

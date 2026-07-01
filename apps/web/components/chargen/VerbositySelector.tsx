@@ -16,17 +16,17 @@ const VERBOSITY_OPTIONS: Array<{
   {
     value: 'brief',
     label: 'Brief',
-    description: '1-2 sentence gloss',
+    description: '1-2 sentences',
   },
   {
     value: 'inspiration',
     label: 'Inspiration',
-    description: 'Several concrete hooks to pick from',
+    description: 'Choose from hooks',
   },
   {
     value: 'full',
     label: 'Full',
-    description: 'A drafted scene with named NPCs',
+    description: 'Full scene + NPCs',
   },
 ];
 
@@ -62,9 +62,9 @@ export default function VerbositySelector({
               value === option.value ? '[&_*]:!text-[#e2e8f0]' : ''
             }`}
           >
-            <span className="flex flex-col items-center leading-tight">
+            <span className="flex flex-col items-center w-full text-center leading-tight px-1">
               <span className="text-sm font-medium">{option.label}</span>
-              <span className="text-[10px] text-label">{option.description}</span>
+              <span className="text-[10px] text-label break-words">{option.description}</span>
             </span>
           </SciFiButton>
         ))}
