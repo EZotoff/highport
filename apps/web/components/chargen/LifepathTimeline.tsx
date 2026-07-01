@@ -38,14 +38,11 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
           borderBottom: '1px solid var(--asteroid-dust-50)',
         }}
       >
-        <h2 className="text-lg font-bold flex items-center gap-2 font-display">
-          <span
-            style={{ color: THEME_HEX.cyan }}
-            className={`${TYPOGRAPHY.subheading} text-glow-cyan chromatic-text`}
-          >
+        <h2 className="text-sm font-bold flex items-center gap-2 min-w-0">
+          <span style={{ color: THEME_HEX.cyan }} className="shrink-0">
             LIFEPATH:
           </span>
-          <span className="text-heading truncate max-w-[200px] sm:max-w-md">
+          <span className="text-heading truncate min-w-0">
             {character.name || 'Unnamed Character'}
           </span>
         </h2>
@@ -75,7 +72,7 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
           }}
         />
 
-        <div className="relative flex flex-col min-w-max p-6 gap-6">
+        <div className="relative flex flex-col min-w-max p-3 gap-4">
           {terms.length > 0 && (
             <div className="flex px-1 pb-2 relative">
               <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[var(--plasma-cyan)]/20 to-transparent" />
@@ -190,7 +187,7 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
         <div className="h-px bg-gradient-to-r from-transparent via-[var(--plasma-cyan)]/30 to-transparent w-full" />
 
         <div
-          className="p-4 flex flex-col sm:flex-row gap-6 text-sm relative bg-[var(--star-metal)]"
+          className="p-3 flex flex-col gap-4 text-sm relative bg-[var(--star-metal)]"
           style={{
             boxShadow: '0 -5px 15px rgba(0,0,0,0.3)',
           }}
@@ -198,7 +195,7 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
           <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[var(--plasma-cyan)]/50" />
           <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[var(--plasma-cyan)]/50" />
 
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-0">
             <div
               className={`flex items-center gap-2 mb-2 ${TYPOGRAPHY.label}`}
               style={{ color: THEME_HEX.cyan }}
@@ -231,7 +228,7 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
           </div>
 
           <div
-            className="flex-1 min-w-[200px] border-t sm:border-t-0 sm:border-l pt-4 sm:pt-0 sm:pl-6"
+            className="flex-1 min-w-0 border-t pt-3"
             style={{ borderColor: 'var(--asteroid-dust-50)' }}
           >
             <div

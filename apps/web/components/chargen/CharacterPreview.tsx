@@ -63,7 +63,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
               Name
             </div>
             <div
-              className={`text-base font-semibold truncate ${character.name ? 'text-heading' : 'text-subtle italic'}`}
+              className={`text-sm font-semibold leading-tight break-words ${character.name ? 'text-heading' : 'text-subtle italic'}`}
             >
               {character.name || 'Unnamed Character'}
             </div>
@@ -231,7 +231,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
               }}
             >
               {characterId && (
-                <div className="mt-3 -mx-6 px-2">
+                <div className="mt-3 px-1">
                   <LifepathTimeline characterId={characterId} />
                 </div>
               )}
