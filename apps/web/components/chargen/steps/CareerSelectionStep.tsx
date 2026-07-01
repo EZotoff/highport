@@ -407,9 +407,10 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
                   </span>
                 }
                 className="h-full"
+                contentClassName="px-4 py-2"
                 footer={
                   <div className="w-full">
-                    <div className="flex justify-between items-center mb-3 text-sm">
+                    <div className="flex justify-between items-center mb-2 text-sm">
                       <span className="text-label">Your DM:</span>
                       <span
                         className={`font-mono font-bold ${dm >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
@@ -422,14 +423,14 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
                       theme="cyan"
                       scifiVariant="outline"
                       onClick={() => attemptQualification(career.id)}
-                      className="w-full"
+                      className="w-full hover:bg-cyan-500/20 hover:border-cyan-300 transition-all duration-200"
                     >
                       Try to Join
                     </SciFiButton>
                   </div>
                 }
               >
-                <p className="text-sm text-subtle line-clamp-3 leading-relaxed">
+                <p className="text-xs text-subtle line-clamp-2 leading-relaxed">
                   {career.description}
                 </p>
               </SciFiCard>

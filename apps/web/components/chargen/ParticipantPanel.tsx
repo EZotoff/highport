@@ -92,7 +92,7 @@ export default function ParticipantPanel({
               readOnly
               value={inviteUrl}
               data-testid="invite-url"
-              className="flex-1 min-w-0 bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-[11px] text-subtle font-mono truncate focus:outline-none"
+              className="flex-1 min-w-0 bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-[10px] text-subtle font-mono truncate focus:outline-none"
               onClick={(e) => (e.target as HTMLInputElement).select()}
             />
             <button
@@ -117,7 +117,7 @@ export default function ParticipantPanel({
           <span className="text-subtle text-sm italic">Waiting for session sync...</span>
         </div>
       ) : (
-        <div className="p-4 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="p-4 space-y-3 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
           <div className="bg-zinc-950/50 border border-zinc-800 rounded-lg p-3 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-2">
               <Crown className="w-4 h-4 text-amber-400" />
