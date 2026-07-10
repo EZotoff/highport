@@ -177,7 +177,7 @@ export default function ChargenWizard() {
 
   return (
     <div
-      className="flex flex-col h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"
+      className="flex flex-col h-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-4"
       data-chargen-status={character?.status ?? 'background'}
       data-testid="chargen-wizard"
     >
@@ -201,10 +201,10 @@ export default function ChargenWizard() {
 
         {/* Main content: Wizard steps */}
         <div
-          className="flex flex-col h-full overflow-hidden min-w-0 px-2 lg:px-4"
+          className={`flex flex-col h-full overflow-hidden min-w-0 min-h-0 px-2 lg:px-4 ${isGM ? 'pb-16' : ''}`}
           data-testid="main-content"
         >
-          <div className="flex-1 overflow-y-auto pr-2 pb-4 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto pr-2 pb-4 custom-scrollbar min-h-0">
             {renderStepContent()}
           </div>
 
