@@ -397,6 +397,7 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
 
             return (
               <SciFiCard
+                data-testid="career-card"
                 key={career.id}
                 theme="cyan"
                 variant="bordered"

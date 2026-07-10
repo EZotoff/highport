@@ -23,7 +23,12 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
 
   if (!character) {
     return (
-      <GlassPanel theme="cyan" variant="default" className="p-4 h-full flex flex-col">
+      <GlassPanel
+        theme="cyan"
+        variant="default"
+        className="p-4 h-full flex flex-col"
+        data-testid="character-preview"
+      >
         <div
           className="flex items-center gap-2 mb-3 pb-2 border-b"
           style={{ borderColor: `${THEME_HEX.cyan}20` }}
@@ -42,7 +47,12 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
   const transitionDuration = `${ANIMATION_TIMING.TRANSITION_ENTER}ms`;
 
   return (
-    <GlassPanel theme="cyan" variant="default" className="p-3 h-full flex flex-col">
+    <GlassPanel
+      theme="cyan"
+      variant="default"
+      className="p-3 h-full flex flex-col"
+      data-testid="character-preview"
+    >
       <ProcessFlowSheen duration={5} />
 
       <div
@@ -103,7 +113,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
           </div>
         </div>
 
-        <div>
+        <div data-testid="character-characteristics">
           <div
             className="block text-[10px] uppercase font-mono tracking-wider mb-1.5"
             style={{ color: THEME_HEX.cyan }}
@@ -180,7 +190,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
           </div>
         </div>
 
-        <div>
+        <div data-testid="character-skills">
           <div
             className="block text-[10px] uppercase font-mono tracking-wider mb-1"
             style={{ color: THEME_HEX.cyan }}

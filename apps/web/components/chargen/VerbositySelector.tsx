@@ -38,7 +38,7 @@ export default function VerbositySelector({
   const groupId = 'verbosity-selector-label';
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="verbosity-selector">
       <p id={groupId} className="block text-sm font-medium text-subtle">
         AI Assistance Level
       </p>

@@ -16,7 +16,11 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
 
   if (isLoading || !character) {
     return (
-      <GlassPanel variant="elevated" className="w-full h-40 flex items-center justify-center">
+      <GlassPanel
+        variant="elevated"
+        className="w-full h-40 flex items-center justify-center"
+        data-testid="lifepath-timeline"
+      >
         <div className="flex flex-col items-center gap-2" style={{ color: THEME_HEX.cyan }}>
           <div
             className="w-6 h-6 rounded-full border-2 animate-spin"
@@ -29,7 +33,11 @@ export function LifepathTimeline({ characterId, onEntityClick }: LifepathTimelin
   }
 
   return (
-    <GlassPanel className="flex flex-col w-full h-full overflow-hidden" variant="elevated">
+    <GlassPanel
+      className="flex flex-col w-full h-full overflow-hidden"
+      variant="elevated"
+      data-testid="lifepath-timeline"
+    >
       {/* Header */}
       <div
         className="flex justify-between items-center px-4 py-3"

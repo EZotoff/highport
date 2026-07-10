@@ -200,7 +200,10 @@ export default function ChargenWizard() {
         </div>
 
         {/* Main content: Wizard steps */}
-        <div className="flex flex-col h-full overflow-hidden min-w-0 px-2 lg:px-4">
+        <div
+          className="flex flex-col h-full overflow-hidden min-w-0 px-2 lg:px-4"
+          data-testid="main-content"
+        >
           <div className="flex-1 overflow-y-auto pr-2 pb-4 custom-scrollbar">
             {renderStepContent()}
           </div>

@@ -1006,7 +1006,10 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   };
 
   const renderSkill = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in mt-4">
+    <div
+      className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in mt-4"
+      data-testid="skill-table-container"
+    >
       <h3 className="text-xl font-bold text-heading mb-4 font-display">Phase 3: Skill Training</h3>
 
       {!selectedTable && !skillGained ? (
@@ -1029,6 +1032,17 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
               theme="slate"
               scifiVariant="secondary"
               className="p-3 h-auto text-sm font-medium"
+              data-testid={`skill-table-${
+                table.id === 'personal'
+                  ? 'personal-development'
+                  : table.id === 'service'
+                    ? 'service-skills'
+                    : table.id === 'advanced'
+                      ? 'advanced-education'
+                      : table.id === 'assignment'
+                        ? 'assignment-skills'
+                        : 'officer'
+              }`}
             >
               {table.name}
             </SciFiButton>

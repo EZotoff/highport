@@ -204,7 +204,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
         </GlassPanel>
       </div>
 
-      <div>
+      <div data-testid="background-skill-selector">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-heading font-display">Background Skills</h3>
           <span
