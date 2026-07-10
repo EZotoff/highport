@@ -2,6 +2,7 @@ import * as Y from 'yjs';
 import type { CharacteristicSet } from '@highport/mgt2e';
 import { getCareer, roll2d6, setRandomSeed, resetRandomSeed } from '@highport/mgt2e';
 import { DEFAULT_SESSION_SETTINGS, unwrapAIField } from './types';
+import { deleteCharacterSnapshot, saveCharacterSnapshot } from './persistence';
 import type {
   ChapterSummary,
   ChargenCharacter,
@@ -13,6 +14,8 @@ import type {
   SessionSettings,
   SharedSpawnedEntity,
 } from './types';
+
+export { restoreCharacterSnapshot } from './persistence';
 
 function formatChapterSkill(skillGain: CareerTermResult['skillsGained'][number]): string {
   const skillName = skillGain.specialty
@@ -148,6 +151,7 @@ export function createCharacter(doc: Y.Doc, playerId: string, name?: string): st
     });
     characters.set(charId, charMap);
   }, 'chargen-create');
+  saveCharacterSnapshot(character);
 
   return charId;
 }
@@ -199,6 +203,7 @@ export function updateCharacter<K extends keyof ChargenCharacter>(
       charMap.set(field as string, value);
     }
   }, 'chargen-update');
+  saveCharacterSnapshot(yMapToCharacter(charMap));
 }
 
 export function updateCharacterFields(
@@ -220,6 +225,7 @@ export function updateCharacterFields(
       }
     });
   }, 'chargen-update-batch');
+  saveCharacterSnapshot(yMapToCharacter(charMap));
 }
 
 export function swapCharacteristics(
@@ -284,6 +290,7 @@ export function deleteCharacter(doc: Y.Doc, charId: string): void {
   doc.transact(() => {
     characters.delete(charId);
   }, 'chargen-delete');
+  deleteCharacterSnapshot(charId);
 }
 
 export function getAllCharacters(doc: Y.Doc): ChargenCharacter[] {

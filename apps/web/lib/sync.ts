@@ -21,11 +21,12 @@ export function getSessionId(scope: string): string {
     return `${scope}-server`;
   }
   const key = `${SESSION_KEY}:${scope}`;
-  let id = sessionStorage.getItem(key);
+  let id = localStorage.getItem(key) ?? sessionStorage.getItem(key);
   if (!id) {
     id = Math.random().toString(36).slice(2, 10);
-    sessionStorage.setItem(key, id);
   }
+  localStorage.setItem(key, id);
+  sessionStorage.setItem(key, id);
   return id;
 }
 

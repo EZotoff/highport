@@ -5,6 +5,7 @@ import {
   getCharactersMap,
   createCharacter,
   updateCharacter,
+  restoreCharacterSnapshot,
   yMapToCharacter,
   getSession,
   getSessionMap,
@@ -35,6 +36,8 @@ export function useCharacter(charId: string | null): ChargenCharacter | null {
     const charMap = characters.get(charId);
     if (charMap) {
       setCharacter(yMapToCharacter(charMap as Y.Map<unknown>));
+    } else {
+      setCharacter(restoreCharacterSnapshot(doc, charId));
     }
 
     const observer = () => {
@@ -42,7 +45,7 @@ export function useCharacter(charId: string | null): ChargenCharacter | null {
       if (charMap) {
         setCharacter(yMapToCharacter(charMap as Y.Map<unknown>));
       } else {
-        setCharacter(null);
+        setCharacter(restoreCharacterSnapshot(doc, charId));
       }
     };
 
