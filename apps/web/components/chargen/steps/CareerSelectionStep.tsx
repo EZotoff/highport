@@ -378,7 +378,7 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
 
   // View: Career List
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8 pt-2">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-heading font-display">Career Selection</h2>
