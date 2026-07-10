@@ -64,7 +64,7 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
       </div>
 
       <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-2">
           <div className="min-w-0 flex-1">
             <div
               className="block text-[10px] uppercase font-mono tracking-wider mb-0.5"
