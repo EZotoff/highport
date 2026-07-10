@@ -6,7 +6,6 @@ import {
   createCharacter,
   rerollCharacteristics,
   swapCharacteristics,
-  setBackgroundSkills,
   updateCharacter,
   createSession,
   getSession,
@@ -67,18 +66,34 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
 
   const handleSkillToggle = (skillId: string) => {
     if (!character) return;
-    const currentSkills = character.backgroundSkills || [];
-    let newSkills: string[];
+    const currentBgSkills = character.backgroundSkills || [];
+    let newBgSkills: string[];
 
-    if (currentSkills.includes(skillId)) {
-      newSkills = currentSkills.filter((s) => s !== skillId);
+    if (currentBgSkills.includes(skillId)) {
+      newBgSkills = currentBgSkills.filter((s) => s !== skillId);
     } else {
-      if (currentSkills.length >= 3) return; // Limit to 3
-      newSkills = [...currentSkills, skillId];
+      if (currentBgSkills.length >= 3) return; // Limit to 3
+      newBgSkills = [...currentBgSkills, skillId];
     }
 
     const doc = getYDoc();
-    setBackgroundSkills(doc, character.id, newSkills);
+
+    // Build cleaned skills: remove deselected level-0 background skills,
+    // add newly selected ones. Term-resolution skills (level > 0) are preserved.
+    const cleanedSkills: Record<string, number> = { ...character.skills };
+    Object.keys(cleanedSkills).forEach((skill) => {
+      if (cleanedSkills[skill] === 0 && !newBgSkills.includes(skill)) {
+        delete cleanedSkills[skill];
+      }
+    });
+    newBgSkills.forEach((skill) => {
+      if (!(skill in cleanedSkills)) {
+        cleanedSkills[skill] = 0;
+      }
+    });
+
+    updateCharacter(doc, character.id, 'backgroundSkills', newBgSkills);
+    updateCharacter(doc, character.id, 'skills', cleanedSkills);
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,9 +127,16 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
             Create a new character. You'll roll for characteristics, choose a background, and embark
             on a career.
           </p>
-          <SciFiButton theme="cyan" glow onClick={handleCreate}>
-            Create New Character
-          </SciFiButton>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleCreate();
+            }}
+          >
+            <SciFiButton theme="cyan" glow type="submit">
+              Create New Character
+            </SciFiButton>
+          </form>
         </GlassPanel>
       </div>
     );
