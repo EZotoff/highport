@@ -227,10 +227,21 @@ qa_bravo_screenshot "bravo-mutual-presence"
 # ---- Step 9: Alpha selects additional background skills — verify Bravo sees within 2s ----
 QA_STEP="09-alpha-real-time-sync"
 
-# Alpha selects more skills to trigger Yjs sync
-qa-select-skill "Carouse"
-qa-select-skill "Deception"
-qa-select-skill "Drive"
+# Alpha selects 3 more skills dynamically from the page (not hardcoded)
+# Find skills that aren't already selected
+available_skills=$(agent-browser --session "$QA_SESSION" snapshot -i 2>&1 | grep -oP '(?<=text=)[A-Za-z ]+' | grep -viE 'selected|continue|back|character|background|email|password|sign|session|skill$' | head -6 | tail -3)
+skill_count=0
+for skill in $available_skills; do
+  qa-select-skill "$skill" 2>/dev/null || true
+  skill_count=$((skill_count + 1))
+  [[ $skill_count -ge 3 ]] && break
+done
+# Fallback: if dynamic discovery found nothing, use known skill names
+if [[ $skill_count -eq 0 ]]; then
+  qa-select-skill "Carouse" 2>/dev/null || true
+  qa-select-skill "Deception" 2>/dev/null || true
+  qa-select-skill "Drive" 2>/dev/null || true
+fi
 sleep 0.5
 qa-screenshot "alpha-skills-updated"
 

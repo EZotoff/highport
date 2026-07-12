@@ -94,30 +94,40 @@ qa_log "DISCONNECT_WAIT | 3s sleep complete"
 # ---- Step 10: Reopen session & manual login ----
 # NOTE: Cannot use qa-login here because it destroys /tmp/qa/${QA_SESSION}
 #       (which holds IndexedDB for Yjs sync). We must preserve session data.
+# NextAuth cookies may persist in the profile — if so, we skip login and go straight to chargen.
 QA_STEP="10-reopen-login"
 agent-browser --session "$QA_SESSION" \
   --profile "/tmp/qa/${QA_SESSION}" \
   --session-name "$QA_SESSION" \
-  open "${QA_BASE_URL}/login" 2>/dev/null | tail -1
-agent-browser --session "$QA_SESSION" wait 1500 2>/dev/null | tail -1
-
-snap=$(agent-browser --session "$QA_SESSION" snapshot -i 2>&1)
-email_ref=$(echo "$snap" | grep -i 'EMAIL' | grep -o 'ref=e[0-9]*' | head -1 | sed 's/ref=/@/' || true)
-pass_ref=$(echo "$snap" | grep -i 'PASSWORD' | grep -o 'ref=e[0-9]*' | head -1 | sed 's/ref=/@/' || true)
-signin_ref=$(echo "$snap" | grep -i 'Sign In' | grep -o 'ref=e[0-9]*' | head -1 | sed 's/ref=/@/' || true)
-
-[[ -z "$email_ref" ]] && qa_refuse "reconnect: email field not found on login page"
-[[ -z "$pass_ref" ]] && qa_refuse "reconnect: password field not found on login page"
-[[ -z "$signin_ref" ]] && qa_refuse "reconnect: Sign In button not found on login page"
-
-agent-browser --session "$QA_SESSION" fill "$email_ref" "agent-qa-player1@example.com" 2>/dev/null | tail -1
-agent-browser --session "$QA_SESSION" fill "$pass_ref" "test-password-123" 2>/dev/null | tail -1
-agent-browser --session "$QA_SESSION" click "$signin_ref" 2>/dev/null | tail -1
+  open "${QA_BASE_URL}/chargen" 2>/dev/null | tail -1
 agent-browser --session "$QA_SESSION" wait 2000 2>/dev/null | tail -1
 
-url=$(qa_get_url)
-if [[ "$url" == *"/login"* ]]; then
-  qa_refuse "reconnect login failed — still on /login page"
+# Check if we landed on /chargen (cookies persisted) or got redirected to /login
+reconnect_url=$(qa_get_url)
+if [[ "$reconnect_url" == *"/chargen"* ]]; then
+  qa_log "RECONNECT_AUTH | cookies persisted, skipped login | url=${reconnect_url} | pass"
+else
+  # Redirected to /login — cookies expired, need explicit login
+  qa_log "RECONNECT_AUTH | cookies expired, performing login | url=${reconnect_url}"
+  snap=$(agent-browser --session "$QA_SESSION" snapshot -i 2>&1)
+  email_ref=$(echo "$snap" | grep -i 'EMAIL' | grep -o 'ref=e[0-9]*' | head -1 | sed 's/ref=/@/' || true)
+  pass_ref=$(echo "$snap" | grep -i 'PASSWORD' | grep -o 'ref=e[0-9]*' | head -1 | sed 's/ref=/@/' || true)
+  signin_ref=$(echo "$snap" | grep -i 'Sign In' | grep -o 'ref=e[0-9]*' | head -1 | sed 's/ref=/@/' || true)
+
+  [[ -z "$email_ref" ]] && qa_refuse "reconnect: email field not found on login page"
+  [[ -z "$pass_ref" ]] && qa_refuse "reconnect: password field not found on login page"
+  [[ -z "$signin_ref" ]] && qa_refuse "reconnect: Sign In button not found on login page"
+
+  agent-browser --session "$QA_SESSION" fill "$email_ref" "agent-qa-player1@example.com" 2>/dev/null | tail -1
+  agent-browser --session "$QA_SESSION" fill "$pass_ref" "test-password-123" 2>/dev/null | tail -1
+  agent-browser --session "$QA_SESSION" click "$signin_ref" 2>/dev/null | tail -1
+  agent-browser --session "$QA_SESSION" wait 2000 2>/dev/null | tail -1
+
+  reconnect_url=$(qa_get_url)
+  if [[ "$reconnect_url" == *"/login"* ]]; then
+    qa_refuse "reconnect login failed — still on /login page"
+  fi
+  qa_log "RECONNECT_LOGIN | url=${reconnect_url} | pass"
 fi
 qa_log "RECONNECT_LOGIN | url=${url} | pass"
 qa-screenshot "reconnected-login"
