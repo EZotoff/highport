@@ -44,7 +44,22 @@ export function roll(dice: string, modifier: number = 0, target?: number): DiceR
     rolls.push(rollDie(sides));
   }
 
-  const total = rolls.reduce((a, b) => a + b, 0) + modifier;
+  let total = rolls.reduce((a, b) => a + b, 0) + modifier;
+  let success = target !== undefined ? total >= target : undefined;
+
+  if (typeof window !== 'undefined' && target !== undefined) {
+    if ((window as any).__qaForceRollSuccess === true) {
+      success = true;
+      if (total < target) {
+        total = target;
+      }
+    }
+
+    if ((window as any).__qaForceRollFailure === true) {
+      success = false;
+      total = target - 1;
+    }
+  }
 
   return {
     dice,
@@ -52,7 +67,7 @@ export function roll(dice: string, modifier: number = 0, target?: number): DiceR
     total,
     modifier,
     target,
-    success: target !== undefined ? total >= target : undefined,
+    success,
   };
 }
 

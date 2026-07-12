@@ -18,6 +18,7 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
       theme = 'cyan',
       variant = 'default',
       glow = false,
+      glint = false,
       hoverGlow = false,
       className = '',
       children,

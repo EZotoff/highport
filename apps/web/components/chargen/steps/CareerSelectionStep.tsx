@@ -388,7 +388,7 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
         {careers
           .filter((c) => c.id !== 'drifter')
           .map((career) => {
@@ -407,7 +407,7 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
                     {career.qualification.characteristic} {career.qualification.target}+
                   </span>
                 }
-                className="h-full"
+                className=""
                 contentClassName="px-4 py-2"
                 footer={
                   <div className="w-full">

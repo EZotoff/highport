@@ -177,7 +177,7 @@ export default function ChargenWizard() {
 
   return (
     <div
-      className="flex flex-col h-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-4"
+      className="flex flex-col h-full max-w-[2200px] mx-auto px-4 sm:px-6 lg:px-8 py-4"
       data-chargen-status={character?.status ?? 'background'}
       data-testid="chargen-wizard"
     >
@@ -190,7 +190,7 @@ export default function ChargenWizard() {
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] lg:grid-rows-1 gap-8 min-h-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)_320px] lg:grid-rows-1 gap-6 min-h-0 overflow-hidden">
         {/* Left sidebar: Participants */}
         <div className="h-full overflow-hidden min-w-0">
           <ParticipantPanel
