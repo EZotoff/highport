@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { getYDoc } from '../../../lib/ydoc';
 import {
   createCharacter,
@@ -29,8 +29,11 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
   const character = useCharacter(characterId);
   const [swap1, setSwap1] = useState<CharacteristicCode>('STR');
   const [swap2, setSwap2] = useState<CharacteristicCode>('DEX');
+  const creatingRef = useRef(false);
 
   const handleCreate = async () => {
+    if (creatingRef.current) return;
+    creatingRef.current = true;
     const user = getOrCreateUser();
     const doc = getYDoc();
 
@@ -133,7 +136,21 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
               handleCreate();
             }}
           >
-            <SciFiButton theme="cyan" glow type="submit">
+            <SciFiButton
+              theme="cyan"
+              glow
+              type="submit"
+              onClick={(e) => {
+                e.preventDefault();
+                handleCreate();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.currentTarget.click();
+                }
+              }}
+            >
               Create New Character
             </SciFiButton>
           </form>
@@ -248,9 +265,10 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
             return (
               <label
                 key={skill.id}
-                className={`flex items-center gap-2 cursor-pointer select-none ${
-                  isDisabled ? 'opacity-50 cursor-not-allowed' : ''
-                } ${!isSelected && !isDisabled ? 'hover:bg-white/5' : ''}`}
+                className={`flex items-center gap-2 cursor-pointer select-none rounded-lg
+                  ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${!isSelected && !isDisabled ? 'hover:bg-white/5' : ''}
+                  has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-violet-400 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-zinc-900`}
                 style={{
                   backgroundColor: isSelected ? `${THEME_HEX.violet}20` : undefined,
                   borderRadius: '0.5rem',

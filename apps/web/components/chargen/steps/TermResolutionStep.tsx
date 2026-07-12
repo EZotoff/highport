@@ -518,7 +518,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
         mishap,
       };
     }
-    finishTerm(updatedTerms, 'career_selection');
+    finishTerm(updatedTerms, 'mustering_out');
   };
 
   const handleGenerateDescription = async (guidance?: string) => {
