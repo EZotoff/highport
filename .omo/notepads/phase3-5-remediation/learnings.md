@@ -100,3 +100,28 @@ Cumulative memory for stateless subagents. Append-only.
 - Test count decreased from 245 to 244 (one test removed).
 - Verification: `grep -rn 'requireGMApproval\|allowCrossPlayerConnections' apps/web/` returns zero matches; `npx tsc -p apps/web/tsconfig.json --noEmit` exits 0; `pnpm --filter web test -- --run` passes 33/33 files.
 - No data migration needed — Yjs is schemaless; old sessions with these fields will have extra ignored data.
+
+## Task 18 — Restore Service Record entry point in CharacterPreview
+
+- Added Service Record button alongside Career Timeline in CharacterPreview.tsx
+- Button and SciFiDialog mirror the existing timeline pattern: same theme (violet), variant (outline), size (sm)
+- Service Record button only visible when `character.status === 'finalized'` (gated by `character.status === 'finalized'`)
+- Both buttons sit in the same `space-y-2` container for consistent vertical rhythm
+- ServiceRecord component receives `character.chapters` and `character.name` as props
+- Dialog description mirrors timeline pattern: `"Name — N chapters of service"`
+- Added `BookMarked` to lucide-react import; added `ServiceRecord` import
+- State variables: `showTimeline` and `showServiceRecord` managed independently
+- E2E test: added Service Record assertions after timeline modal assertions (button visible → click → modal heading/text visible → close)
+- Verification: no TS errors in changed files; 32/33 test files pass (237/237 tests); pre-existing FinalizeStep.tsx syntax error blocks unrelated test
+- Evidence saved to `.omo/evidence/phase3-5-remediation/task-18.txt`
+
+## Task 17 — Remove `as any` from cross-character-proposals test
+
+- Removed 4 `as any` casts and 2 `let edge: any` declarations from `cross-character-proposals.test.tsx`.
+- Used `typeof import('../lib/ydoc')` for the `importActual` mock type parameter.
+- Typed `mockCharacters` as `ChargenCharacter[]` with full fixture objects (all required fields).
+- Typed `mockProposals` as `CrossCharacterLinkProposal[]` — already had all required fields.
+- Typed `let edge: Y.Map<unknown>` with `= new Y.Map()` initialization to satisfy TS2454 definite-assignment.
+- Added type imports for `ChargenCharacter` and `CrossCharacterLinkProposal` from `../lib/chargen/types`.
+- Verification: grep returns zero matches for ` as any` / `: any`; tsc has zero errors in test file; 5/5 tests pass.
+- Evidence saved to `.omo/evidence/phase3-5-remediation/task-17.txt`

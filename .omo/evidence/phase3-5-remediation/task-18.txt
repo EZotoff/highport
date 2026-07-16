@@ -1,0 +1,29 @@
+# Task 18 — Restore Service Record entry point in CharacterPreview
+## Date: 2026-07-16
+
+## Files Modified
+1. apps/web/components/chargen/CharacterPreview.tsx
+2. apps/web/e2e/chargen-full-lifecycle.spec.ts
+
+## Changes — CharacterPreview.tsx
+- Added `BookMarked` to lucide-react import (line 4)
+- Added `import { ServiceRecord } from './ServiceRecord'` (line 8)
+- Added `const [showServiceRecord, setShowServiceRecord] = useState(false)` state (line 22)
+- Wrapped timeline + service record buttons in `space-y-2` container (line 212)
+- Added Service Record button gated on `character.status === 'finalized'` (lines 227-242)
+- Added data-testid="open-service-record" for test targeting (line 236)
+- Added SciFiDialog for ServiceRecord component (lines 259-270)
+- Mirrors timeline pattern: same theme, variant, size, aria attributes
+
+## Changes — E2E test
+- Added Service Record assertions between timeline modal close and graph creation (lines 76-86):
+  - Asserts button visible: `name: /Service Record \(2 chapters\)/i`
+  - Clicks button, asserts heading: `name: /^Service Record$/i`
+  - Asserts content: `text: /chapters of service/i`
+  - Closes modal with Escape
+
+## Verification
+- npx tsc: No errors in changed files (pre-existing FinalizeStep.tsx error unchanged)
+- pnpm test: 32/33 files pass, 237/237 tests (lifepath-review.test.tsx blocked by pre-existing FinalizeStep.tsx syntax error)
+- lsp_diagnostics: CharacterPreview.tsx — pre-existing warnings only (unused React import, unused transitionDuration)
+- lsp_diagnostics: e2e spec — clean

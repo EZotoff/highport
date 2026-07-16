@@ -1,12 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BookMarked, ChevronRight, User, Coins, Calendar } from 'lucide-react';
+import { ChevronRight, User, Coins, Calendar, Scroll, BookMarked } from 'lucide-react';
 import { useCharacter } from '../../lib/chargen/hooks';
 import { getCharacteristicModifier, CharacteristicCode } from '@highport/mgt2e';
 import { LifepathTimeline } from './LifepathTimeline';
 import { ServiceRecord } from './ServiceRecord';
-import { GlassPanel, ProcessFlowSheen, SkillBadge } from '@/components/ui/scifi';
+import {
+  GlassPanel,
+  ProcessFlowSheen,
+  SciFiButton,
+  SciFiDialog,
+  SkillBadge,
+} from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { ANIMATION_TIMING } from '@/lib/design-system/visualConfig';
 
@@ -18,7 +24,7 @@ const PREVIEW_STATS: CharacteristicCode[] = ['STR', 'DEX', 'END', 'INT', 'EDU', 
 
 export default function CharacterPreview({ characterId }: CharacterPreviewProps) {
   const character = useCharacter(characterId || null);
-  const [showLifepath, setShowLifepath] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
   const [showServiceRecord, setShowServiceRecord] = useState(false);
 
   if (!character) {
@@ -209,76 +215,71 @@ export default function CharacterPreview({ characterId }: CharacterPreviewProps)
         </div>
 
         {character.terms.length > 0 && (
-          <div className="pt-2.5 border-t" style={{ borderColor: 'var(--asteroid-dust-30)' }}>
-            <button
-              onClick={() => setShowLifepath(!showLifepath)}
-              type="button"
-              aria-expanded={showLifepath}
-              aria-controls="character-preview-lifepath"
-              className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-wider transition-colors w-full group min-h-[36px] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 rounded"
-              style={{ color: THEME_HEX.violet }}
+          <div
+            className="pt-2.5 border-t space-y-2"
+            style={{ borderColor: 'var(--asteroid-dust-30)' }}
+          >
+            <SciFiButton
+              onClick={() => setShowTimeline(true)}
+              theme="violet"
+              scifiVariant="outline"
+              size="sm"
+              aria-haspopup="dialog"
+              aria-expanded={showTimeline}
+              className="w-full min-h-[36px]"
+              data-testid="open-career-timeline"
             >
-              <span
-                className="transition-transform"
-                style={{
-                  transform: showLifepath ? 'rotate(90deg)' : 'rotate(0deg)',
-                  transitionDuration,
-                }}
+              <Scroll className="w-3.5 h-3.5" />
+              <span className="ml-1.5">Career Timeline ({character.terms.length} terms)</span>
+              <ChevronRight className="w-3.5 h-3.5 ml-auto" />
+            </SciFiButton>
+            {character.status === 'finalized' && (
+              <SciFiButton
+                onClick={() => setShowServiceRecord(true)}
+                theme="violet"
+                scifiVariant="outline"
+                size="sm"
+                aria-haspopup="dialog"
+                aria-expanded={showServiceRecord}
+                className="w-full min-h-[36px]"
+                data-testid="open-service-record"
               >
-                <ChevronRight className="w-4 h-4" />
-              </span>
-              <span className="group-hover:brightness-125 transition-all">
-                Career Timeline ({character.terms.length} terms)
-              </span>
-            </button>
-            <div
-              id="character-preview-lifepath"
-              className="overflow-hidden"
-              style={{
-                maxHeight: showLifepath ? '500px' : '0px',
-                opacity: showLifepath ? 1 : 0,
-                transition: `all ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`,
-              }}
-            >
-              {characterId && (
-                <div className="mt-3 px-1">
-                  <LifepathTimeline characterId={characterId} />
-                </div>
-              )}
-            </div>
+                <BookMarked className="w-3.5 h-3.5" />
+                <span className="ml-1.5">
+                  Service Record ({character.chapters.length} chapter
+                  {character.chapters.length === 1 ? '' : 's'})
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 ml-auto" />
+              </SciFiButton>
+            )}
           </div>
         )}
 
-        {character.status === 'finalized' && (
-          <div className="pt-2.5 border-t" style={{ borderColor: 'var(--asteroid-dust-30)' }}>
-            <button
-              onClick={() => setShowServiceRecord(!showServiceRecord)}
-              type="button"
-              aria-expanded={showServiceRecord}
-              aria-controls="character-preview-service-record"
-              className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-wider transition-colors w-full group min-h-[36px] focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus-visible:ring-2 rounded"
-              style={{ color: THEME_HEX.violet }}
-            >
-              <BookMarked className="w-4 h-4" />
-              <span className="group-hover:brightness-125 transition-all">
-                Service Record ({character.chapters.length} chapters)
-              </span>
-            </button>
-            <div
-              id="character-preview-service-record"
-              className="overflow-hidden"
-              style={{
-                maxHeight: showServiceRecord ? '700px' : '0px',
-                opacity: showServiceRecord ? 1 : 0,
-                transition: `all ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`,
-              }}
-            >
-              <div className="mt-3">
-                <ServiceRecord chapters={character.chapters} characterName={character.name} />
-              </div>
-            </div>
+        <SciFiDialog
+          open={showTimeline}
+          onOpenChange={setShowTimeline}
+          title="Career Timeline"
+          description={`${character.name || 'This traveller'} — ${character.terms.length} term${character.terms.length === 1 ? '' : 's'} of service`}
+          theme="violet"
+          className="max-w-5xl"
+        >
+          <div className="h-[70vh] min-h-[400px] w-full">
+            {characterId && <LifepathTimeline characterId={characterId} />}
           </div>
-        )}
+        </SciFiDialog>
+
+        <SciFiDialog
+          open={showServiceRecord}
+          onOpenChange={setShowServiceRecord}
+          title="Service Record"
+          description={`${character.name || 'This traveller'} — ${character.chapters.length} chapter${character.chapters.length === 1 ? '' : 's'} of service`}
+          theme="violet"
+          className="max-w-3xl"
+        >
+          <div className="h-[70vh] min-h-[400px] w-full overflow-y-auto">
+            <ServiceRecord chapters={character.chapters} characterName={character.name} />
+          </div>
+        </SciFiDialog>
       </div>
 
       <div

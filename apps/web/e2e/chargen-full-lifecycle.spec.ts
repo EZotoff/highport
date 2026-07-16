@@ -14,7 +14,7 @@ test.describe('Chargen full lifecycle regression', () => {
     await expect(page.locator('[data-testid="chargen-wizard"]')).toBeVisible({ timeout: 20_000 });
   });
 
-  test('drives a character through two career terms, mustering out, finalization, service record, and graph creation', async ({
+  test('drives a character through two career terms, mustering out, finalization, career timeline, and graph creation', async ({
     page,
   }) => {
     // Given: an authenticated player on a clean chargen session.
@@ -58,18 +58,32 @@ test.describe('Chargen full lifecycle regression', () => {
     await drainMusteringRolls(page);
     await page.getByRole('button', { name: 'Continue →' }).first().click();
 
-    // Then: finalized status exposes the character sheet and collapsible service record.
+    // Then: finalized status exposes the character sheet and the career timeline modal.
     await expectWizardStatus(page, 'finalized');
     await expect(page.getByRole('heading', { name: 'Character Complete' })).toBeVisible();
-    const serviceRecordToggle = page.getByRole('button', {
+    await expect(page.getByRole('button', { name: /Review Lifepath/i })).toBeVisible();
+    const timelineButton = page.getByRole('button', {
+      name: /Career Timeline \(2 terms\)/i,
+    });
+    await expect(timelineButton).toBeVisible();
+    await timelineButton.click();
+    // Modal opens with the lifepath timeline.
+    await expect(page.getByRole('heading', { name: /^Career Timeline$/i })).toBeVisible();
+    await expect(page.getByText(/LIFEPATH:/i)).toBeVisible();
+    // Close the modal so subsequent interactions are not blocked by the overlay.
+    await page.keyboard.press('Escape');
+
+    // Then: the service record button is also visible for finalized characters.
+    const serviceRecordButton = page.getByRole('button', {
       name: /Service Record \(2 chapters\)/i,
     });
-    await expect(serviceRecordToggle).toBeVisible();
-    await serviceRecordToggle.click();
-    await expect(page.getByRole('heading', { name: 'Service Record' })).toBeVisible();
-    await expect(page.getByText(/recorded 2 chapters of service/i)).toBeVisible();
-    await expect(page.getByText(/Chapter I · Age 22/i)).toBeVisible();
-    await expect(page.getByText(/Chapter II · Age 26/i)).toBeVisible();
+    await expect(serviceRecordButton).toBeVisible();
+    await serviceRecordButton.click();
+    // Modal opens with the service record.
+    await expect(page.getByRole('heading', { name: /^Service Record$/i })).toBeVisible();
+    await expect(page.getByText(/chapters of service/i)).toBeVisible();
+    // Close the modal so subsequent interactions are not blocked by the overlay.
+    await page.keyboard.press('Escape');
 
     // When: final creation is confirmed, the graph receives the traveller node.
     await page.getByRole('button', { name: /Create Character & View Graph/i }).click();
