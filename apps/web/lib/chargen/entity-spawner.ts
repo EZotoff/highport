@@ -2,7 +2,7 @@ import * as Y from 'yjs';
 import { getYDoc } from '../ydoc';
 import { addNode, addEdge } from '../yjs-helpers';
 import { addEntityToPool } from './state';
-import type { GraphNode, GraphEdge, NodeType } from '@highport/shared/types/graph';
+import type { GraphNode, GraphEdge, NodeType, ProvenanceEntry } from '@highport/shared/types/graph';
 import type { SpawnedEntityRef } from './types';
 import type { EventSpawn } from '@highport/mgt2e';
 
@@ -13,6 +13,7 @@ export interface SpawnEntityInput {
   characterId: string;
   termNumber: number;
   eventRoll: number;
+  provenance?: ProvenanceEntry;
 }
 
 export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
@@ -36,6 +37,7 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
     },
     locked: false,
     hidden: false,
+    provenance: input.provenance,
     created_at: Date.now(),
     created_by: 'chargen',
   };
@@ -76,6 +78,14 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
     relationship: input.spawn.relationship,
     name: input.name,
     description: input.description,
+    provenance: input.provenance
+      ? {
+          source: input.provenance.source,
+          status: input.provenance.status,
+          pendingReviewBy: input.provenance.pendingReviewBy,
+          generatedAt: input.provenance.generatedAt,
+        }
+      : undefined,
   };
 }
 

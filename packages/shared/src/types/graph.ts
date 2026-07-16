@@ -2,6 +2,19 @@
  * Node type enumeration for graph entities
  * Follows character-generation graph conventions with Highport extensions
  */
+
+/**
+ * Provenance metadata for graph entities — tracks who created the entity
+ * and its review/acceptance status.
+ */
+export interface ProvenanceEntry {
+  source: 'ai' | 'dice' | 'player' | 'gm';
+  status: 'draft' | 'accepted' | 'rejected' | 'edited';
+  pendingReviewBy?: 'gm' | 'player' | null;
+  generatedAt?: number;
+  derivedFrom?: string;
+}
+
 export type NodeType =
   | 'traveller'
   | 'npc'
@@ -32,6 +45,7 @@ export interface GraphNode {
   };
   locked: boolean;
   hidden: boolean;
+  provenance?: ProvenanceEntry;
   created_at: number;
   created_by: string;
 }

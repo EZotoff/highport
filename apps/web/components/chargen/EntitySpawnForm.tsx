@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { spawnEntity } from '../../lib/chargen/entity-spawner';
 import type { EventSpawn } from '@highport/mgt2e';
-import type { SpawnedEntityRef } from '../../lib/chargen/types';
+import type { AIProvenance, SpawnedEntityRef } from '../../lib/chargen/types';
 import { useNPCNarrative, useNarrativeAvailable } from '../../lib/chargen/useNarrative';
 import { NarrativeUnavailableNotice } from './NarrativeUnavailableNotice';
 import type { VerbosityLevel } from '../../lib/chargen/narrative';
@@ -19,6 +19,8 @@ import { PortraitLibrary } from '@/components/portrait/PortraitLibrary';
 import { PortraitRemixer } from '@/components/portrait/PortraitRemixer';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { PortraitGenerationProgress } from '@/components/portrait/PortraitGenerationProgress';
+import { useGMControls } from '../../lib/chargen/useGMControls';
+import { requiresReview, shouldShowDraft } from '../../lib/chargen/gm-approval';
 
 interface EntitySpawnFormProps {
   spawn: EventSpawn;
@@ -30,6 +32,7 @@ interface EntitySpawnFormProps {
   verbosity: VerbosityLevel;
   career: string;
   characterName: string;
+  currentUserId: string;
 }
 
 const SPAWN_TYPE_LABELS: Record<string, string> = {
@@ -65,6 +68,32 @@ const SPAWN_PROMPTS: Record<string, Record<string, string>> = {
   },
 };
 
+const NOW = () => Date.now();
+
+const blankProvenance = (value: string): AIProvenance<string> => ({
+  value,
+  source: 'player',
+  mode: 'brief',
+  status: 'edited',
+  generatedAt: NOW(),
+  pendingReviewBy: undefined,
+});
+
+const aiProvenance = (
+  value: string,
+  mode: VerbosityLevel,
+  derivedFrom: string,
+  gmApprovalMode: 'lenient' | 'moderate' | 'strict',
+): AIProvenance<string> => ({
+  value,
+  source: 'ai',
+  mode,
+  status: gmApprovalMode === 'lenient' ? 'accepted' : 'draft',
+  derivedFrom,
+  generatedAt: NOW(),
+  pendingReviewBy: gmApprovalMode === 'lenient' ? null : 'gm',
+});
+
 export default function EntitySpawnForm({
   spawn,
   characterId,
@@ -75,11 +104,12 @@ export default function EntitySpawnForm({
   verbosity,
   career,
   characterName,
+  currentUserId,
 }: EntitySpawnFormProps) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [motivation, setMotivation] = useState('');
-  const [personality, setPersonality] = useState('');
+  const [nameProv, setNameProv] = useState<AIProvenance<string> | undefined>();
+  const [descriptionProv, setDescriptionProv] = useState<AIProvenance<string> | undefined>();
+  const [motivationProv, setMotivationProv] = useState<AIProvenance<string> | undefined>();
+  const [personalityProv, setPersonalityProv] = useState<AIProvenance<string> | undefined>();
   const [portrait, setPortrait] = useState<PortraitRecord | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [remixerOpen, setRemixerOpen] = useState(false);
@@ -96,6 +126,10 @@ export default function EntitySpawnForm({
     error: portraitError,
   } = usePortraitGenerator();
   const session = useSession();
+  const { isGM, settings } = useGMControls(currentUserId);
+  const gmApprovalMode = settings?.gmApprovalMode ?? 'moderate';
+  const submitDisabled =
+    !nameProv?.value.trim() || (nameProv != null && requiresReview(nameProv, gmApprovalMode));
 
   const typeLabel = SPAWN_TYPE_LABELS[spawn.type] || spawn.type;
   const relationLabel = spawn.relationship ? RELATIONSHIP_LABELS[spawn.relationship] : null;
@@ -105,6 +139,25 @@ export default function EntitySpawnForm({
     spawn.relationship && prompts[spawn.relationship]
       ? prompts[spawn.relationship]
       : prompts.default;
+
+  const displayValue = (prov: AIProvenance<string> | undefined): string => {
+    if (!prov) return '';
+    return shouldShowDraft(gmApprovalMode, prov, isGM) ? prov.value : 'Pending GM Review...';
+  };
+
+  const badge = (prov: AIProvenance<string> | undefined) => {
+    if (!prov || !requiresReview(prov, gmApprovalMode)) return null;
+    return (
+      <span className="text-xs text-amber-400 font-mono font-bold uppercase tracking-wider bg-amber-950/50 border border-amber-800/50 px-2 py-0.5 rounded">
+        Pending GM Approval
+      </span>
+    );
+  };
+
+  const handleNameChange = (value: string) => setNameProv(blankProvenance(value));
+  const handleDescriptionChange = (value: string) => setDescriptionProv(blankProvenance(value));
+  const handleMotivationChange = (value: string) => setMotivationProv(blankProvenance(value));
+  const handlePersonalityChange = (value: string) => setPersonalityProv(blankProvenance(value));
 
   const handleGenerateField = async (field: 'name' | 'motivation' | 'personality') => {
     if (spawn.type !== 'npc') return;
@@ -118,25 +171,32 @@ export default function EntitySpawnForm({
           characterName: characterName,
         },
         existingFields: {
-          name: name || undefined,
-          motivation: motivation || undefined,
-          personality: personality || undefined,
+          name: nameProv?.value || undefined,
+          motivation: motivationProv?.value || undefined,
+          personality: personalityProv?.value || undefined,
         },
         verbosity,
       });
 
       switch (field) {
         case 'name':
-          if (result.name) setName(result.name);
+          if (result.name)
+            setNameProv(aiProvenance(result.name, verbosity, 'npc-name', gmApprovalMode));
           break;
         case 'motivation':
-          if (result.motivation) setMotivation(result.motivation);
+          if (result.motivation)
+            setMotivationProv(
+              aiProvenance(result.motivation, verbosity, 'npc-motivation', gmApprovalMode),
+            );
           break;
         case 'personality':
-          if (result.personality) setPersonality(result.personality);
+          if (result.personality)
+            setPersonalityProv(
+              aiProvenance(result.personality, verbosity, 'npc-personality', gmApprovalMode),
+            );
           break;
       }
-    } catch (e) {
+    } catch {
       // Error handled by hook
     }
   };
@@ -152,31 +212,50 @@ export default function EntitySpawnForm({
           career: career,
           characterName: characterName,
         },
-        existingFields: name ? { name } : undefined,
+        existingFields: nameProv?.value ? { name: nameProv.value } : undefined,
         verbosity,
       });
 
-      if (result.name && !name) setName(result.name);
-      if (result.motivation) setMotivation(result.motivation);
-      if (result.personality) setPersonality(result.personality);
+      if (result.name && !nameProv?.value)
+        setNameProv(aiProvenance(result.name, verbosity, 'npc-name', gmApprovalMode));
+      if (result.motivation)
+        setMotivationProv(
+          aiProvenance(result.motivation, verbosity, 'npc-motivation', gmApprovalMode),
+        );
+      if (result.personality)
+        setPersonalityProv(
+          aiProvenance(result.personality, verbosity, 'npc-personality', gmApprovalMode),
+        );
       if (result.personality || result.motivation) {
-        setDescription([result.personality, result.motivation].filter(Boolean).join('\n\n'));
+        const description = [result.personality, result.motivation].filter(Boolean).join('\n\n');
+        setDescriptionProv(aiProvenance(description, verbosity, 'npc-description', gmApprovalMode));
       }
-    } catch (e) {
+    } catch {
       // Error is in generateError state
     }
   };
 
   const handleSubmit = async () => {
-    if (!name.trim()) return;
+    const name = nameProv?.value.trim() ?? '';
+    if (!name) return;
+    const provenance = nameProv
+      ? {
+          source: nameProv.source,
+          status: nameProv.status,
+          pendingReviewBy: nameProv.pendingReviewBy,
+          generatedAt: nameProv.generatedAt,
+          derivedFrom: nameProv.derivedFrom,
+        }
+      : undefined;
 
     const entity = spawnEntity({
       spawn,
-      name: name.trim(),
-      description: description.trim() || undefined,
+      name,
+      description: descriptionProv?.value.trim() || undefined,
       characterId,
       termNumber,
       eventRoll,
+      provenance,
     });
 
     if (portrait) {
@@ -194,8 +273,8 @@ export default function EntitySpawnForm({
   const handleGeneratePortrait = async () => {
     if (!session?.campaignId) return;
 
-    const appearanceText = [description, personality, motivation]
-      .map((value) => value.trim())
+    const appearanceText = [descriptionProv?.value, personalityProv?.value, motivationProv?.value]
+      .map((value) => value?.trim() ?? '')
       .filter(Boolean)
       .join('\n');
 
@@ -228,6 +307,11 @@ export default function EntitySpawnForm({
   const relationColor =
     (spawn.relationship && relationColorMap[spawn.relationship]) ||
     'text-subtle bg-zinc-900/30 border-zinc-800';
+
+  const name = displayValue(nameProv);
+  const description = displayValue(descriptionProv);
+  const motivation = displayValue(motivationProv);
+  const personality = displayValue(personalityProv);
 
   return (
     <div className={`border rounded-lg p-4 mt-4 ${relationColor}`}>
@@ -262,11 +346,12 @@ export default function EntitySpawnForm({
               </SciFiButton>
             )}
           </div>
+          {badge(nameProv)}
           <SciFiInput
             id="spawn-entity-name"
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleNameChange(e.target.value)}
             placeholder={spawn.type === 'npc' ? 'e.g., Lt. Vasquez' : 'Enter name...'}
             theme="cyan"
           />
@@ -302,16 +387,62 @@ export default function EntitySpawnForm({
               </div>
             )}
           </div>
+          {badge(descriptionProv)}
           <textarea
             id="spawn-entity-description"
             aria-label="Entity description"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => handleDescriptionChange(e.target.value)}
             placeholder="Add context, backstory, or notes..."
             rows={3}
             className="w-full min-h-[44px] bg-[var(--star-metal)] border border-[var(--asteroid-dust-50)] text-default rounded-lg p-2 focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 focus:border-cyan-500/50 outline-none resize-none"
           />
         </div>
+
+        {spawn.type === 'npc' && narrativeAvailable && (
+          <div className="space-y-2">
+            <div className="flex gap-2 items-center">
+              {badge(motivationProv)}
+              <SciFiButton
+                onClick={() => handleGenerateField('motivation')}
+                disabled={generating}
+                type="button"
+                theme="violet"
+                scifiVariant="secondary"
+                size="sm"
+              >
+                Motivation
+              </SciFiButton>
+            </div>
+            <SciFiInput
+              type="text"
+              value={motivation}
+              onChange={(e) => handleMotivationChange(e.target.value)}
+              placeholder="NPC motivation..."
+              theme="cyan"
+            />
+            <div className="flex gap-2 items-center">
+              {badge(personalityProv)}
+              <SciFiButton
+                onClick={() => handleGenerateField('personality')}
+                disabled={generating}
+                type="button"
+                theme="violet"
+                scifiVariant="secondary"
+                size="sm"
+              >
+                Personality
+              </SciFiButton>
+            </div>
+            <SciFiInput
+              type="text"
+              value={personality}
+              onChange={(e) => handlePersonalityChange(e.target.value)}
+              placeholder="NPC personality..."
+              theme="cyan"
+            />
+          </div>
+        )}
 
         {spawn.type === 'npc' && narrativeAvailable && (
           <div className="pt-2">
@@ -340,7 +471,7 @@ export default function EntitySpawnForm({
           )}
           <SciFiButton
             onClick={handleSubmit}
-            disabled={!name.trim()}
+            disabled={submitDisabled}
             theme="cyan"
             glow
             className="flex-1"
@@ -448,7 +579,7 @@ export default function EntitySpawnForm({
                   filterTags={{
                     story: {
                       entity_type: 'npc',
-                      relationship_type: spawn.relationship as any,
+                      relationship_type: spawn.relationship,
                     },
                   }}
                 />

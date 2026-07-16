@@ -8,7 +8,7 @@ import {
   setBackgroundSkills,
   advanceStatus,
 } from '../lib/chargen/state';
-import type { CareerTermResult } from '../lib/chargen/types';
+import type { CareerTermResult, AIProvenance } from '../lib/chargen/types';
 
 const mocks = vi.hoisted(() => {
   const state = { doc: null as Y.Doc | null };
@@ -35,6 +35,7 @@ vi.mock('../lib/yjs-helpers', () => ({
 }));
 
 import { spawnEntity } from '../lib/chargen/entity-spawner';
+import { requiresReview } from '../lib/chargen/gm-approval';
 
 describe('Chargen Flow Integration', () => {
   describe('Character CRDT state sync between two Y.Docs', () => {
@@ -117,6 +118,118 @@ describe('Chargen Flow Integration', () => {
       expect(edgeArg.source_id).toBe('char-1');
       expect(edgeArg.target_id).toBe(result.graphNodeId);
       expect(edgeArg.relation_label).toBe('Allied with');
+    });
+
+    it('stores provenance with source ai on the graph node when provided', () => {
+      const provenance: AIProvenance<string> = {
+        value: 'Test NPC',
+        source: 'ai',
+        mode: 'brief',
+        status: 'draft',
+        derivedFrom: 'npc-name',
+        generatedAt: 1700000000000,
+        pendingReviewBy: 'gm',
+      };
+
+      const result = spawnEntity({
+        spawn: { type: 'npc', relationship: 'ally', required: false },
+        name: 'Test NPC',
+        characterId: 'char-1',
+        termNumber: 1,
+        eventRoll: 6,
+        provenance: {
+          source: provenance.source,
+          status: provenance.status,
+          derivedFrom: provenance.derivedFrom,
+          generatedAt: provenance.generatedAt,
+          pendingReviewBy: provenance.pendingReviewBy,
+        },
+      });
+
+      expect(result.provenance).toBeDefined();
+      expect(result.provenance?.source).toBe('ai');
+      expect(result.provenance?.status).toBe('draft');
+      expect(result.provenance?.pendingReviewBy).toBe('gm');
+      expect(result.provenance?.generatedAt).toBe(1700000000000);
+
+      const [, nodeArg] = mocks.mockAddNode.mock.calls[0];
+      expect(nodeArg.provenance).toBeDefined();
+      expect(nodeArg.provenance.source).toBe('ai');
+      expect(nodeArg.provenance.status).toBe('draft');
+      expect(nodeArg.provenance.pendingReviewBy).toBe('gm');
+    });
+
+    it('does not set provenance when none is provided (backward compat)', () => {
+      const result = spawnEntity({
+        spawn: { type: 'npc', relationship: 'contact', required: false },
+        name: 'Legacy NPC',
+        characterId: 'char-2',
+        termNumber: 2,
+        eventRoll: 3,
+      });
+
+      expect(result.provenance).toBeUndefined();
+
+      const [, nodeArg] = mocks.mockAddNode.mock.calls[0];
+      expect(nodeArg.provenance).toBeUndefined();
+    });
+  });
+
+  describe('Submit button disable logic', () => {
+    it('returns true when AI provenance has pendingReviewBy gm in strict mode', () => {
+      const prov: AIProvenance<string> = {
+        value: 'Test',
+        source: 'ai',
+        mode: 'brief',
+        status: 'draft',
+        generatedAt: Date.now(),
+        pendingReviewBy: 'gm',
+      };
+      const nameValue = prov.value;
+      const submitDisabled = !nameValue.trim() || (prov != null && requiresReview(prov, 'strict'));
+      expect(submitDisabled).toBe(true);
+    });
+
+    it('returns false when pendingReviewBy is cleared (GM approved)', () => {
+      const prov: AIProvenance<string> = {
+        value: 'Test',
+        source: 'ai',
+        mode: 'brief',
+        status: 'accepted',
+        generatedAt: Date.now(),
+        pendingReviewBy: null,
+      };
+      const nameValue = prov.value;
+      const submitDisabled = !nameValue.trim() || (prov != null && requiresReview(prov, 'strict'));
+      expect(submitDisabled).toBe(false);
+    });
+
+    it('returns false in lenient mode even with AI source', () => {
+      const prov: AIProvenance<string> = {
+        value: 'Test',
+        source: 'ai',
+        mode: 'brief',
+        status: 'accepted',
+        generatedAt: Date.now(),
+        pendingReviewBy: null,
+      };
+      const nameValue = prov.value;
+      const submitDisabled = !nameValue.trim() || (prov != null && requiresReview(prov, 'lenient'));
+      expect(submitDisabled).toBe(false);
+    });
+
+    it('returns false for player-entered provenance (no pendingReviewBy)', () => {
+      const prov: AIProvenance<string> = {
+        value: 'Manual NPC',
+        source: 'player',
+        mode: 'brief',
+        status: 'edited',
+        generatedAt: Date.now(),
+        pendingReviewBy: undefined,
+      };
+      const nameValue = prov.value;
+      const submitDisabled = !nameValue.trim() || (prov != null && requiresReview(prov, 'strict'));
+      expect(submitDisabled).toBe(false);
     });
   });
 

@@ -147,6 +147,12 @@ export interface SpawnedEntityRef {
   relationship?: 'ally' | 'contact' | 'rival' | 'enemy';
   name: string;
   description?: string;
+  provenance?: {
+    source: 'ai' | 'dice' | 'player' | 'gm';
+    status: 'draft' | 'accepted' | 'rejected' | 'edited';
+    pendingReviewBy?: 'gm' | 'player' | null;
+    generatedAt?: number;
+  };
 }
 
 export interface MusteringState {

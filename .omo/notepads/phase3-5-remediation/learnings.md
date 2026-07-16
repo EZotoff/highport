@@ -136,3 +136,16 @@ Cumulative memory for stateless subagents. Append-only.
 - 2 new tests in lifepath-review.test.tsx: strict hides text, lenient shows text
 - Verification: tsc clean for modified files; 33/33 files, 246/246 tests pass
 - Evidence saved to `.omo/evidence/phase3-5-remediation/task-15.txt`
+
+## Task 14 — Block NPC submission of unreviewed drafts and preserve entity provenance
+
+- Added `ProvenanceEntry` interface to `packages/shared/src/types/graph.ts` with fields: `source`, `status`, `pendingReviewBy`, `generatedAt`, `derivedFrom`. Added `provenance?: ProvenanceEntry` field to `GraphNode`.
+- Added `provenance` field to `SpawnedEntityRef` in `apps/web/lib/chargen/types.ts` (same shape, inline to avoid cross-package dependency).
+- Modified `spawnEntity()` in `entity-spawner.ts`: accepts optional `provenance?: ProvenanceEntry` in `SpawnEntityInput`, sets it on the `GraphNode`, and returns it in `SpawnedEntityRef`.
+- Updated `EntitySpawnForm.tsx` `handleSubmit()`: extracts provenance fields from `nameProv` (source, status, pendingReviewBy, generatedAt, derivedFrom) and passes them to `spawnEntity()`.
+- Added `submitDisabled` computed variable in EntitySpawnForm: `!nameProv?.value.trim() || (nameProv != null && requiresReview(nameProv, gmApprovalMode))`. This gates the Add button when `pendingReviewBy === 'gm'` in strict/moderate mode.
+- In lenient mode, `aiProvenance()` sets `pendingReviewBy: null` and `status: 'accepted'`, so `requiresReview()` returns false and the button is always enabled.
+- `shared` package must be rebuilt (`pnpm --filter @highport/shared build`) after type changes for the web app's tsc to pick up new exports.
+- Added 6 tests to `chargen-flow-integration.test.ts`: provenance stored on node with source 'ai', backward compat (no provenance), submit disabled when pending GM review in strict mode, enabled after GM clears, enabled in lenient mode, enabled for player-entered names.
+- Verification: `npx tsc -p apps/web/tsconfig.json --noEmit` exits 0; `pnpm --filter web test -- --run` passes 33/33 files, 252/252 tests (10 new).
+- Evidence saved to `.omo/evidence/phase3-5-remediation/task-14.txt`.
