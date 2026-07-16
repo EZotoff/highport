@@ -182,6 +182,8 @@ export function yMapToCharacter(yMap: Y.Map<unknown>): ChargenCharacter {
     age: (yMap.get('age') as number) || 18,
     spawnedEntityIds: (yMap.get('spawnedEntityIds') as string[]) || [],
     dismissedSuggestions: (yMap.get('dismissedSuggestions') as string[]) || [],
+    reviewVersion: yMap.get('reviewVersion') as number | undefined,
+    lastReviewedFingerprint: yMap.get('lastReviewedFingerprint') as string | undefined,
     mustering: yMap.get('mustering') as MusteringState | undefined,
   };
 }

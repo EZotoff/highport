@@ -78,6 +78,24 @@ describe('chargen refresh persistence fallback', () => {
     expect(localStorage.getItem('highport_session_id:graph')).toBe('session-123');
   });
 
+  it('restores lifepath review metadata from the character snapshot', () => {
+    const originalDoc = new Y.Doc();
+    const charId = createCharacter(originalDoc, 'player-1');
+
+    updateCharacter(originalDoc, charId, 'reviewVersion', 2);
+    updateCharacter(originalDoc, charId, 'lastReviewedFingerprint', 'terms-and-skills-v2');
+    originalDoc.destroy();
+
+    const reloadedDoc = new Y.Doc();
+    const restored = restoreCharacterSnapshot(reloadedDoc, charId);
+
+    expect(restored?.reviewVersion).toBe(2);
+    expect(restored?.lastReviewedFingerprint).toBe('terms-and-skills-v2');
+    expect(getCharacter(reloadedDoc, charId)?.reviewVersion).toBe(2);
+
+    reloadedDoc.destroy();
+  });
+
   it('leaves an empty Yjs document unchanged when no local character snapshot exists', () => {
     const doc = new Y.Doc();
 
