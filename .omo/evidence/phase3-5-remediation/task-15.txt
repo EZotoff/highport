@@ -1,0 +1,24 @@
+# Task 15 — Route lifepath proposals through shouldShowDraft
+
+## Changes
+1. FinalizeStep.tsx: Pending proposals now use shouldShowDraft(gmApprovalMode, provenance, isGM)
+   - Strict mode, non-GM: shows 'Pending GM Review...' placeholder (text hidden)
+   - Moderate mode: shows text with "Pending GM Approval" badge
+   - Lenient mode: shows text directly
+   - Proposed edit also gated by showText
+   - Type badges always visible
+
+2. lifepath-review.test.tsx: Added 2 tests
+   - 'hides proposal text in strict mode for non-GM players'
+   - 'shows proposal text in lenient mode'
+
+## Verification
+- npx tsc -p apps/web/tsconfig.json --noEmit: no errors in modified files (entity-spawner.ts errors pre-existing)
+- pnpm --filter web test -- --run: 33/33 files, 246/246 tests pass
+- Test evidence:
+  - Strict mode: 'Pending GM Review...' shown, description hidden, 'Hook' badge visible
+  - Lenient mode: description shown, no placeholder, 'Hook' badge visible
+
+## Decision
+- Provenance constructed as: status='draft', pendingReviewBy='gm' for all pending proposals
+- Uses same shouldShowDraft/requiresReview/isCanonical pattern as resolved proposals

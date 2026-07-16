@@ -404,4 +404,91 @@ describe('FinalizeStep lifepath review flow', () => {
 
     expect(screen.getByText('Analyzing lifepath...')).toBeTruthy();
   });
+
+  it('hides proposal text in strict mode for non-GM players', () => {
+    vi.mocked(useGMControls).mockReturnValue({
+      isGM: false,
+      session: { ...mockSession, settings: { ...mockSession.settings, gmApprovalMode: 'strict' } },
+      settings: { ...mockSession.settings, gmApprovalMode: 'strict' },
+      pendingRequests: [],
+      actions: {
+        updateSettings: vi.fn(),
+        toggleCareer: vi.fn(),
+        approveRequest: vi.fn(),
+        rejectRequest: vi.fn(),
+        endSession: vi.fn(),
+        exportAllCharacters: vi.fn(),
+      },
+    });
+    vi.mocked(useLifepathProposals).mockReturnValue([
+      {
+        id: 'proposal-1',
+        type: 'plot-hook',
+        targetTerm: 1,
+        title: 'Stowaway mystery',
+        description: 'A stowaway appears in term 1.',
+        status: 'pending',
+        generatedAt: 1,
+      },
+    ]);
+    vi.mocked(useLifepathReview).mockReturnValue({
+      generate: vi.fn(),
+      isLoading: false,
+      error: null,
+      unavailable: false,
+    });
+
+    render(<FinalizeStep characterId="char-1" currentUserId="player-1" />);
+
+    // Type badge visible
+    expect(screen.getByText('Hook')).toBeTruthy();
+    // Title visible
+    expect(screen.getByText('Stowaway mystery')).toBeTruthy();
+    // Description hidden, placeholder shown
+    expect(screen.queryByText('A stowaway appears in term 1.')).toBeNull();
+    expect(screen.getByText('Pending GM Review...')).toBeTruthy();
+  });
+
+  it('shows proposal text in lenient mode', () => {
+    vi.mocked(useGMControls).mockReturnValue({
+      isGM: false,
+      session: { ...mockSession, settings: { ...mockSession.settings, gmApprovalMode: 'lenient' } },
+      settings: { ...mockSession.settings, gmApprovalMode: 'lenient' },
+      pendingRequests: [],
+      actions: {
+        updateSettings: vi.fn(),
+        toggleCareer: vi.fn(),
+        approveRequest: vi.fn(),
+        rejectRequest: vi.fn(),
+        endSession: vi.fn(),
+        exportAllCharacters: vi.fn(),
+      },
+    });
+    vi.mocked(useLifepathProposals).mockReturnValue([
+      {
+        id: 'proposal-1',
+        type: 'plot-hook',
+        targetTerm: 1,
+        title: 'Stowaway mystery',
+        description: 'A stowaway appears in term 1.',
+        status: 'pending',
+        generatedAt: 1,
+      },
+    ]);
+    vi.mocked(useLifepathReview).mockReturnValue({
+      generate: vi.fn(),
+      isLoading: false,
+      error: null,
+      unavailable: false,
+    });
+
+    render(<FinalizeStep characterId="char-1" currentUserId="player-1" />);
+
+    // Type badge visible
+    expect(screen.getByText('Hook')).toBeTruthy();
+    // Description visible
+    expect(screen.getByText('A stowaway appears in term 1.')).toBeTruthy();
+    // No placeholder
+    expect(screen.queryByText('Pending GM Review...')).toBeNull();
+  });
 });

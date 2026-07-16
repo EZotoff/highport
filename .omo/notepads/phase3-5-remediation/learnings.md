@@ -125,3 +125,14 @@ Cumulative memory for stateless subagents. Append-only.
 - Added type imports for `ChargenCharacter` and `CrossCharacterLinkProposal` from `../lib/chargen/types`.
 - Verification: grep returns zero matches for ` as any` / `: any`; tsc has zero errors in test file; 5/5 tests pass.
 - Evidence saved to `.omo/evidence/phase3-5-remediation/task-17.txt`
+
+## Task 15 — Route lifepath proposals through shouldShowDraft
+
+- Added provenance construction + shouldShowDraft gating to pending proposals in FinalizeStep.tsx
+- Pending proposals now show 'Pending GM Review...' placeholder in strict mode (non-GM)
+- Moderate mode shows text with "Pending GM Approval" badge in header
+- Lenient mode shows text directly (no badge for pending)
+- Proposed edit hidden alongside description when text is gated
+- 2 new tests in lifepath-review.test.tsx: strict hides text, lenient shows text
+- Verification: tsc clean for modified files; 33/33 files, 246/246 tests pass
+- Evidence saved to `.omo/evidence/phase3-5-remediation/task-15.txt`
