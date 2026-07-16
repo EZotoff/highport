@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { User, MapPin, Package, Lock, HelpCircle } from 'lucide-react';
 import { SciFiButton } from '@/components/ui/scifi';
-import { useEntityPool, useAllCharacters } from '../../lib/chargen/hooks';
+import { useEntityPool, useAllCharacters, useSession } from '../../lib/chargen/hooks';
+import CrossCharacterProposalList from './CrossCharacterProposalList';
 import type { SharedSpawnedEntity } from '../../lib/chargen/types';
 
 interface EntityPoolPanelProps {
@@ -35,6 +36,7 @@ export function EntityPoolPanel({
 }: EntityPoolPanelProps) {
   const entities = useEntityPool();
   const characters = useAllCharacters();
+  const session = useSession();
   const [filter, setFilter] = useState<string>('all');
 
   const charMap = useMemo(() => {
@@ -89,6 +91,9 @@ export function EntityPoolPanel({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+        {currentCharId && session?.settings?.crossCharacterLinkMode === 'player-to-player' && (
+          <CrossCharacterProposalList currentCharId={currentCharId} />
+        )}
         {filteredEntities.length === 0 ? (
           <div className="h-full flex items-center justify-center text-subtle text-sm italic">
             No entities spawned yet
