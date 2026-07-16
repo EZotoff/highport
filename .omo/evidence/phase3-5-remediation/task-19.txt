@@ -1,0 +1,30 @@
+# Task 19 — Remove redundant old session flags
+## Date: 2026-07-16
+
+## Files Modified
+1. apps/web/lib/chargen/types.ts — SessionSettings interface (2 fields removed) + DEFAULT_SESSION_SETTINGS (2 lines removed)
+2. apps/web/components/chargen/GMControlPanel.tsx — Removed 2 checkbox toggles (lines 226-260)
+3. apps/web/__tests__/chargen-state.test.ts — 7 changes (removed assertions, removed entire "toggle requireGMApproval" test)
+4. apps/web/__tests__/chargen-integration.test.ts — 8 changes (removed requireGMApproval from update calls and assertions)
+5. apps/web/__tests__/GMControlPanel.test.tsx — 4 lines removed across 2 fixture objects
+6. apps/web/__tests__/lifepath-review.test.tsx — 2 lines removed from fixture
+
+## Verification Results
+
+### grep (zero matches)
+$ grep -rn 'requireGMApproval\|allowCrossPlayerConnections' apps/web/
+(empty — no matches found)
+
+### tsc
+$ npx tsc -p apps/web/tsconfig.json --noEmit
+Exit code: 0 (no errors)
+
+### Tests
+$ pnpm --filter web test -- --run
+Test Files  33 passed (33)
+Tests  244 passed (244)
+(1 test removed: "should toggle requireGMApproval" — tested removed field)
+
+## Notes
+- Yjs is schemaless — old sessions with these fields will have extra ignored data, no migration needed.
+- Superseded by gmApprovalMode and crossCharacterLinkMode.

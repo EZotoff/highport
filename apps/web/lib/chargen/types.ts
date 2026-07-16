@@ -44,6 +44,8 @@ export interface ChargenCharacter {
 
   spawnedEntityIds: string[];
   dismissedSuggestions?: string[];
+  reviewVersion?: number;
+  lastReviewedFingerprint?: string;
 
   mustering?: MusteringState;
 }
@@ -78,6 +80,12 @@ export interface AIProvenance<T> {
   derivedFrom?: string;
   /** Optional: when this was generated */
   generatedAt?: number;
+  /** Optional: userId who proposed this content for review */
+  proposedBy?: string;
+  /** Optional: who needs to review this ('gm' | 'player' | null) */
+  pendingReviewBy?: 'gm' | 'player' | null;
+  /** Optional: log of review edits/approvals */
+  reviewLog?: Array<{ at: number; by: string; from: string; to: string; edit?: string }>;
 }
 
 /**
@@ -113,6 +121,7 @@ export interface CareerTermResult {
   eventDescription?: AIProvenance<string> | string;
 
   mishap?: CareerMishap;
+  mishapDescription?: AIProvenance<string> | string;
 
   advancementRoll?: DiceResult;
   advanced: boolean;
@@ -157,9 +166,9 @@ export interface MusteringState {
 export interface SessionSettings {
   allowedCareers: string[]; // Empty = all allowed
   aiVerbosity: 'brief' | 'inspiration' | 'full';
-  requireGMApproval: boolean;
-  allowCrossPlayerConnections: boolean;
   isLocked: boolean;
+  gmApprovalMode: 'moderate' | 'strict' | 'lenient';
+  crossCharacterLinkMode: 'gm-mediated' | 'player-to-player';
 }
 
 /** Extended session config for multiplayer chargen */
@@ -210,11 +219,38 @@ export interface ConnectionRequest {
   resolvedBy?: string;
 }
 
+/** AI-generated proposal to edit a lifepath term */
+export interface LifepathProposal {
+  id: string;
+  characterId?: string;
+  type: 'coherence-edit' | 'npc-connection' | 'plot-hook';
+  targetTerm: number;
+  title: string;
+  description: string;
+  proposedEdit?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  generatedAt: number;
+}
+
+/** AI-generated proposal to link two player characters */
+export interface CrossCharacterLinkProposal {
+  id: string;
+  sourceCharId: string;
+  targetCharId: string;
+  sourceEntityId?: string;
+  targetEntityId?: string;
+  relationship: string;
+  description: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  generatedAt: number;
+  acceptedBy?: string[];
+}
+
 /** Default session settings */
 export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   allowedCareers: [],
   aiVerbosity: 'inspiration',
-  requireGMApproval: false,
-  allowCrossPlayerConnections: true,
   isLocked: false,
+  gmApprovalMode: 'moderate',
+  crossCharacterLinkMode: 'gm-mediated',
 };

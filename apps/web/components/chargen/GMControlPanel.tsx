@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   ChevronDown,
   ChevronRight,
@@ -12,19 +12,183 @@ import {
   Users,
   Download,
   Ban,
+  Pencil,
 } from 'lucide-react';
 import { useGMControls, ALL_CAREERS } from '../../lib/chargen/useGMControls';
 import { useAllCharacters } from '../../lib/chargen/hooks';
 import { SciFiButton } from '@/components/ui/scifi';
-
+import VerbositySelector from './VerbositySelector';
+import SettingSelector from './SettingSelector';
+import type { CrossCharacterLinkProposal, AIProvenance } from '../../lib/chargen/types';
+import { useCrossCharacterLinks as useCrossCharacterLinkGenerator } from '../../lib/chargen/useNarrative';
+import { useCrossCharacterLinks as useYjsCrossCharacterLinks } from '../../lib/chargen/hooks';
+import {
+  getCrossCharacterLinksMap,
+  createCrossCharacterLinkEdge,
+  resolveCrossCharacterLink,
+  resolveAIDraft,
+} from '../../lib/chargen/state';
+import { getYDoc } from '../../lib/ydoc';
+import { Loader2, RefreshCw } from 'lucide-react';
 interface GMControlPanelProps {
   currentUserId: string;
 }
 
+interface PendingAIDraft {
+  characterId: string;
+  characterName: string;
+  termNumber: number;
+  fieldPath: 'eventDescription' | 'mishapDescription';
+  fieldType: string;
+  value: string;
+}
+
+const GM_APPROVAL_MODE_OPTIONS = [
+  {
+    value: 'moderate',
+    label: 'Moderate',
+    description:
+      "AI drafts are visible to the player with a 'Pending GM Approval' badge until the GM reviews.",
+  },
+  {
+    value: 'strict',
+    label: 'Strict',
+    description:
+      "AI drafts are hidden from the player behind a 'Pending GM Review' placeholder until the GM approves.",
+  },
+  {
+    value: 'lenient',
+    label: 'Lenient',
+    description:
+      'AI drafts auto-accept immediately; the GM can retroactively reject from the GM panel.',
+  },
+] as const;
+
+const CROSS_CHARACTER_LINK_MODE_OPTIONS = [
+  {
+    value: 'gm-mediated',
+    label: 'GM-Mediated',
+    description: "Cross-character link proposals go to the GM's batch review panel.",
+  },
+  {
+    value: 'player-to-player',
+    label: 'Player-to-Player',
+    description:
+      "Cross-character link proposals appear on both players' screens for mutual acceptance.",
+  },
+] as const;
+
 export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
+  const [editedDescription, setEditedDescription] = useState('');
   const { isGM, settings, pendingRequests, actions } = useGMControls(currentUserId);
   const allCharacters = useAllCharacters();
+  const {
+    isLoading: isLoadingProposals,
+    error: errorProposals,
+    refresh: refreshProposals,
+  } = useCrossCharacterLinkGenerator();
+
+  const yjsProposals = useYjsCrossCharacterLinks();
+
+  const [editingDraftKey, setEditingDraftKey] = useState<string | null>(null);
+  const [editedDraftText, setEditedDraftText] = useState('');
+
+  const pendingAIDrafts = useMemo<PendingAIDraft[]>(() => {
+    const drafts: PendingAIDraft[] = [];
+    for (const char of allCharacters) {
+      for (const term of char.terms) {
+        for (const fieldPath of ['eventDescription', 'mishapDescription'] as const) {
+          const field = term[fieldPath];
+          if (typeof field === 'object' && field !== null && 'value' in field) {
+            const prov = field as AIProvenance<string>;
+            if (prov.pendingReviewBy === 'gm') {
+              drafts.push({
+                characterId: char.id,
+                characterName: char.name || 'Unnamed',
+                termNumber: term.termNumber,
+                fieldPath,
+                fieldType: fieldPath === 'eventDescription' ? 'Event' : 'Mishap',
+                value: prov.value,
+              });
+            }
+          }
+        }
+      }
+    }
+    return drafts;
+  }, [allCharacters]);
+
+  const showCrossCharacterProposals = settings?.crossCharacterLinkMode === 'gm-mediated';
+
+  useEffect(() => {
+    if (showCrossCharacterProposals && isOpen) {
+      refreshProposals();
+    }
+  }, [showCrossCharacterProposals, isOpen, refreshProposals]);
+
+  const pendingProposals = yjsProposals.filter((p) => p.status === 'pending');
+
+  const handleAcceptProposal = (proposal: CrossCharacterLinkProposal) => {
+    const doc = getYDoc();
+    if (editingProposalId === proposal.id && editedDescription !== proposal.description) {
+      const linkMap = getCrossCharacterLinksMap(doc).get(proposal.id);
+      if (linkMap) {
+        doc.transact(() => {
+          linkMap.set('description', editedDescription);
+        });
+      }
+    }
+    resolveCrossCharacterLink(doc, proposal.id, true);
+    createCrossCharacterLinkEdge(doc, proposal);
+    setEditingProposalId(null);
+    setEditedDescription('');
+  };
+
+  const handleEditProposal = (proposal: CrossCharacterLinkProposal) => {
+    setEditingProposalId(proposal.id);
+    setEditedDescription(proposal.description);
+  };
+
+  const handleRejectProposal = (proposal: CrossCharacterLinkProposal) => {
+    const doc = getYDoc();
+    resolveCrossCharacterLink(doc, proposal.id, false);
+  };
+
+  const getDraftKey = (draft: PendingAIDraft) =>
+    `${draft.characterId}:${draft.termNumber}:${draft.fieldPath}`;
+
+  const handleAcceptAIDraft = (draft: PendingAIDraft) => {
+    const doc = getYDoc();
+    const editedText = editingDraftKey === getDraftKey(draft) ? editedDraftText : undefined;
+    resolveAIDraft(
+      doc,
+      draft.characterId,
+      draft.fieldPath,
+      editedText !== undefined ? 'edit' : 'accept',
+      editedText,
+    );
+    setEditingDraftKey(null);
+    setEditedDraftText('');
+  };
+
+  const handleRejectAIDraft = (draft: PendingAIDraft) => {
+    const doc = getYDoc();
+    resolveAIDraft(doc, draft.characterId, draft.fieldPath, 'reject');
+    setEditingDraftKey(null);
+    setEditedDraftText('');
+  };
+
+  const handleEditAIDraft = (draft: PendingAIDraft) => {
+    setEditingDraftKey(getDraftKey(draft));
+    setEditedDraftText(draft.value);
+  };
+
+  const handleCancelEditDraft = () => {
+    setEditingDraftKey(null);
+    setEditedDraftText('');
+  };
 
   if (!isGM) return null;
 
@@ -38,6 +202,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96 bg-zinc-950 border border-zinc-800 rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? 'Collapse GM controls' : 'Expand GM controls'}
         className="flex items-center justify-between w-full px-4 py-3 min-h-[44px] bg-zinc-900 border-b border-zinc-800 hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2"
@@ -67,42 +232,6 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
 
             <div className="space-y-2">
               <label
-                htmlFor="gm-require-approval"
-                className="flex items-center justify-between text-sm text-label cursor-pointer hover:brightness-125"
-              >
-                <div className="flex items-center gap-2">
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>Require GM Approval</span>
-                </div>
-                <input
-                  id="gm-require-approval"
-                  type="checkbox"
-                  checked={settings.requireGMApproval}
-                  onChange={(e) => actions.updateSettings({ requireGMApproval: e.target.checked })}
-                  className="rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-blue-500"
-                />
-              </label>
-
-              <label
-                htmlFor="gm-cross-player"
-                className="flex items-center justify-between text-sm text-label cursor-pointer hover:brightness-125"
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="w-3.5 h-3.5" />
-                  <span>Cross-Player Connections</span>
-                </div>
-                <input
-                  id="gm-cross-player"
-                  type="checkbox"
-                  checked={settings.allowCrossPlayerConnections}
-                  onChange={(e) =>
-                    actions.updateSettings({ allowCrossPlayerConnections: e.target.checked })
-                  }
-                  className="rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-blue-500"
-                />
-              </label>
-
-              <label
                 htmlFor="gm-lock-session"
                 className="flex items-center justify-between text-sm text-label cursor-pointer hover:brightness-125"
               >
@@ -122,6 +251,39 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                   className="rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-blue-500"
                 />
               </label>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center gap-2 text-sm text-label">
+                <span>AI Verbosity</span>
+              </div>
+              <VerbositySelector
+                value={settings.aiVerbosity}
+                onChange={(v) => actions.updateSettings({ aiVerbosity: v })}
+              />
+            </div>
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center gap-2 text-sm text-label">
+                <span>GM Approval Mode</span>
+              </div>
+              <SettingSelector
+                value={settings.gmApprovalMode}
+                options={GM_APPROVAL_MODE_OPTIONS}
+                onChange={(v) => actions.updateSettings({ gmApprovalMode: v })}
+                label="GM Approval Mode"
+              />
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center gap-2 text-sm text-label">
+                <span>Cross-Character Links</span>
+              </div>
+              <SettingSelector
+                value={settings.crossCharacterLinkMode}
+                options={CROSS_CHARACTER_LINK_MODE_OPTIONS}
+                onChange={(v) => actions.updateSettings({ crossCharacterLinkMode: v })}
+                label="Cross-Character Links"
+              />
             </div>
           </div>
 
@@ -227,6 +389,216 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+          {showCrossCharacterProposals && (
+            <div className="space-y-3 pt-4 border-t border-zinc-800">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold text-subtle uppercase tracking-wider">
+                  Cross-Character Proposals
+                </h3>
+                <div className="flex items-center gap-2">
+                  <SciFiButton
+                    theme="slate"
+                    scifiVariant="ghost"
+                    size="sm"
+                    onClick={refreshProposals}
+                    disabled={isLoadingProposals}
+                    className="h-7 px-2"
+                  >
+                    {isLoadingProposals ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3 h-3" />
+                    )}
+                  </SciFiButton>
+                  {pendingProposals.length > 0 && (
+                    <span className="text-xs text-subtle">{pendingProposals.length} waiting</span>
+                  )}
+                </div>
+              </div>
+
+              {errorProposals && (
+                <div className="text-xs text-red-400 bg-red-950/20 border border-red-900/50 rounded p-2">
+                  {errorProposals}
+                </div>
+              )}
+
+              {isLoadingProposals && pendingProposals.length === 0 && (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                </div>
+              )}
+
+              {!isLoadingProposals && pendingProposals.length === 0 ? (
+                <div className="text-xs text-subtle italic text-center py-4 border border-zinc-900 rounded bg-zinc-900/20">
+                  No pending proposals
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {pendingProposals.map((proposal) => (
+                    <div
+                      key={proposal.id}
+                      className="p-2 bg-zinc-900 rounded border border-zinc-800 text-sm"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-medium text-default">
+                          {getCharacterName(proposal.sourceCharId)} ↔{' '}
+                          {getCharacterName(proposal.targetCharId)}
+                        </span>
+                      </div>
+                      <div className="text-subtle text-xs mb-1">
+                        Proposed Relationship:{' '}
+                        <span className="text-blue-400 font-medium">{proposal.relationship}</span>
+                      </div>
+                      {editingProposalId === proposal.id ? (
+                        <input
+                          aria-label="Relationship description"
+                          value={editedDescription}
+                          onChange={(event) => setEditedDescription(event.target.value)}
+                          className="w-full min-h-[44px] mb-3 rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-default focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                        />
+                      ) : proposal.description ? (
+                        <div className="text-subtle text-xs italic mb-3 pl-2 border-l-2 border-zinc-800">
+                          "{proposal.description}"
+                        </div>
+                      ) : null}
+                      <div className="flex gap-2">
+                        <SciFiButton
+                          theme="slate"
+                          scifiVariant="ghost"
+                          size="sm"
+                          onClick={() => handleEditProposal(proposal)}
+                          className="flex-1"
+                        >
+                          <Pencil className="w-3 h-3" /> Edit
+                        </SciFiButton>
+                        <SciFiButton
+                          theme="emerald"
+                          scifiVariant="secondary"
+                          size="sm"
+                          onClick={() => handleAcceptProposal(proposal)}
+                          className="flex-1"
+                        >
+                          <Check className="w-3 h-3" /> Accept
+                        </SciFiButton>
+                        <SciFiButton
+                          scifiVariant="destructive"
+                          size="sm"
+                          onClick={() => handleRejectProposal(proposal)}
+                          className="flex-1"
+                        >
+                          <X className="w-3 h-3" /> Reject
+                        </SciFiButton>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-subtle uppercase tracking-wider">
+                Pending AI Review
+              </h3>
+              {pendingAIDrafts.length > 0 && (
+                <span className="text-xs text-subtle">{pendingAIDrafts.length} waiting</span>
+              )}
+            </div>
+
+            {pendingAIDrafts.length === 0 ? (
+              <div className="text-xs text-subtle italic text-center py-4 border border-zinc-900 rounded bg-zinc-900/20">
+                No AI drafts pending review
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {pendingAIDrafts.map((draft) => {
+                  const draftKey = getDraftKey(draft);
+                  const isEditing = editingDraftKey === draftKey;
+                  return (
+                    <div
+                      key={draftKey}
+                      className="p-2 bg-zinc-900 rounded border border-zinc-800 text-sm"
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="font-medium text-default">{draft.characterName}</span>
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-cyan-950/50 text-cyan-400 border border-cyan-900/50">
+                          {draft.fieldType}
+                        </span>
+                      </div>
+                      <div className="text-xs text-subtle mb-1">Term {draft.termNumber}</div>
+                      {isEditing ? (
+                        <textarea
+                          aria-label="Edit AI draft text"
+                          value={editedDraftText}
+                          onChange={(event) => setEditedDraftText(event.target.value)}
+                          rows={3}
+                          className="w-full min-h-[44px] mb-3 rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-default focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                        />
+                      ) : (
+                        <div className="text-subtle text-xs italic mb-3 pl-2 border-l-2 border-zinc-800">
+                          "{draft.value}"
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        {isEditing ? (
+                          <>
+                            <SciFiButton
+                              theme="emerald"
+                              scifiVariant="secondary"
+                              size="sm"
+                              onClick={() => handleAcceptAIDraft(draft)}
+                              className="flex-1"
+                            >
+                              <Check className="w-3 h-3" /> Save Edit
+                            </SciFiButton>
+                            <SciFiButton
+                              theme="slate"
+                              scifiVariant="ghost"
+                              size="sm"
+                              onClick={handleCancelEditDraft}
+                              className="flex-1"
+                            >
+                              <X className="w-3 h-3" /> Cancel
+                            </SciFiButton>
+                          </>
+                        ) : (
+                          <>
+                            <SciFiButton
+                              theme="slate"
+                              scifiVariant="ghost"
+                              size="sm"
+                              onClick={() => handleEditAIDraft(draft)}
+                              className="flex-1"
+                            >
+                              <Pencil className="w-3 h-3" /> Edit
+                            </SciFiButton>
+                            <SciFiButton
+                              theme="emerald"
+                              scifiVariant="secondary"
+                              size="sm"
+                              onClick={() => handleAcceptAIDraft(draft)}
+                              className="flex-1"
+                            >
+                              <Check className="w-3 h-3" /> Accept
+                            </SciFiButton>
+                            <SciFiButton
+                              scifiVariant="destructive"
+                              size="sm"
+                              onClick={() => handleRejectAIDraft(draft)}
+                              className="flex-1"
+                            >
+                              <X className="w-3 h-3" /> Reject
+                            </SciFiButton>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

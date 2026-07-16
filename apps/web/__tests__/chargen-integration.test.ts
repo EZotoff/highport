@@ -54,13 +54,11 @@ describe('Chargen Integration Tests', () => {
 
       // Update settings in doc1
       updateSessionSettings(doc1, {
-        requireGMApproval: true,
         allowedCareers: ['Navy', 'Marine'],
       });
 
       // Verify doc2 received the updates
       const session = getSession(doc2);
-      expect(session?.settings.requireGMApproval).toBe(true);
       expect(session?.settings.allowedCareers).toEqual(['Navy', 'Marine']);
     });
 
@@ -174,7 +172,6 @@ describe('Chargen Integration Tests', () => {
       createSession(doc1, 'campaign-1', 'gm-user');
 
       // Make multiple changes in doc1
-      updateSessionSettings(doc1, { requireGMApproval: true });
       const entity1Id = addEntityToPool(doc1, {
         type: 'npc',
         createdBy: 'user-1',
@@ -200,7 +197,6 @@ describe('Chargen Integration Tests', () => {
 
       // Verify all updates arrived in doc2
       const session = getSession(doc2);
-      expect(session?.settings.requireGMApproval).toBe(true);
 
       const entity1 = getEntityFromPool(doc2, entity1Id);
       expect(entity1?.name).toBe('NPC 1');
@@ -286,10 +282,8 @@ describe('Chargen Integration Tests', () => {
       createSession(doc, 'campaign-1', 'gm-user');
 
       // GM updates settings
-      updateSessionSettings(doc, { requireGMApproval: true });
 
       const session = getSession(doc);
-      expect(session?.settings.requireGMApproval).toBe(true);
     });
 
     it('should allow GM to end session', () => {
@@ -426,7 +420,6 @@ describe('Chargen Integration Tests', () => {
       // First update
       updateSessionSettings(doc, {
         allowedCareers: ['Navy'],
-        requireGMApproval: true,
       });
 
       // Second update (partial)
@@ -436,7 +429,6 @@ describe('Chargen Integration Tests', () => {
 
       const session = getSession(doc);
       expect(session?.settings.allowedCareers).toEqual(['Navy']);
-      expect(session?.settings.requireGMApproval).toBe(true);
       expect(session?.settings.aiVerbosity).toBe('full');
     });
   });

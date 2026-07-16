@@ -43,8 +43,6 @@ describe('Chargen Session State', () => {
       expect(session?.settings).toEqual(DEFAULT_SESSION_SETTINGS);
       expect(session?.settings.allowedCareers).toEqual([]);
       expect(session?.settings.aiVerbosity).toBe('inspiration');
-      expect(session?.settings.requireGMApproval).toBe(false);
-      expect(session?.settings.allowCrossPlayerConnections).toBe(true);
       expect(session?.settings.isLocked).toBe(false);
     });
 
@@ -107,13 +105,6 @@ describe('Chargen Session State', () => {
       expect(session?.settings.allowedCareers).toEqual(['Navy', 'Marine']);
     });
 
-    it('should toggle requireGMApproval', () => {
-      updateSessionSettings(doc, { requireGMApproval: true });
-      const session = getSession(doc);
-
-      expect(session?.settings.requireGMApproval).toBe(true);
-    });
-
     it('should update aiVerbosity', () => {
       updateSessionSettings(doc, { aiVerbosity: 'full' });
       const session = getSession(doc);
@@ -124,24 +115,19 @@ describe('Chargen Session State', () => {
     it('should update multiple settings at once', () => {
       updateSessionSettings(doc, {
         allowedCareers: ['Scout'],
-        requireGMApproval: true,
         isLocked: true,
       });
       const session = getSession(doc);
 
       expect(session?.settings.allowedCareers).toEqual(['Scout']);
-      expect(session?.settings.requireGMApproval).toBe(true);
       expect(session?.settings.isLocked).toBe(true);
-      expect(session?.settings.allowCrossPlayerConnections).toBe(true); // unchanged
     });
 
     it('should preserve unchanged settings', () => {
       updateSessionSettings(doc, { allowedCareers: ['Navy'] });
-      updateSessionSettings(doc, { requireGMApproval: true });
       const session = getSession(doc);
 
       expect(session?.settings.allowedCareers).toEqual(['Navy']);
-      expect(session?.settings.requireGMApproval).toBe(true);
     });
   });
 
