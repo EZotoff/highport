@@ -1,4 +1,5 @@
-import { getYDoc } from '../ydoc';
+import { getYDoc, getEdgesMap } from '../ydoc';
+import { getCrossCharacterLinks, findNodeIdByChargenId } from './state';
 import { addNode, addEdge } from '../yjs-helpers';
 import type { GraphNode, GraphEdge } from '@highport/shared/types/graph';
 import type { ChargenCharacter } from './types';
@@ -73,6 +74,48 @@ export function createCharacterNode(character: ChargenCharacter): FinalizedChara
         hidden: false,
       };
       addEdge(doc, edge);
+    });
+    // Create edges for any accepted cross-character links involving this character
+    const crossLinks = getCrossCharacterLinks(doc);
+    crossLinks.forEach((link) => {
+      if (link.status === 'accepted') {
+        const isSource = link.sourceCharId === character.id;
+        const isTarget = link.targetCharId === character.id;
+        if (isSource || isTarget) {
+          const otherCharId = isSource ? link.targetCharId : link.sourceCharId;
+          const otherNodeId = findNodeIdByChargenId(doc, otherCharId);
+          if (otherNodeId) {
+            // Check if edge already exists
+            const edges = getEdgesMap(doc);
+            let edgeExists = false;
+            edges.forEach((edgeMap) => {
+              const sId = edgeMap.get('source_id') as string;
+              const tId = edgeMap.get('target_id') as string;
+              if (
+                (sId === nodeId && tId === otherNodeId) ||
+                (sId === otherNodeId && tId === nodeId)
+              ) {
+                edgeExists = true;
+              }
+            });
+
+            if (!edgeExists) {
+              const edge: GraphEdge = {
+                id: crypto.randomUUID(),
+                source_id: nodeId,
+                target_id: otherNodeId,
+                relation_label: link.relationship,
+                type: 'directional',
+                weight: 1,
+                style: 'solid',
+                color: '#71717a',
+                hidden: false,
+              };
+              addEdge(doc, edge);
+            }
+          }
+        }
+      }
     });
   }, 'chargen-finalize');
 
