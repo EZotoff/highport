@@ -24,7 +24,7 @@ Turn procedural Traveller chargen into a collaborative, replayable backstory eng
 - **Gamified Tyranny-style chapter summaries** — each completed term renders as a chapter card (term number, career, key event, skills, rank, mishap, aging); finalize produces a stitched Service Record scrapbook `[Shipped]` `[Hard]`
 - **Per-career event flavor templates** — career-specific scene framing so a Navy event reads differently than a Rogue event; 3+ original paraphrased templates per career `[Shipped]` `[Medium]`
 
-> **Ground truth:** Mechanics are 100% complete. Game data (all 12 Core Rulebook careers) is 100% in-repo. Gamification (chapter summaries + Service Record) has shipped. Per-career event flavor has shipped. Tier A is feature-complete; remaining work is the open e2e triage list (see `apps/web/e2e/TRIAGE-REPORT.md`).
+> **Ground truth:** Mechanics are 100% complete. Game data (all 12 Core Rulebook careers) is 100% in-repo. Gamification (chapter summaries + Service Record) has shipped. Per-career event flavor has shipped. **The AI enrichment layer is partially wired** — manual generation works end-to-end, but auto-triggering on event rolls, session-level verbosity sync, mishap enrichment, and RAG-backed setting-aware generation remain open. See `docs/analysis/chargen-ai-assistance-analysis.html` for the full gap analysis.
 
 ---
 
@@ -37,8 +37,8 @@ Carry accepted characters and lore into a gated, voice-aware campaign memory. Th
 - **RAG service** — multi-provider LLM factory with local-first defaults (Ollama + ChromaDB); cloud providers (Gemini, OpenAI, Pinecone) are opt-in `[Shipped]` `[Hard]`
 - **Knowledge scopes** — `public`, `party`, `gm`, and `char:<id>` partitions for campaign memory (header-trust enforcement; server-side authenticated resolver planned) `[Shipped]` `[Hard]`
 - **SSE streaming query** — real-time token streaming for "Ask Computer" responses `[Shipped]` `[Medium]`
-- **PDF and text ingest** — upload sourcebooks and session notes into the campaign knowledge base `[Shipped]` `[Medium]`
-- **Narrative generation endpoints** — event summaries, NPC drafts, and connection suggestions via the RAG service `[Shipped]` `[Hard]`
+- **PDF and text ingest API** — upload sourcebooks and session notes into the campaign knowledge base via the `/ingest` endpoint `[Shipped — API only]` `[Medium]` (GM-facing UX wrapper is the Step 0 worldbuilding flow, planned)
+- **Narrative generation endpoints** — event summaries, NPC drafts, and connection suggestions `[Shipped — prompt-only]` `[Hard]` (retrieval-augmented wiring pending — these endpoints currently call `llm.generate(prompt)` without querying the campaign vector store; see Known Issue #5)
 - **Portrait remix** — regenerate or vary existing portraits while inheriting entity visibility `[Shipped]` `[Easy]`
 - **Graph editor for campaign entities** — React Flow visual editor for NPCs, locations, factions, and relationships `[Shipped]` `[Hard]`
 - **Yjs collaborative state** — real-time multi-user editing across the campaign graph and documents `[Shipped]` `[Hard]`
@@ -48,6 +48,7 @@ Carry accepted characters and lore into a gated, voice-aware campaign memory. Th
 - **Pirates of Drinax starter lore pack** — pre-ingested campaign background, NPCs, and locations for the classic MGT2E adventure `[In Progress]` `[Medium]`
 - **Graph editor maturation** — edge routing, node grouping, relationship types, and layout persistence `[In Progress]` `[Medium]`
 - **Campaign CRUD polish** — rename, description updates, archive, and deletion flows `[In Progress]` `[Easy]`
+- **Step 0 worldbuilding UX** — GM-facing campaign setup that wraps the ingest endpoint: upload sourcebooks, review extracted entities (factions, locations, NPCs), prime the RAG store before players join. Prerequisite for setting-aware chargen enrichment `[Planned]` `[Hard]`
 
 ### Planned
 
@@ -86,8 +87,12 @@ This project is honest about its debt. The following issues are tracked and will
 
 1. **Committed `.env` with live API keys** — A `.env` file containing real API keys was committed to the repository. This is a security issue. Keys must be rotated and the file removed from history. New contributors should always copy `.env.example` and generate their own secrets.
 2. **Header-based knowledge gating trust model** — The RAG service currently trusts a client-supplied header to determine knowledge scope. This is acceptable for local development but must be replaced with a server-side authenticated scope resolver before any serious multi-user deployment.
-3. **Stale duplicate provider files in `rag-service`** — `providers/gemini.py` and `providers/base.py` exist at the top level of the RAG service and bypass the LLM factory. These duplicates should be removed or consolidated so all provider access routes through the factory.
+3. **~~Stale duplicate provider files in `rag-service`~~** — **Resolved.** The duplicate `providers/gemini.py` and `providers/base.py` top-level files have been removed. Both `narrative_generator.py` and `portrait_generator.py` now correctly import from the factory package (`providers.llm`). Kept here for historical reference.
 4. **`docs/rag-setup.md` documentation bugs** — The JSON ingest example and the `/scope` endpoint name contain errors that do not match the running API. These will be corrected in a docs pass.
+5. **Chargen enrichment is prompt-only** — The `/narrative/*` endpoints call `llm.generate(prompt)` directly and do not retrieve from the campaign vector store, even when the GM has uploaded setting material. The `generate_with_context` method exists on every LLM provider but is only called by `/query` (Ask Computer). Switching the narrative endpoints to retrieve before generating is required for the "meat is grounded in the GM's world" contract from CONCEPT.md. See `docs/analysis/chargen-ai-assistance-analysis.html` §07.
+6. **Session-level `aiVerbosity` is never read** — The setting is defined in `SessionSettings`, has a default (`'inspiration'`), and can be set via `useGMControls`, but the live UI uses local React state in `ChargenWizard` instead. No GM control exists to change it. See gap analysis §03.
+7. **Multiple session flags writable but unenforced** — `requireGMApproval`, `allowCrossPlayerConnections`, and `allowedCareers` can be toggled in the GM panel but are never consulted by any code path. The flags are stored, persisted, and ignored. See gap analysis §03.
+8. **Auto-trigger missing for event enrichment** — `handleEventRoll()` in `TermResolutionStep.tsx` stores the event and transitions phase without calling `generateNarrative()`. The only working auto-enrichment is `ConnectionSuggestions.tsx`. The proven `useEffect` pattern needs to be mirrored in `TermResolutionStep`. See gap analysis §04.
 
 ---
 
