@@ -275,16 +275,24 @@ export class PortraitService implements PortraitServiceApi {
     appearanceText: string,
     tags: PortraitTags,
   ): Promise<PortraitTags | null> {
-    const response = await fetch(`${RAG_SERVICE_URL}/ai/portraits/tags`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        appearance_text: appearanceText,
-        career: tags.career?.career_type || null,
-        characteristics: null,
-        entity_type: tags.story.entity_type,
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${RAG_SERVICE_URL}/ai/portraits/tags`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appearance_text: appearanceText,
+          career: tags.career?.career_type || null,
+          characteristics: null,
+          entity_type: tags.story.entity_type,
+        }),
+      });
+    } catch (error) {
+      if (error instanceof TypeError) {
+        return null;
+      }
+      throw error;
+    }
 
     if (!response.ok) {
       return null;
