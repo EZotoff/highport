@@ -4,8 +4,12 @@ import json
 import logging
 import re
 
+from pydantic import JsonValue
+
 from providers.llm import get_llm_provider
 from providers.llm.base import LLMProvider
+from providers.embeddings import get_embeddings_provider
+from providers.vectordb import get_vectordb_provider
 from schemas.narrative import (
     VerbosityLevel,
     EventDescriptionRequest,
@@ -15,7 +19,12 @@ from schemas.narrative import (
     NPCDetailsResponse,
     SuggestConnectionsRequest,
     SuggestConnectionsResponse,
+    MishapDescriptionRequest,
+    MishapDescriptionResponse,
     ConnectionSuggestion,
+    LifepathReviewResponse,
+    CrossCharacterLinksResponse,
+    CharacterSummary,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,17 +66,109 @@ NPC_SYSTEM_PROMPTS = {
     ),
 }
 
+MISHAP_SYSTEM_PROMPTS = {
+    VerbosityLevel.BRIEF: (
+        "Write exactly 1-2 sentences of atmospheric color for this mishap. "
+        "Focus on the emotional weight, not the mechanics. "
+        "The dice own the facts; you own the texture."
+    ),
+    VerbosityLevel.INSPIRATION: (
+        "Write 3-5 concrete story hooks exploring how this mishap plays out. "
+        "Each hook should be 1 sentence. Format as a numbered list. "
+        "Consider: consequences, who's involved, lasting impact."
+    ),
+    VerbosityLevel.FULL: (
+        "Write a rich narrative scene (2-4 paragraphs) depicting this mishap. "
+        "Focus on the consequences — how it unfolds, who is affected, "
+        "and what it costs the character. This is a drafted scene the player "
+        "may accept, edit, or reject."
+    ),
+}
+
+LIFEPATH_REVIEW_SYSTEM_PROMPT = (
+    "You are a story consultant reviewing a Traveller RPG character's lifepath. "
+    "Identify coherence gaps, missed NPC connections, and plot hooks. "
+    "Return AT MOST 5 proposals, sorted by relevance. "
+    'Respond as a JSON object: {"proposals": [{"type": "coherence-edit" | "npc-connection" | "plot-hook", '
+    '"title": "Short title", "description": "Detailed explanation", '
+    '"target_term": <integer term number (1-based)>, '
+    '"proposed_edit": "Suggested edit text or null"}, ...]}. '
+    "Use target_term 1 for background or early events, and 0 for campaign-wide plot hooks. "
+    "Do not invent new mechanics; only propose narrative texture."
+)
+
+CROSS_CHARACTER_LINKS_SYSTEM_PROMPT = (
+    "You are a story consultant finding narrative connections between Traveller RPG "
+    "characters in the same campaign. Based on their career histories and shared "
+    "entities, propose 1-3 meaningful cross-character links. Respond as JSON: "
+    '{"proposals": [{"source_char_id": ..., "target_char_id": ..., '
+    '"relationship": ..., "description": ...}, ...]}.'
+)
+
 
 class NarrativeGenerator:
     """Service for generating narrative content using AI."""
 
-    def __init__(self, llm: LLMProvider | None = None):
+    def __init__(
+        self,
+        llm: LLMProvider | None = None,
+        embeddings=None,
+        vectordb=None,
+    ):
         self._llm: LLMProvider | None = llm
+        self._embeddings = embeddings
+        self._vectordb = vectordb
 
     def _get_llm(self) -> LLMProvider:
         if self._llm is None:
             self._llm = get_llm_provider()
         return self._llm
+
+    def _get_embeddings(self):
+        if self._embeddings is None:
+            self._embeddings = get_embeddings_provider()
+        return self._embeddings
+
+    def _get_vectordb(self):
+        if self._vectordb is None:
+            self._vectordb = get_vectordb_provider()
+        return self._vectordb
+
+    async def _retrieve_context(
+        self,
+        query: str,
+        scope: list[str],
+        top_k: int = 5,
+    ) -> list[str]:
+        """Retrieve relevant context from the campaign vector store.
+
+        Returns an empty list if retrieval fails or the store is empty,
+        allowing graceful fallback to prompt-only generation.
+        """
+        try:
+            embeddings = self._get_embeddings()
+            vectordb = self._get_vectordb()
+
+            query_embedding = await embeddings.embed(query)
+
+            results = await vectordb.query(
+                query_embedding,
+                filter={"access_scope": {"$in": scope}},
+                top_k=top_k,
+                include_metadata=True,
+            )
+
+            if not results:
+                return []
+
+            return [
+                r.metadata.get("text", "")
+                for r in results
+                if r.metadata and "text" in r.metadata
+            ]
+        except Exception as e:
+            logger.warning("Context retrieval failed, falling back to prompt-only: %s", e)
+            return []
 
     @staticmethod
     def _build_guidance_suffix(guidance: str | None) -> str:
@@ -322,8 +423,18 @@ Respond with a JSON object:
   ]
 }}"""
 
+        # Retrieve campaign setting context for connection suggestions
+        synthesis_query = (
+            f"Traveller RPG character connections: "
+            f"{', '.join(request.character.career_history)}"
+        )
+        context_chunks = await self._retrieve_context(synthesis_query, scope)
+
         try:
-            response_text = await llm.generate(prompt)
+            if context_chunks:
+                response_text = await llm.generate_with_context(prompt, context_chunks)
+            else:
+                response_text = await llm.generate(prompt)
             json_match = re.search(r"\{[\s\S]*\}", response_text)
             if json_match:
                 data = json.loads(json_match.group())
@@ -336,3 +447,162 @@ Respond with a JSON object:
         except (json.JSONDecodeError, Exception) as e:
             logger.warning("Failed to generate connection suggestions: %s", e)
             return SuggestConnectionsResponse(suggestions=[])
+
+    async def generate_lifepath_review(
+        self,
+        character: CharacterSummary,
+        campaign_context: list[str] | None = None,
+        scope: list[str] | None = None,
+    ) -> list[dict[str, JsonValue]]:
+        """Generate up to five advisory proposals for a complete lifepath."""
+        try:
+            character_summary = json.dumps(
+                character.model_dump(),
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            )
+        except (TypeError, ValueError) as e:
+            logger.warning("Failed to summarize character lifepath: %s", e)
+            return []
+        campaign_summary = (
+            "\n".join(f"- {item}" for item in campaign_context)
+            if campaign_context
+            else "No additional campaign context provided."
+        )
+        prompt = f"""{LIFEPATH_REVIEW_SYSTEM_PROMPT}
+
+Character summary:
+{character_summary}
+
+Campaign context:
+{campaign_summary}"""
+        synthesis_query = (
+            f"Traveller RPG lifepath review: {character_summary} {campaign_summary}"
+        )
+
+        try:
+            llm = self._get_llm()
+            context_chunks = await self._retrieve_context(
+                synthesis_query,
+                scope or ["public"],
+            )
+            if context_chunks:
+                response_text = await llm.generate_with_context(prompt, context_chunks)
+            else:
+                response_text = await llm.generate(prompt)
+
+            unfenced_response = re.sub(
+                r"^```(?:json)?\s*|\s*```$", "", response_text.strip()
+            )
+            json_match = re.search(r"\{[\s\S]*\}", unfenced_response)
+            if json_match is None:
+                return []
+
+            data = json.loads(json_match.group())
+            proposals = data.get("proposals", [])
+            if not isinstance(proposals, list):
+                return []
+
+            validated = LifepathReviewResponse(proposals=proposals[:5])
+            result: list[dict[str, JsonValue]] = []
+            for proposal in validated.proposals:
+                result.append(
+                    {
+                        "type": proposal.type,
+                        "title": proposal.title,
+                        "description": proposal.description,
+                        "target_term": proposal.target_term,
+                        "proposed_edit": proposal.proposed_edit,
+                    }
+                )
+            return result
+        except json.JSONDecodeError:
+            return []
+
+    async def suggest_cross_character_links(
+        self,
+        characters: list[CharacterSummary],
+        shared_history: list[dict[str, JsonValue]] | None = None,
+        scope: list[str] | None = None,
+    ) -> list[dict[str, JsonValue]]:
+        """Generate up to three narrative links between campaign characters."""
+        if len(characters) < 2:
+            return []
+
+        try:
+            character_summary = "\n".join(
+                f"- Character {index}: "
+                + json.dumps(
+                    character.model_dump(),
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                )
+                for index, character in enumerate(characters, start=1)
+            )
+            shared_history_summary = (
+                json.dumps(
+                    shared_history,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                )
+                if shared_history
+                else "No pre-computed shared history provided."
+            )
+        except (TypeError, ValueError) as e:
+            logger.warning("Failed to summarize characters for link proposals: %s", e)
+            return []
+
+        prompt = f"""{CROSS_CHARACTER_LINKS_SYSTEM_PROMPT}
+
+Character summaries:
+{character_summary}
+
+Pre-computed shared history:
+{shared_history_summary}"""
+        synthesis_query = (
+            "Traveller RPG cross-character narrative links: "
+            f"{character_summary} {shared_history_summary}"
+        )
+
+        try:
+            llm = self._get_llm()
+            context_chunks = await self._retrieve_context(
+                synthesis_query,
+                scope or ["public"],
+            )
+            if context_chunks:
+                response_text = await llm.generate_with_context(prompt, context_chunks)
+            else:
+                response_text = await llm.generate(prompt)
+
+            unfenced_response = re.sub(
+                r"^```(?:json)?\s*|\s*```$", "", response_text.strip()
+            )
+            json_match = re.search(r"\{[\s\S]*\}", unfenced_response)
+            if json_match is None:
+                return []
+
+            data = json.loads(json_match.group())
+            proposals = data.get("proposals", [])
+            if not isinstance(proposals, list):
+                return []
+
+            validated = CrossCharacterLinksResponse(proposals=proposals[:3])
+            result: list[dict[str, JsonValue]] = []
+            for proposal in validated.proposals:
+                result.append(
+                    {
+                        "source_char_id": proposal.source_char_id,
+                        "target_char_id": proposal.target_char_id,
+                        "relationship": proposal.relationship,
+                        "description": proposal.description,
+                        "source_entity_id": proposal.source_entity_id,
+                        "target_entity_id": proposal.target_entity_id,
+                    }
+                )
+            return result
+        except json.JSONDecodeError:
+            return []

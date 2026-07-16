@@ -128,6 +128,20 @@ class MockNarrativeGenerator:
 
         return SuggestConnectionsResponse(suggestions=suggestions)
 
+    async def generate_lifepath_review(self, character, campaign_context, scope):
+        self.calls.append(("lifepath_review", character, campaign_context, scope))
+        if self.should_raise:
+            raise self.should_raise
+        return self.responses.get("lifepath_review", [])
+
+    async def suggest_cross_character_links(self, characters, shared_history, scope):
+        self.calls.append(("cross_character_links", characters, shared_history, scope))
+        if self.should_raise:
+            raise self.should_raise
+        if len(characters) < 2:
+            return []
+        return self.responses.get("cross_character_links", [])
+
 
 @pytest.fixture
 def mock_generator():
@@ -567,8 +581,368 @@ async def test_guidance_reaches_generator_request(client, mock_generator):
             },
         )
         assert len(mock_generator.calls) >= 1
-        _, request = mock_generator.calls[0]
+        _, request, _ = mock_generator.calls[0]
         assert request.guidance == "The signal should hint at a First Contact scenario."
         assert request.verbosity == "full"
     finally:
         clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_lifepath_review_endpoint_returns_structured_proposals(client):
+    proposals = [
+        {
+            "type": "coherence-edit",
+            "title": "Resolve the transfer",
+            "description": "Explain why the Navy transfer led to a Scout posting.",
+            "target_term": 2,
+            "proposed_edit": "Your former captain arranged the transfer.",
+        },
+        {
+            "type": "npc-connection",
+            "title": "A familiar patron",
+            "description": "Connect Captain Rios to the later exploration mission.",
+            "target_term": 3,
+            "proposed_edit": None,
+        },
+        {
+            "type": "plot-hook",
+            "title": "The missing survey",
+            "description": "The original survey data was deliberately falsified.",
+            "target_term": 4,
+            "proposed_edit": None,
+        },
+    ]
+    generator = MockNarrativeGenerator(responses={"lifepath_review": proposals})
+    set_dependencies(generator=generator)
+    try:
+        response = await client.post(
+            "/narrative/lifepath-review",
+            json={
+                "character": {
+                    "id": "char-zara",
+                    "name": "Zara",
+                    "career": "Scout",
+                    "terms": [
+                        {
+                            "term": 2,
+                            "events": ["Transferred to the Scouts"],
+                            "mishaps": [],
+                            "skills": ["Pilot 1"],
+                            "npcs": ["Captain Rios"],
+                        }
+                    ],
+                },
+                "campaign_context": ["The Spinward Marches are on the brink of war."],
+            },
+        )
+        assert response.status_code == 200
+        assert response.json() == {"proposals": proposals}
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_lifepath_review_minimal_character_returns_empty_proposals(
+    client, mock_generator
+):
+    set_dependencies(generator=mock_generator)
+    try:
+        response = await client.post(
+            "/narrative/lifepath-review",
+            json={"character": {"id": "char-zara", "name": "Zara"}},
+        )
+        assert response.status_code == 200
+        assert response.json() == {"proposals": []}
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_lifepath_review_accepts_skills_mapping(client, mock_generator):
+    set_dependencies(generator=mock_generator)
+    try:
+        response = await client.post(
+            "/narrative/lifepath-review",
+            json={
+                "character": {
+                    "id": "test-char-1",
+                    "name": "Test",
+                    "skills": {"Pilot": 2},
+                    "terms": [],
+                    "events": [],
+                    "mishaps": [],
+                    "npcs": [],
+                    "chapters": [],
+                }
+            },
+        )
+
+        assert response.status_code == 200
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_lifepath_review_non_gm_scope_excludes_gm(client, monkeypatch):
+    generator = NarrativeGenerator(
+        llm=MockGeminiProvider(responses={"default": '{"proposals": []}'})
+    )
+    retrieve_context = AsyncMock(return_value=[])
+    monkeypatch.setattr(generator, "_retrieve_context", retrieve_context)
+    set_dependencies(generator=generator)
+    try:
+        response = await client.post(
+            "/narrative/lifepath-review",
+            headers={"X-Is-GM": "false"},
+            json={"character": {"id": "char-zara", "name": "Zara"}},
+        )
+
+        assert response.status_code == 200
+        retrieve_context.assert_awaited_once_with(ANY, ["public"])
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_cross_character_links_gm_scope_includes_gm(client, monkeypatch):
+    generator = NarrativeGenerator(
+        llm=MockGeminiProvider(responses={"default": '{"proposals": []}'})
+    )
+    retrieve_context = AsyncMock(return_value=[])
+    monkeypatch.setattr(generator, "_retrieve_context", retrieve_context)
+    set_dependencies(generator=generator)
+    try:
+        response = await client.post(
+            "/narrative/cross-character-links",
+            headers={"X-Is-GM": "true"},
+            json={
+                "characters": [
+                    {"id": "char-zara", "name": "Zara"},
+                    {"id": "char-malik", "name": "Malik"},
+                ]
+            },
+        )
+
+        assert response.status_code == 200
+        retrieve_context.assert_awaited_once_with(ANY, ["public", "gm"])
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_lifepath_review_generator_failure_returns_503(client):
+    generator = MockNarrativeGenerator(
+        should_raise=RuntimeError("LLM provider unavailable")
+    )
+    set_dependencies(generator=generator)
+    try:
+        response = await client.post(
+            "/narrative/lifepath-review",
+            json={"character": {"id": "char-zara", "name": "Zara"}},
+        )
+        assert response.status_code == 503
+        assert response.json() == {"detail": "LLM provider unavailable"}
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_generate_lifepath_review_parses_and_caps_proposals(
+    embeddings, pinecone_index
+):
+    llm_response = """```json
+{"proposals": [
+  {"type": "coherence-edit", "title": "One", "description": "First", "target_term": 1},
+  {"type": "npc-connection", "title": "Two", "description": "Second", "target_term": 2},
+  {"type": "plot-hook", "title": "Three", "description": "Third", "target_term": 3},
+  {"type": "coherence-edit", "title": "Four", "description": "Fourth", "target_term": 4},
+  {"type": "npc-connection", "title": "Five", "description": "Fifth", "target_term": 5},
+  {"type": "plot-hook", "title": "Six", "description": "Sixth", "target_term": 6}
+]}
+```"""
+    llm = MockGeminiProvider(responses={"default": llm_response})
+    generator = NarrativeGenerator(
+        llm=llm,
+        embeddings=embeddings,
+        vectordb=pinecone_index,
+    )
+
+    proposals = await generator.generate_lifepath_review(
+        character=CharacterSummary(id="char-zara", name="Zara", career="Scout"),
+        campaign_context=["The Spinward Marches are on the brink of war."],
+    )
+
+    assert len(proposals) == 5
+    assert [proposal["title"] for proposal in proposals] == [
+        "One",
+        "Two",
+        "Three",
+        "Four",
+        "Five",
+    ]
+    prompt = llm.call_history[0]["prompt"]
+    assert isinstance(prompt, str)
+    assert "Zara" in prompt
+    assert "The Spinward Marches are on the brink of war." in prompt
+
+
+@pytest.mark.asyncio
+async def test_cross_character_links_endpoint_returns_structured_proposals(client):
+    proposals = [
+        {
+            "source_char_id": "char-zara",
+            "target_char_id": "char-malik",
+            "relationship": "former_shipmates",
+            "description": "They served aboard the same naval cruiser.",
+            "source_entity_id": "npc-rios",
+            "target_entity_id": None,
+        },
+        {
+            "source_char_id": "char-malik",
+            "target_char_id": "char-zara",
+            "relationship": "shared_rival",
+            "description": "Both crossed Captain Rios during their naval careers.",
+            "source_entity_id": None,
+            "target_entity_id": "npc-rios",
+        },
+    ]
+    generator = MockNarrativeGenerator(responses={"cross_character_links": proposals})
+    set_dependencies(generator=generator)
+    try:
+        response = await client.post(
+            "/narrative/cross-character-links",
+            json={
+                "characters": [
+                    {
+                        "id": "char-zara",
+                        "name": "Zara",
+                        "career": "Navy",
+                    },
+                    {
+                        "id": "char-malik",
+                        "name": "Malik",
+                        "career": "Navy",
+                    },
+                ],
+                "shared_history": [
+                    {
+                        "type": "shared_career",
+                        "career": "Navy",
+                        "character_ids": ["char-zara", "char-malik"],
+                    }
+                ],
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {"proposals": proposals}
+        assert generator.calls[0][0] == "cross_character_links"
+        assert generator.calls[0][2][0]["career"] == "Navy"
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_cross_character_links_single_character_returns_empty_proposals(
+    client, mock_generator
+):
+    set_dependencies(generator=mock_generator)
+    try:
+        response = await client.post(
+            "/narrative/cross-character-links",
+            json={"characters": [{"id": "char-zara", "name": "Zara"}]},
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {"proposals": []}
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_cross_character_links_generator_failure_returns_503(client):
+    generator = MockNarrativeGenerator(
+        should_raise=ValueError("LLM provider unavailable")
+    )
+    set_dependencies(generator=generator)
+    try:
+        response = await client.post(
+            "/narrative/cross-character-links",
+            json={
+                "characters": [
+                    {"id": "char-zara", "name": "Zara"},
+                    {"id": "char-malik", "name": "Malik"},
+                ]
+            },
+        )
+
+        assert response.status_code == 503
+        assert response.json() == {"detail": "LLM provider unavailable"}
+    finally:
+        clear_dependencies()
+
+
+@pytest.mark.asyncio
+async def test_suggest_cross_character_links_parses_and_caps_proposals(
+    embeddings, pinecone_index
+):
+    llm_response = """```json
+{"proposals": [
+  {"source_char_id": "char-1", "target_char_id": "char-2", "relationship": "shipmates", "description": "First"},
+  {"source_char_id": "char-2", "target_char_id": "char-3", "relationship": "rivals", "description": "Second"},
+  {"source_char_id": "char-3", "target_char_id": "char-1", "relationship": "allies", "description": "Third"},
+  {"source_char_id": "char-1", "target_char_id": "char-4", "relationship": "contacts", "description": "Fourth"}
+]}
+```"""
+    llm = MockGeminiProvider(responses={"default": llm_response})
+    generator = NarrativeGenerator(
+        llm=llm,
+        embeddings=embeddings,
+        vectordb=pinecone_index,
+    )
+
+    proposals = await generator.suggest_cross_character_links(
+        characters=[
+            CharacterSummary(id="char-1", name="Zara", career="Navy"),
+            CharacterSummary(id="char-2", name="Malik", career="Navy"),
+        ],
+        shared_history=[{"type": "shared_career", "career": "Navy"}],
+    )
+
+    assert len(proposals) == 3
+    assert [proposal["description"] for proposal in proposals] == [
+        "First",
+        "Second",
+        "Third",
+    ]
+    prompt = llm.call_history[0]["prompt"]
+    assert isinstance(prompt, str)
+    assert prompt.startswith(
+        "You are a story consultant finding narrative connections between Traveller "
+        "RPG characters in the same campaign."
+    )
+    assert "Zara" in prompt
+    assert "shared_career" in prompt
+
+
+@pytest.mark.parametrize("llm_response", ["", '{"proposals": ['])
+@pytest.mark.asyncio
+async def test_suggest_cross_character_links_partial_or_empty_response_returns_empty(
+    llm_response, embeddings, pinecone_index
+):
+    llm = MockGeminiProvider(responses={"default": llm_response})
+    generator = NarrativeGenerator(
+        llm=llm,
+        embeddings=embeddings,
+        vectordb=pinecone_index,
+    )
+
+    proposals = await generator.suggest_cross_character_links(
+        characters=[
+            CharacterSummary(id="char-1", name="Zara"),
+            CharacterSummary(id="char-2", name="Malik"),
+        ],
+    )
+
+    assert proposals == []

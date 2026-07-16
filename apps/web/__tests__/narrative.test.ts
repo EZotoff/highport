@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   generateEventDescription,
   generateNPCDetails,
+  generateCrossCharacterLinks,
+  generateLifepathReview,
   checkNarrativeAvailable,
   type VerbosityLevel,
   type EventDescriptionResult,
@@ -9,6 +11,7 @@ import {
 } from '../lib/chargen/narrative';
 import { RagUnavailableError } from '../lib/rag-client';
 
+import type { ChargenCharacter, CrossCharacterLinkProposal } from '../lib/chargen/types';
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -300,6 +303,256 @@ describe('Narrative API', () => {
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(callBody.verbosity).toBe('full');
+    });
+  });
+  describe('generateCrossCharacterLinks', () => {
+    const mockCharacters: ChargenCharacter[] = [
+      {
+        id: 'char-1',
+        playerId: 'player-1',
+        name: 'Zara',
+        characteristics: { STR: 7, DEX: 9, END: 8, INT: 10, EDU: 7, SOC: 8 },
+        backgroundSkills: [],
+        terms: [],
+        chapters: [],
+        currentTermIndex: 0,
+        status: 'finalized',
+        skills: {},
+        benefits: [],
+        credits: 0,
+        age: 34,
+        spawnedEntityIds: [],
+      },
+      {
+        id: 'char-2',
+        playerId: 'player-2',
+        name: 'Milo',
+        characteristics: { STR: 8, DEX: 8, END: 9, INT: 9, EDU: 8, SOC: 7 },
+        backgroundSkills: [],
+        terms: [],
+        chapters: [],
+        currentTermIndex: 0,
+        status: 'finalized',
+        skills: {},
+        benefits: [],
+        credits: 0,
+        age: 30,
+        spawnedEntityIds: [],
+      },
+    ];
+
+    const mockSharedHistory = [
+      {
+        characterA: 'char-1',
+        characterB: 'char-2',
+        sharedEntity: 'entity-1',
+        relationshipA: 'ally',
+        relationshipB: 'contact',
+        description: 'Shared connection to Station X',
+        characterAName: 'Zara',
+        characterBName: 'Milo',
+        entityName: 'Station X',
+      },
+    ];
+
+    it('should parse successful cross-character links response', async () => {
+      vi.stubGlobal('crypto', { randomUUID: () => 'link-uuid-1' });
+
+      const mockResponse = {
+        proposals: [
+          {
+            source_char_id: 'char-1',
+            target_char_id: 'char-2',
+            relationship: 'former shipmates',
+            description: 'Served together on a merchant vessel',
+            source_entity_id: 'entity-1',
+            target_entity_id: 'entity-2',
+          },
+        ],
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const result = await generateCrossCharacterLinks(mockCharacters, mockSharedHistory);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('link-uuid-1');
+      expect(result[0].sourceCharId).toBe('char-1');
+      expect(result[0].targetCharId).toBe('char-2');
+      expect(result[0].sourceEntityId).toBe('entity-1');
+      expect(result[0].targetEntityId).toBe('entity-2');
+      expect(result[0].relationship).toBe('former shipmates');
+      expect(result[0].description).toBe('Served together on a merchant vessel');
+      expect(result[0].status).toBe('pending');
+      expect(result[0].generatedAt).toBeGreaterThan(0);
+
+      vi.unstubAllGlobals();
+    });
+
+    it('should convert characters and shared history to snake_case for API', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ proposals: [] }),
+      });
+
+      await generateCrossCharacterLinks(mockCharacters, mockSharedHistory, true);
+
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+
+      expect(callBody.characters).toHaveLength(2);
+      expect(callBody.characters[0].player_id).toBe('player-1');
+      expect(callBody.characters[0].background_skills).toEqual([]);
+      expect(callBody.characters[0].terms).toEqual([]);
+      expect(callBody.shared_history).toEqual(mockSharedHistory);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Character-Id': 'char-1',
+            'X-Is-GM': 'true',
+          },
+        }),
+      );
+    });
+
+    it('should throw RagUnavailableError on network TypeError', async () => {
+      mockFetch.mockRejectedValueOnce(new TypeError('fetch failed'));
+
+      await expect(generateCrossCharacterLinks(mockCharacters, mockSharedHistory)).rejects.toThrow(
+        RagUnavailableError,
+      );
+    });
+
+    it('should throw RagUnavailableError on 5xx response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({ detail: 'Service overloaded' }),
+      });
+
+      await expect(generateCrossCharacterLinks(mockCharacters, mockSharedHistory)).rejects.toThrow(
+        RagUnavailableError,
+      );
+    });
+  });
+  describe('generateLifepathReview', () => {
+    const mockCharacter: ChargenCharacter = {
+      id: 'char-1',
+      playerId: 'player-1',
+      name: 'Zara',
+      characteristics: { STR: 7, DEX: 9, END: 8, INT: 10, EDU: 7, SOC: 8 },
+      backgroundSkills: ['admin', 'computer'],
+      terms: [
+        {
+          termNumber: 1,
+          careerId: 'navy',
+          assignmentId: 'line_crew',
+          startAge: 18,
+          survived: true,
+          advanced: false,
+          currentRank: 0,
+          skillsGained: [{ skill: 'pilot', level: 1 }],
+          spawnedEntities: [],
+        },
+      ],
+      chapters: [],
+      currentTermIndex: 0,
+      status: 'mustering_out',
+      skills: { pilot: 1 },
+      benefits: ['gun'],
+      credits: 0,
+      age: 22,
+      spawnedEntityIds: [],
+    };
+
+    it('should parse successful lifepath review response correctly', async () => {
+      vi.stubGlobal('crypto', { randomUUID: () => 'lp-uuid-1' });
+
+      const mockResponse = {
+        proposals: [
+          {
+            type: 'coherence-edit',
+            title: 'Fix term 1 coherence',
+            description: 'The Navy event could reference the pilot skill.',
+            target_term: 1,
+            proposed_edit: 'Add a reference to cockpit drills.',
+          },
+          {
+            type: 'npc-connection',
+            title: 'Introduce a former crewmate',
+            description: 'A former crewmate from term 1 resurfaces.',
+            target_term: 1,
+          },
+        ],
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const result = await generateLifepathReview(mockCharacter);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('lp-uuid-1');
+      expect(result[0].type).toBe('coherence-edit');
+      expect(result[0].targetTerm).toBe(1);
+      expect(result[0].proposedEdit).toBe('Add a reference to cockpit drills.');
+      expect(result[0].status).toBe('pending');
+      expect(result[0].generatedAt).toBeGreaterThan(0);
+      expect(result[1].type).toBe('npc-connection');
+      expect(result[1].proposedEdit).toBeUndefined();
+
+      vi.unstubAllGlobals();
+    });
+
+    it('should convert camelCase character fields to snake_case for API', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ proposals: [] }),
+      });
+
+      await generateLifepathReview(mockCharacter, ['campaign context'], true);
+
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+
+      expect(callBody.character.player_id).toBe('player-1');
+      expect(callBody.character.background_skills).toEqual(['admin', 'computer']);
+      expect(callBody.character.terms[0].term_number).toBe(1);
+      expect(callBody.character.terms[0].career_id).toBe('navy');
+      expect(callBody.character.terms[0].skills_gained).toEqual([{ skill: 'pilot', level: 1 }]);
+      expect(callBody.character.spawned_entity_ids).toEqual([]);
+      expect(callBody.campaign_context).toEqual(['campaign context']);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Character-Id': 'char-1',
+            'X-Is-GM': 'true',
+          },
+        }),
+      );
+    });
+
+    it('should throw RagUnavailableError on network TypeError', async () => {
+      mockFetch.mockRejectedValueOnce(new TypeError('fetch failed'));
+
+      await expect(generateLifepathReview(mockCharacter)).rejects.toThrow(RagUnavailableError);
+    });
+
+    it('should throw RagUnavailableError on 5xx response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({ detail: 'Service overloaded' }),
+      });
+
+      await expect(generateLifepathReview(mockCharacter)).rejects.toThrow(RagUnavailableError);
     });
   });
 });

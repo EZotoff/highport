@@ -9,6 +9,12 @@ from schemas.narrative import (
     NPCDetailsResponse,
     SuggestConnectionsRequest,
     SuggestConnectionsResponse,
+    MishapDescriptionRequest,
+    MishapDescriptionResponse,
+    LifepathReviewRequest,
+    LifepathReviewResponse,
+    CrossCharacterLinksRequest,
+    CrossCharacterLinksResponse,
 )
 from services.narrative_generator import NarrativeGenerator
 

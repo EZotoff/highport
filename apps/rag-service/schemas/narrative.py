@@ -1,8 +1,8 @@
 """Pydantic models for narrative generation endpoints."""
 
 from enum import Enum
-from typing import Optional
-from pydantic import BaseModel
+from typing import Any, Literal, Optional
+from pydantic import BaseModel, JsonValue
 
 
 class VerbosityLevel(str, Enum):
@@ -117,3 +117,83 @@ class SuggestConnectionsResponse(BaseModel):
     """Response containing connection suggestions."""
 
     suggestions: list[ConnectionSuggestion]
+
+
+class MishapDescriptionRequest(BaseModel):
+    """Request for generating a mishap description."""
+
+    mishap_text: str
+    career: str
+    term: int
+    character_context: CharacterContext
+    verbosity: VerbosityLevel = VerbosityLevel.INSPIRATION
+    guidance: Optional[str] = None
+
+
+class MishapDescriptionResponse(BaseModel):
+    """Response containing generated mishap description."""
+
+    description: str
+    mode: Optional[VerbosityLevel] = None
+    guidance_used: Optional[str] = None
+
+class CharacterSummary(BaseModel):
+    """A summarized view of a character for narrative review and cross-character linking."""
+
+    id: str
+    name: str
+    career: str | None = None
+    terms: list[dict[str, Any]] = []
+    skills: dict[str, int] = {}
+    events: list[dict[str, Any]] = []
+    mishaps: list[dict[str, Any]] = []
+    npcs: list[dict[str, Any]] = []
+    background: str | None = None
+    age: int | None = None
+
+
+class LifepathReviewRequest(BaseModel):
+    """Request for reviewing a complete character lifepath."""
+
+    character: CharacterSummary
+    campaign_context: list[str] | None = None
+
+
+class LifepathReviewProposal(BaseModel):
+    """An advisory proposal for improving a character lifepath."""
+
+    type: Literal["coherence-edit", "npc-connection", "plot-hook"]
+    title: str
+    description: str
+    target_term: int
+    proposed_edit: str | None = None
+
+
+class LifepathReviewResponse(BaseModel):
+    """Response containing advisory lifepath proposals."""
+
+    proposals: list[LifepathReviewProposal]
+
+
+class CrossCharacterLinksRequest(BaseModel):
+    """Request for cross-character narrative link proposals."""
+
+    characters: list[CharacterSummary]
+    shared_history: list[dict[str, JsonValue]] | None = None
+
+
+class CrossCharacterLink(BaseModel):
+    """A proposed narrative link between two characters."""
+
+    source_char_id: str
+    target_char_id: str
+    relationship: str
+    description: str
+    source_entity_id: str | None = None
+    target_entity_id: str | None = None
+
+
+class CrossCharacterLinksResponse(BaseModel):
+    """Response containing cross-character link proposals."""
+
+    proposals: list[CrossCharacterLink]
