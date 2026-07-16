@@ -1,7 +1,10 @@
 import * as Y from 'yjs';
+import { getNodesMap, getEdgesMap } from '../ydoc';
+import { addEdge } from '../yjs-helpers';
+import type { GraphEdge } from '@highport/shared/types/graph';
 import type { CharacteristicSet } from '@highport/mgt2e';
 import { getCareer, roll2d6, setRandomSeed, resetRandomSeed } from '@highport/mgt2e';
-import { DEFAULT_SESSION_SETTINGS, unwrapAIField } from './types';
+import { DEFAULT_SESSION_SETTINGS, unwrapAIField, type AIProvenance } from './types';
 import { deleteCharacterSnapshot, saveCharacterSnapshot } from './persistence';
 import type {
   ChapterSummary,
@@ -10,6 +13,8 @@ import type {
   ChargenStatus,
   CareerTermResult,
   ConnectionRequest,
+  LifepathProposal,
+  CrossCharacterLinkProposal,
   MusteringState,
   SessionSettings,
   SharedSpawnedEntity,

@@ -13,12 +13,18 @@ import {
   getEntityPoolMap,
   getConnectionRequests,
   getConnectionRequestsArray,
+  getLifepathProposalsMap,
+  yMapToLifepathProposal,
+  getCrossCharacterLinksMap,
+  yMapToCrossCharacterLink,
 } from './state';
 import type {
   ChargenCharacter,
   ChargenSessionConfig,
   SharedSpawnedEntity,
   ConnectionRequest,
+  LifepathProposal,
+  CrossCharacterLinkProposal,
 } from './types';
 
 export function useCharacter(charId: string | null): ChargenCharacter | null {
@@ -177,6 +183,55 @@ export function useConnectionRequests(): ConnectionRequest[] {
   }, []);
 
   return requests;
+}
+
+export function useLifepathProposals(characterId?: string): LifepathProposal[] {
+  const [proposals, setProposals] = useState<LifepathProposal[]>([]);
+
+  useEffect(() => {
+    const doc = getYDoc();
+    const proposalsMap = getLifepathProposalsMap(doc);
+
+    const updateProposals = () => {
+      const all = Array.from(proposalsMap.values(), yMapToLifepathProposal);
+      if (characterId) {
+        setProposals(all.filter((p) => p.characterId === characterId || p.characterId === undefined));
+      } else {
+        setProposals(all);
+      }
+    };
+
+    updateProposals();
+    proposalsMap.observeDeep(updateProposals);
+
+    return () => {
+      proposalsMap.unobserveDeep(updateProposals);
+    };
+  }, [characterId]);
+
+  return proposals;
+}
+
+export function useCrossCharacterLinks(): CrossCharacterLinkProposal[] {
+  const [links, setLinks] = useState<CrossCharacterLinkProposal[]>([]);
+
+  useEffect(() => {
+    const doc = getYDoc();
+    const linksMap = getCrossCharacterLinksMap(doc);
+
+    const updateLinks = () => {
+      setLinks(Array.from(linksMap.values(), yMapToCrossCharacterLink));
+    };
+
+    updateLinks();
+    linksMap.observeDeep(updateLinks);
+
+    return () => {
+      linksMap.unobserveDeep(updateLinks);
+    };
+  }, []);
+
+  return links;
 }
 
 export function useSessionParticipants(): Array<{ character: ChargenCharacter; userId: string }> {
