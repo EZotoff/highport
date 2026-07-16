@@ -169,6 +169,12 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
     });
   };
 
+  const handleBackToBackground = () => {
+    if (!character || !characterId) return;
+    const doc = getYDoc();
+    updateCharacterFields(doc, characterId, { status: 'background' });
+  };
+
   const resetSelection = () => {
     setSelectedCareer(null);
     setQualificationResult(null);
@@ -379,13 +385,23 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
   // View: Career List
   return (
     <div className="space-y-6 pb-8 pt-2">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-3">
         <div>
           <h2 className="text-2xl font-bold text-heading font-display">Career Selection</h2>
           <p className="text-subtle">
             Term {(character.terms?.length || 0) + 1} (Age {character.age})
           </p>
         </div>
+        <SciFiButton
+          theme="slate"
+          scifiVariant="ghost"
+          size="sm"
+          onClick={handleBackToBackground}
+          aria-label="Back to background step"
+          data-testid="career-back-to-background"
+        >
+          ← Background
+        </SciFiButton>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">

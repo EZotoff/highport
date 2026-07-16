@@ -7,6 +7,7 @@ import {
   rerollCharacteristics,
   swapCharacteristics,
   updateCharacter,
+  updateCharacterFields,
   createSession,
   getSession,
 } from '../../../lib/chargen/state';
@@ -97,6 +98,15 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
 
     updateCharacter(doc, character.id, 'backgroundSkills', newBgSkills);
     updateCharacter(doc, character.id, 'skills', cleanedSkills);
+  };
+
+  const canContinue =
+    !!character && (character.backgroundSkills?.length || 0) === 3 && !!character.name?.trim();
+
+  const handleContinue = () => {
+    if (!character || !characterId || !canContinue) return;
+    const doc = getYDoc();
+    updateCharacterFields(doc, characterId, { status: 'career_selection' });
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -289,6 +299,19 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
             );
           })}
         </BentoGrid>
+      </div>
+
+      <div className="flex justify-end pt-4 mt-2 border-t border-zinc-800/60">
+        <SciFiButton
+          theme="cyan"
+          glow
+          onClick={handleContinue}
+          disabled={!canContinue}
+          aria-label="Continue to career selection"
+          data-testid="background-continue"
+        >
+          Continue →
+        </SciFiButton>
       </div>
     </div>
   );
