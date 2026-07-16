@@ -165,6 +165,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
     resolveAIDraft(
       doc,
       draft.characterId,
+      draft.termNumber,
       draft.fieldPath,
       editedText !== undefined ? 'edit' : 'accept',
       editedText,
@@ -175,7 +176,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
 
   const handleRejectAIDraft = (draft: PendingAIDraft) => {
     const doc = getYDoc();
-    resolveAIDraft(doc, draft.characterId, draft.fieldPath, 'reject');
+    resolveAIDraft(doc, draft.characterId, draft.termNumber, draft.fieldPath, 'reject');
     setEditingDraftKey(null);
     setEditedDraftText('');
   };

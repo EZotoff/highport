@@ -40,8 +40,22 @@ def _get_generator() -> NarrativeGenerator:
     return NarrativeGenerator()
 
 
+def _build_scope(x_is_gm: str, x_character_id: str | None) -> list[str]:
+    scope = ["public"]
+    if x_is_gm and x_is_gm.lower() == "true":
+        scope.append("gm")
+    if x_character_id:
+        scope.append(f"char:{x_character_id}")
+        scope.append("party")
+    return scope
+
+
 @router.post("/event-description", response_model=EventDescriptionResponse)
-async def generate_event_description(request: EventDescriptionRequest):
+async def generate_event_description(
+    request: EventDescriptionRequest,
+    x_character_id: str | None = Header(None, alias="X-Character-Id"),
+    x_is_gm: str = Header("false", alias="X-Is-GM"),
+):
     """Generate a narrative description for a career event.
 
     Args:

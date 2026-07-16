@@ -1,13 +1,18 @@
 """Tests for the narrative generation API endpoints."""
 
+from unittest.mock import ANY, AsyncMock
+
 import pytest
 
+from mocks.mock_gemini import MockGeminiProvider
+from services.narrative_generator import NarrativeGenerator
 from schemas.narrative import (
     EventDescriptionResponse,
     NPCDetailsResponse,
     SuggestConnectionsResponse,
     SuggestedEntity,
     ConnectionSuggestion,
+    CharacterSummary,
 )
 from routers.narrative import set_dependencies, clear_dependencies
 

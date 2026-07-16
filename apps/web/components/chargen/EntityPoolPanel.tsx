@@ -57,8 +57,8 @@ export function EntityPoolPanel({
   }, [entities, filter]);
 
   const getRelationship = (entity: SharedSpawnedEntity) => {
-    const rel = (entity.metadata as any)?.relationship as string | undefined;
-    return rel;
+    const relationship = entity.metadata.relationship;
+    return typeof relationship === 'string' ? relationship : undefined;
   };
 
   const getCreatorName = (entity: SharedSpawnedEntity) => {

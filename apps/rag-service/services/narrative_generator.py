@@ -182,7 +182,9 @@ class NarrativeGenerator:
         return ""
 
     async def generate_event_description(
-        self, request: EventDescriptionRequest
+        self,
+        request: EventDescriptionRequest,
+        scope: list[str],
     ) -> EventDescriptionResponse:
         llm = self._get_llm()
         mode = request.verbosity
@@ -246,8 +248,18 @@ The dice determine outcomes — you add texture, not mechanics.
 ## Response Format
 {format_block}"""
 
+        # Retrieve campaign setting context for setting-aware enrichment
+        synthesis_query = (
+            f"Traveller RPG {request.career} career {request.assignment}: "
+            f"{request.event_text}"
+        )
+        context_chunks = await self._retrieve_context(synthesis_query, scope)
+
         try:
-            response_text = await llm.generate(prompt)
+            if context_chunks:
+                response_text = await llm.generate_with_context(prompt, context_chunks)
+            else:
+                response_text = await llm.generate(prompt)
             json_match = re.search(r"\{[\s\S]*\}", response_text)
             if json_match:
                 data = json.loads(json_match.group())
@@ -290,8 +302,98 @@ The dice determine outcomes — you add texture, not mechanics.
         except Exception as e:
             raise RuntimeError(f"Event description generation failed: {e}")
 
+    async def generate_mishap_description(
+        self, request: MishapDescriptionRequest
+    ) -> MishapDescriptionResponse:
+        """Generate a narrative description for a career mishap."""
+        llm = self._get_llm()
+        mode = request.verbosity
+        guidance_suffix = self._build_guidance_suffix(request.guidance)
+
+        prior_events_text = (
+            "\n".join(f"- {e}" for e in request.character_context.prior_events[-3:])
+            if request.character_context.prior_events
+            else "No prior events recorded."
+        )
+
+        system_instruction = MISHAP_SYSTEM_PROMPTS[mode] + guidance_suffix
+
+        if mode == VerbosityLevel.BRIEF:
+            format_block = (
+                'Respond with a JSON object: {"description": "Your 1-2 sentence gloss here"}'
+            )
+        elif mode == VerbosityLevel.INSPIRATION:
+            format_block = (
+                'Respond with a JSON object: '
+                '{"description": "Numbered list of story hooks (one per line)"}'
+            )
+        else:  # FULL
+            format_block = (
+                'Respond with a JSON object:\n'
+                '{"description": "Your narrative scene (2-4 paragraphs)..."}\n'
+            )
+
+        prompt = f"""You are a narrator for a gritty sci-fi tabletop RPG.
+
+## Context
+- Career: {request.career}
+- Term: {request.term}
+- Character Name: {request.character_context.name}
+- Mishap Text: "{request.mishap_text}"
+- Recent Events: {prior_events_text}
+
+## Instructions
+{system_instruction}
+
+Write in second person ("You..."). Focus on the consequences and emotional weight of the mishap.
+The dice determine outcomes — you add texture, not mechanics.
+
+## Response Format
+{format_block}"""
+
+        # Retrieve campaign setting context for setting-aware enrichment
+        synthesis_query = (
+            f"Traveller RPG {request.career} career mishap: "
+            f"{request.mishap_text}"
+        )
+        context_chunks = await self._retrieve_context(synthesis_query, ["public"])
+
+        try:
+            if context_chunks:
+                response_text = await llm.generate_with_context(prompt, context_chunks)
+            else:
+                response_text = await llm.generate(prompt)
+            json_match = re.search(r"\{[\s\S]*\}", response_text)
+            if json_match:
+                data = json.loads(json_match.group())
+                raw_desc = data.get("description", response_text)
+                if isinstance(raw_desc, list):
+                    raw_desc = "\n".join(str(item) for item in raw_desc)
+                elif not isinstance(raw_desc, str):
+                    raw_desc = str(raw_desc)
+                return MishapDescriptionResponse(
+                    description=raw_desc,
+                    mode=mode,
+                    guidance_used=request.guidance,
+                )
+            return MishapDescriptionResponse(
+                description=response_text,
+                mode=mode,
+                guidance_used=request.guidance,
+            )
+        except json.JSONDecodeError:
+            return MishapDescriptionResponse(
+                description=response_text,
+                mode=mode,
+                guidance_used=request.guidance,
+            )
+        except Exception as e:
+            raise RuntimeError(f"Mishap description generation failed: {e}")
+
     async def generate_npc_details(
-        self, request: NPCDetailsRequest
+        self,
+        request: NPCDetailsRequest,
+        scope: list[str],
     ) -> NPCDetailsResponse:
         llm = self._get_llm()
         mode = request.verbosity

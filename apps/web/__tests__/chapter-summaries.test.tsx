@@ -1,10 +1,10 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Y from 'yjs';
-import CharacterPreview from '../components/chargen/CharacterPreview';
+import { ServiceRecord } from '../components/chargen/ServiceRecord';
 import { createCharacter, getCharacter, updateCharacterFields } from '../lib/chargen/state';
-import type { CareerTermResult } from '../lib/chargen/types';
+import type { ChapterSummary, CareerTermResult } from '../lib/chargen/types';
 
 const mocks = vi.hoisted(() => {
   const state = { doc: null as Y.Doc | null };
@@ -78,53 +78,53 @@ describe('chapter summaries', () => {
     expect(character?.chapters[0]?.rankChange).toContain('Rank 1');
   });
 
-  it('renders all finalized chapters in the Service Record view', async () => {
+  it('renders all finalized chapters in the Service Record view', () => {
     const characterId = createCharacter(doc, 'player-1', 'Record Keeper');
+
+    const chapters: ChapterSummary[] = [
+      {
+        termNumber: 1,
+        careerId: 'navy',
+        careerName: 'Navy',
+        age: 22,
+        keyEventDescription: 'A frontier patrol ended in a desperate rescue under fire.',
+        skillsGained: ['Gun Combat 1'],
+        rankChange: 'Promoted to Rank 1',
+        drafted: false,
+      },
+      {
+        termNumber: 2,
+        careerId: 'scout',
+        careerName: 'Scout',
+        age: 26,
+        keyEventDescription: 'An uncharted jump left the ship listening to old distress calls.',
+        skillsGained: ['Pilot 1'],
+        drafted: true,
+      },
+    ];
 
     updateCharacterFields(doc, characterId, {
       status: 'finalized',
       terms: [completedNavyTerm],
       age: 22,
-      chapters: [
-        {
-          termNumber: 1,
-          careerId: 'navy',
-          careerName: 'Navy',
-          age: 22,
-          keyEventDescription: 'A frontier patrol ended in a desperate rescue under fire.',
-          skillsGained: ['Gun Combat 1'],
-          rankChange: 'Promoted to Rank 1',
-          drafted: false,
-        },
-        {
-          termNumber: 2,
-          careerId: 'scout',
-          careerName: 'Scout',
-          age: 26,
-          keyEventDescription: 'An uncharted jump left the ship listening to old distress calls.',
-          skillsGained: ['Pilot 1'],
-          drafted: true,
-        },
-      ],
+      chapters,
     });
 
-    render(<CharacterPreview characterId={characterId} />);
+    const character = getCharacter(doc, characterId);
+    expect(character?.chapters).toEqual(chapters);
 
-    const recordButton = await screen.findByRole('button', { name: /service record/i });
-    fireEvent.click(recordButton);
+    render(<ServiceRecord chapters={chapters} characterName="Record Keeper" />);
 
-    await waitFor(() => {
-      const heading = screen.getByRole('heading', { name: /service record/i });
-      const serviceRecord = heading.closest('section');
-      if (!serviceRecord) {
-        throw new Error('Service Record section was not rendered');
-      }
-      const record = within(serviceRecord);
+    const heading = screen.getByRole('heading', { name: /service record/i });
+    const serviceRecord = heading.closest('section');
+    if (!serviceRecord) {
+      throw new Error('Service Record section was not rendered');
+    }
+    const record = within(serviceRecord);
 
-      expect(record.getByText('Chapter I · Age 22')).toBeTruthy();
-      expect(record.getByText(/Chapter II/i)).toBeTruthy();
-      expect(record.getByText(/desperate rescue/i)).toBeTruthy();
-      expect(record.getByText(/Conscripted service/i)).toBeTruthy();
-    });
+    expect(record.getByText('Chapter I · Age 22')).toBeTruthy();
+    expect(record.getByText(/Chapter II/i)).toBeTruthy();
+    expect(record.getByText(/desperate rescue/i)).toBeTruthy();
+    expect(record.getByText(/Conscripted service/i)).toBeTruthy();
   });
 });

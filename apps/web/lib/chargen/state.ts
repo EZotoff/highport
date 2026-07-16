@@ -522,3 +522,292 @@ export function getEntityClaimers(doc: Y.Doc, entityId: string): string[] {
   const entity = getEntityFromPool(doc, entityId);
   return entity?.claimedBy || [];
 }
+
+// ============================================
+// Lifepath Proposal Functions (Phase 4)
+// ============================================
+
+export function getLifepathProposalsMap(doc: Y.Doc): Y.Map<Y.Map<unknown>> {
+  const chargen = getChargenMap(doc);
+  if (!chargen.has('lifepathProposals')) {
+    chargen.set('lifepathProposals', new Y.Map());
+  }
+  return chargen.get('lifepathProposals') as Y.Map<Y.Map<unknown>>;
+}
+
+export function yMapToLifepathProposal(proposalMap: Y.Map<unknown>): LifepathProposal {
+  return {
+    id: proposalMap.get('id') as string,
+    type: proposalMap.get('type') as LifepathProposal['type'],
+    targetTerm: proposalMap.get('targetTerm') as number,
+    title: proposalMap.get('title') as string,
+    description: proposalMap.get('description') as string,
+    proposedEdit: proposalMap.get('proposedEdit') as string | undefined,
+    status: proposalMap.get('status') as LifepathProposal['status'],
+    generatedAt: proposalMap.get('generatedAt') as number,
+    characterId: proposalMap.get('characterId') as string | undefined,
+  };
+}
+
+export function getLifepathProposals(doc: Y.Doc): LifepathProposal[] {
+  return Array.from(getLifepathProposalsMap(doc).values(), yMapToLifepathProposal);
+}
+
+export function addLifepathProposal(
+  doc: Y.Doc,
+  proposal: Omit<LifepathProposal, 'id' | 'status' | 'generatedAt'> & {
+    status?: LifepathProposal['status'];
+  },
+): string {
+  const proposalsMap = getLifepathProposalsMap(doc);
+  const proposalId = crypto.randomUUID();
+
+  const fullProposal: LifepathProposal = {
+    ...proposal,
+    id: proposalId,
+    status: proposal.status ?? 'pending',
+    generatedAt: Date.now(),
+  };
+
+  doc.transact(() => {
+    proposalsMap.set(proposalId, new Y.Map(Object.entries(fullProposal)));
+  }, 'lifepath-proposal-add');
+
+  return proposalId;
+}
+
+export function resolveLifepathProposal(doc: Y.Doc, proposalId: string, accepted: boolean): void {
+  const proposalMap = getLifepathProposalsMap(doc).get(proposalId);
+  if (!proposalMap) return;
+
+  doc.transact(() => {
+    proposalMap.set('status', accepted ? 'accepted' : 'rejected');
+  }, 'lifepath-proposal-resolve');
+}
+
+export function removeLifepathProposal(doc: Y.Doc, proposalId: string): void {
+  doc.transact(() => {
+    getLifepathProposalsMap(doc).delete(proposalId);
+  }, 'lifepath-proposal-remove');
+}
+
+// ============================================
+// Cross-Character Link Functions (Phase 4)
+// ============================================
+
+export function getCrossCharacterLinksMap(doc: Y.Doc): Y.Map<Y.Map<unknown>> {
+  const chargen = getChargenMap(doc);
+  if (!chargen.has('crossCharacterLinks')) {
+    chargen.set('crossCharacterLinks', new Y.Map());
+  }
+  return chargen.get('crossCharacterLinks') as Y.Map<Y.Map<unknown>>;
+}
+
+export function yMapToCrossCharacterLink(linkMap: Y.Map<unknown>): CrossCharacterLinkProposal {
+  const acceptedByMap = linkMap.get('acceptedBy');
+  const acceptedBy = acceptedByMap instanceof Y.Map ? Array.from(acceptedByMap.keys()) : [];
+  return {
+    id: linkMap.get('id') as string,
+    sourceCharId: linkMap.get('sourceCharId') as string,
+    targetCharId: linkMap.get('targetCharId') as string,
+    sourceEntityId: linkMap.get('sourceEntityId') as string | undefined,
+    targetEntityId: linkMap.get('targetEntityId') as string | undefined,
+    relationship: linkMap.get('relationship') as string,
+    description: linkMap.get('description') as string,
+    status: linkMap.get('status') as CrossCharacterLinkProposal['status'],
+    generatedAt: linkMap.get('generatedAt') as number,
+    ...(acceptedBy.length > 0 ? { acceptedBy } : {}),
+  };
+}
+
+export function getCrossCharacterLinks(doc: Y.Doc): CrossCharacterLinkProposal[] {
+  return Array.from(getCrossCharacterLinksMap(doc).values(), yMapToCrossCharacterLink);
+}
+
+export function addCrossCharacterLink(
+  doc: Y.Doc,
+  link: Omit<CrossCharacterLinkProposal, 'id' | 'status' | 'generatedAt'>,
+): string {
+  const linksMap = getCrossCharacterLinksMap(doc);
+  const linkId = crypto.randomUUID();
+
+  const fullLink: CrossCharacterLinkProposal = {
+    ...link,
+    id: linkId,
+    status: 'pending',
+    generatedAt: Date.now(),
+  };
+  const acceptedBy = fullLink.acceptedBy ?? [];
+  const linkMap = new Y.Map<unknown>(Object.entries(fullLink));
+  linkMap.set('acceptedBy', new Y.Map(acceptedBy.map((characterId) => [characterId, true])));
+
+  doc.transact(() => {
+    linksMap.set(linkId, linkMap);
+  }, 'cross-character-link-add');
+
+  return linkId;
+}
+
+export function resolveCrossCharacterLink(doc: Y.Doc, linkId: string, accepted: boolean): void {
+  const linkMap = getCrossCharacterLinksMap(doc).get(linkId);
+  if (!linkMap) return;
+
+  doc.transact(() => {
+    linkMap.set('status', accepted ? 'accepted' : 'rejected');
+  }, 'cross-character-link-resolve');
+}
+
+export function removeCrossCharacterLink(doc: Y.Doc, linkId: string): void {
+  doc.transact(() => {
+    getCrossCharacterLinksMap(doc).delete(linkId);
+  }, 'cross-character-link-remove');
+}
+
+export function findNodeIdByChargenId(doc: Y.Doc, chargenId: string): string | null {
+  const nodes = getNodesMap(doc);
+  let foundId: string | null = null;
+  nodes.forEach((nodeMap, id) => {
+    const metadata = nodeMap.get('metadata');
+    if (
+      typeof metadata === 'object' &&
+      metadata !== null &&
+      'chargenId' in metadata &&
+      metadata.chargenId === chargenId
+    ) {
+      foundId = id;
+    }
+  });
+  return foundId;
+}
+
+export function createCrossCharacterLinkEdge(
+  doc: Y.Doc,
+  link: Pick<CrossCharacterLinkProposal, 'sourceCharId' | 'targetCharId' | 'relationship'>,
+): void {
+  const sourceNodeId = findNodeIdByChargenId(doc, link.sourceCharId);
+  const targetNodeId = findNodeIdByChargenId(doc, link.targetCharId);
+  if (!sourceNodeId || !targetNodeId) return;
+
+  const edges = getEdgesMap(doc);
+  let edgeExists = false;
+  edges.forEach((edgeMap) => {
+    const sourceId = edgeMap.get('source_id');
+    const targetId = edgeMap.get('target_id');
+    if (
+      (sourceId === sourceNodeId && targetId === targetNodeId) ||
+      (sourceId === targetNodeId && targetId === sourceNodeId)
+    ) {
+      edgeExists = true;
+    }
+  });
+
+  if (edgeExists) return;
+
+  const edge: GraphEdge = {
+    id: crypto.randomUUID(),
+    source_id: sourceNodeId,
+    target_id: targetNodeId,
+    relation_label: link.relationship,
+    type: 'directional',
+    weight: 1,
+    style: 'solid',
+    color: '#71717a',
+    hidden: false,
+  };
+  addEdge(doc, edge);
+}
+
+export function acceptCrossCharacterLink(doc: Y.Doc, linkId: string, characterId: string): void {
+  const linkMap = getCrossCharacterLinksMap(doc).get(linkId);
+  if (!linkMap) return;
+  const acceptedBy = linkMap.get('acceptedBy');
+  if (!(acceptedBy instanceof Y.Map) || acceptedBy.has(characterId)) return;
+  const link = yMapToCrossCharacterLink(linkMap);
+  const bothAccepted =
+    (characterId === link.sourceCharId || acceptedBy.has(link.sourceCharId)) &&
+    (characterId === link.targetCharId || acceptedBy.has(link.targetCharId));
+
+  doc.transact(() => {
+    acceptedBy.set(characterId, true);
+    linkMap.set('status', bothAccepted ? 'accepted' : 'pending');
+
+    if (bothAccepted) {
+      createCrossCharacterLinkEdge(doc, link);
+    }
+  }, 'cross-character-link-accept');
+}
+
+export function resolveAIDraft(
+  doc: Y.Doc,
+  characterId: string,
+  termNumber: number,
+  fieldPath: 'eventDescription' | 'mishapDescription',
+  action: 'accept' | 'reject' | 'edit',
+  editedValue?: string,
+): boolean {
+  const characters = getCharactersMap(doc);
+  const charMap = characters.get(characterId);
+  if (!charMap) return false;
+
+  const terms = (charMap.get('terms') as CareerTermResult[]) || [];
+
+  const termIndex = terms.findIndex((term) => {
+    if (term.termNumber !== termNumber) return false;
+    const field = term[fieldPath];
+    if (typeof field === 'object' && field !== null && 'value' in field) {
+      const prov = field as AIProvenance<string>;
+      return prov.pendingReviewBy === 'gm';
+    }
+    return false;
+  });
+
+  if (termIndex === -1) return false;
+
+  const now = Date.now();
+
+  doc.transact(() => {
+    const updatedTerms: CareerTermResult[] = terms.map((t, i) => {
+      if (i !== termIndex) return t;
+      return { ...t };
+    });
+    const term = updatedTerms[termIndex];
+    const currentField = term[fieldPath] as AIProvenance<string>;
+
+    const targetStatus =
+      action === 'accept' ? 'accepted' : action === 'reject' ? 'rejected' : 'edited';
+
+    const reviewEntry: { at: number; by: string; from: string; to: string; edit?: string } = {
+      at: now,
+      by: 'gm',
+      from: currentField.status,
+      to: targetStatus,
+    };
+    if (editedValue !== undefined) {
+      reviewEntry.edit = editedValue;
+    }
+
+    const updatedField: AIProvenance<string> = {
+      ...currentField,
+      status: targetStatus as AIProvenance<string>['status'],
+      pendingReviewBy: null,
+      reviewLog: [...(currentField.reviewLog || []), reviewEntry],
+    };
+
+    if (action === 'edit') {
+      updatedField.source = 'gm';
+      if (editedValue !== undefined) {
+        updatedField.value = editedValue;
+      }
+    }
+
+    if (fieldPath === 'eventDescription') {
+      (updatedTerms[termIndex] as CareerTermResult).eventDescription = updatedField;
+    } else {
+      (updatedTerms[termIndex] as CareerTermResult).mishapDescription = updatedField;
+    }
+    charMap.set('terms', JSON.parse(JSON.stringify(updatedTerms)));
+  }, 'ai-draft-resolve');
+
+  saveCharacterSnapshot(yMapToCharacter(charMap));
+  return true;
+}

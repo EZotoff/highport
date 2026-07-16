@@ -142,6 +142,62 @@ export async function generateNPCDetails(params: {
 }
 
 /**
+ * Result from mishap description generation
+ */
+export interface MishapDescriptionResult {
+  description: string;
+}
+
+/**
+ * Generate a narrative description for a career mishap
+ */
+export async function generateMishapDescription(params: {
+  mishapText: string;
+  career: string;
+  term: number;
+  characterContext: CharacterContext;
+  verbosity: VerbosityLevel;
+  guidance?: string;
+}): Promise<MishapDescriptionResult> {
+  try {
+    const requestBody = {
+      mishap_text: params.mishapText,
+      career: params.career,
+      term: params.term,
+      character_context: {
+        name: params.characterContext.name,
+        characteristics: params.characterContext.characteristics,
+        prior_events: params.characterContext.priorEvents,
+      },
+      verbosity: params.verbosity,
+      guidance: params.guidance || undefined,
+    };
+
+    const response = await fetch(`${RAG_SERVICE_URL}/narrative/mishap-description`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      if (response.status >= 500) {
+        throw new RagUnavailableError(`RAG service unavailable (${response.status})`);
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `API request failed with status ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new RagUnavailableError('RAG service unreachable');
+    }
+    console.error('Mishap generation failed:', error);
+    throw error;
+  }
+}
+
+/**
  * Check if the narrative API is available
  */
 export async function checkNarrativeAvailable(): Promise<boolean> {

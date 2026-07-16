@@ -406,13 +406,70 @@ describe('GMControlPanel - AI Draft Review', () => {
   });
 
   it('resolveAIDraft returns false for non-existent character', () => {
-    const result = resolveAIDraft(doc, 'nonexistent', 'eventDescription', 'accept');
+    const result = resolveAIDraft(doc, 'nonexistent', 1, 'eventDescription', 'accept');
     expect(result).toBe(false);
   });
 
   it('resolveAIDraft returns false when no pending draft', () => {
     const charId = createCharacter(doc, 'player-clean', 'Clean');
-    const result = resolveAIDraft(doc, charId, 'eventDescription', 'accept');
+    const result = resolveAIDraft(doc, charId, 1, 'eventDescription', 'accept');
     expect(result).toBe(false);
+  });
+  it('resolving a draft targets the correct term', () => {
+    const charId = createCharacter(doc, 'player-target', 'Target');
+    const charMap = getCharactersMap(doc).get(charId)!;
+
+    doc.transact(() => {
+      const terms: CareerTermResult[] = [
+        {
+          termNumber: 1,
+          careerId: 'scout',
+          assignmentId: 'scout-courier',
+          startAge: 18,
+          survived: true,
+          advanced: false,
+          currentRank: 0,
+          skillsGained: [],
+          spawnedEntities: [],
+          eventDescription: {
+            value: 'Term 1 event',
+            source: 'ai',
+            mode: 'inspiration',
+            status: 'draft',
+            pendingReviewBy: 'gm',
+          } as AIProvenance<string>,
+        },
+        {
+          termNumber: 2,
+          careerId: 'army',
+          assignmentId: 'army-soldier',
+          startAge: 22,
+          survived: true,
+          advanced: false,
+          currentRank: 0,
+          skillsGained: [],
+          spawnedEntities: [],
+          mishapDescription: {
+            value: 'Term 2 mishap',
+            source: 'ai',
+            mode: 'inspiration',
+            status: 'draft',
+            pendingReviewBy: 'gm',
+          } as AIProvenance<string>,
+        },
+      ];
+      charMap.set('terms', JSON.parse(JSON.stringify(terms)));
+    });
+
+    const result = resolveAIDraft(doc, charId, 2, 'mishapDescription', 'accept');
+    expect(result).toBe(true);
+
+    const updatedTerms = getCharactersMap(doc).get(charId)!.get('terms') as CareerTermResult[];
+    const term1 = updatedTerms.find((t) => t.termNumber === 1);
+    const term2 = updatedTerms.find((t) => t.termNumber === 2);
+
+    expect((term1?.eventDescription as AIProvenance<string>).pendingReviewBy).toBe('gm');
+    expect((term2?.mishapDescription as AIProvenance<string>).status).toBe('accepted');
+    expect((term2?.mishapDescription as AIProvenance<string>).pendingReviewBy).toBeNull();
   });
 });
