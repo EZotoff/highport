@@ -26,7 +26,6 @@ import { useState, useEffect } from 'react';
 import { SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../../lib/chargen/hooks';
-import type { VerbosityLevel } from '../../../lib/chargen/narrative';
 import { updateCharacterFields } from '../../../lib/chargen/state';
 import {
   applySkillGain,
@@ -42,7 +41,13 @@ import type {
   ChargenStatus,
   SpawnedEntityRef,
 } from '../../../lib/chargen/types';
-import { useEventNarrative, useNarrativeAvailable } from '../../../lib/chargen/useNarrative';
+import { useGMControls } from '../../../lib/chargen/useGMControls';
+import { isCanonical, requiresReview, shouldShowDraft } from '../../../lib/chargen/gm-approval';
+import {
+  useEventNarrative,
+  useMishapNarrative,
+  useNarrativeAvailable,
+} from '../../../lib/chargen/useNarrative';
 import { getYDoc } from '../../../lib/ydoc';
 import { addEdge } from '../../../lib/yjs-helpers';
 import { ChapterCard } from '../ChapterCard';
@@ -52,7 +57,7 @@ import { NarrativeUnavailableNotice } from '../NarrativeUnavailableNotice';
 
 interface TermResolutionStepProps {
   characterId: string | null;
-  verbosity: VerbosityLevel;
+  currentUserId: string;
 }
 
 type TermPhase =
@@ -68,7 +73,10 @@ type TermPhase =
 const PHYSICAL_AGING_STATS: PhysicalCharacteristicCode[] = ['STR', 'DEX', 'END'];
 const MENTAL_AGING_STATS: MentalCharacteristicCode[] = ['INT', 'EDU', 'SOC'];
 
-export default function TermResolutionStep({ characterId, verbosity }: TermResolutionStepProps) {
+export default function TermResolutionStep({
+  characterId,
+  currentUserId,
+}: TermResolutionStepProps) {
   const character = useCharacter(characterId);
 
   const [phase, setPhase] = useState<TermPhase>('survival');
@@ -99,6 +107,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
   const [descriptionEditorOpen, setDescriptionEditorOpen] = useState(false);
   const [guidanceExpanded, setGuidanceExpanded] = useState(false);
   const [guidanceText, setGuidanceText] = useState('');
+  const [generatedMishapDesc, setGeneratedMishapDesc] = useState<string | undefined>();
 
   const { isAvailable: narrativeAvailable } = useNarrativeAvailable();
   const {
@@ -107,6 +116,15 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     error: narrativeError,
     unavailable: narrativeUnavailable,
   } = useEventNarrative();
+  const {
+    generate: generateMishapNarrative,
+    isLoading: mishapLoading,
+    error: mishapError,
+    unavailable: mishapUnavailable,
+  } = useMishapNarrative();
+  const { isGM, settings } = useGMControls(currentUserId);
+  const effectiveVerbosity = settings?.aiVerbosity ?? 'inspiration';
+  const gmApprovalMode = settings?.gmApprovalMode ?? 'moderate';
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: only run when character ID or term number changes
   useEffect(() => {
@@ -512,13 +530,74 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
 
   const handleForcedMusterOut = () => {
     const updatedTerms = [...character.terms];
-    if (mishap) {
-      updatedTerms[character.terms.length - 1] = {
-        ...updatedTerms[character.terms.length - 1],
-        mishap,
+    const termUpdate: Partial<CareerTermResult> = {};
+    if (mishap) termUpdate.mishap = mishap;
+    if (generatedMishapDesc) {
+      const isLenient = gmApprovalMode === 'lenient';
+      termUpdate.mishapDescription = {
+        value: generatedMishapDesc,
+        source: 'ai',
+        mode: effectiveVerbosity,
+        status: isLenient ? 'accepted' : 'draft',
+        derivedFrom: `mishap-${mishap?.description?.slice(0, 30) ?? 'unknown'}`,
+        generatedAt: Date.now(),
+        pendingReviewBy: isLenient ? null : 'gm',
       };
     }
+    updatedTerms[character.terms.length - 1] = {
+      ...updatedTerms[character.terms.length - 1],
+      ...termUpdate,
+    };
     finishTerm(updatedTerms, 'mustering_out');
+  };
+
+  const handleGenerateMishapDescription = async () => {
+    if (!mishap || !character) return;
+
+    try {
+      const result = await generateMishapNarrative({
+        mishapText: mishap.description,
+        career: career.id,
+        term: character.terms.length,
+        characterContext: {
+          name: character.name,
+          characteristics: character.characteristics as unknown as Record<string, number>,
+          priorEvents: character.terms
+            .slice(0, -1)
+            .map((t) => t.event?.description)
+            .filter(Boolean) as string[],
+        },
+        verbosity: effectiveVerbosity,
+      });
+
+      // Persist provenance to the character's term BEFORE setting local state
+      const doc = getYDoc();
+      const updatedTerms = [...character.terms];
+      const currentTermIndex = character.terms.length - 1;
+
+      const provenance: AIProvenance<string> = {
+        value: result.description,
+        source: 'ai',
+        mode: effectiveVerbosity,
+        status: gmApprovalMode === 'lenient' ? 'accepted' : 'draft',
+        derivedFrom: `mishap-${mishap.description?.slice(0, 30) ?? 'unknown'}`,
+        generatedAt: Date.now(),
+        pendingReviewBy: gmApprovalMode === 'lenient' ? null : 'gm',
+      };
+
+      updatedTerms[currentTermIndex] = {
+        ...updatedTerms[currentTermIndex],
+        mishapDescription: provenance,
+      };
+
+      updateCharacterFields(doc, character.id, { terms: updatedTerms });
+
+      setGeneratedMishapDesc(result.description);
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'RagUnavailableError') {
+        console.error(e);
+      }
+    }
   };
 
   const handleGenerateDescription = async (guidance?: string) => {
@@ -538,7 +617,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
             .map((t) => t.event?.description)
             .filter(Boolean) as string[],
         },
-        verbosity,
+        verbosity: effectiveVerbosity,
         guidance: guidance || undefined,
       });
 
@@ -549,10 +628,11 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
       const provenance: AIProvenance<string> = {
         value: result.description,
         source: 'ai',
-        mode: verbosity,
-        status: 'draft',
+        mode: effectiveVerbosity,
+        status: gmApprovalMode === 'lenient' ? 'accepted' : 'draft',
         derivedFrom: `event-roll-${eventRoll?.total ?? 'unknown'}`,
         generatedAt: Date.now(),
+        pendingReviewBy: gmApprovalMode === 'lenient' ? null : 'gm',
       };
 
       updatedTerms[currentTermIndex] = {
@@ -597,13 +677,20 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     const updatedTerms = [...character.terms];
     const currentTermIndex = character.terms.length - 1;
 
+    const currentDesc = currentTerm.eventDescription;
+    const currentProvenance =
+      typeof currentDesc === 'object' && currentDesc !== null && 'value' in currentDesc
+        ? (currentDesc as AIProvenance<string>)
+        : undefined;
+
     const provenance: AIProvenance<string> = {
       value: generatedDescription,
       source: 'ai',
-      mode: verbosity,
+      mode: effectiveVerbosity,
       status: 'rejected',
       derivedFrom: `event-roll-${eventRoll?.total ?? 'unknown'}`,
       generatedAt: Date.now(),
+      pendingReviewBy: currentProvenance?.pendingReviewBy,
     };
 
     updatedTerms[currentTermIndex] = {
@@ -632,10 +719,11 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     const provenance: AIProvenance<string> = {
       value,
       source: 'ai',
-      mode: verbosity,
+      mode: effectiveVerbosity,
       status: 'draft',
       derivedFrom: `event-roll-${eventRoll?.total ?? 'unknown'}`,
       generatedAt: Date.now(),
+      pendingReviewBy: undefined,
     };
 
     updatedTerms[currentTermIndex] = {
@@ -655,13 +743,20 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     const updatedTerms = [...character.terms];
     const currentTermIndex = character.terms.length - 1;
 
+    const currentDesc = currentTerm.eventDescription;
+    const currentProvenance =
+      typeof currentDesc === 'object' && currentDesc !== null && 'value' in currentDesc
+        ? (currentDesc as AIProvenance<string>)
+        : undefined;
+
     const provenance: AIProvenance<string> = {
       value: generatedDescription,
       source: 'ai',
-      mode: verbosity,
+      mode: effectiveVerbosity,
       status: 'accepted',
       derivedFrom: `event-roll-${eventRoll?.total ?? 'unknown'}`,
       generatedAt: Date.now(),
+      pendingReviewBy: currentProvenance?.pendingReviewBy,
     };
 
     updatedTerms[currentTermIndex] = {
@@ -695,65 +790,114 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
     addEdge(doc, edge);
   };
 
-  const renderSurvival = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-heading font-display">Phase 1: Survival</h3>
-        <span className="text-subtle font-mono">
-          {assignment.survival.characteristic} {assignment.survival.target}+
-        </span>
-      </div>
+  const renderSurvival = () => {
+    const mishapDescriptionField = currentTerm?.mishapDescription;
+    const mishapProvenance: AIProvenance<string> | undefined =
+      mishapDescriptionField &&
+      typeof mishapDescriptionField === 'object' &&
+      mishapDescriptionField !== null &&
+      'value' in mishapDescriptionField
+        ? (mishapDescriptionField as AIProvenance<string>)
+        : undefined;
+    const showMishapDraft = shouldShowDraft(gmApprovalMode, mishapProvenance, isGM);
+    const displayMishapDesc = showMishapDraft ? generatedMishapDesc : 'Pending GM Review...';
+    const showMishapReviewBadge = mishapProvenance
+      ? requiresReview(mishapProvenance, gmApprovalMode)
+      : false;
 
-      {!survivalRoll ? (
-        <div className="text-center py-8">
-          <p className="text-subtle mb-6">
-            Make a survival roll to avoid mishaps and continue your career.
-          </p>
-          {conscriptionSurvivalDM > 0 && (
-            <p className="text-cyan-300 font-mono text-sm mb-6">
-              Conscription survival DM +{conscriptionSurvivalDM}
+    return (
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-heading font-display">Phase 1: Survival</h3>
+          <span className="text-subtle font-mono">
+            {assignment.survival.characteristic} {assignment.survival.target}+
+          </span>
+        </div>
+
+        {!survivalRoll ? (
+          <div className="text-center py-8">
+            <p className="text-subtle mb-6">
+              Make a survival roll to avoid mishaps and continue your career.
             </p>
-          )}
-          <SciFiButton theme="cyan" glow onClick={handleSurvivalRoll}>
-            Roll Survival
-          </SciFiButton>
-        </div>
-      ) : (
-        <div className="bg-zinc-950 rounded p-4 border border-zinc-800 text-center">
-          <div className="text-3xl font-mono font-bold mb-2">
-            <span
-              className={
-                survivalRoll.total >= assignment.survival.target ? 'text-green-400' : 'text-red-400'
-              }
-            >
-              {survivalRoll.total}
-            </span>
+            {conscriptionSurvivalDM > 0 && (
+              <p className="text-cyan-300 font-mono text-sm mb-6">
+                Conscription survival DM +{conscriptionSurvivalDM}
+              </p>
+            )}
+            <SciFiButton theme="cyan" glow onClick={handleSurvivalRoll}>
+              Roll Survival
+            </SciFiButton>
           </div>
-          <div className="text-sm text-subtle mb-2">
-            Roll: {survivalRoll.rolls[0]} + {survivalRoll.rolls[1]} + DM {survivalRoll.modifier}
+        ) : (
+          <div className="bg-zinc-950 rounded p-4 border border-zinc-800 text-center">
+            <div className="text-3xl font-mono font-bold mb-2">
+              <span
+                className={
+                  survivalRoll.total >= assignment.survival.target
+                    ? 'text-green-400'
+                    : 'text-red-400'
+                }
+              >
+                {survivalRoll.total}
+              </span>
+            </div>
+            <div className="text-sm text-subtle mb-2">
+              Roll: {survivalRoll.rolls[0]} + {survivalRoll.rolls[1]} + DM {survivalRoll.modifier}
+            </div>
+            {conscriptionSurvivalDM > 0 && (
+              <div className="text-xs text-cyan-300 mb-2">
+                Includes conscription survival DM +{conscriptionSurvivalDM}
+              </div>
+            )}
+            {survivalRoll.total >= assignment.survival.target ? (
+              <div className="text-green-400 font-bold">✓ SURVIVED</div>
+            ) : (
+              <div className="space-y-4">
+                {mishap && (
+                  <div className="bg-red-900/20 p-4 rounded text-default">{mishap.description}</div>
+                )}
+                {mishap &&
+                  narrativeAvailable &&
+                  (mishapLoading ? (
+                    <div className="text-sm text-subtle animate-pulse">
+                      Generating mishap narrative...
+                    </div>
+                  ) : generatedMishapDesc !== undefined ? (
+                    <div className="space-y-2">
+                      {showMishapReviewBadge && (
+                        <span className="text-xs text-amber-400 font-mono font-bold uppercase tracking-wider bg-amber-950/50 border border-amber-800/50 px-2 py-0.5 rounded">
+                          Pending GM Approval
+                        </span>
+                      )}
+                      <textarea
+                        aria-label="Mishap narrative description"
+                        value={displayMishapDesc}
+                        onChange={(e) => setGeneratedMishapDesc(e.target.value)}
+                        className="w-full min-h-[60px] bg-zinc-950 border border-zinc-700 rounded p-3 text-default italic text-sm resize-y focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                        placeholder="Generated mishap description..."
+                      />
+                    </div>
+                  ) : (
+                    <SciFiButton
+                      onClick={handleGenerateMishapDescription}
+                      theme="red"
+                      scifiVariant="ghost"
+                      className="w-full"
+                    >
+                      Generate Mishap Narrative
+                    </SciFiButton>
+                  ))}
+                {mishap && !narrativeAvailable && <NarrativeUnavailableNotice />}
+                <SciFiButton onClick={handleForcedMusterOut} scifiVariant="destructive">
+                  Accept Mishap & Leave Career
+                </SciFiButton>
+              </div>
+            )}
           </div>
-          {conscriptionSurvivalDM > 0 && (
-            <div className="text-xs text-cyan-300 mb-2">
-              Includes conscription survival DM +{conscriptionSurvivalDM}
-            </div>
-          )}
-          {survivalRoll.total >= assignment.survival.target ? (
-            <div className="text-green-400 font-bold">✓ SURVIVED</div>
-          ) : (
-            <div className="space-y-4">
-              <div className="text-red-400 font-bold">✗ MISHAP</div>
-              {mishap && (
-                <div className="bg-red-900/20 p-4 rounded text-default">{mishap.description}</div>
-              )}
-              <SciFiButton onClick={handleForcedMusterOut} scifiVariant="destructive">
-                Accept Mishap & Leave Career
-              </SciFiButton>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   const renderEvent = () => {
     const flavorText = event
@@ -772,6 +916,19 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
         descriptionStatus = 'accepted';
       }
     }
+
+    const eventProvenance: AIProvenance<string> | undefined =
+      eventDescriptionField &&
+      typeof eventDescriptionField === 'object' &&
+      eventDescriptionField !== null &&
+      'value' in eventDescriptionField
+        ? (eventDescriptionField as AIProvenance<string>)
+        : undefined;
+    const showDraft = shouldShowDraft(gmApprovalMode, eventProvenance, isGM);
+    const displayDescription = showDraft ? generatedDescription : 'Pending GM Review...';
+    const showReviewBadge = eventProvenance
+      ? requiresReview(eventProvenance, gmApprovalMode)
+      : false;
 
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in mt-4">
@@ -819,9 +976,15 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-subtle">AI Description</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-emerald-400 font-mono font-bold uppercase tracking-wider bg-emerald-950/50 border border-emerald-800/50 px-2 py-0.5 rounded">
-                          Accepted ✓
-                        </span>
+                        {eventProvenance && isCanonical(eventProvenance, gmApprovalMode) ? (
+                          <span className="text-xs text-emerald-400 font-mono font-bold uppercase tracking-wider bg-emerald-950/50 border border-emerald-800/50 px-2 py-0.5 rounded">
+                            Accepted ✓
+                          </span>
+                        ) : (
+                          <span className="text-xs text-amber-400 font-mono font-bold uppercase tracking-wider bg-amber-950/50 border border-amber-800/50 px-2 py-0.5 rounded">
+                            Pending GM Approval
+                          </span>
+                        )}
                         <SciFiButton
                           onClick={handleEditDescription}
                           theme="slate"
@@ -833,7 +996,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                       </div>
                     </div>
                     <div className="text-default italic text-sm bg-zinc-900/30 border border-zinc-800/50 rounded p-3">
-                      {generatedDescription}
+                      {displayDescription}
                     </div>
                   </div>
                 )}
@@ -858,7 +1021,14 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                 {(descriptionStatus === 'draft' || descriptionStatus === 'edited') && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-subtle">AI Description (Draft)</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-subtle">AI Description (Draft)</span>
+                        {showReviewBadge && (
+                          <span className="text-xs text-amber-400 font-mono font-bold uppercase tracking-wider bg-amber-950/50 border border-amber-800/50 px-2 py-0.5 rounded">
+                            Pending GM Approval
+                          </span>
+                        )}
+                      </div>
                       <SciFiButton
                         onClick={() => handleGenerateDescription()}
                         disabled={narrativeLoading}
@@ -879,7 +1049,7 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                     <div className="space-y-3">
                       <textarea
                         aria-label="Event narrative description"
-                        value={generatedDescription || ''}
+                        value={displayDescription || ''}
                         onChange={(e) => setGeneratedDescription(e.target.value)}
                         className="w-full min-h-[80px] bg-zinc-950 border border-zinc-700 rounded p-3 text-default italic resize-y focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2 focus:border-cyan-500"
                         placeholder="Generated description will appear here..."
@@ -969,9 +1139,10 @@ export default function TermResolutionStep({ characterId, verbosity }: TermResol
                 eventRoll={eventRoll.total}
                 onComplete={handleSpawnComplete}
                 onSkip={handleSpawnSkip}
-                verbosity={verbosity}
+                verbosity={effectiveVerbosity}
                 career={career.id}
                 characterName={character.name || 'Character'}
+                currentUserId={currentUserId}
               />
             ) : (
               phase === 'event_choice' && (

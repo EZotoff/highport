@@ -84,6 +84,18 @@ Cumulative memory for stateless subagents. Append-only.
 - Removed local React state cache (proposals useState) from useCrossCharacterLinks in useNarrative.ts. The hook now writes generated proposals directly to Yjs via addCrossCharacterLink with status: pending.
 - Dedup logic before insertion: checks existing Yjs links by composite key (sourceCharId|targetCharId|relationship) to prevent duplicates on re-generation.
 - useCrossCharacterLinks now returns { isLoading, error, refresh } (no proposals). Return type change breaks consumers that destructure proposals.
+
+## Task 13 — Persist mishap provenance before display (strict-mode leak fix)
+
+- `handleGenerateMishapDescription` was missing Yjs persistence — only set local React state.
+- Added getYDoc() → clone terms → create AIProvenance → update term → updateCharacterFields.
+- Provenance stamped with `pendingReviewBy: 'gm'` for strict/moderate modes, `null` for lenient.
+- Pattern matches `handleGenerateDescription` (event narrative) at lines 602-621 exactly.
+- Test uses mutable vi.hoisted mocks (`narrativeAvailable`, `mishapGenerateResult`, `useGMControls`).
+- createMishapCharacter uses END 2 + setRandomSeed(1) to guarantee survival failure.
+- `shouldShowDraft` is correct — the bug was that provenance was undefined at render time.
+- Verification: npx tsc exits 0; full web suite 33/33 files, 254/254 tests.
+- Evidence: `.omo/evidence/phase3-5-remediation/task-13.txt`.
 - GMControlPanel.tsx now reads pending proposals from Yjs only: yjsProposals.filter(p => p.status === 'pending'). Removed the source-of-truth split between generated local state and Yjs state.
 - handleAcceptProposal: no longer calls addCrossCharacterLink (proposal already in Yjs). Uses proposal.id directly with resolveCrossCharacterLink. Edited descriptions are written to the existing Y.Map entry via getCrossCharacterLinksMap.
 - handleRejectProposal: no longer calls addCrossCharacterLink. Uses proposal.id directly with resolveCrossCharacterLink(doc, proposal.id, false).

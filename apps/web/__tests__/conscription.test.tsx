@@ -9,6 +9,7 @@ import TermResolutionStep from '../components/chargen/steps/TermResolutionStep';
 import { createCharacter, getCharacter, updateCharacterFields } from '../lib/chargen/state';
 import { rollSurvival } from '../lib/chargen/term-resolution';
 
+import type { AIProvenance } from '../lib/chargen/types';
 const mocks = vi.hoisted(() => {
   const state = { doc: null as Y.Doc | null };
   return {
@@ -19,6 +20,15 @@ const mocks = vi.hoisted(() => {
       }
       return state.doc;
     }),
+    narrativeAvailable: false,
+    mishapGenerateResult: '',
+    useGMControls: vi.fn(() => ({
+      isGM: false,
+      session: undefined,
+      settings: { gmApprovalMode: 'strict', aiVerbosity: 'inspiration' },
+      pendingRequests: [],
+      actions: {},
+    })),
   };
 });
 
@@ -27,13 +37,24 @@ vi.mock('../lib/ydoc', () => ({
 }));
 
 vi.mock('../lib/chargen/useNarrative', () => ({
-  useNarrativeAvailable: () => ({ isAvailable: false }),
+  useNarrativeAvailable: () => ({ isAvailable: mocks.narrativeAvailable, isChecking: false }),
   useEventNarrative: () => ({
     generate: vi.fn(),
     isLoading: false,
     error: null,
-    unavailable: true,
+    unavailable: !mocks.narrativeAvailable,
   }),
+  useMishapNarrative: () => ({
+    generate: vi.fn(async () => ({
+      description: mocks.mishapGenerateResult,
+    })),
+    isLoading: false,
+    error: null,
+    unavailable: !mocks.narrativeAvailable,
+  }),
+}));
+vi.mock('../lib/chargen/useGMControls', () => ({
+  useGMControls: mocks.useGMControls,
 }));
 
 function createCareerSelectionCharacter(doc: Y.Doc): string {
@@ -70,12 +91,45 @@ function createDraftedTermCharacter(doc: Y.Doc): string {
   return characterId;
 }
 
+function createMishapCharacter(doc: Y.Doc): string {
+  const characterId = createCharacter(doc, 'player-1', 'Mishap Victim');
+  updateCharacterFields(doc, characterId, {
+    characteristics: { STR: 2, DEX: 2, END: 2, INT: 2, EDU: 2, SOC: 2 },
+    status: 'term_resolution',
+    terms: [
+      {
+        termNumber: 1,
+        careerId: 'army',
+        assignmentId: 'support',
+        startAge: 18,
+        survived: false,
+        advanced: false,
+        currentRank: 0,
+        skillsGained: [],
+        spawnedEntities: [],
+      },
+    ],
+    currentTermIndex: 0,
+  });
+  return characterId;
+}
+
 describe('Conscription draft flow', () => {
   let doc: Y.Doc;
 
   beforeEach(() => {
     doc = new Y.Doc();
     mocks.state.doc = doc;
+    mocks.narrativeAvailable = false;
+    mocks.mishapGenerateResult = '';
+    mocks.useGMControls.mockReset();
+    mocks.useGMControls.mockImplementation(() => ({
+      isGM: false,
+      session: undefined,
+      settings: { gmApprovalMode: 'strict', aiVerbosity: 'inspiration' },
+      pendingRequests: [],
+      actions: {},
+    }));
   });
 
   afterEach(() => {
@@ -118,7 +172,7 @@ describe('Conscription draft flow', () => {
     const characterId = createDraftedTermCharacter(doc);
     setRandomSeed(1234);
 
-    render(<TermResolutionStep characterId={characterId} verbosity="brief" />);
+    render(<TermResolutionStep characterId={characterId} currentUserId="user-1" />);
 
     expect(await screen.findByText(/Conscription survival DM \+2/i)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /roll survival/i }));
@@ -151,5 +205,84 @@ describe('Conscription draft flow', () => {
     expect(result.modifier).toBe(2);
     expect(result.target).toBe(8);
     expect(result.success).toBe(result.total >= 8);
+  });
+
+  it('persists mishap provenance with pendingReviewBy gm in strict mode and hides draft', async () => {
+    const characterId = createMishapCharacter(doc);
+    setRandomSeed(1);
+    mocks.narrativeAvailable = true;
+    mocks.mishapGenerateResult = 'A dramatic training accident injures the soldier.';
+
+    render(<TermResolutionStep characterId={characterId} currentUserId="user-1" />);
+
+    expect(await screen.findByText(/Phase 1: Survival/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /roll survival/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/criminal conduct/i)).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /generate mishap narrative/i }));
+
+    await waitFor(() => {
+      const character = getCharacter(doc, characterId);
+      const md = character?.terms[0]?.mishapDescription;
+      expect(md).toBeDefined();
+    });
+
+    const character = getCharacter(doc, characterId);
+    const md = character?.terms[0]?.mishapDescription as AIProvenance<string>;
+    expect(md.value).toBe('A dramatic training accident injures the soldier.');
+    expect(md.source).toBe('ai');
+    expect(md.status).toBe('draft');
+    expect(md.pendingReviewBy).toBe('gm');
+
+    const textarea = screen.getByRole('textbox', {
+      name: /mishap narrative/i,
+    }) as HTMLTextAreaElement;
+    expect(textarea.value).toBe('Pending GM Review...');
+  });
+
+  it('persists mishap provenance with pendingReviewBy null in lenient mode and shows draft', async () => {
+    const characterId = createMishapCharacter(doc);
+    setRandomSeed(1);
+    mocks.narrativeAvailable = true;
+    mocks.mishapGenerateResult = 'A lucky escape from disaster.';
+    mocks.useGMControls.mockImplementation(() => ({
+      isGM: false,
+      session: undefined,
+      settings: { gmApprovalMode: 'lenient', aiVerbosity: 'inspiration' },
+      pendingRequests: [],
+      actions: {},
+    }));
+
+    render(<TermResolutionStep characterId={characterId} currentUserId="user-1" />);
+
+    expect(await screen.findByText(/Phase 1: Survival/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /roll survival/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/criminal conduct/i)).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /generate mishap narrative/i }));
+
+    await waitFor(() => {
+      const character = getCharacter(doc, characterId);
+      const md = character?.terms[0]?.mishapDescription;
+      expect(md).toBeDefined();
+    });
+
+    const character = getCharacter(doc, characterId);
+    const md = character?.terms[0]?.mishapDescription as AIProvenance<string>;
+    expect(md.value).toBe('A lucky escape from disaster.');
+    expect(md.source).toBe('ai');
+    expect(md.status).toBe('accepted');
+    expect(md.pendingReviewBy).toBeNull();
+
+    const textarea = screen.getByRole('textbox', {
+      name: /mishap narrative/i,
+    }) as HTMLTextAreaElement;
+    expect(textarea.value).toBe('A lucky escape from disaster.');
   });
 });

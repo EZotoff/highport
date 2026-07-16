@@ -1,0 +1,36 @@
+Task 13 — Persist mishap provenance before display (strict-mode leak fix)
+
+=== Verification ===
+- npx tsc -p apps/web/tsconfig.json --noEmit: exits 0 (no output)
+- pnpm --filter web test -- --run: 33 files, 254 tests passed
+  (baseline 245 + 9 incremental; includes 2 new tests)
+
+=== Files Modified ===
+1. apps/web/components/chargen/steps/TermResolutionStep.tsx
+   - handleGenerateMishapDescription: added Yjs persistence of AIProvenance
+     to character term's mishapDescription field immediately after generation,
+     before setting local React state.
+   - Provenance stamped with pendingReviewBy: 'gm' in strict/moderate modes,
+     null in lenient mode.
+   - Pattern matches handleGenerateDescription (lines 602-621).
+
+2. apps/web/__tests__/conscription.test.tsx
+   - Added vi.mock for useGMControls (mutable per-test via vi.hoisted).
+   - Replaced static useNarrative mock with mutable version (narrativeAvailable,
+     mishapGenerateResult).
+   - Added beforeEach reset of mocks.
+   - Added createMishapCharacter test helper (END 2, seed 1 guarantees failure).
+   - Test 1: strict mode — verifies mishapDescription persisted with
+     pendingReviewBy: 'gm', status: 'draft', textarea shows "Pending GM Review..."
+   - Test 2: lenient mode — verifies mishapDescription persisted with
+     pendingReviewBy: null, status: 'accepted', textarea shows description.
+
+=== Root Cause ===
+handleGenerateMishapDescription only set local React state but never persisted
+the provenance to the Yjs term. When renderSurvival() read currentTerm.mishapDescription,
+it was undefined, causing shouldShowDraft (which treats undefined provenance as visible)
+to leak the AI draft to non-GM players in strict mode.
+
+=== Fix ===
+Added the same Yjs persistence pattern used by handleGenerateDescription:
+getYDoc() → clone terms → create AIProvenance → update term → updateCharacterFields.
