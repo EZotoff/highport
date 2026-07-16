@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { GlassPanel, SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../lib/chargen/hooks';
-import type { VerbosityLevel } from '../../lib/chargen/narrative';
 import { createSession, getSession, updateCharacterFields } from '../../lib/chargen/state';
 import { getActiveCharacter, getOrCreateUser } from '../../lib/identity';
 import { getSessionId, initAndWaitForPersistence, initProvider } from '../../lib/sync';
@@ -32,11 +31,10 @@ const STEPS = [
 
 export default function ChargenWizard() {
   const [characterId, setCharacterId] = useState<string | null>(null);
-  const [verbosity, setVerbosity] = useState<VerbosityLevel>('inspiration');
   const [isSynced, setIsSynced] = useState(false);
   const character = useCharacter(characterId);
   const [currentSessionUserId] = useState(() => getOrCreateUser().userId);
-  const { isGM } = useGMControls(currentSessionUserId);
+  const { isGM, session, actions } = useGMControls(currentSessionUserId);
 
   const statusToStep: Record<string, number> = {
     background: 0,
@@ -128,7 +126,7 @@ export default function ChargenWizard() {
 
   const renderStepContent = () => {
     if (character?.status === 'finalized') {
-      return <FinalizeStep characterId={characterId} />;
+      return <FinalizeStep characterId={characterId} currentUserId={currentSessionUserId} />;
     }
 
     switch (currentStep) {
@@ -137,11 +135,11 @@ export default function ChargenWizard() {
       case 1:
         return <CareerSelectionStep characterId={characterId} />;
       case 2:
-        return <TermResolutionStep characterId={characterId} verbosity={verbosity} />;
+        return <TermResolutionStep characterId={characterId} currentUserId={currentSessionUserId} />;
       case 3:
         return <MusteringOutStep characterId={characterId} />;
       case 4:
-        return <FinalizeStep characterId={characterId} />;
+        return <FinalizeStep characterId={characterId} currentUserId={currentSessionUserId} />;
       default:
         return (
           <GlassPanel theme="violet" variant="default" className="p-6 text-center">
@@ -186,7 +184,7 @@ export default function ChargenWizard() {
           <StepNavigation steps={STEPS} currentStep={currentStep} />
         </div>
         <div className="w-full lg:w-[320px] lg:shrink-0">
-          <VerbositySelector value={verbosity} onChange={setVerbosity} />
+          <VerbositySelector value={session?.settings?.aiVerbosity ?? 'inspiration'} onChange={(level) => actions.updateSettings({ aiVerbosity: level })} />
         </div>
       </div>
 
