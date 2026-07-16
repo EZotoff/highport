@@ -1,0 +1,39 @@
+Task 16 — Fix player-edit bypass of GM review
+================================================
+
+Changed files:
+- apps/web/components/chargen/steps/TermResolutionStep.tsx
+- apps/web/__tests__/conscription.test.tsx
+
+Change in TermResolutionStep.tsx (handleEditDescription):
+  const provenance: AIProvenance<string> = {
+    value,
+    source: 'player',
+    mode: effectiveVerbosity,
+    status: 'edited',
+    derivedFrom: `event-roll-${eventRoll?.total ?? 'unknown'}`,
+    generatedAt: Date.now(),
+    pendingReviewBy: gmApprovalMode === 'lenient' ? null : 'gm',
+  };
+
+Behavior:
+- Strict/moderate gmApprovalMode: player edits AI draft -> source='player', status='edited', pendingReviewBy='gm' (retained).
+- Lenient gmApprovalMode: player edits AI draft -> source='player', status='edited', pendingReviewBy=null (cleared).
+
+Tests added to conscription.test.tsx:
+1. retains GM review requirement when player edits AI draft in strict mode
+2. clears GM review requirement when player edits AI draft in lenient mode
+
+Verification:
+$ npx tsc -p apps/web/tsconfig.json --noEmit
+(no output, exit 0)
+
+$ pnpm --filter web test -- --run __tests__/conscription.test.tsx
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+
+$ pnpm --filter web test -- --run
+ Test Files  33 passed (33)
+      Tests  256 passed (256)
+
+Baseline was 254/254; added 2 tests -> 256/256.

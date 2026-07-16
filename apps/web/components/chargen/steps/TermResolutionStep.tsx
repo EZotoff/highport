@@ -718,12 +718,12 @@ export default function TermResolutionStep({
 
     const provenance: AIProvenance<string> = {
       value,
-      source: 'ai',
+      source: 'player',
       mode: effectiveVerbosity,
-      status: 'draft',
+      status: 'edited',
       derivedFrom: `event-roll-${eventRoll?.total ?? 'unknown'}`,
       generatedAt: Date.now(),
-      pendingReviewBy: undefined,
+      pendingReviewBy: gmApprovalMode === 'lenient' ? null : 'gm',
     };
 
     updatedTerms[currentTermIndex] = {

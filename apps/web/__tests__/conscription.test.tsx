@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => {
     }),
     narrativeAvailable: false,
     mishapGenerateResult: '',
+    eventGenerateResult: '',
     useGMControls: vi.fn(() => ({
       isGM: false,
       session: undefined,
@@ -39,7 +40,9 @@ vi.mock('../lib/ydoc', () => ({
 vi.mock('../lib/chargen/useNarrative', () => ({
   useNarrativeAvailable: () => ({ isAvailable: mocks.narrativeAvailable, isChecking: false }),
   useEventNarrative: () => ({
-    generate: vi.fn(),
+    generate: vi.fn(async () => ({
+      description: mocks.eventGenerateResult,
+    })),
     isLoading: false,
     error: null,
     unavailable: !mocks.narrativeAvailable,
@@ -114,6 +117,29 @@ function createMishapCharacter(doc: Y.Doc): string {
   return characterId;
 }
 
+function createTermCharacter(doc: Y.Doc): string {
+  const characterId = createCharacter(doc, 'player-1', 'Term Editor');
+  updateCharacterFields(doc, characterId, {
+    characteristics: { STR: 6, DEX: 6, END: 7, INT: 6, EDU: 6, SOC: 6 },
+    status: 'term_resolution',
+    terms: [
+      {
+        termNumber: 1,
+        careerId: 'army',
+        assignmentId: 'support',
+        startAge: 18,
+        survived: true,
+        advanced: false,
+        currentRank: 0,
+        skillsGained: [],
+        spawnedEntities: [],
+      },
+    ],
+    currentTermIndex: 0,
+  });
+  return characterId;
+}
+
 describe('Conscription draft flow', () => {
   let doc: Y.Doc;
 
@@ -122,6 +148,7 @@ describe('Conscription draft flow', () => {
     mocks.state.doc = doc;
     mocks.narrativeAvailable = false;
     mocks.mishapGenerateResult = '';
+    mocks.eventGenerateResult = '';
     mocks.useGMControls.mockReset();
     mocks.useGMControls.mockImplementation(() => ({
       isGM: false,
@@ -284,5 +311,94 @@ describe('Conscription draft flow', () => {
       name: /mishap narrative/i,
     }) as HTMLTextAreaElement;
     expect(textarea.value).toBe('A lucky escape from disaster.');
+  });
+  it('retains GM review requirement when player edits AI draft in strict mode', async () => {
+    const characterId = createTermCharacter(doc);
+    setRandomSeed(1234);
+    mocks.narrativeAvailable = true;
+    mocks.eventGenerateResult = 'Original AI draft text.';
+
+    render(<TermResolutionStep characterId={characterId} currentUserId="user-1" />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Roll Survival/i }));
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: /Roll Event/i })).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Roll Event/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Generate Description/i })).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Generate Description/i }));
+    await waitFor(() => {
+      const character = getCharacter(doc, characterId);
+      const ed = character?.terms[0]?.eventDescription;
+      expect(ed).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Accept & Save/i }));
+    await waitFor(() => {
+      const character = getCharacter(doc, characterId);
+      const ed = character?.terms[0]?.eventDescription as AIProvenance<string>;
+      expect(ed.status).toBe('accepted');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Edit/i }));
+    await waitFor(() => {
+      const character = getCharacter(doc, characterId);
+      const ed = character?.terms[0]?.eventDescription as AIProvenance<string>;
+      expect(ed.source).toBe('player');
+      expect(ed.status).toBe('edited');
+      expect(ed.pendingReviewBy).toBe('gm');
+    });
+  });
+
+  it('clears GM review requirement when player edits AI draft in lenient mode', async () => {
+    const characterId = createTermCharacter(doc);
+    setRandomSeed(1234);
+    mocks.narrativeAvailable = true;
+    mocks.eventGenerateResult = 'Original AI draft text.';
+    mocks.useGMControls.mockImplementation(() => ({
+      isGM: false,
+      session: undefined,
+      settings: { gmApprovalMode: 'lenient', aiVerbosity: 'inspiration' },
+      pendingRequests: [],
+      actions: {},
+    }));
+
+    render(<TermResolutionStep characterId={characterId} currentUserId="user-1" />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Roll Survival/i }));
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: /Roll Event/i })).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Roll Event/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Generate Description/i })).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Generate Description/i }));
+    await waitFor(() => {
+      const character = getCharacter(doc, characterId);
+      const ed = character?.terms[0]?.eventDescription;
+      expect(ed).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Edit/i }));
+    await waitFor(() => {
+      const character = getCharacter(doc, characterId);
+      const ed = character?.terms[0]?.eventDescription as AIProvenance<string>;
+      expect(ed.source).toBe('player');
+      expect(ed.status).toBe('edited');
+      expect(ed.pendingReviewBy).toBeNull();
+    });
   });
 });

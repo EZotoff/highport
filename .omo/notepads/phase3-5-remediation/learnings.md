@@ -161,3 +161,10 @@ Cumulative memory for stateless subagents. Append-only.
 - Added 6 tests to `chargen-flow-integration.test.ts`: provenance stored on node with source 'ai', backward compat (no provenance), submit disabled when pending GM review in strict mode, enabled after GM clears, enabled in lenient mode, enabled for player-entered names.
 - Verification: `npx tsc -p apps/web/tsconfig.json --noEmit` exits 0; `pnpm --filter web test -- --run` passes 33/33 files, 252/252 tests (10 new).
 - Evidence saved to `.omo/evidence/phase3-5-remediation/task-14.txt`.
+
+## Task 16 — Fix player-edit bypass of GM review
+
+- `handleEditDescription` in TermResolutionStep.tsx (line 706) now constructs provenance with `source: 'player'`, `status: 'edited'`, and `pendingReviewBy: gmApprovalMode === 'lenient' ? null : 'gm'`.
+- Strict/moderate modes retain `pendingReviewBy: 'gm'` when a player edits an AI draft; lenient mode clears it to `null`.
+- Added 2 tests in `__tests__/conscription.test.tsx`: strict edit retains GM review; lenient edit clears GM review.
+- Verification: `npx tsc -p apps/web/tsconfig.json --noEmit` exits 0; `pnpm --filter web test -- --run` passes 33/33 files, 256/256 tests (254 baseline + 2 new).
