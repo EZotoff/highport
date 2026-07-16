@@ -348,8 +348,18 @@ Create a believable NPC for a gritty sci-fi setting. Consider their role as {req
 ## Response Format
 {format_block}"""
 
+        # Retrieve campaign setting context for setting-aware NPC generation
+        synthesis_query = (
+            f"Traveller RPG {request.npc_type} NPC in "
+            f"{request.context.career} career: {request.context.event_text}"
+        )
+        context_chunks = await self._retrieve_context(synthesis_query, scope)
+
         try:
-            response_text = await llm.generate(prompt)
+            if context_chunks:
+                response_text = await llm.generate_with_context(prompt, context_chunks)
+            else:
+                response_text = await llm.generate(prompt)
             json_match = re.search(r"\{[\s\S]*\}", response_text)
             if json_match:
                 data = json.loads(json_match.group())
@@ -382,7 +392,9 @@ Create a believable NPC for a gritty sci-fi setting. Consider their role as {req
             raise RuntimeError(f"NPC details generation failed: {e}")
 
     async def suggest_connections(
-        self, request: SuggestConnectionsRequest
+        self,
+        request: SuggestConnectionsRequest,
+        scope: list[str],
     ) -> SuggestConnectionsResponse:
         if len(request.entities) < 2:
             return SuggestConnectionsResponse(suggestions=[])

@@ -20,8 +20,8 @@ class MockNarrativeGenerator:
         self.should_raise = should_raise
         self.calls = []
 
-    async def generate_event_description(self, request):
-        self.calls.append(("event_description", request))
+    async def generate_event_description(self, request, scope):
+        self.calls.append(("event_description", request, scope))
         if self.should_raise:
             raise self.should_raise
 
@@ -62,8 +62,8 @@ class MockNarrativeGenerator:
             guidance_used=guidance,
         )
 
-    async def generate_npc_details(self, request):
-        self.calls.append(("npc_details", request))
+    async def generate_npc_details(self, request, scope):
+        self.calls.append(("npc_details", request, scope))
         if self.should_raise:
             raise self.should_raise
 
@@ -109,8 +109,8 @@ class MockNarrativeGenerator:
                 guidance_used=guidance,
             )
 
-    async def suggest_connections(self, request):
-        self.calls.append(("suggest_connections", request))
+    async def suggest_connections(self, request, scope):
+        self.calls.append(("suggest_connections", request, scope))
         if self.should_raise:
             raise self.should_raise
 

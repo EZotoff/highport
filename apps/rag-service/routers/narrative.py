@@ -1,6 +1,6 @@
 """Narrative generation router for AI-powered character creation assistance."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 
 from schemas.narrative import (
     EventDescriptionRequest,
@@ -52,7 +52,32 @@ async def generate_event_description(request: EventDescriptionRequest):
     """
     generator = _get_generator()
     try:
-        result = await generator.generate_event_description(request)
+        result = await generator.generate_event_description(
+            request,
+            _build_scope(x_is_gm, x_character_id),
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+
+
+@router.post("/mishap-description", response_model=MishapDescriptionResponse)
+async def generate_mishap_description(request: MishapDescriptionRequest):
+    """Generate a narrative description for a career mishap.
+
+    Args:
+        request: Mishap context and verbosity settings.
+
+    Returns:
+        Generated mishap description.
+    """
+    generator = _get_generator()
+    try:
+        result = await generator.generate_mishap_description(request)
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -63,7 +88,11 @@ async def generate_event_description(request: EventDescriptionRequest):
 
 
 @router.post("/npc-details", response_model=NPCDetailsResponse)
-async def generate_npc_details(request: NPCDetailsRequest):
+async def generate_npc_details(
+    request: NPCDetailsRequest,
+    x_character_id: str | None = Header(None, alias="X-Character-Id"),
+    x_is_gm: str = Header("false", alias="X-Is-GM"),
+):
     """Generate detailed NPC information.
 
     Args:
@@ -74,7 +103,10 @@ async def generate_npc_details(request: NPCDetailsRequest):
     """
     generator = _get_generator()
     try:
-        result = await generator.generate_npc_details(request)
+        result = await generator.generate_npc_details(
+            request,
+            _build_scope(x_is_gm, x_character_id),
+        )
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -85,7 +117,11 @@ async def generate_npc_details(request: NPCDetailsRequest):
 
 
 @router.post("/suggest-connections", response_model=SuggestConnectionsResponse)
-async def suggest_connections(request: SuggestConnectionsRequest):
+async def suggest_connections(
+    request: SuggestConnectionsRequest,
+    x_character_id: str | None = Header(None, alias="X-Character-Id"),
+    x_is_gm: str = Header("false", alias="X-Is-GM"),
+):
     """Suggest connections between entities.
 
     Args:
@@ -96,7 +132,10 @@ async def suggest_connections(request: SuggestConnectionsRequest):
     """
     generator = _get_generator()
     try:
-        result = await generator.suggest_connections(request)
+        result = await generator.suggest_connections(
+            request,
+            _build_scope(x_is_gm, x_character_id),
+        )
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -104,3 +143,41 @@ async def suggest_connections(request: SuggestConnectionsRequest):
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+
+
+@router.post("/lifepath-review", response_model=LifepathReviewResponse)
+async def generate_lifepath_review(
+    request: LifepathReviewRequest,
+    x_character_id: str | None = Header(None, alias="X-Character-Id"),
+    x_is_gm: str = Header("false", alias="X-Is-GM"),
+) -> LifepathReviewResponse:
+    """Review a complete character lifepath and return advisory proposals."""
+    generator = _get_generator()
+    try:
+        proposals = await generator.generate_lifepath_review(
+            request.character,
+            request.campaign_context,
+            _build_scope(x_is_gm, x_character_id),
+        )
+    except (RuntimeError, ValueError) as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    return LifepathReviewResponse.model_validate({"proposals": proposals[:5]})
+
+
+@router.post("/cross-character-links", response_model=CrossCharacterLinksResponse)
+async def suggest_cross_character_links(
+    request: CrossCharacterLinksRequest,
+    x_character_id: str | None = Header(None, alias="X-Character-Id"),
+    x_is_gm: str = Header("false", alias="X-Is-GM"),
+) -> CrossCharacterLinksResponse:
+    """Propose narrative links between characters in the same campaign."""
+    generator = _get_generator()
+    try:
+        proposals = await generator.suggest_cross_character_links(
+            request.characters,
+            request.shared_history,
+            _build_scope(x_is_gm, x_character_id),
+        )
+    except (RuntimeError, ValueError) as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    return CrossCharacterLinksResponse.model_validate({"proposals": proposals[:3]})
