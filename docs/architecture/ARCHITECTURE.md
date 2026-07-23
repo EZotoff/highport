@@ -240,7 +240,7 @@ The RAG service uses factory modules at `providers/{llm,embeddings,vectordb}/__i
 
 The factory pattern lets operators swap providers by changing environment variables. No code changes are required to move from Ollama to Gemini, or from ChromaDB to Pinecone. The `rag-service/.env` file controls which factory is loaded at startup. Each factory module exposes `create_client()` and `get_config()` functions that the service layer consumes. Environment variables follow the pattern `LLM_PROVIDER=ollama`, `EMBEDDINGS_PROVIDER=ollama`, and `VECTORDB_PROVIDER=chromadb`.
 
-**Known issue:** `services/narrative_generator.py` and `services/portrait_generator.py` still import from the stale top-level `providers/gemini.py` and `providers/base.py`, bypassing the factory. They need migration to the factory pattern. It's on the roadmap. Until that migration is complete, cloud LLM usage for narrative and portrait generation requires direct imports rather than the factory configuration. ChromaDB runs embedded in the RAG process for local development, while Pinecone requires an API key and environment name. [Unverified] Factory modules are tested with a mock provider that returns deterministic responses, allowing unit tests to run without external dependencies. Mock providers are configured by setting `LLM_PROVIDER=mock` in the test environment.
+**Resolved.** Both `services/narrative_generator.py` and `services/portrait_generator.py` now correctly import from the factory package (`from providers.llm import get_llm_provider`) rather than stale top-level files. The duplicate `providers/gemini.py` and `providers/base.py` files that previously existed at the top level have been removed. All provider access now routes through the factory. ChromaDB runs embedded in the RAG process for local development, while Pinecone requires an API key and environment name. Factory modules are tested with a mock provider that returns deterministic responses, allowing unit tests to run without external dependencies. Mock providers are configured by setting `LLM_PROVIDER=mock` in the test environment.
 
 ## AI Invasiveness Modes
 
@@ -248,11 +248,13 @@ The chargen wizard and future campaign surfaces support three verbosity levels p
 
 | Public name | Internal value | What the LLM produces           |
 | ----------- | -------------- | ------------------------------- |
-| Brief       | `minimal`      | 1-2 sentence gloss              |
-| Inspiration | `structured`   | 2-4 sentences or an option list |
-| Full        | `rich`         | Full paragraph scene            |
+| Brief       | `brief`        | 1-2 sentence gloss              |
+| Inspiration | `inspiration`  | 2-4 sentences or an option list |
+| Full        | `full`         | Full paragraph scene            |
 
-`VerbositySelector` sets the level for the session. It's threaded as a prop through the UI and sent to `narrative_generator` in the request payload. The same mapping applies to event descriptions, NPC details, and connection suggestions. Extension to campaign artifacts in Tier B is planned. The level is per-session, not per-user, so the whole table experiences the same AI density during character creation. Inspiration is the default, which is enough to spark ideas without crowding out player voice. In code, the type is `VerbosityLevel` with values `minimal`, `structured`, and `rich`. Docs and UI use the public names Brief, Inspiration, and Full. The canonical persisted provenance values are the public names (`brief`, `inspiration`, `full`). The internal `VerbosityLevel` enum (`minimal`, `structured`, `rich`) is a code-only alias that maps to the public names at the persistence boundary. The selector is a dropdown in the chargen wizard toolbar, persisted to the Yjs document so all players see the same setting. Changing the level mid-session does not regenerate existing meat; it only affects future generation requests.
+`VerbositySelector` sets the verbosity level. It is threaded as a prop through the UI and sent to the `narrative_generator` in the request payload. The same mapping applies to event descriptions, NPC details, and connection suggestions. Extension to campaign artifacts in Tier B is planned. The canonical values are `brief`, `inspiration`, and `full` (defined as `VerbosityLevel` in [`apps/web/lib/chargen/types.ts`](../apps/web/lib/chargen/types.ts)). Inspiration is the default.
+
+> **Known gap:** The selector currently writes to local React state in `ChargenWizard`, not to `SessionSettings.aiVerbosity` in the Yjs document. This means each browser has its own verbosity rather than the whole table sharing one setting. The session-level field exists in the type system but is not yet read by the live UI. There is also no GM control to change the session-level setting. See [ROADMAP.md](../ROADMAP.md) Known Issue #6. Additionally, enrichment is not auto-triggered when events are rolled — the player must click a button. See [ROADMAP.md](../ROADMAP.md) Known Issue #8. The `narrative/*` endpoints are also prompt-only and do not yet retrieve from the campaign vector store; see Known Issue #5.
 
 ## Foundry Integration Boundary
 

@@ -28,11 +28,19 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'pnpm build && PORT=18120 pnpm start',
-    url: 'http://localhost:18120',
-    reuseExistingServer: true,
-    timeout: 120 * 1000,
-  },
+  webServer: [
+    {
+      command: 'pnpm --filter server dev',
+      url: 'http://localhost:18121',
+      reuseExistingServer: true,
+      timeout: 60 * 1000,
+    },
+    {
+      command: 'pnpm build && PORT=18120 pnpm start',
+      url: 'http://localhost:18120',
+      reuseExistingServer: true,
+      timeout: 120 * 1000,
+    },
+  ],
   globalSetup: './e2e/global-setup.ts',
 });
