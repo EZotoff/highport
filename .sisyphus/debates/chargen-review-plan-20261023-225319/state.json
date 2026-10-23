@@ -1,0 +1,19 @@
+{
+  "stage": "evaluation",
+  "inputs": [
+    { "path": "context-brief.md" },
+    { "path": "proposal.md" },
+    { "path": "critique.md" },
+    { "path": "revision.md" }
+  ],
+  "outputs": [
+    { "path": "judges/judge-analyst.md" },
+    { "path": "judges/judge-aesthete.md" },
+    { "path": "judges/judge-stylist.md" }
+  ],
+  "prompt_hashes": { "proposer": "oracle-bg_56049035", "critic": "mephistopheles-bg_cc49681a" },
+  "needs_rerun": false,
+  "needs_rerun_reason": null,
+  "ts": "2026-10-23T23:35:00Z",
+  "verdict": "ADOPT (binding Analyst 9-synth; advisory Aesthete 8; advisory Stylist 7)"
+}
