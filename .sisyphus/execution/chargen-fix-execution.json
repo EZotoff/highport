@@ -1,0 +1,59 @@
+{
+  "mission": "Sequentially execute the four Momus-approved chargen fix plans (from the 2026-10-23 multi-family review) in the Highport repo.",
+  "baseline_sha": "3a34945",
+  "plans_review_ledger": "docs in .sisyphus/reviews/chargen-20261023/ledger.md; review verdicts in each plan's .reviews.md",
+  "operator_directives": {
+    "execution_mode": "sequential — one plan at a time, no parallel plan execution",
+    "orchestration_only": "the orchestrator agent must NOT hand-implement code; dispatch implementation to worker agents (e.g. task category or /start-work in a worktree) and verify via the plan's Final Verification Wave",
+    "no_hurry": "wall-clock is not a constraint; correctness and verification depth are",
+    "commit_push": "atomic commits per logical unit, push to origin main (Tier A pre-authorized) after each plan's verification passes"
+  },
+  "order": [
+    {
+      "key": "C",
+      "plan": ".omo/plans/fix-server-authz.md",
+      "reviews": ".omo/plans/fix-server-authz.reviews.md",
+      "status": "pending",
+      "rationale": "security CRITICALs are live-exposed (WS token not doc-scoped, no Yjs write authz, X-User-Id impersonation); independent of the TermResolutionStep seam; executes before B so the shared export.ts seam flows C->B"
+    },
+    {
+      "key": "B",
+      "plan": ".omo/plans/fix-provenance-pipeline.md",
+      "reviews": ".omo/plans/fix-provenance-pipeline.reviews.md",
+      "status": "pending",
+      "rationale": "surgical; settles authoritative-provenance display semantics that A and D build on"
+    },
+    {
+      "key": "A",
+      "plan": ".omo/plans/fix-crdt-crosschar.md",
+      "reviews": ".omo/plans/fix-crdt-crosschar.reviews.md",
+      "status": "pending",
+      "rationale": "state-machine correctness foundation; rebases onto B's settled provenance semantics"
+    },
+    {
+      "key": "D",
+      "plan": ".omo/plans/fix-mgt2e-rules.md",
+      "reviews": ".omo/plans/fix-mgt2e-rules.reviews.md",
+      "status": "pending",
+      "rationale": "largest TermResolutionStep.tsx churn; runs last to minimize merge surface"
+    }
+  ],
+  "per_plan_protocol": [
+    "1. Re-read the plan file from disk; do not trust memory or summaries.",
+    "2. Heed the plan's .reviews.md notes (esp. fix-server-authz.reviews.md risks: apply command mutations to the LIVE Hocuspocus document, not only the DB; onChange not onUpdate; getOrCreateUser not getSessionUserId).",
+    "3. Work on a branch or worktree (agent/sisyphus/chargen-fix-<key>); rebase on main before starting if main moved.",
+    "4. Dispatch implementation to worker agent(s) following the plan's ordered todos exactly; test-first where the plan says so (RED commit before fix).",
+    "5. Run the plan's Final Verification Wave verbatim; record F#1..F#n verdicts (APPROVE/REJECT + one-clause evidence) in the plan's ## Execution Record — orchestrator writes these lines.",
+    "6. All F-boxes APPROVE required. On failure: dispatch repair to a worker (max 2 repair cycles), then stop and report if still failing.",
+    "7. Append execution-baseline line + Execution Record updates to the plan doc; merge to main (no-ff), push; update this state file (status: done + evidence pointers) and commit it.",
+    "8. Only then proceed to the next plan in order."
+  ],
+  "stop_conditions": [
+    "All four plans done + pushed -> create suppression marker .sisyphus/execution/.chargen-fix-execution-complete and write a final report.",
+    "Any plan fails its verification wave after 2 repair cycles -> stop, leave state file marked, report to operator.",
+    "Operator interrupts -> honor immediately, update state file."
+  ],
+  "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
+  "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
+  "updated": "2026-10-25T01:45:00+01:00"
+}
