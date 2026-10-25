@@ -2,6 +2,7 @@ import { IndexeddbPersistence } from 'y-indexeddb';
 import * as Y from 'yjs';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { getSession } from 'next-auth/react';
+import { apiFetch } from './api-client';
 
 let persistence: IndexeddbPersistence | null = null;
 let provider: HocuspocusProvider | null = null;
@@ -111,4 +112,25 @@ export async function initAndWaitForPersistence(
   const p = initPersistence(doc, name);
   await waitForPersistenceSync(p);
   return p;
+}
+
+const SERVER_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18122';
+
+/**
+ * Ensure the campaign row and membership exist before the WS handshake.
+ * Plan C rejects documents for campaigns the caller is not a member of, so
+ * chargen session ids must be provisioned through the authenticated REST path.
+ */
+export async function provisionChargenSession(campaignId: string): Promise<void> {
+  try {
+    const response = await apiFetch(
+      `${SERVER_URL}/api/chargen/sessions/${encodeURIComponent(campaignId)}/provision`,
+      { method: 'POST' },
+    );
+    if (!response.ok) {
+      console.warn(`[Sync] Chargen session provisioning failed (${response.status})`);
+    }
+  } catch (error) {
+    console.warn('[Sync] Chargen session provisioning failed', error);
+  }
 }

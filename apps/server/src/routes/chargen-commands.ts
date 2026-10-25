@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify';
+import { eq } from 'drizzle-orm';
 import * as Y from 'yjs';
 import { generateId } from '@highport/shared';
 import { db } from '../db/client.js';
-import { documentUpdates } from '../db/schema.js';
+import { campaignMembers, campaigns, documentUpdates } from '../db/schema.js';
 import { getMembership, requireCampaignRole, AuthorizationError } from '../lib/authz.js';
 import { requirePrincipal } from '../lib/principal.js';
 import { ensureDocumentExists, hocuspocus } from '../ws/hocuspocus.js';
@@ -174,6 +175,43 @@ export async function registerChargenCommandRoutes(app: FastifyInstance): Promis
         session.set('updatedBy', request.principal.userId);
       });
       return { success: true };
+    },
+  );
+
+  app.post<{ Params: { sessionId: string } }>(
+    '/api/chargen/sessions/:sessionId/provision',
+    { preHandler: requirePrincipal },
+    async (request, reply) => {
+      const { sessionId } = request.params;
+      if (sessionId.includes(':') || sessionId.length > 64) {
+        reply.code(400);
+        return { error: 'Invalid session id' };
+      }
+      const userId = request.principal.userId;
+      const [existing] = await db.select().from(campaigns).where(eq(campaigns.id, sessionId));
+      if (!existing) {
+        await db
+          .insert(campaigns)
+          .values({
+            id: sessionId,
+            name: 'Chargen Session',
+            ownerId: userId,
+            createdAt: new Date(),
+          })
+          .onConflictDoNothing();
+        await db
+          .insert(campaignMembers)
+          .values({ campaignId: sessionId, userId, role: 'gm' })
+          .onConflictDoNothing();
+        return { campaignId: sessionId, role: 'gm' };
+      }
+      const member = await getMembership(sessionId, userId);
+      if (member) return { campaignId: sessionId, role: member.role };
+      await db
+        .insert(campaignMembers)
+        .values({ campaignId: sessionId, userId, role: 'player' })
+        .onConflictDoNothing();
+      return { campaignId: sessionId, role: 'player' };
     },
   );
 }
