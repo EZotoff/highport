@@ -2,6 +2,15 @@ import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vites
 import Fastify, { FastifyInstance } from 'fastify';
 import * as Y from 'yjs';
 import { bearer, secret } from './api-token.js';
+import type { ProvenanceEntry } from '@highport/shared/types/graph';
+
+const provenance: ProvenanceEntry = {
+  source: 'ai',
+  status: 'accepted',
+  pendingReviewBy: null,
+  generatedAt: 1700000000000,
+  derivedFrom: 'npc-description',
+};
 
 vi.mock('../src/lib/authz.js', () => ({ requireCampaignRole: vi.fn(async () => undefined) }));
 import {
@@ -48,6 +57,7 @@ function createTestYDocState(): Uint8Array {
   node2.set('hidden', false);
   node2.set('created_at', Date.now());
   node2.set('created_by', 'user_1');
+  node2.set('provenance', provenance);
 
   const node3 = new Y.Map<unknown>();
   node3.set('id', 'node_3');
@@ -139,6 +149,25 @@ describe('Export Routes', () => {
   });
 
   describe('GET /api/export/json', () => {
+    it('serializes provenance for JSON and Foundry consumers when an NPC has provenance', async () => {
+      mockFetchDocumentState.mockResolvedValueOnce(createTestYDocState());
+      const response = await fastify.inject({ method: 'GET', url: '/api/export/json' });
+      expect(response.statusCode).toBe(200);
+      const body = response.json<{
+        actors: Array<{
+          _id: string;
+          provenance?: ProvenanceEntry;
+          flags?: { highport: { provenance: ProvenanceEntry } };
+        }>;
+      }>();
+      const npc = body.actors.find((actor) => actor._id === 'node_2');
+      expect(npc?.provenance).toEqual(provenance);
+      expect(npc?.flags?.highport.provenance).toEqual(provenance);
+      const legacy = body.actors.find((actor) => actor._id === 'abc123');
+      expect(legacy).toBeDefined();
+      expect(legacy).not.toHaveProperty('provenance');
+      expect(legacy).not.toHaveProperty('flags');
+    });
     it('returns JSON with download headers', async () => {
       mockFetchDocumentState.mockResolvedValueOnce(createTestYDocState());
 
@@ -262,6 +291,20 @@ describe('Export Routes', () => {
 });
 
 describe('Helper Functions', () => {
+  it('preserves provenance when extracting and serializing an NPC', () => {
+    const nodes = extractNodesFromYDoc(createTestYDocState());
+    const npc = nodes.find((node) => node.id === 'node_2');
+    if (!npc) throw new Error('Missing NPC fixture');
+    expect(npc.provenance).toEqual(provenance);
+    expect(nodeToFoundryActor(npc).flags?.highport.provenance).toEqual(provenance);
+  });
+
+  it('omits provenance flags when extracting a legacy node', () => {
+    const legacy = extractNodesFromYDoc(createTestYDocState()).find((node) => node.id === 'node_1');
+    if (!legacy) throw new Error('Missing legacy fixture');
+    expect(legacy.provenance).toBeUndefined();
+    expect(nodeToFoundryActor(legacy)).not.toHaveProperty('flags');
+  });
   describe('extractNodesFromYDoc', () => {
     it('extracts nodes from Y.Doc state', () => {
       const state = createTestYDocState();

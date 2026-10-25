@@ -84,6 +84,7 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
           status: input.provenance.status,
           pendingReviewBy: input.provenance.pendingReviewBy,
           generatedAt: input.provenance.generatedAt,
+          derivedFrom: input.provenance.derivedFrom,
         }
       : undefined,
   };

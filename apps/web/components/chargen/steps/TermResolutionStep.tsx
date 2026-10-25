@@ -27,6 +27,8 @@ import { SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
+import { applyForcedMusterOut } from '../../../lib/chargen/muster-out';
+import { unwrapAIField } from '../../../lib/chargen/types';
 import {
   applySkillGain,
   getRankInfo,
@@ -126,27 +128,18 @@ export default function TermResolutionStep({
   const effectiveVerbosity = settings?.aiVerbosity ?? 'inspiration';
   const gmApprovalMode = settings?.gmApprovalMode ?? 'moderate';
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only run when character ID or term number changes
+  const authoritativeEventDesc = character?.terms[character.terms.length - 1]?.eventDescription;
+  const authoritativeEventValue = unwrapAIField(authoritativeEventDesc);
+  const authoritativeEventStatus =
+    typeof authoritativeEventDesc === 'object' ? authoritativeEventDesc.status : undefined;
+  const termNumber = character?.terms[character.terms.length - 1]?.termNumber;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset local edits when switching characters or terms with identical narrative text.
   useEffect(() => {
-    if (character) {
-      const term = character.terms[character.terms.length - 1];
-      if (term) {
-        const descField = term.eventDescription;
-        if (descField) {
-          if (typeof descField === 'object' && descField !== null && 'value' in descField) {
-            setGeneratedDescription(descField.value);
-            setDescriptionEditorOpen(descField.status === 'draft' || descField.status === 'edited');
-          } else {
-            setGeneratedDescription(descField as string);
-            setDescriptionEditorOpen(false);
-          }
-        } else {
-          setGeneratedDescription(undefined);
-          setDescriptionEditorOpen(false);
-        }
-      }
-    }
-  }, [characterId, character?.terms[character?.terms.length - 1]?.termNumber]);
+    setGeneratedDescription(authoritativeEventValue);
+    setDescriptionEditorOpen(
+      authoritativeEventStatus === 'draft' || authoritativeEventStatus === 'edited',
+    );
+  }, [characterId, termNumber, authoritativeEventStatus, authoritativeEventValue]);
 
   if (!character) return <div className="text-subtle">Loading character...</div>;
 
@@ -529,25 +522,12 @@ export default function TermResolutionStep({
   };
 
   const handleForcedMusterOut = () => {
-    const updatedTerms = [...character.terms];
-    const termUpdate: Partial<CareerTermResult> = {};
-    if (mishap) termUpdate.mishap = mishap;
-    if (generatedMishapDesc) {
-      const isLenient = gmApprovalMode === 'lenient';
-      termUpdate.mishapDescription = {
-        value: generatedMishapDesc,
-        source: 'ai',
-        mode: effectiveVerbosity,
-        status: isLenient ? 'accepted' : 'draft',
-        derivedFrom: `mishap-${mishap?.description?.slice(0, 30) ?? 'unknown'}`,
-        generatedAt: Date.now(),
-        pendingReviewBy: isLenient ? null : 'gm',
-      };
-    }
-    updatedTerms[character.terms.length - 1] = {
-      ...updatedTerms[character.terms.length - 1],
-      ...termUpdate,
-    };
+    const updatedTerms = applyForcedMusterOut(character.terms, {
+      mishap,
+      generatedMishapDesc,
+      verbosity: effectiveVerbosity,
+      gmApprovalMode,
+    });
     finishTerm(updatedTerms, 'mustering_out');
   };
 
@@ -925,7 +905,11 @@ export default function TermResolutionStep({
         ? (eventDescriptionField as AIProvenance<string>)
         : undefined;
     const showDraft = shouldShowDraft(gmApprovalMode, eventProvenance, isGM);
-    const displayDescription = showDraft ? generatedDescription : 'Pending GM Review...';
+    const narrativeText =
+      descriptionEditorOpen && authoritativeEventStatus === 'draft'
+        ? generatedDescription
+        : authoritativeEventValue;
+    const displayDescription = showDraft ? narrativeText : 'Pending GM Review...';
     const showReviewBadge = eventProvenance
       ? requiresReview(eventProvenance, gmApprovalMode)
       : false;

@@ -2,6 +2,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { EventSpawn } from '@highport/mgt2e';
 import EntitySpawnForm from '../components/chargen/EntitySpawnForm';
+import { spawnEntity } from '../lib/chargen/entity-spawner';
+
+vi.mock('../lib/chargen/entity-spawner', () => ({ spawnEntity: vi.fn() }));
 
 vi.mock('../lib/chargen/useGMControls', () => ({
   useGMControls: vi.fn(),
@@ -43,6 +46,7 @@ const spawn: EventSpawn = { type: 'npc', relationship: 'ally', required: false }
 
 describe('EntitySpawnForm', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: vi.fn().mockImplementation((query: string) => ({
@@ -90,6 +94,110 @@ describe('EntitySpawnForm', () => {
       error: null,
       unavailable: false,
     });
+  });
+
+  it.each(['strict', 'moderate', 'lenient'] as const)(
+    'enforces all-field approval when a manual name has AI details in %s mode',
+    async (gmApprovalMode) => {
+      const controls = vi.mocked(useGMControls)();
+      if (!controls.settings) throw new Error('Missing settings fixture');
+      vi.mocked(useGMControls).mockReturnValue({
+        ...controls,
+        settings: { ...controls.settings, gmApprovalMode },
+      });
+      vi.mocked(useNPCNarrative).mockReturnValue({
+        generate: vi
+          .fn()
+          .mockResolvedValue({ personality: 'AI personality', motivation: 'AI motivation' }),
+        result: null,
+        isLoading: false,
+        error: null,
+        unavailable: false,
+        reset: vi.fn(),
+      });
+      vi.mocked(spawnEntity).mockReturnValue({
+        type: 'npc',
+        graphNodeId: 'npc-1',
+        name: 'Manual Name',
+      });
+      render(
+        <EntitySpawnForm
+          spawn={spawn}
+          characterId="char-1"
+          termNumber={1}
+          eventRoll={6}
+          onComplete={vi.fn()}
+          onSkip={vi.fn()}
+          verbosity="inspiration"
+          career="navy"
+          characterName="Hero"
+          currentUserId="player-1"
+        />,
+      );
+      fireEvent.change(screen.getByRole('textbox', { name: /Name/i }), {
+        target: { value: 'Manual Name' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: /Generate NPC Details/ }));
+      await waitFor(() =>
+        expect(
+          screen.getAllByDisplayValue(
+            gmApprovalMode === 'strict' ? 'Pending GM Review...' : /AI personality\s+AI motivation/,
+          ).length,
+        ).toBeGreaterThan(0),
+      );
+      const button = screen.getByRole('button', { name: /Add to Campaign Graph/ });
+      expect(button.hasAttribute('disabled')).toBe(gmApprovalMode !== 'lenient');
+      fireEvent.click(button);
+      if (gmApprovalMode === 'lenient') {
+        expect(spawnEntity).toHaveBeenCalledWith(
+          expect.objectContaining({
+            provenance: expect.objectContaining({ status: 'edited' }),
+          }),
+        );
+      } else {
+        expect(spawnEntity).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it('submits accepted provenance when NPC fields are generated in lenient mode', async () => {
+    const controls = vi.mocked(useGMControls)();
+    if (!controls.settings) throw new Error('Missing settings fixture');
+    vi.mocked(useGMControls).mockReturnValue({
+      ...controls,
+      settings: { ...controls.settings, gmApprovalMode: 'lenient' },
+    });
+    vi.mocked(useNPCNarrative).mockReturnValue({
+      generate: vi.fn().mockResolvedValue({ name: 'AI Ally', personality: 'AI personality' }),
+      result: null,
+      isLoading: false,
+      error: null,
+      unavailable: false,
+      reset: vi.fn(),
+    });
+    vi.mocked(spawnEntity).mockReturnValue({ type: 'npc', graphNodeId: 'npc-1', name: 'AI Ally' });
+    render(
+      <EntitySpawnForm
+        spawn={spawn}
+        characterId="char-1"
+        termNumber={1}
+        eventRoll={6}
+        onComplete={vi.fn()}
+        onSkip={vi.fn()}
+        verbosity="inspiration"
+        career="navy"
+        characterName="Hero"
+        currentUserId="player-1"
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Generate NPC Details/ }));
+    await screen.findByDisplayValue('AI Ally');
+    fireEvent.click(screen.getByRole('button', { name: /Add to Campaign Graph/ }));
+    expect(spawnEntity).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provenance: expect.objectContaining({ source: 'ai', status: 'accepted' }),
+      }),
+    );
   });
 
   it('disables the Add button when the generated NPC name is pending GM review in strict mode', async () => {

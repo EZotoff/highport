@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { spawnEntity } from '../../lib/chargen/entity-spawner';
 import type { EventSpawn } from '@highport/mgt2e';
+import type { ProvenanceEntry } from '@highport/shared/types/graph';
 import type { AIProvenance, SpawnedEntityRef } from '../../lib/chargen/types';
 import { useNPCNarrative, useNarrativeAvailable } from '../../lib/chargen/useNarrative';
 import { NarrativeUnavailableNotice } from './NarrativeUnavailableNotice';
@@ -129,7 +130,10 @@ export default function EntitySpawnForm({
   const { isGM, settings } = useGMControls();
   const gmApprovalMode = settings?.gmApprovalMode ?? 'moderate';
   const submitDisabled =
-    !nameProv?.value.trim() || (nameProv != null && requiresReview(nameProv, gmApprovalMode));
+    !nameProv?.value.trim() ||
+    [nameProv, descriptionProv, motivationProv, personalityProv].some(
+      (prov) => prov != null && requiresReview(prov, gmApprovalMode),
+    );
 
   const typeLabel = SPAWN_TYPE_LABELS[spawn.type] || spawn.type;
   const relationLabel = spawn.relationship ? RELATIONSHIP_LABELS[spawn.relationship] : null;
@@ -237,16 +241,28 @@ export default function EntitySpawnForm({
 
   const handleSubmit = async () => {
     const name = nameProv?.value.trim() ?? '';
-    if (!name) return;
-    const provenance = nameProv
+    if (submitDisabled) return;
+    const fields = [nameProv, descriptionProv, motivationProv, personalityProv];
+    const pendingField = fields.find(
+      (prov) => prov?.pendingReviewBy === 'gm' || prov?.status === 'draft',
+    );
+    const provenance: ProvenanceEntry | undefined = pendingField
       ? {
-          source: nameProv.source,
-          status: nameProv.status,
-          pendingReviewBy: nameProv.pendingReviewBy,
-          generatedAt: nameProv.generatedAt,
-          derivedFrom: nameProv.derivedFrom,
+          source: 'ai',
+          status: 'draft',
+          pendingReviewBy: 'gm',
+          generatedAt: Math.max(...fields.map((prov) => prov?.generatedAt ?? 0)),
+          derivedFrom: pendingField.derivedFrom,
         }
-      : undefined;
+      : nameProv
+        ? {
+            source: nameProv.source,
+            status: nameProv.status,
+            pendingReviewBy: nameProv.pendingReviewBy,
+            generatedAt: nameProv.generatedAt,
+            derivedFrom: nameProv.derivedFrom,
+          }
+        : undefined;
 
     const entity = spawnEntity({
       spawn,

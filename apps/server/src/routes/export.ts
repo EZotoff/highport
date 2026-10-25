@@ -3,8 +3,11 @@ import * as Y from 'yjs';
 import { fetchDocumentState } from '../ws/hocuspocus.js';
 import { requirePrincipal } from '../lib/principal.js';
 import { requireCampaignRole } from '../lib/authz.js';
+import type { ProvenanceEntry } from '@highport/shared/types/graph';
 
 interface FoundryActorExport {
+  provenance?: ProvenanceEntry;
+  flags?: { highport: { provenance: ProvenanceEntry } };
   _id: string;
   name: string;
   type: string;
@@ -16,6 +19,7 @@ interface FoundryActorExport {
 }
 
 interface GraphNode {
+  provenance?: ProvenanceEntry;
   id: string;
   type: string;
   label: string;
@@ -88,6 +92,7 @@ function extractNodesFromYDoc(state: Uint8Array): GraphNode[] {
       hidden: ymap.get('hidden') as boolean,
       created_at: ymap.get('created_at') as number,
       created_by: ymap.get('created_by') as string,
+      provenance: (ymap.get('provenance') as GraphNode['provenance']) ?? undefined,
     });
   });
 
@@ -104,6 +109,13 @@ function nodeToFoundryActor(node: GraphNode): FoundryActorExport {
     _id: metadata?.foundry_uuid?.replace('Actor.', '') || node.id,
     name: node.label,
     type: 'traveller',
+    // Both export routes share top-level JSON provenance and Foundry's namespaced flags.
+    ...(node.provenance === undefined
+      ? {}
+      : {
+          provenance: node.provenance,
+          flags: { highport: { provenance: node.provenance } },
+        }),
     system: {
       hits: hp ? { value: hp.current, max: hp.max } : undefined,
       characteristics: characteristics
