@@ -11,6 +11,7 @@ import {
   characterFor,
   CommandError,
   createLinkEdge,
+  removeLinkEdge,
   map,
   record,
   resolveDraft,
@@ -140,7 +141,7 @@ export async function registerChargenCommandRoutes(app: FastifyInstance): Promis
         if (request.body.description !== undefined)
           link.set('description', request.body.description);
         if (request.body.accepted) createLinkEdge(doc, request.params.linkId, link);
-        else doc.getMap('edges').delete(`chargen-link-${request.params.linkId}`);
+        else removeLinkEdge(doc, link);
       });
       return { success: true };
     },

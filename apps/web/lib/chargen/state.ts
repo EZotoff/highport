@@ -749,6 +749,9 @@ export function createCrossCharacterLinkEdge(
   if (!sourceNodeId || !targetNodeId) return;
 
   const edges = getEdgesMap(doc);
+  const edgeId = crossLinkEdgeId(sourceNodeId, targetNodeId, link.relationship);
+  if (edges.has(edgeId)) return;
+  // Keep the legacy pair scan, but create with a deterministic id so concurrent writes collapse.
   let edgeExists = false;
   edges.forEach((edgeMap) => {
     const sourceId = edgeMap.get('source_id');
@@ -764,7 +767,7 @@ export function createCrossCharacterLinkEdge(
   if (edgeExists) return;
 
   const edge: GraphEdge = {
-    id: crypto.randomUUID(),
+    id: edgeId,
     source_id: sourceNodeId,
     target_id: targetNodeId,
     relation_label: link.relationship,

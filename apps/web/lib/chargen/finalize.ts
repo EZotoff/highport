@@ -1,5 +1,5 @@
 import { getYDoc, getEdgesMap } from '../ydoc';
-import { getCrossCharacterLinks, findNodeIdByChargenId } from './state';
+import { getCrossCharacterLinks, findNodeIdByChargenId, crossLinkEdgeId } from './state';
 import { addNode, addEdge } from '../yjs-helpers';
 import type { GraphNode, GraphEdge } from '@highport/shared/types/graph';
 import type { ChargenCharacter } from './types';
@@ -87,6 +87,8 @@ export function createCharacterNode(character: ChargenCharacter): FinalizedChara
           if (otherNodeId) {
             // Check if edge already exists
             const edges = getEdgesMap(doc);
+            const edgeId = crossLinkEdgeId(nodeId, otherNodeId, link.relationship);
+            if (edges.has(edgeId)) return;
             let edgeExists = false;
             edges.forEach((edgeMap) => {
               const sId = edgeMap.get('source_id') as string;
@@ -101,7 +103,7 @@ export function createCharacterNode(character: ChargenCharacter): FinalizedChara
 
             if (!edgeExists) {
               const edge: GraphEdge = {
-                id: crypto.randomUUID(),
+                id: edgeId,
                 source_id: nodeId,
                 target_id: otherNodeId,
                 relation_label: link.relationship,

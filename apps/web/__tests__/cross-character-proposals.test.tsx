@@ -198,6 +198,50 @@ describe('Cross-character link player-to-player flow', () => {
 });
 
 describe('concurrent dual-acceptance across synced docs', () => {
+  it('collapses concurrent finalization edges for the same finalized node pair', async () => {
+    // Given: both replicas know the same finalized graph identities.
+    const docA = new Y.Doc();
+    const docB = new Y.Doc();
+    vi.mocked(getYDoc).mockReturnValue(docA);
+    const source = createCharacter(docA, 'player-1', 'Zara');
+    const target = createCharacter(docA, 'player-2', 'Milo');
+    const a = getCharacter(docA, source);
+    const b = getCharacter(docA, target);
+    if (!a || !b) throw new Error('Missing fixture characters');
+    const sourceNodeId = '11111111-1111-4111-8111-111111111111';
+    const targetNodeId = '22222222-2222-4222-8222-222222222222';
+    const uuid = vi.spyOn(crypto, 'randomUUID');
+    uuid.mockReturnValueOnce(sourceNodeId);
+    createCharacterNode(a);
+    uuid.mockReturnValueOnce(targetNodeId);
+    createCharacterNode(b);
+    addCrossCharacterLink(docA, {
+      sourceCharId: source,
+      targetCharId: target,
+      relationship: 'Rival',
+      description: '',
+      acceptedBy: [source, target],
+    });
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    // When: each replica finalizes one party while disconnected.
+    try {
+      uuid.mockReturnValueOnce(sourceNodeId);
+      createCharacterNode(a);
+      vi.mocked(getYDoc).mockReturnValue(docB);
+      uuid.mockReturnValueOnce(targetNodeId);
+      createCharacterNode(b);
+    } finally {
+      uuid.mockRestore();
+    }
+    Y.applyUpdate(docA, Y.encodeStateAsUpdate(docB));
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    // Then
+    expect(getEdgesMap(docA).size).toBe(1);
+    expect(getEdgesMap(docB).size).toBe(1);
+    docA.destroy();
+    docB.destroy();
+  });
+
   async function concurrentAcceptance() {
     const docA = new Y.Doc();
     const docB = new Y.Doc();
