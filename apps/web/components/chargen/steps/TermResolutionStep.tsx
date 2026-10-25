@@ -133,6 +133,7 @@ export default function TermResolutionStep({
   const authoritativeEventStatus =
     typeof authoritativeEventDesc === 'object' ? authoritativeEventDesc.status : undefined;
   const termNumber = character?.terms[character.terms.length - 1]?.termNumber;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset local edits when switching characters or terms with identical narrative text.
   useEffect(() => {
     setGeneratedDescription(authoritativeEventValue);
     setDescriptionEditorOpen(

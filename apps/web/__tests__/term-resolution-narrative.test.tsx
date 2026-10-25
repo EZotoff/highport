@@ -115,6 +115,20 @@ describe('term narrative authoritative sync', () => {
     expect(screen.getByText('Pending GM Approval')).toBeTruthy();
   });
 
+  it('discards local draft edits when switching to a term with identical authoritative text', () => {
+    showEvent();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Event narrative description' }), {
+      target: { value: 'unsaved local text' },
+    });
+    const charMap = getCharactersMap(doc).get(characterId);
+    if (!charMap) throw new Error('Missing character fixture');
+    act(() => {
+      charMap.set('terms', [{ ...term, termNumber: 2 }]);
+    });
+    expect(screen.getByDisplayValue('draft text')).toBeTruthy();
+    expect(screen.queryByDisplayValue('unsaved local text')).toBeNull();
+  });
+
   it('hides pending draft text when a strict-mode player views the event', () => {
     const controls = vi.mocked(useGMControls)();
     if (!controls.settings) throw new Error('Missing settings fixture');
