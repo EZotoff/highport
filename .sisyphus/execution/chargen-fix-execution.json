@@ -46,10 +46,12 @@
       "key": "D",
       "plan": ".omo/plans/fix-mgt2e-rules.md",
       "reviews": ".omo/plans/fix-mgt2e-rules.reviews.md",
-      "status": "in_progress",
+      "status": "done",
       "rationale": "largest TermResolutionStep.tsx churn; runs last to minimize merge surface",
       "started": "2026-10-25T04:15:00+01:00",
-      "branch": "agent/sisyphus/chargen-fix-d"
+      "branch": "agent/sisyphus/chargen-fix-d",
+      "completed": "2026-10-25T05:05:00+01:00",
+      "evidence": "F1-F4 APPROVE in .omo/plans/fix-mgt2e-rules.md Execution Record; F3 caught+fixed chargen bootstrap regression (58450a7, c3de248); branch agent/sisyphus/chargen-fix-d merged no-ff to main"
     }
   ],
   "per_plan_protocol": [
@@ -69,5 +71,6 @@
   ],
   "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
   "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
-  "updated": "2026-10-25T04:15:00+01:00"
+  "updated": "2026-10-25T05:05:00+01:00",
+  "campaign_complete": true
 }
