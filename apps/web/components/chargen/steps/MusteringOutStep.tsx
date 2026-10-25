@@ -86,7 +86,12 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
     };
     const source = String(result.result);
     const choice = parseBenefitChoice(source);
-    const selected = resolveBenefitChoice(character, choice);
+    // 'and' grants apply every part with no choice: reuse the first alternative as a
+    // sentinel so the full source flows into applyMusteringBenefit.
+    const selected =
+      choice.mode === 'and'
+        ? { ...choice.alternatives[0], label: source }
+        : resolveBenefitChoice(character, choice);
     if (type === 'benefit' && !selected) {
       updateCharacterFields(getYDoc(), character.id, {
         mustering: { ...newMustering, pendingBenefit: { source, roll: result.roll.total } },
