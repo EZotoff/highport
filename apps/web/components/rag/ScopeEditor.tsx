@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, KeyboardEvent } from 'react';
+import { apiFetch } from '@/lib/api-client';
 import { Shield, Lock, Users, Globe, X, Plus, Loader2 } from 'lucide-react';
 
 interface ScopeEditorProps {
@@ -68,11 +69,14 @@ export function ScopeEditor({ documentId, initialScope, onUpdate }: ScopeEditorP
     setError(null);
 
     try {
-      const res = await fetch(`/api/documents/${documentId}/scope`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessScope: scope }),
-      });
+      const res = await apiFetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:18122'}/api/documents/${documentId}/scope`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessScope: scope }),
+        },
+      );
 
       if (!res.ok) {
         const data = await res.json();

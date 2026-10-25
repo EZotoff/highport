@@ -3,7 +3,7 @@
   "baseline_sha": "3a34945",
   "plans_review_ledger": "docs in .sisyphus/reviews/chargen-20261023/ledger.md; review verdicts in each plan's .reviews.md",
   "operator_directives": {
-    "execution_mode": "sequential — one plan at a time, no parallel plan execution",
+    "execution_mode": "sequential \u2014 one plan at a time, no parallel plan execution",
     "orchestration_only": "the orchestrator agent must NOT hand-implement code; dispatch implementation to worker agents (e.g. task category or /start-work in a worktree) and verify via the plan's Final Verification Wave",
     "no_hurry": "wall-clock is not a constraint; correctness and verification depth are",
     "commit_push": "atomic commits per logical unit, push to origin main (Tier A pre-authorized) after each plan's verification passes"
@@ -13,15 +13,20 @@
       "key": "C",
       "plan": ".omo/plans/fix-server-authz.md",
       "reviews": ".omo/plans/fix-server-authz.reviews.md",
-      "status": "pending",
-      "rationale": "security CRITICALs are live-exposed (WS token not doc-scoped, no Yjs write authz, X-User-Id impersonation); independent of the TermResolutionStep seam; executes before B so the shared export.ts seam flows C->B"
+      "status": "done",
+      "rationale": "security CRITICALs are live-exposed (WS token not doc-scoped, no Yjs write authz, X-User-Id impersonation); independent of the TermResolutionStep seam; executes before B so the shared export.ts seam flows C->B",
+      "branch": "agent/sisyphus/chargen-fix-c",
+      "started": "2026-10-25T01:52:00+01:00",
+      "completed": "2026-10-25T03:35:00+01:00",
+      "evidence": "F1-F4 APPROVE in .omo/plans/fix-server-authz.md Execution Record; curls/WS in .sisyphus/evidence/authz-curl.md; branch agent/sisyphus/chargen-fix-c (13 commits) merged no-ff to main"
     },
     {
       "key": "B",
       "plan": ".omo/plans/fix-provenance-pipeline.md",
       "reviews": ".omo/plans/fix-provenance-pipeline.reviews.md",
-      "status": "pending",
-      "rationale": "surgical; settles authoritative-provenance display semantics that A and D build on"
+      "status": "in_progress",
+      "rationale": "surgical; settles authoritative-provenance display semantics that A and D build on",
+      "started": "2026-10-25T03:35:00+01:00"
     },
     {
       "key": "A",
@@ -43,7 +48,7 @@
     "2. Heed the plan's .reviews.md notes (esp. fix-server-authz.reviews.md risks: apply command mutations to the LIVE Hocuspocus document, not only the DB; onChange not onUpdate; getOrCreateUser not getSessionUserId).",
     "3. Work on a branch or worktree (agent/sisyphus/chargen-fix-<key>); rebase on main before starting if main moved.",
     "4. Dispatch implementation to worker agent(s) following the plan's ordered todos exactly; test-first where the plan says so (RED commit before fix).",
-    "5. Run the plan's Final Verification Wave verbatim; record F#1..F#n verdicts (APPROVE/REJECT + one-clause evidence) in the plan's ## Execution Record — orchestrator writes these lines.",
+    "5. Run the plan's Final Verification Wave verbatim; record F#1..F#n verdicts (APPROVE/REJECT + one-clause evidence) in the plan's ## Execution Record \u2014 orchestrator writes these lines.",
     "6. All F-boxes APPROVE required. On failure: dispatch repair to a worker (max 2 repair cycles), then stop and report if still failing.",
     "7. Append execution-baseline line + Execution Record updates to the plan doc; merge to main (no-ff), push; update this state file (status: done + evidence pointers) and commit it.",
     "8. Only then proceed to the next plan in order."
@@ -55,5 +60,5 @@
   ],
   "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
   "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
-  "updated": "2026-10-25T01:45:00+01:00"
+  "updated": "2026-10-25T03:35:00+01:00"
 }

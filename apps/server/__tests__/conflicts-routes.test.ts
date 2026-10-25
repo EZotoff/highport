@@ -1,6 +1,21 @@
 import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import { registerConflictRoutes } from '../src/routes/conflicts.js';
+import { bearer, secret } from './api-token.js';
+
+vi.mock('../src/lib/resource-authz.js', () => ({
+  resourceCampaign: vi.fn(async () => 'campaign_default'),
+}));
+vi.mock('../src/lib/authz.js', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../src/lib/authz.js')>();
+  return {
+    ...original,
+    getMembership: vi.fn(async () => ({ role: 'gm' })),
+    requireCampaignRole: vi.fn(async (_campaign: string, userId: string) => {
+      if (userId === 'player') throw new original.AuthorizationError();
+    }),
+  };
+});
 
 function getTableName(table: unknown): string {
   if (!table || typeof table !== 'object') return '';
@@ -80,13 +95,19 @@ describe('Conflict Routes', () => {
   let fastify: FastifyInstance;
 
   beforeAll(async () => {
+    vi.stubEnv('AUTH_SECRET', secret);
+    vi.stubEnv('HOCUSPOCUS_JWT_SECRET', secret);
     fastify = Fastify();
+    fastify.addHook('onRequest', async (request) => {
+      request.headers.authorization ??= bearer();
+    });
     await registerConflictRoutes(fastify);
     await fastify.ready();
   });
 
   afterAll(async () => {
     await fastify.close();
+    vi.unstubAllEnvs();
   });
 
   beforeEach(() => {
@@ -99,18 +120,18 @@ describe('Conflict Routes', () => {
       const response = await fastify.inject({
         method: 'GET',
         url: '/api/conflicts',
-        headers: { 'x-is-gm': 'false' },
+        headers: { authorization: bearer('player') },
       });
 
       expect(response.statusCode).toBe(403);
-      expect(response.json().error).toContain('GM');
+      expect(response.json().message).toContain('Campaign access denied');
     });
 
     it('returns pending conflicts for GM', async () => {
       const response = await fastify.inject({
         method: 'GET',
         url: '/api/conflicts',
-        headers: { 'x-is-gm': 'true' },
+        headers: { authorization: bearer() },
       });
 
       expect(response.statusCode).toBe(200);
@@ -157,7 +178,7 @@ describe('Conflict Routes', () => {
       const response = await fastify.inject({
         method: 'POST',
         url: '/api/conflicts/conflict_123/resolve',
-        headers: { 'x-is-gm': 'false' },
+        headers: { authorization: bearer('player') },
         payload: { resolution: 'keep_foundry' },
       });
 
@@ -168,7 +189,7 @@ describe('Conflict Routes', () => {
       const response = await fastify.inject({
         method: 'POST',
         url: '/api/conflicts/conflict_123/resolve',
-        headers: { 'x-is-gm': 'true', 'x-user-id': 'user_gm' },
+        headers: { authorization: bearer('user_gm') },
         payload: { resolution: 'invalid' },
       });
 
@@ -187,7 +208,7 @@ describe('Conflict Routes', () => {
       const response = await fastify.inject({
         method: 'POST',
         url: '/api/conflicts/conflict_123/resolve',
-        headers: { 'x-is-gm': 'true', 'x-user-id': 'user_gm' },
+        headers: { authorization: bearer('user_gm') },
         payload: { resolution: 'keep_foundry' },
       });
 
@@ -203,7 +224,7 @@ describe('Conflict Routes', () => {
       const response = await fastify.inject({
         method: 'DELETE',
         url: '/api/conflicts/conflict_123',
-        headers: { 'x-is-gm': 'false' },
+        headers: { authorization: bearer('player') },
       });
 
       expect(response.statusCode).toBe(403);
@@ -220,7 +241,7 @@ describe('Conflict Routes', () => {
       const response = await fastify.inject({
         method: 'DELETE',
         url: '/api/conflicts/conflict_123',
-        headers: { 'x-is-gm': 'true', 'x-user-id': 'user_gm' },
+        headers: { authorization: bearer('user_gm') },
       });
 
       expect(response.statusCode).toBe(200);

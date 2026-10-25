@@ -1,4 +1,5 @@
 import { RagUnavailableError } from '../rag-client';
+import { apiFetch } from '../api-client';
 import { unwrapAIField } from './types';
 import type { ChargenCharacter, CrossCharacterLinkProposal, LifepathProposal } from './types';
 import { findSharedHistory } from '../graph/shared-history';
@@ -259,12 +260,10 @@ export async function generateCrossCharacterLinks(
       shared_history: sharedHistory,
     };
 
-    const response = await fetch(`${RAG_SERVICE_URL}/narrative/cross-character-links`, {
+    const response = await apiFetch(`${RAG_SERVICE_URL}/narrative/cross-character-links`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Character-Id': characters[0]?.id ?? '',
-        'X-Is-GM': String(isGM),
       },
       body: JSON.stringify(requestBody),
     });
@@ -390,12 +389,10 @@ export async function generateLifepathReview(
       campaign_context: campaignContext,
     };
 
-    const response = await fetch(`${RAG_SERVICE_URL}/narrative/lifepath-review`, {
+    const response = await apiFetch(`${RAG_SERVICE_URL}/narrative/lifepath-review`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Character-Id': character.id,
-        'X-Is-GM': String(isGM),
       },
       body: JSON.stringify(requestBody),
     });

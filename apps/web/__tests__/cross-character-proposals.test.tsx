@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as Y from 'yjs';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 import {
   createSession,
@@ -39,7 +39,7 @@ describe('Cross-character link player-to-player flow', () => {
     vi.mocked(getYDoc).mockReturnValue(doc);
     createSession(doc, 'campaign-123', 'gm-user-1');
   });
-  it('handles dual acceptance correctly', () => {
+  it('handles dual acceptance correctly', async () => {
     const linkId = addCrossCharacterLink(doc, {
       sourceCharId: 'char-1',
       targetCharId: 'char-2',
@@ -53,24 +53,24 @@ describe('Cross-character link player-to-player flow', () => {
     expect(links[0].acceptedBy).toBeUndefined();
 
     // Player 1 accepts
-    acceptCrossCharacterLink(doc, linkId, 'char-1');
+    await acceptCrossCharacterLink(doc, linkId, 'char-1');
     links = getCrossCharacterLinks(doc);
     expect(links[0].status).toBe('pending');
     expect(links[0].acceptedBy).toEqual(['char-1']);
 
     // Player 1 accepts again (should be no-op)
-    acceptCrossCharacterLink(doc, linkId, 'char-1');
+    await acceptCrossCharacterLink(doc, linkId, 'char-1');
     links = getCrossCharacterLinks(doc);
     expect(links[0].acceptedBy).toEqual(['char-1']);
 
     // Player 2 accepts -> status becomes accepted
-    acceptCrossCharacterLink(doc, linkId, 'char-2');
+    await acceptCrossCharacterLink(doc, linkId, 'char-2');
     links = getCrossCharacterLinks(doc);
     expect(links[0].status).toBe('accepted');
     expect(links[0].acceptedBy).toEqual(['char-1', 'char-2']);
   });
 
-  it('creates graph edge when both accepted and both characters are finalized', () => {
+  it('creates graph edge when both accepted and both characters are finalized', async () => {
     // Create two characters in Yjs
     const char1Id = createCharacter(doc, 'player-1', 'Zara');
     const char2Id = createCharacter(doc, 'player-2', 'Milo');
@@ -88,12 +88,12 @@ describe('Cross-character link player-to-player flow', () => {
     });
 
     // Player 1 accepts
-    acceptCrossCharacterLink(doc, linkId, char1Id);
+    await acceptCrossCharacterLink(doc, linkId, char1Id);
     let edges = getEdgesMap(doc);
     expect(edges.size).toBe(0); // No edge yet
 
     // Player 2 accepts -> edge should be created
-    acceptCrossCharacterLink(doc, linkId, char2Id);
+    await acceptCrossCharacterLink(doc, linkId, char2Id);
     edges = getEdgesMap(doc);
     expect(edges.size).toBe(1);
 
@@ -106,7 +106,7 @@ describe('Cross-character link player-to-player flow', () => {
     expect(edge.get('relation_label')).toBe('Rival');
   });
 
-  it('creates graph edge during finalization if link was already accepted', () => {
+  it('creates graph edge during finalization if link was already accepted', async () => {
     // Create two characters in Yjs
     const char1Id = createCharacter(doc, 'player-1', 'Zara');
     const char2Id = createCharacter(doc, 'player-2', 'Milo');
@@ -118,8 +118,8 @@ describe('Cross-character link player-to-player flow', () => {
       relationship: 'Rival',
       description: 'Competed for the same promotion.',
     });
-    acceptCrossCharacterLink(doc, linkId, char1Id);
-    acceptCrossCharacterLink(doc, linkId, char2Id);
+    await acceptCrossCharacterLink(doc, linkId, char1Id);
+    await acceptCrossCharacterLink(doc, linkId, char2Id);
 
     // No edges yet because characters are not finalized
     let edges = getEdgesMap(doc);
@@ -193,7 +193,7 @@ describe('CrossCharacterProposalList Component', () => {
     expect(screen.getByText('No proposed links involving your character')).toBeDefined();
   });
 
-  it('renders proposals and handles Accept/Dismiss clicks', () => {
+  it('renders proposals and handles Accept/Dismiss clicks', async () => {
     const mockProposals: CrossCharacterLinkProposal[] = [
       {
         id: 'link-1',
@@ -228,7 +228,9 @@ describe('CrossCharacterProposalList Component', () => {
     expect(dismissBtn).toBeDefined();
 
     // Click Accept
-    fireEvent.click(acceptBtn);
+    await act(async () => {
+      fireEvent.click(acceptBtn);
+    });
     const links = getCrossCharacterLinks(doc);
     expect(links[0].acceptedBy).toEqual(['char-1']);
   });

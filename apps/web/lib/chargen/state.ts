@@ -1,4 +1,5 @@
 import * as Y from 'yjs';
+import { chargenCommand } from './commands';
 import { getNodesMap, getEdgesMap } from '../ydoc';
 import { addEdge } from '../yjs-helpers';
 import type { GraphEdge } from '@highport/shared/types/graph';
@@ -292,7 +293,8 @@ export function advanceStatus(doc: Y.Doc, charId: string): void {
   }
 }
 
-export function deleteCharacter(doc: Y.Doc, charId: string): void {
+export async function deleteCharacter(doc: Y.Doc, charId: string): Promise<void> {
+  if (await chargenCommand(doc, `characters/${encodeURIComponent(charId)}`)) return;
   const characters = getCharactersMap(doc);
   doc.transact(() => {
     characters.delete(charId);
@@ -351,7 +353,11 @@ export function getSession(doc: Y.Doc): ChargenSessionConfig | null {
   };
 }
 
-export function updateSessionSettings(doc: Y.Doc, updates: Partial<SessionSettings>): void {
+export async function updateSessionSettings(
+  doc: Y.Doc,
+  updates: Partial<SessionSettings>,
+): Promise<void> {
+  if (await chargenCommand(doc, 'session/settings', updates)) return;
   const sessionMap = getSessionMap(doc);
   const currentSettings =
     (sessionMap.get('settings') as SessionSettings) || DEFAULT_SESSION_SETTINGS;
@@ -648,12 +654,19 @@ export function addCrossCharacterLink(
   return linkId;
 }
 
-export function resolveCrossCharacterLink(doc: Y.Doc, linkId: string, accepted: boolean): void {
+export async function resolveCrossCharacterLink(
+  doc: Y.Doc,
+  linkId: string,
+  accepted: boolean,
+): Promise<void> {
+  if (await chargenCommand(doc, `links/${encodeURIComponent(linkId)}/resolve`, { accepted }))
+    return;
   const linkMap = getCrossCharacterLinksMap(doc).get(linkId);
   if (!linkMap) return;
 
   doc.transact(() => {
     linkMap.set('status', accepted ? 'accepted' : 'rejected');
+    if (accepted) createCrossCharacterLinkEdge(doc, yMapToCrossCharacterLink(linkMap));
   }, 'cross-character-link-resolve');
 }
 
@@ -717,7 +730,12 @@ export function createCrossCharacterLinkEdge(
   addEdge(doc, edge);
 }
 
-export function acceptCrossCharacterLink(doc: Y.Doc, linkId: string, characterId: string): void {
+export async function acceptCrossCharacterLink(
+  doc: Y.Doc,
+  linkId: string,
+  characterId: string,
+): Promise<void> {
+  if (await chargenCommand(doc, `links/${encodeURIComponent(linkId)}/accept`, {})) return;
   const linkMap = getCrossCharacterLinksMap(doc).get(linkId);
   if (!linkMap) return;
   const acceptedBy = linkMap.get('acceptedBy');
@@ -737,14 +755,28 @@ export function acceptCrossCharacterLink(doc: Y.Doc, linkId: string, characterId
   }, 'cross-character-link-accept');
 }
 
-export function resolveAIDraft(
+export async function resolveAIDraft(
   doc: Y.Doc,
   characterId: string,
   termNumber: number,
   fieldPath: 'eventDescription' | 'mishapDescription',
   action: 'accept' | 'reject' | 'edit',
   editedValue?: string,
-): boolean {
+): Promise<boolean> {
+  if (
+    await chargenCommand(
+      doc,
+      `drafts/${encodeURIComponent(`${characterId}:${termNumber}:${fieldPath}`)}/resolve`,
+      {
+        characterId,
+        termNumber,
+        fieldPath,
+        decision: action === 'accept' ? 'accepted' : action === 'reject' ? 'rejected' : 'edited',
+        ...(editedValue === undefined ? {} : { edits: editedValue }),
+      },
+    )
+  )
+    return true;
   const characters = getCharactersMap(doc);
   const charMap = characters.get(characterId);
   if (!charMap) return false;

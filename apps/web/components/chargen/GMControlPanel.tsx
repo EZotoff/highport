@@ -24,7 +24,6 @@ import { useCrossCharacterLinks as useCrossCharacterLinkGenerator } from '../../
 import { useCrossCharacterLinks as useYjsCrossCharacterLinks } from '../../lib/chargen/hooks';
 import {
   getCrossCharacterLinksMap,
-  createCrossCharacterLinkEdge,
   resolveCrossCharacterLink,
   resolveAIDraft,
 } from '../../lib/chargen/state';
@@ -82,7 +81,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [editedDescription, setEditedDescription] = useState('');
-  const { isGM, settings, pendingRequests, actions } = useGMControls(currentUserId);
+  const { isGM, settings, pendingRequests, actions } = useGMControls();
   const allCharacters = useAllCharacters();
   const {
     isLoading: isLoadingProposals,
@@ -130,7 +129,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
 
   const pendingProposals = yjsProposals.filter((p) => p.status === 'pending');
 
-  const handleAcceptProposal = (proposal: CrossCharacterLinkProposal) => {
+  const handleAcceptProposal = async (proposal: CrossCharacterLinkProposal) => {
     const doc = getYDoc();
     if (editingProposalId === proposal.id && editedDescription !== proposal.description) {
       const linkMap = getCrossCharacterLinksMap(doc).get(proposal.id);
@@ -140,8 +139,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
         });
       }
     }
-    resolveCrossCharacterLink(doc, proposal.id, true);
-    createCrossCharacterLinkEdge(doc, proposal);
+    await resolveCrossCharacterLink(doc, proposal.id, true);
     setEditingProposalId(null);
     setEditedDescription('');
   };
@@ -151,18 +149,18 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
     setEditedDescription(proposal.description);
   };
 
-  const handleRejectProposal = (proposal: CrossCharacterLinkProposal) => {
+  const handleRejectProposal = async (proposal: CrossCharacterLinkProposal) => {
     const doc = getYDoc();
-    resolveCrossCharacterLink(doc, proposal.id, false);
+    await resolveCrossCharacterLink(doc, proposal.id, false);
   };
 
   const getDraftKey = (draft: PendingAIDraft) =>
     `${draft.characterId}:${draft.termNumber}:${draft.fieldPath}`;
 
-  const handleAcceptAIDraft = (draft: PendingAIDraft) => {
+  const handleAcceptAIDraft = async (draft: PendingAIDraft) => {
     const doc = getYDoc();
     const editedText = editingDraftKey === getDraftKey(draft) ? editedDraftText : undefined;
-    resolveAIDraft(
+    await resolveAIDraft(
       doc,
       draft.characterId,
       draft.termNumber,
@@ -174,9 +172,9 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
     setEditedDraftText('');
   };
 
-  const handleRejectAIDraft = (draft: PendingAIDraft) => {
+  const handleRejectAIDraft = async (draft: PendingAIDraft) => {
     const doc = getYDoc();
-    resolveAIDraft(doc, draft.characterId, draft.termNumber, draft.fieldPath, 'reject');
+    await resolveAIDraft(doc, draft.characterId, draft.termNumber, draft.fieldPath, 'reject');
     setEditingDraftKey(null);
     setEditedDraftText('');
   };

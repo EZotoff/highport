@@ -34,7 +34,7 @@ export default function ChargenWizard() {
   const [isSynced, setIsSynced] = useState(false);
   const character = useCharacter(characterId);
   const [currentSessionUserId] = useState(() => getOrCreateUser().userId);
-  const { isGM, session, actions } = useGMControls(currentSessionUserId);
+  const { isGM, session, actions } = useGMControls();
 
   const statusToStep: Record<string, number> = {
     background: 0,

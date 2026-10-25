@@ -98,22 +98,22 @@ describe('Chargen Session State', () => {
       createSession(doc, 'campaign-123', 'gm-user-1');
     });
 
-    it('should update allowed careers', () => {
-      updateSessionSettings(doc, { allowedCareers: ['Navy', 'Marine'] });
+    it('should update allowed careers', async () => {
+      await updateSessionSettings(doc, { allowedCareers: ['Navy', 'Marine'] });
       const session = getSession(doc);
 
       expect(session?.settings.allowedCareers).toEqual(['Navy', 'Marine']);
     });
 
-    it('should update aiVerbosity', () => {
-      updateSessionSettings(doc, { aiVerbosity: 'full' });
+    it('should update aiVerbosity', async () => {
+      await updateSessionSettings(doc, { aiVerbosity: 'full' });
       const session = getSession(doc);
 
       expect(session?.settings.aiVerbosity).toBe('full');
     });
 
-    it('should update multiple settings at once', () => {
-      updateSessionSettings(doc, {
+    it('should update multiple settings at once', async () => {
+      await updateSessionSettings(doc, {
         allowedCareers: ['Scout'],
         isLocked: true,
       });
@@ -123,8 +123,8 @@ describe('Chargen Session State', () => {
       expect(session?.settings.isLocked).toBe(true);
     });
 
-    it('should preserve unchanged settings', () => {
-      updateSessionSettings(doc, { allowedCareers: ['Navy'] });
+    it('should preserve unchanged settings', async () => {
+      await updateSessionSettings(doc, { allowedCareers: ['Navy'] });
       const session = getSession(doc);
 
       expect(session?.settings.allowedCareers).toEqual(['Navy']);
@@ -140,9 +140,9 @@ describe('Chargen Session State', () => {
       expect(session?.status).toBe('completed');
     });
 
-    it('should preserve other session data', () => {
+    it('should preserve other session data', async () => {
       const sessionId = createSession(doc, 'campaign-123', 'gm-user-1');
-      updateSessionSettings(doc, { allowedCareers: ['Navy'] });
+      await updateSessionSettings(doc, { allowedCareers: ['Navy'] });
       endSession(doc);
       const session = getSession(doc);
 

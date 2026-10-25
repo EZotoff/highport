@@ -1,4 +1,7 @@
 import Fastify from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import { requirePrincipal } from '../lib/principal.js';
+import { authorizeDocument } from '../lib/authz.js';
 import cors from '@fastify/cors';
 import { fetchDocumentState } from '../ws/hocuspocus.js';
 import { registerKnowledgeRoutes } from '../routes/knowledge.js';
@@ -8,6 +11,7 @@ import { registerExportRoutes } from '../routes/export.js';
 import { registerCampaignRoutes } from '../routes/campaigns.js';
 import { registerAuthRoutes } from '../routes/auth.js';
 import { registerPortraitRoutes } from '../routes/portraits.js';
+import { registerChargenCommandRoutes } from '../routes/chargen-commands.js';
 
 const FASTIFY_PORT = 18122;
 
@@ -25,16 +29,30 @@ export async function startFastify(): Promise<void> {
   await registerCampaignRoutes(fastify);
   await registerAuthRoutes(fastify);
   await registerPortraitRoutes(fastify);
+  await registerChargenCommandRoutes(fastify);
 
   fastify.get('/health', async () => {
     return { status: 'ok' };
   });
 
-  fastify.get<{
+  await registerDocumentStateRoute(fastify);
+
+  try {
+    await fastify.listen({ port: FASTIFY_PORT, host: '0.0.0.0' });
+    fastify.log.info(`[Fastify] REST API listening on port ${FASTIFY_PORT}`);
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+}
+
+export async function registerDocumentStateRoute(app: FastifyInstance): Promise<void> {
+  app.get<{
     Params: { campaignId: string; docType: string };
-  }>('/api/doc/:campaignId/:docType', async (request, reply) => {
+  }>('/api/doc/:campaignId/:docType', { preHandler: requirePrincipal }, async (request, reply) => {
     const { campaignId, docType } = request.params;
     const docId = `${campaignId}:${docType}`;
+    await authorizeDocument(docId, request.principal.userId);
 
     const state = await fetchDocumentState(docId);
 
@@ -46,14 +64,6 @@ export async function startFastify(): Promise<void> {
     reply.header('Content-Type', 'application/octet-stream');
     return Buffer.from(state);
   });
-
-  try {
-    await fastify.listen({ port: FASTIFY_PORT, host: '0.0.0.0' });
-    fastify.log.info(`[Fastify] REST API listening on port ${FASTIFY_PORT}`);
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
 }
 
 export async function stopFastify(): Promise<void> {

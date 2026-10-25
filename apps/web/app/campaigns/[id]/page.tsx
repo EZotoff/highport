@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { apiFetch } from '@/lib/api-client';
 import Link from 'next/link';
 import { ArrowLeft, Map, Calendar, User } from 'lucide-react';
 import { CosmicBackground } from '@/components/ui/scifi';
@@ -31,9 +32,7 @@ export default function CampaignDetailPage() {
     async function load() {
       if (!session?.user?.id) return;
       try {
-        const res = await fetch(`${API_BASE}/api/campaigns/${params.id}`, {
-          headers: { 'X-User-Id': session.user.id },
-        });
+        const res = await apiFetch(`${API_BASE}/api/campaigns/${params.id}`);
         if (res.status === 404) {
           setNotFound(true);
           return;

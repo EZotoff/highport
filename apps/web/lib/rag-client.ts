@@ -1,4 +1,4 @@
-import { getOrCreateUser, getActiveCharacter } from './identity';
+import { apiFetch } from './api-client';
 
 const RAG_URL = process.env.NEXT_PUBLIC_RAG_URL || 'http://localhost:18124';
 
@@ -15,18 +15,11 @@ export async function streamQuery(
   onDone: () => void,
   onError: (error: Error) => void,
 ): Promise<void> {
-  const user = getOrCreateUser();
-  const char = getActiveCharacter();
-
   try {
-    const response = await fetch(`${RAG_URL}/query`, {
+    const response = await apiFetch(`${RAG_URL}/query`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-User-Id': user.userId,
-        'X-User-Name': user.name,
-        'X-Is-GM': String(user.isGM),
-        'X-Character-Id': char?.characterId ?? '',
       },
       body: JSON.stringify({ query }),
     });

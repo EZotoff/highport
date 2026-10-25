@@ -126,7 +126,7 @@ export default function EntitySpawnForm({
     error: portraitError,
   } = usePortraitGenerator();
   const session = useSession();
-  const { isGM, settings } = useGMControls(currentUserId);
+  const { isGM, settings } = useGMControls();
   const gmApprovalMode = settings?.gmApprovalMode ?? 'moderate';
   const submitDisabled =
     !nameProv?.value.trim() || (nameProv != null && requiresReview(nameProv, gmApprovalMode));

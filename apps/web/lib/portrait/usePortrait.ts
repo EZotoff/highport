@@ -4,7 +4,8 @@ import type {
   PortraitSourcePolicy,
   PortraitTags,
 } from '@highport/shared/types/portrait';
-import { getOrCreateUser } from '../identity';
+import { apiFetch } from '../api-client';
+import { normalizeImageUrl } from './image-url';
 import { getYDoc } from '../ydoc';
 import { updateNodeMetadata } from '../yjs-helpers';
 
@@ -65,14 +66,12 @@ export function usePortraitGenerator() {
     setIsLoading(true);
     setError(null);
     setUnavailable(false);
-    const user = getOrCreateUser();
 
     try {
-      const response = await fetch(`${SERVER_URL}/api/portraits/generate`, {
+      const response = await apiFetch(`${SERVER_URL}/api/portraits/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': user.userId,
         },
         body: JSON.stringify(params),
       });
@@ -110,14 +109,12 @@ export function usePortraitGenerator() {
     setIsLoading(true);
     setError(null);
     setUnavailable(false);
-    const user = getOrCreateUser();
 
     try {
-      const response = await fetch(`${SERVER_URL}/api/portraits/${params.portraitId}/remix`, {
+      const response = await apiFetch(`${SERVER_URL}/api/portraits/${params.portraitId}/remix`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': user.userId,
         },
         body: JSON.stringify({
           campaignId: params.campaignId,
@@ -171,12 +168,10 @@ export function attachPortraitToNode(nodeId: string, portrait: PortraitRecord): 
 }
 
 export async function attachPortraitRecord(nodeId: string, portraitId: string): Promise<void> {
-  const user = getOrCreateUser();
-  const response = await fetch(`${SERVER_URL}/api/nodes/${nodeId}/portrait`, {
+  const response = await apiFetch(`${SERVER_URL}/api/nodes/${nodeId}/portrait`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-User-Id': user.userId,
     },
     body: JSON.stringify({ portraitId }),
   });
@@ -185,12 +180,4 @@ export async function attachPortraitRecord(nodeId: string, portraitId: string): 
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || `Portrait attach failed (${response.status})`);
   }
-}
-
-function normalizeImageUrl(imageUrl?: string): string | undefined {
-  if (!imageUrl) return undefined;
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    return imageUrl;
-  }
-  return `${SERVER_URL}${imageUrl}`;
 }

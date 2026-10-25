@@ -8,9 +8,10 @@ import { generateId } from '@highport/shared';
 import { db } from '../db/client.js';
 import { campaigns, documents, documentUpdates } from '../db/schema.js';
 import { logger } from '../lib/logger.js';
+import { authorizeDocument, AuthorizationError, parseDocumentName } from '../lib/authz.js';
+import { auditUpdate, initializeAudit } from '../services/privilege-auditor.js';
 
 const HOCUSPOCUS_PORT = 18121;
-const DEFAULT_CAMPAIGN_ID = 'campaign_default';
 const HOCUSPOCUS_JWT_PURPOSE = 'hocuspocus';
 const WEB_ENV_AUTH_SECRET_PATHS = ['../web/.env', 'apps/web/.env'] as const;
 
@@ -141,20 +142,10 @@ function verifyHocuspocusJwt(token: string): HocuspocusJwtClaims {
   return claims;
 }
 
-async function ensureDocumentExists(docId: string): Promise<void> {
-  const parts = docId.split(':');
-  const campaignId = parts[0] || DEFAULT_CAMPAIGN_ID;
-  const docType = parts[1] || 'unknown';
-
-  await db
-    .insert(campaigns)
-    .values({
-      id: campaignId,
-      name: campaignId === DEFAULT_CAMPAIGN_ID ? 'Default Campaign' : 'Unnamed Campaign',
-      ownerId: 'system',
-      createdAt: new Date(),
-    })
-    .onConflictDoNothing();
+export async function ensureDocumentExists(docId: string): Promise<boolean> {
+  const { campaignId, docType } = parseDocumentName(docId);
+  const campaign = await db.query.campaigns.findFirst({ where: eq(campaigns.id, campaignId) });
+  if (!campaign) return false;
 
   await db
     .insert(documents)
@@ -166,10 +157,11 @@ async function ensureDocumentExists(docId: string): Promise<void> {
       updatedAt: new Date(),
     })
     .onConflictDoNothing();
+  return true;
 }
 
 export async function fetchDocumentState(docId: string): Promise<Uint8Array | null> {
-  await ensureDocumentExists(docId);
+  if (!(await ensureDocumentExists(docId))) return null;
 
   const doc = await db.query.documents.findFirst({
     where: eq(documents.id, docId),
@@ -194,7 +186,9 @@ export async function fetchDocumentState(docId: string): Promise<Uint8Array | nu
     Y.applyUpdate(yDoc, update.updateData);
   }
 
-  return Y.encodeStateAsUpdate(yDoc);
+  const state = Y.encodeStateAsUpdate(yDoc);
+  yDoc.destroy();
+  return state;
 }
 
 export const hocuspocus = new Hocuspocus({
@@ -221,10 +215,17 @@ export const hocuspocus = new Hocuspocus({
     }
   },
 
-  async onChange({ documentName, update }) {
-    if (!update) return;
+  async afterLoadDocument({ document }) {
+    initializeAudit(document);
+  },
 
-    await ensureDocumentExists(documentName);
+  async onChange({ documentName, document, update, transactionOrigin }) {
+    if (!update) return;
+    const keyPaths = auditUpdate(document, update, transactionOrigin);
+    if (keyPaths.length > 0) logger.warn('chargen.privilege_violation', { documentName, keyPaths });
+    if (transactionOrigin === 'server-command') return;
+
+    if (!(await ensureDocumentExists(documentName))) throw new HocuspocusAuthenticationError();
 
     await db.insert(documentUpdates).values({
       id: generateId('update'),
@@ -234,11 +235,17 @@ export const hocuspocus = new Hocuspocus({
     });
   },
 
-  async onAuthenticate({ token }) {
+  async onAuthenticate({ token, documentName }) {
     if (!token) {
       throw new Error('Not authorized');
     }
     const claims = verifyHocuspocusJwt(token);
+    try {
+      await authorizeDocument(documentName, claims.sub);
+    } catch (error) {
+      if (error instanceof AuthorizationError) throw new HocuspocusAuthenticationError();
+      throw error;
+    }
     return { userId: claims.sub, email: claims.email };
   },
 

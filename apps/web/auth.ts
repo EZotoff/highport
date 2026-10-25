@@ -8,6 +8,7 @@ declare module 'next-auth' {
       id?: string;
     };
     hocuspocusToken?: string;
+    apiToken?: string;
   }
 }
 
@@ -19,7 +20,7 @@ type HocuspocusJwtPayload = {
   readonly sub: string;
   readonly email?: string;
   readonly name?: string;
-  readonly purpose: typeof HOCUSPOCUS_JWT_PURPOSE;
+  readonly purpose: 'hocuspocus' | 'api';
   readonly iat: number;
   readonly exp: number;
 };
@@ -56,15 +57,19 @@ async function signHocuspocusJwt(payload: HocuspocusJwtPayload): Promise<string>
   return `${signingInput}.${base64UrlEncode(new Uint8Array(signature))}`;
 }
 
-async function createHocuspocusToken(session: DefaultSession, userId: string): Promise<string> {
+async function createSessionToken(
+  session: DefaultSession,
+  userId: string,
+  purpose: 'hocuspocus' | 'api',
+): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   return signHocuspocusJwt({
     sub: userId,
     email: session.user?.email ?? undefined,
     name: session.user?.name ?? undefined,
-    purpose: HOCUSPOCUS_JWT_PURPOSE,
+    purpose,
     iat: now,
-    exp: now + HOCUSPOCUS_JWT_TTL_SECONDS,
+    exp: now + (purpose === 'api' ? 12 * 60 * 60 : HOCUSPOCUS_JWT_TTL_SECONDS),
   });
 }
 
@@ -124,7 +129,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user && typeof token.id === 'string') {
         session.user.id = token.id;
-        session.hocuspocusToken = await createHocuspocusToken(session, token.id);
+        session.hocuspocusToken = await createSessionToken(
+          session,
+          token.id,
+          HOCUSPOCUS_JWT_PURPOSE,
+        );
+        session.apiToken = await createSessionToken(session, token.id, 'api');
       }
       return session;
     },
