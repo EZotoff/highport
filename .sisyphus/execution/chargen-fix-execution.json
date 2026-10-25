@@ -71,10 +71,10 @@
   ],
   "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
   "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
-  "updated": "2026-10-25T21:15:00+02:00",
+  "updated": "2026-10-25T22:40:00+02:00",
   "campaign_complete": true,
   "qa_campaign": {
-    "status": "complete",
+    "status": "complete \u2014 all checks PASS, all defects fixed and re-verified",
     "lanes": [
       "Q1 two-player link",
       "Q2 GM draft resolve",
@@ -92,8 +92,10 @@
       "wizard Create button clipped by GlassPanel flex min-size \u2014 bb889b7",
       "joined session id ignored (sessionStorage vs localStorage) \u2014 bb889b7",
       "compound mustering benefits applied nothing \u2014 301669b",
-      "and-form mustering grants applied nothing \u2014 333c4be"
+      "and-form mustering grants applied nothing \u2014 333c4be",
+      "and-form ledger integrity (missing rollHistory entry, relabel erased earlier grants) \u2014 4ab61d0"
     ],
-    "verdicts": "Q1/Q2/Q3 PASS, Q4 inconclusive, RV1 4/4 PASS, RV2 5/5 PASS, RV3 pending"
+    "verdicts": "Q1/Q2/Q3 PASS, Q4 aborted->RV2, RV1 4/4 PASS, RV2 5/5 PASS, RV3 3/3 PASS (2 ledger defects found+fixed), RV4 3/3 PASS",
+    "checks_executed": 21
   }
 }

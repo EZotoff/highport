@@ -81,3 +81,30 @@ Compound benefits (all CRB "player chooses one") fall through `parseBenefit` to 
 
 Fix dispatched: `agent/sisyphus/chargen-fix-benefit-choice` — compound-aware parser + player choice in
 MusteringOutStep + auto-resolution of the take-the-better form, with unit + component tests.
+
+## Campaign 3 — RV3 / RV4 (mustering benefit forms + ledger integrity)
+
+| Lane | Check                   | Verdict                                                                                                                                                                                                                                   |
+| ---- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RV3  | RV3a compound choice    | **PASS** — roll 3 → "+1 EDU or Two Ship Shares": both alternatives shown, nothing applied pre-pick (EDU 9, shares 0) → picking "+1 EDU" → EDU 9→10, shares 0, ledger shows the chosen text; reload keeps EDU 10, no re-apply, no re-offer |
+| RV3  | RV3b and-form mechanics | **PASS** — "+1 SOC and +1 EDU" → SOC +1 and EDU +1, each exactly once, no choice prompt (reproduced on two characters)                                                                                                                    |
+| RV3  | RV3c simple benefit     | **PASS** — "+1 INT": no prompt, INT 8→9 exactly                                                                                                                                                                                           |
+| RV3  | ledger defects found    | 2 — the and-grant never reached `rollHistory`/the UI ledger, and the relabel deleted earlier standalone grants sharing a label → fixed in `4ab61d0`                                                                                       |
+| RV4  | (a) ledger completeness | **PASS** — `rollHistory` length == `rollsUsed` (9/9 and 3/3) and the and-grant entry `{"rollNumber":4,"roll":7,"result":"+1 SOC and +1 EDU"}` is present                                                                                  |
+| RV4  | (b) no collateral loss  | **PASS** — exact defect-2 scenario: standalone "+1 SOC" then the and-grant → benefits `["+1 SOC","+1 INT"]` → `["+1 SOC","+1 INT","+1 SOC and +1 EDU"]`, identical in `character.benefits` and `mustering.benefits`                       |
+| RV4  | (c) no double-apply     | **PASS** — SOC 7→8 (standalone)→9 (+1 exactly), EDU 9→10 (+1 exactly); reload changed nothing                                                                                                                                             |
+
+### Method notes worth keeping
+
+- **No deterministic path exists for untargeted dice**: `setRandomSeed` is module-private and the QA dice
+  interceptor only fires on rolls that HAVE a target, so a benefit roll can only be driven by repeated
+  real rolls (RV3/RV4 used fabricated characters parked at `mustering_out`).
+- `agent-browser`'s synthetic ref-click does not fire React handlers on the SciFi buttons — the documented
+  `eval` `.click()` fallback does. Same family as the original clipped-button defect.
+- `localStorage['highport_active_character']` must be JSON; a plain string crashes `identity.ts:12`.
+
+## Campaign totals
+
+- Lanes run: Q1, Q2, Q3, Q4 (aborted), RV1, RV2, RV3, RV4 — 7 completed, 1 aborted and replaced.
+- Checks executed on the real surface: 21 — all PASS.
+- Product defects found by the campaign: 8 (2 identity/state-loss, 2 layout/session, 2 benefit-form, 2 ledger) — all fixed, merged, and re-verified.
