@@ -3,7 +3,8 @@
 import json
 from typing import AsyncGenerator
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from auth import Principal, require_principal
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -65,17 +66,13 @@ def _get_pinecone():
 @router.post("")
 async def query(
     request: QueryRequest,
-    x_user_id: str = Header(None, alias="X-User-Id"),
-    x_character_id: str = Header(None, alias="X-Character-Id"),
-    x_is_gm: str = Header("false", alias="X-Is-GM"),
+    principal: Principal = Depends(require_principal),
 ):
     """Query the RAG system with scope-based filtering.
 
     Args:
         request: The query request body.
-        x_user_id: User ID header.
-        x_character_id: Character ID header.
-        x_is_gm: GM status header.
+        principal: Verified user or trusted service identity.
 
     Returns:
         StreamingResponse: Server-Sent Events stream.
@@ -84,13 +81,7 @@ async def query(
     llm = _get_llm()
     pinecone = _get_pinecone()
 
-    # 1. Build scope array from headers
-    scope = ["public"]
-    if x_is_gm and x_is_gm.lower() == "true":
-        scope.append("gm")
-    if x_character_id:
-        scope.append(f"char:{x_character_id}")
-        scope.append("party")
+    scope = principal.scope
 
     # 2. Embed the query
     try:
