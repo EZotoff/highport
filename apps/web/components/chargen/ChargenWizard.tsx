@@ -234,7 +234,7 @@ export default function ChargenWizard() {
           </div>
 
           <div
-            className="mt-4 pt-4 flex justify-between items-center"
+            className="mt-4 pt-4 flex justify-between items-center shrink-0"
             style={{ borderTop: `1px solid rgba(148, 163, 184, 0.2)` }}
           >
             <SciFiButton

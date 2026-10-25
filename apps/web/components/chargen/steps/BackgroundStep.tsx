@@ -131,7 +131,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
           theme="cyan"
           variant="elevated"
           glint
-          className="max-w-md p-6 text-center space-y-4 overflow-visible"
+          className="max-w-md p-6 text-center space-y-4 overflow-visible shrink-0"
         >
           <h2 className="text-2xl font-bold text-heading font-display">
             Start Character Generation
