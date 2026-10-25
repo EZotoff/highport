@@ -43,8 +43,16 @@ export function parseDocumentName(documentName: string): {
   return { campaignId: parts[0], docType: parts[1] };
 }
 
+const LOCAL_PLAY_CAMPAIGNS: ReadonlySet<string> = new Set(['default', 'campaign_default']);
+
 export async function authorizeDocument(documentName: string, userId: string): Promise<string> {
   const { campaignId } = parseDocumentName(documentName);
-  await requireCampaignRole(campaignId, userId, ['gm', 'player']);
+  const member = await getMembership(campaignId, userId);
+  if (member) return campaignId;
+  if (!LOCAL_PLAY_CAMPAIGNS.has(campaignId)) throw new AuthorizationError();
+  await db
+    .insert(campaignMembers)
+    .values({ campaignId, userId, role: 'player' })
+    .onConflictDoNothing();
   return campaignId;
 }
