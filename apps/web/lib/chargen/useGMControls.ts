@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react';
+import { useSession as useAuthSession } from 'next-auth/react';
 import { getAllCareers } from '@highport/mgt2e';
 import { getYDoc } from '../ydoc';
 import { updateSessionSettings, endSession, getAllCharacters } from './state';
@@ -8,11 +9,14 @@ import type { SessionSettings } from './types';
 
 export const ALL_CAREERS = getAllCareers();
 
-export function useGMControls(currentUserId: string) {
+export function useGMControls() {
+  const { data: identity } = useAuthSession();
+  const currentUserId = identity?.user?.id ?? '';
   const session = useSession();
 
+  // UX-only: server command endpoints enforce campaign authority.
   const isGM = useMemo(() => {
-    return session?.createdBy === currentUserId;
+    return Boolean(currentUserId) && session?.createdBy === currentUserId;
   }, [session, currentUserId]);
 
   const { requests, approveRequest, rejectRequest } = useConnectionRequests({

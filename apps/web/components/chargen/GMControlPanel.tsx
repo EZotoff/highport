@@ -81,7 +81,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [editedDescription, setEditedDescription] = useState('');
-  const { isGM, settings, pendingRequests, actions } = useGMControls(currentUserId);
+  const { isGM, settings, pendingRequests, actions } = useGMControls();
   const allCharacters = useAllCharacters();
   const {
     isLoading: isLoadingProposals,

@@ -122,7 +122,7 @@ export default function TermResolutionStep({
     error: mishapError,
     unavailable: mishapUnavailable,
   } = useMishapNarrative();
-  const { isGM, settings } = useGMControls(currentUserId);
+  const { isGM, settings } = useGMControls();
   const effectiveVerbosity = settings?.aiVerbosity ?? 'inspiration';
   const gmApprovalMode = settings?.gmApprovalMode ?? 'moderate';
 

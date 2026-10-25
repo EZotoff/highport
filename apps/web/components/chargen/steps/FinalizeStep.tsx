@@ -107,7 +107,7 @@ export default function FinalizeStep({ characterId, currentUserId }: FinalizeSte
   const character = useCharacter(characterId);
   const session = useSession();
   const proposals = useLifepathProposals(characterId ?? undefined);
-  const { isGM, settings } = useGMControls(currentUserId);
+  const { isGM, settings } = useGMControls();
   const gmApprovalMode = settings?.gmApprovalMode ?? 'moderate';
   const [isCreating, setIsCreating] = useState(false);
   const [name, setName] = useState('');
