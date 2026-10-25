@@ -6,7 +6,7 @@ import {
   parseBenefitChoice,
   resolveBenefitChoice,
 } from '../lib/chargen/mustering';
-import type { ChargenCharacter } from '../lib/chargen/types';
+import type { ChargenCharacter, MusteringRoll } from '../lib/chargen/types';
 
 const character: ChargenCharacter = {
   id: 'veteran',
@@ -159,6 +159,44 @@ describe('compound mustering benefits', () => {
     expect(updates.characteristics?.SOC).toBe(8);
     expect(updates.characteristics?.EDU).toBe(8);
     expect(updates.benefits).toEqual(['+1 SOC and +1 EDU']);
+  });
+  it('records the and-grant roll exactly once in the benefit ledger', () => {
+    // Given
+    const roll: MusteringRoll = {
+      rollNumber: 1,
+      type: 'benefit',
+      roll: 4,
+      result: '+1 SOC and +1 EDU',
+    };
+    // When
+    const updates = applyMusteringBenefit(character, '+1 SOC and +1 EDU', roll);
+    // Then
+    expect(updates.mustering?.rollHistory).toEqual([roll]);
+    expect(updates.mustering?.benefits).toEqual(['+1 SOC and +1 EDU']);
+    expect(updates.benefits).toEqual(['+1 SOC and +1 EDU']);
+  });
+
+  it('preserves an earlier standalone grant when an and-grant repeats its label', () => {
+    // Given
+    const veteran: ChargenCharacter = {
+      ...character,
+      benefits: ['+1 SOC'],
+      mustering: {
+        totalRolls: 2,
+        rollsUsed: 1,
+        cashRollsUsed: 0,
+        benefits: ['+1 SOC'],
+        credits: 0,
+        shipShares: 0,
+      },
+    };
+    // When
+    const updates = applyMusteringBenefit(veteran, '+1 SOC and +1 EDU');
+    // Then
+    expect(updates.characteristics?.SOC).toBe(8);
+    expect(updates.characteristics?.EDU).toBe(8);
+    expect(updates.benefits).toEqual(['+1 SOC', '+1 SOC and +1 EDU']);
+    expect(updates.mustering?.benefits).toEqual(['+1 SOC', '+1 SOC and +1 EDU']);
   });
 
   it('raises SOC and preserves the Yacht item when given a stat-and-item grant', () => {

@@ -142,22 +142,26 @@ export function applyMusteringBenefit(
 ): Partial<ChargenCharacter> {
   const choice = parseBenefitChoice(benefit);
   if (choice.mode === 'and' && choice.alternatives.length > 1) {
-    const partLabels = new Set(choice.alternatives.map((part) => part.label));
     const applied = choice.alternatives.reduce<ChargenCharacter>(
       (acc, part) => ({ ...acc, ...applyMusteringBenefit(acc, part.label) }),
       character,
     );
-    // The full source is recorded once; drop the per-part labels the fold appended.
-    const relabel = (labels: readonly string[]) => [
-      ...labels.filter((label) => !partLabels.has(label)),
-      benefit,
-    ];
+    // Record the full source once; replace only the per-part labels this fold appended.
+    const benefits = [...applied.benefits.slice(0, character.benefits.length), benefit];
+    const mustering = applied.mustering
+      ? {
+          ...applied.mustering,
+          rollHistory: [...(applied.mustering.rollHistory ?? []), ...(roll ? [roll] : [])],
+          benefits: [
+            ...applied.mustering.benefits.slice(0, character.mustering?.benefits.length ?? 0),
+            benefit,
+          ],
+        }
+      : undefined;
     return {
       ...applied,
-      benefits: relabel(applied.benefits),
-      ...(applied.mustering
-        ? { mustering: { ...applied.mustering, benefits: relabel(applied.mustering.benefits) } }
-        : {}),
+      benefits,
+      ...(mustering ? { mustering } : {}),
     };
   }
   const parsed = parseBenefit(benefit);
