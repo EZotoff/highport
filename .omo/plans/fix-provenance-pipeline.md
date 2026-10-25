@@ -199,4 +199,4 @@ One commit per todo (test-first todos get two: failing test, then fix). Conventi
 
 ## Execution Record
 
-Execution baseline: <full HEAD SHA of the execution worktree — or the repo, if no worktree>
+Execution baseline: c20ab52e78e504d8ec6164edba8d871246c0502c (branch agent/sisyphus/chargen-fix-b, on top of merged Plan C)

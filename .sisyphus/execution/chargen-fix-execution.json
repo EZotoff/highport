@@ -26,7 +26,8 @@
       "reviews": ".omo/plans/fix-provenance-pipeline.reviews.md",
       "status": "in_progress",
       "rationale": "surgical; settles authoritative-provenance display semantics that A and D build on",
-      "started": "2026-10-25T03:35:00+01:00"
+      "started": "2026-10-25T03:35:00+01:00",
+      "branch": "agent/sisyphus/chargen-fix-b"
     },
     {
       "key": "A",
