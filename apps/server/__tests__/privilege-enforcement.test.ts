@@ -41,6 +41,56 @@ const character = (doc: Y.Doc) => map(map(doc.getMap('chargen').get('characters'
 const link = (doc: Y.Doc) => map(map(doc.getMap('chargen').get('crossCharacterLinks')).get('link'));
 
 describe('privilege enforcement', () => {
+  it.each(['source', 'reviewedBy', 'reviewLog'])(
+    'rejects fabricated GM attribution through %s even from the owner',
+    (field) => {
+      // Given
+      const doc = fixture();
+      const update = updateFor(doc, (copy) =>
+        character(copy).set('terms', [
+          {
+            eventDescription: {
+              value: 'draft',
+              status: 'accepted',
+              ...(field === 'source' ? { source: 'gm' } : {}),
+              ...(field === 'reviewedBy' ? { reviewedBy: 'gm-user' } : {}),
+              ...(field === 'reviewLog'
+                ? { reviewLog: [{ by: 'gm-user', from: 'draft', to: 'accepted' }] }
+                : {}),
+            },
+          },
+        ]),
+      );
+      // When / Then
+      expect(() => applyAuthorizedUpdate(doc, update, { userId: 'owner-a' })).toThrow();
+      expect(character(doc).get('terms')).toEqual([
+        { eventDescription: { value: 'draft', status: 'draft' } },
+      ]);
+      doc.destroy();
+    },
+  );
+
+  it('rejects provenance status forgery on a shared link', () => {
+    // Given
+    const doc = fixture();
+    link(doc).set('provenance', { source: 'ai', status: 'draft', value: 'proposal' });
+    const update = updateFor(doc, (copy) =>
+      link(copy).set('provenance', {
+        source: 'ai',
+        status: 'accepted',
+        value: 'proposal',
+      }),
+    );
+    // When / Then
+    expect(() => applyAuthorizedUpdate(doc, update, { userId: 'owner-a' })).toThrow();
+    expect(link(doc).get('provenance')).toEqual({
+      source: 'ai',
+      status: 'draft',
+      value: 'proposal',
+    });
+    doc.destroy();
+  });
+
   it.each(['delete', 'mutate', 'provenance', 'ownership'])(
     'rejects non-owner %s without changing the authoritative document',
     (action) => {

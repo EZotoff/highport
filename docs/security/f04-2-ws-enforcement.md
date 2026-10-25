@@ -64,11 +64,16 @@ as a tripwire (including its intentionally broader warnings on raw owner writes)
 
 ## Verification
 
-Behavior commit: `3408ff5` (policy dependency `9823384`).
+Behavior base: `3408ff5` (policy dependency `9823384`), plus the currently
+uncommitted shared-link and GM-attribution guards and their red/green regressions.
+Three local commits exist, ending at `39cb97d`; the history-rewrite safety gate
+refused amendment of that evidence commit. Explicit operator approval to amend
+it, or permission for a fourth commit, is required to commit the final repair.
 
-- `privilege-enforcement.test.ts`: 13 cases, including non-owner deletion,
+- `privilege-enforcement.test.ts`: 17 cases, including non-owner deletion,
   mutation, ownership/provenance forgery; owner success; forged votes/status;
-  sequential and concurrent dual acceptance; GM-pending review; deferred structs.
+  sequential and concurrent dual acceptance; GM-pending review; deferred structs;
+  shared-link provenance status forgery, and fabricated GM source/reviewer/log.
 - `ws-privilege-enforcement.test.ts`: 11 cases using the configured production
   hook and real Hocuspocus Connection/MessageReceiver, without a listening port:
   four rejection frames, four owner-success frames, vote/provenance rejection,
@@ -76,11 +81,16 @@ Behavior commit: `3408ff5` (policy dependency `9823384`).
 - Existing `chargen-commands.test.ts`: 14 pass; web
   `cross-character-proposals.test.tsx`: 12 pass, including F01-1 behavior.
 - `docker compose up -d`: exit 0, existing PostgreSQL container running.
-- Server typecheck, test, build: exit 0; **167 passed, 37 existing skips**.
+- Server typecheck, test, build: exit 0; **171 passed, 37 existing skips**.
 - Web typecheck, test: exit 0; **386 passed**, 53 test files.
 - Changed TypeScript files: LSP diagnostics clear.
+- Independent read-only review `ses_e8aaa3030ffen1525Obhqe9dOp`: initial
+  GM-attribution fabrication finding repaired with three observed-red tests;
+  re-review returned **APPROVE** for the specified security rules. The owner
+  delete/recreate case cannot reintroduce GM source/reviewer/review history.
 
-Full gates ran on a detached verification worktree at the exact behavior commit,
+Full gates ran on a detached verification worktree at the behavior base plus
+the exact final policy/test delta (both files' SHA-256 matched the main checkout),
 after an offline frozen-lockfile install and shared/mgt2e builds. This avoids
 concurrent FU2 edits in the main checkout: its earlier web run failed an aging
 assertion and attempted to read a test file removed during that run. Those
@@ -100,23 +110,27 @@ this authorization change.
 
 ## Implementer alignment ledger
 
-Self-verification, not independent acceptance. Bound at 2026-10-26T00:12:53+01:00
+Self-verification, not independent acceptance. Bound at 2026-10-26T00:20:51+01:00
 to branch `agent/sisyphus/fu4-2-ws-enforcement`, behavior HEAD
-`3408ff5b7974cc45aff526d28747ff6d278e6052`. Server diff is clean (SHA-1
-`da39a3ee5e6b4b0d3255bfef95601890afd80709`); main checkout contains unrelated
-FU2 dirt and this untracked evidence document. The detached verification tree
-contains only the committed behavior.
+`3408ff5b7974cc45aff526d28747ff6d278e6052`, plus the policy/test delta SHA-1
+`1d6f3b693c9c8ebf5aec642ccd2c049ffaaaecec` (uncommitted, against HEAD `39cb97d`,
+whose code is identical to the behavior base).
+The main checkout contains unrelated FU2 dirt. The detached verification tree
+contained only the behavior base and the matching final policy/test delta;
+it was reclaimed after verification and file-hash comparison. The complete
+final repair remains preserved in the main checkout pending commit approval.
 
-| Requirement                                                           | Verdict and evidence                                                                       |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Inspect installed source and types before choosing architecture       | SATISFIED: installed hook references above                                                 |
-| Pre-merge rejection, offender notification, backup auditor retained   | SATISFIED: `3408ff5`, `src/ws/privilege-enforcement.ts`; 11 protocol cases                 |
-| Non-owner rejection and owner success                                 | SATISFIED: `9823384`, 13 policy cases; four wire variants for each actor                   |
-| Both owners' legitimate acceptance, F01-1 preserved                   | SATISFIED: protocol dual-accept test; 12 web proposal tests; 14 server command tests       |
-| Docker and complete server/web verification, all exit 0               | SATISFIED: gate counts above; tool output `tool_175554ae5001rZK2SFPGqfxNtl`                |
-| No dev servers, no push/merge, explicit paths, no unsafe type escapes | SATISFIED: commands and scoped commit diffs; 5 changed TS files have clear LSP diagnostics |
-| 2–3 atomic Conventional Commits on requested branch                   | SATISFIED: two behavior commits above plus this evidence-only commit                       |
+| Requirement                                                           | Verdict and evidence                                                                         |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Inspect installed source and types before choosing architecture       | SATISFIED: installed hook references above                                                   |
+| Pre-merge rejection, offender notification, backup auditor retained   | SATISFIED: `3408ff5`, `src/ws/privilege-enforcement.ts`; 11 protocol cases                   |
+| Non-owner rejection and owner success                                 | SATISFIED: `9823384` plus final guard, 17 policy cases; four wire variants for each actor    |
+| Both owners' legitimate acceptance, F01-1 preserved                   | SATISFIED: protocol dual-accept test; 12 web proposal tests; 14 server command tests         |
+| Docker and complete server/web verification, all exit 0               | SATISFIED: gate counts above; final tool output `tool_1755db000001stle25f9pEaaPY`            |
+| No dev servers, no push/merge, explicit paths, no unsafe type escapes | SATISFIED: commands and scoped commit diffs; 5 changed TS files have clear LSP diagnostics   |
+| 2–3 atomic Conventional Commits on requested branch                   | GAP: three commits exist, but final repair is uncommitted; amendment needs explicit approval |
 
-Recommendation: **accept** for the specified chargen insider-write rules. This
+Recommendation: **fix-then-recheck** the commit-packaging blocker. The hardened
+working patch passes the specified chargen insider-write rules. This
 ledger does not certify unrelated graph authorization, resource limits, client
 recovery UX, or an independent deployment penetration test.

@@ -34,6 +34,12 @@ function protectReview(before: unknown, after: unknown, scope: ReviewScope): voi
   const { path, ownerReview } = scope;
   const left = object(before);
   const right = object(after);
+  requireWrite(right['source'] !== 'gm', `${path}.source`);
+  requireWrite(
+    equal(left['reviewedBy'] ?? null, right['reviewedBy'] ?? null),
+    `${path}.reviewedBy`,
+  );
+  requireWrite(equal(left['reviewLog'] ?? [], right['reviewLog'] ?? []), `${path}.reviewLog`);
   if (
     left['pendingReviewBy'] === 'gm' ||
     (!ownerReview &&
@@ -110,6 +116,10 @@ function authorizeChargen(before: unknown, after: unknown, userId: string): void
             ? 'accepted'
             : 'pending';
       requireWrite(next['status'] === status, `${path}.status`);
+    }
+    for (const key of new Set([...Object.keys(previous), ...Object.keys(next)])) {
+      if (key !== 'acceptedBy' && key !== 'status')
+        protectReview(previous[key], next[key], { path: `${path}.${key}`, ownerReview: false });
     }
   }
   for (const key of new Set([...Object.keys(left), ...Object.keys(right)])) {
