@@ -18,6 +18,21 @@ function mulberry32(seed: number): () => number {
 
 let rng: () => number = Math.random;
 
+type DiceOverrideInterceptor = (input: { readonly total: number; readonly target?: number }) => {
+  readonly total: number;
+  readonly success?: boolean;
+};
+
+let diceOverrideInterceptor: DiceOverrideInterceptor | null = null;
+
+export function setDiceOverrideInterceptor(interceptor: DiceOverrideInterceptor | null): void {
+  diceOverrideInterceptor = interceptor;
+}
+
+export function clearDiceOverrideInterceptor(): void {
+  diceOverrideInterceptor = null;
+}
+
 export function setRandomSeed(seed: number): void {
   rng = mulberry32(seed);
 }
@@ -47,18 +62,10 @@ export function roll(dice: string, modifier: number = 0, target?: number): DiceR
   let total = rolls.reduce((a, b) => a + b, 0) + modifier;
   let success = target !== undefined ? total >= target : undefined;
 
-  if (typeof window !== 'undefined' && target !== undefined) {
-    if ((window as any).__qaForceRollSuccess === true) {
-      success = true;
-      if (total < target) {
-        total = target;
-      }
-    }
-
-    if ((window as any).__qaForceRollFailure === true) {
-      success = false;
-      total = target - 1;
-    }
+  if (diceOverrideInterceptor) {
+    const overridden = diceOverrideInterceptor({ total, target });
+    total = overridden.total;
+    success = overridden.success ?? (target !== undefined ? total >= target : undefined);
   }
 
   return {

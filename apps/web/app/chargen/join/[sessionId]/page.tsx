@@ -8,6 +8,7 @@ import {
   destroyProvider,
   getProvider,
   initAndWaitForPersistence,
+  provisionChargenSession,
 } from '../../../../lib/sync';
 import { useParams } from 'next/navigation';
 
@@ -32,7 +33,11 @@ export default function JoinSessionPage() {
       if (!cancelled) setIsReady(true);
     }, 3000);
 
-    initAndWaitForPersistence(doc, `highport-graph-${sessionId}`).then(() => {
+    initAndWaitForPersistence(doc, `highport-graph-${sessionId}`).then(async () => {
+      if (cancelled) return;
+      await provisionChargenSession(sessionId);
+      if (cancelled) return;
+      initProvider(doc, sessionId);
       if (cancelled) return;
       initProvider(doc, sessionId);
       clearTimeout(fallback);

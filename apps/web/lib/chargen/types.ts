@@ -118,6 +118,9 @@ export interface CareerTermResult {
   eventRoll?: DiceResult;
   event?: CareerEvent;
   eventChoice?: string;
+  eventEffectsApplied?: boolean;
+  eventAdvancementDM?: number;
+  autoPassNext?: 'commission' | 'advancement';
   eventDescription?: AIProvenance<string> | string;
 
   mishap?: CareerMishap;
@@ -125,6 +128,8 @@ export interface CareerTermResult {
 
   advancementRoll?: DiceResult;
   advanced: boolean;
+  trainingRollPending?: boolean;
+  advancementTrainingRoll?: DiceResult;
   rankGained?: number;
   currentRank: number;
 

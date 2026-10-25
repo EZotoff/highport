@@ -1,9 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { CareerAssignment } from '@highport/mgt2e';
-import { getCharacteristicModifier, setRandomSeed, resetRandomSeed } from '@highport/mgt2e';
+import {
+  getCareer,
+  getCharacteristicModifier,
+  setRandomSeed,
+  resetRandomSeed,
+} from '@highport/mgt2e';
 import { rollInitialCharacteristics, createCharacter } from '../lib/chargen/state';
 import { rollSurvival, rollAdvancement, applySkillGain } from '../lib/chargen/term-resolution';
-import { calculateTotalBenefitRolls, isHighRank } from '../lib/chargen/mustering';
+import {
+  calculateTotalBenefitRolls,
+  getBenefitRollDM,
+  isHighRank,
+  rollBenefit,
+} from '../lib/chargen/mustering';
 import type { CareerTermResult, ChargenCharacter } from '../lib/chargen/types';
 import * as Y from 'yjs';
 
@@ -148,12 +158,57 @@ describe('Character creation unit flows', () => {
       expect(isHighRank(character)).toBe(false);
     });
 
-    it('adds high-rank bonus when final rank is 5 or above', () => {
+    it('adds the rank band bonus when final rank is 5', () => {
       const character = makeCharacter({
         terms: [makeTerm(1, 0), makeTerm(2, 2), makeTerm(3, 5)],
       });
-      expect(calculateTotalBenefitRolls(character)).toBe(9);
+      expect(calculateTotalBenefitRolls(character)).toBe(5);
       expect(isHighRank(character)).toBe(true);
+    });
+
+    it.each([
+      [0, 4],
+      [1, 4],
+      [2, 5],
+      [3, 5],
+      [4, 6],
+      [5, 6],
+      [6, 7],
+    ])('allocates survived terms plus rank band at rank %s', (rank, total) => {
+      const terms = [1, 2, 3, 4].map((number) => makeTerm(number, rank));
+      expect(calculateTotalBenefitRolls(makeCharacter({ terms }))).toBe(total);
+    });
+
+    it('excludes failed survival terms including the final one', () => {
+      const terms = [
+        makeTerm(1, 0),
+        { ...makeTerm(2, 2), survived: false },
+        makeTerm(3, 6),
+        { ...makeTerm(4, 6), survived: false },
+      ];
+      expect(calculateTotalBenefitRolls(makeCharacter({ terms }))).toBe(5);
+    });
+
+    it.each([
+      [4, 0],
+      [5, 1],
+      [6, 1],
+    ])('uses the benefit DM at rank %s', (rank, dm) => {
+      expect(getBenefitRollDM(rank)).toBe(dm);
+    });
+
+    it.each([
+      [30, 7],
+      [7, 2],
+    ])('reaches the rank-adjusted benefit row with seed %s', (seed, total) => {
+      const career = getCareer('navy');
+      if (!career) throw new Error('Missing fixture');
+      setRandomSeed(seed);
+      const result = rollBenefit(makeCharacter({ terms: [makeTerm(1, 5)] }), 'benefit');
+      resetRandomSeed();
+      expect(result.roll).toMatchObject({ total, modifier: 1 });
+      const entry = career.benefitTable[total - 1];
+      expect(result.result).toBe(entry.orHighRank ?? entry.benefit);
     });
   });
 

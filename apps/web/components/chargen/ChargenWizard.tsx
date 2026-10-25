@@ -6,7 +6,12 @@ import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../lib/chargen/hooks';
 import { createSession, getSession, updateCharacterFields } from '../../lib/chargen/state';
 import { getActiveCharacter, getOrCreateUser } from '../../lib/identity';
-import { getSessionId, initAndWaitForPersistence, initProvider } from '../../lib/sync';
+import {
+  getSessionId,
+  initAndWaitForPersistence,
+  initProvider,
+  provisionChargenSession,
+} from '../../lib/sync';
 import { getYDoc } from '../../lib/ydoc';
 import CharacterPreview from './CharacterPreview';
 import { EntityPoolPanel } from './EntityPoolPanel';
@@ -54,6 +59,11 @@ export default function ChargenWizard() {
   }, [currentStep]);
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_QA_HOOKS === '1') {
+      void import('../../lib/qa/dice-qa-bridge').then(({ installDiceQABridge }) => {
+        installDiceQABridge();
+      });
+    }
     const doc = getYDoc();
     const sessionId = getSessionId('graph');
     let isMounted = true;
@@ -62,7 +72,8 @@ export default function ChargenWizard() {
         setIsSynced(true);
       }
     }, 2000);
-    initAndWaitForPersistence(doc, `highport-graph-${sessionId}`).then(() => {
+    initAndWaitForPersistence(doc, `highport-graph-${sessionId}`).then(async () => {
+      await provisionChargenSession(sessionId);
       if (isMounted) {
         initProvider(doc, sessionId);
         clearTimeout(fallbackTimer);

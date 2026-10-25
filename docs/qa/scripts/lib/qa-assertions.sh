@@ -837,6 +837,7 @@ qa-install-dice-seed() {
 }
 
 # Force all targeted dice rolls to succeed. Use after wizard has mounted
+# Requires NEXT_PUBLIC_QA_HOOKS=1 in a dev server; unavailable in production.
 # (after assert_wizard_status) so the flag is read by the roll() function.
 # This is more reliable than qa-install-dice-seed because it doesn't depend
 # on seed values matching survival targets.

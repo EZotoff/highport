@@ -3,6 +3,7 @@ import Fastify from 'fastify';
 import * as Y from 'yjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerChargenCommandRoutes } from '../src/routes/chargen-commands.js';
+import { campaigns } from '../src/db/schema.js';
 import {
   acceptLink,
   crossLinkEdgeId,
@@ -10,11 +11,25 @@ import {
   removeLinkEdge,
 } from '../src/services/chargen-command.js';
 
-const mocks = vi.hoisted(() => ({ members: vi.fn(), insert: vi.fn(), connect: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  members: vi.fn(),
+  campaign: vi.fn(),
+  insert: vi.fn(),
+  connect: vi.fn(),
+}));
 vi.mock('../src/db/client.js', () => ({
   db: {
-    select: () => ({ from: () => ({ where: mocks.members }) }),
-    insert: () => ({ values: mocks.insert }),
+    select: () => ({
+      from: (table: unknown) => ({
+        where: table === campaigns ? mocks.campaign : mocks.members,
+      }),
+    }),
+    insert: () => ({
+      values: (row: unknown) => {
+        const pending = mocks.insert(row);
+        return Object.assign(pending, { onConflictDoNothing: () => pending });
+      },
+    }),
   },
 }));
 vi.mock('../src/ws/hocuspocus.js', () => ({
@@ -203,6 +218,111 @@ describe('chargen command authorization', () => {
     ).toBe('gm-signed');
     live.destroy();
     persisted.destroy();
+    await app.close();
+  });
+});
+
+describe('chargen session provisioning', () => {
+  const provisionUrl = (id: string) => `/api/chargen/sessions/${id}/provision`;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env['HOCUSPOCUS_JWT_SECRET'] = 'commands-test-secret';
+    mocks.insert.mockResolvedValue(undefined);
+    mocks.campaign.mockResolvedValue([]);
+    mocks.members.mockResolvedValue([]);
+  });
+
+  it('rejects unauthenticated provisioning', async () => {
+    // Given
+    const app = Fastify();
+    await registerChargenCommandRoutes(app);
+    // When
+    const response = await app.inject({ method: 'POST', url: provisionUrl('new-session') });
+    // Then
+    expect(response.statusCode).toBe(401);
+    expect(mocks.insert).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it('creates the campaign and gm membership for a new session id', async () => {
+    // Given
+    const app = Fastify();
+    await registerChargenCommandRoutes(app);
+    // When
+    const response = await app.inject({
+      method: 'POST',
+      url: provisionUrl('new-session'),
+      headers: { authorization: bearer('user-a') },
+    });
+    // Then
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ campaignId: 'new-session', role: 'gm' });
+    expect(mocks.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'new-session', name: 'Chargen Session', ownerId: 'user-a' }),
+    );
+    expect(mocks.insert).toHaveBeenCalledWith({
+      campaignId: 'new-session',
+      userId: 'user-a',
+      role: 'gm',
+    });
+    await app.close();
+  });
+
+  it('adds a second user as a player to an existing session', async () => {
+    // Given
+    mocks.campaign.mockResolvedValue([{ id: 'existing-session' }]);
+    const app = Fastify();
+    await registerChargenCommandRoutes(app);
+    // When
+    const response = await app.inject({
+      method: 'POST',
+      url: provisionUrl('existing-session'),
+      headers: { authorization: bearer('user-b') },
+    });
+    // Then
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ campaignId: 'existing-session', role: 'player' });
+    expect(mocks.insert).toHaveBeenCalledWith({
+      campaignId: 'existing-session',
+      userId: 'user-b',
+      role: 'player',
+    });
+    await app.close();
+  });
+
+  it('returns the existing role without inserting a duplicate membership', async () => {
+    // Given
+    mocks.campaign.mockResolvedValue([{ id: 'existing-session' }]);
+    mocks.members.mockResolvedValue([{ role: 'gm' }]);
+    const app = Fastify();
+    await registerChargenCommandRoutes(app);
+    // When
+    const response = await app.inject({
+      method: 'POST',
+      url: provisionUrl('existing-session'),
+      headers: { authorization: bearer('user-a') },
+    });
+    // Then
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ campaignId: 'existing-session', role: 'gm' });
+    expect(mocks.insert).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it('rejects session ids containing a colon', async () => {
+    // Given
+    const app = Fastify();
+    await registerChargenCommandRoutes(app);
+    // When
+    const response = await app.inject({
+      method: 'POST',
+      url: provisionUrl('bad:id'),
+      headers: { authorization: bearer('user-a') },
+    });
+    // Then
+    expect(response.statusCode).toBe(400);
+    expect(mocks.insert).not.toHaveBeenCalled();
     await app.close();
   });
 });

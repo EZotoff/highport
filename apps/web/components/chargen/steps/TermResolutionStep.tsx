@@ -28,11 +28,14 @@ import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
 import { applyForcedMusterOut } from '../../../lib/chargen/muster-out';
+import { canConfirmEvent, resolveEventEffects } from '../../../lib/chargen/event-effects';
+import { grantAdvancementTraining } from '../../../lib/chargen/training';
 import { unwrapAIField } from '../../../lib/chargen/types';
 import {
   applySkillGain,
   getRankInfo,
   parseCharacteristicBonus,
+  resolveSkillTableEntry,
   rollAdvancement,
   rollSurvival,
 } from '../../../lib/chargen/term-resolution';
@@ -85,7 +88,7 @@ export default function TermResolutionStep({
   const [survivalRoll, setSurvivalRoll] = useState<DiceResult | undefined>();
   const [eventRoll, setEventRoll] = useState<DiceResult | undefined>();
   const [event, setEvent] = useState<CareerEvent | undefined>();
-  const [eventAdvancementDM, setEventAdvancementDM] = useState<number>(0);
+  const [selectedEventChoice, setSelectedEventChoice] = useState<string | undefined>();
   const [mishap, setMishap] = useState<CareerMishap | undefined>();
   const [selectedTable, setSelectedTable] = useState<string | undefined>();
   const [skillGained, setSkillGained] = useState<
@@ -165,14 +168,18 @@ export default function TermResolutionStep({
   const conscriptionSurvivalDM =
     currentTerm.drafted === true ? (currentTerm.survivalDmBonus ?? 0) : 0;
 
-  const finishTerm = (termsOverride?: CareerTermResult[], statusAfterAging?: ChargenStatus) => {
+  const finishTerm = (
+    termsOverride?: CareerTermResult[],
+    statusAfterAging?: ChargenStatus,
+    endurance = character.characteristics.END || 0,
+  ) => {
     const doc = getYDoc();
     const finalAge = character.age + 4;
     const totalTermsCompleted = character.terms.length;
     const updatedTerms = [...(termsOverride ?? character.terms)];
 
     if (finalAge >= 34) {
-      const check = rollAgingCheck(character.characteristics.END || 0, totalTermsCompleted);
+      const check = rollAgingCheck(endurance, totalTermsCompleted);
       const currentTermIndex = character.terms.length - 1;
       updatedTerms[currentTermIndex] = {
         ...updatedTerms[currentTermIndex],
@@ -294,6 +301,7 @@ export default function TermResolutionStep({
     const roll = rollCareerEvent(career);
     setEventRoll(roll.roll);
     setEvent(roll.event);
+    setSelectedEventChoice(undefined);
 
     if (roll.event.spawns && roll.event.spawns.length > 0) {
       setPendingSpawns(roll.event.spawns);
@@ -313,6 +321,26 @@ export default function TermResolutionStep({
   };
 
   const confirmEvent = () => {
+    if (!event || !canConfirmEvent(event, selectedEventChoice)) return;
+    if (!currentTerm.eventEffectsApplied) {
+      const choice = event.choices?.find((entry) => entry.id === selectedEventChoice);
+      const { eventAdvancementDM, autoPassNext, ...patch } = resolveEventEffects(character, [
+        ...(event.effects ?? []),
+        ...(choice?.effects ?? []),
+      ]);
+      const terms = character.terms.map((term, index) =>
+        index === character.terms.length - 1
+          ? {
+              ...term,
+              eventChoice: choice?.id,
+              eventEffectsApplied: true,
+              eventAdvancementDM,
+              autoPassNext,
+            }
+          : term,
+      );
+      updateCharacterFields(getYDoc(), character.id, { ...patch, terms });
+    }
     setPhase('skill');
   };
 
@@ -373,10 +401,14 @@ export default function TermResolutionStep({
 
     const entry = table.find((e) => e.roll === roll.total);
     if (entry) {
-      const skillName = entry.skill;
-      const statBonus = parseCharacteristicBonus(skillName);
+      const resolved = resolveSkillTableEntry(entry);
+      const skillName = resolved.specialty
+        ? `${resolved.skill}.${resolved.specialty}`
+        : resolved.skill;
+      const statBonus = parseCharacteristicBonus(resolved.skill);
 
       const doc = getYDoc();
+      let endurance = character.characteristics.END;
       if (statBonus) {
         const newStats = { ...character.characteristics };
         const statKey = statBonus.stat as keyof CharacteristicSet;
@@ -386,9 +418,10 @@ export default function TermResolutionStep({
           newStats[statKey] = statBonus.value;
         }
         updateCharacterFields(doc, character.id, { characteristics: newStats });
+        endurance = newStats.END;
         setSkillGained({ skill: skillName });
       } else {
-        const newSkills = applySkillGain(character.skills, skillName);
+        const newSkills = applySkillGain(character.skills, resolved.skill, resolved.specialty);
         updateCharacterFields(doc, character.id, { skills: newSkills });
         setSkillGained({ skill: skillName });
       }
@@ -396,6 +429,12 @@ export default function TermResolutionStep({
       const updatedTerms = [...character.terms];
       const term = updatedTerms[character.terms.length - 1];
       term.skillsGained.push({ skill: skillName, level: 1 });
+      if (currentTerm.trainingRollPending) {
+        term.trainingRollPending = false;
+        term.advancementTrainingRoll = roll;
+        finishTerm(updatedTerms, undefined, endurance);
+        return;
+      }
       updateCharacterFields(doc, character.id, { terms: updatedTerms });
     }
 
@@ -403,6 +442,13 @@ export default function TermResolutionStep({
   };
 
   const handleSkipCommission = () => {
+    if (currentTerm.autoPassNext === 'commission') {
+      updateCharacterFields(getYDoc(), character.id, {
+        terms: character.terms.map((term, index) =>
+          index === character.terms.length - 1 ? { ...term, autoPassNext: 'advancement' } : term,
+        ),
+      });
+    }
     setCommissionSkipped(true);
     setPhase('advancement');
   };
@@ -410,7 +456,17 @@ export default function TermResolutionStep({
   const handleCommissionRoll = () => {
     if (!canAttemptCommission) return;
 
-    const roll = rollCommission(character.characteristics.SOC || 0, careerTermNumber);
+    const roll: DiceResult =
+      currentTerm.autoPassNext === 'commission'
+        ? {
+            dice: 'event automatic commission',
+            rolls: [],
+            total: 8,
+            modifier: 0,
+            target: 8,
+            success: true,
+          }
+        : rollCommission(character.characteristics.SOC || 0, careerTermNumber);
     const succeeded = roll.total >= 8;
     setCommissionRoll(roll);
     setCommissioned(succeeded);
@@ -422,6 +478,7 @@ export default function TermResolutionStep({
 
     term.commissionRoll = roll;
     term.commissioned = succeeded;
+    term.autoPassNext = undefined;
 
     if (succeeded) {
       term.currentRank = 1;
@@ -445,7 +502,17 @@ export default function TermResolutionStep({
   };
 
   const handleAdvancementRoll = () => {
-    const roll = rollAdvancement(character, assignment, eventAdvancementDM);
+    const roll: DiceResult =
+      currentTerm.autoPassNext === 'advancement'
+        ? {
+            dice: 'event automatic advancement',
+            rolls: [],
+            total: assignment.advancement.target,
+            modifier: 0,
+            target: assignment.advancement.target,
+            success: true,
+          }
+        : rollAdvancement(character, assignment, currentTerm.eventAdvancementDM ?? 0);
     setAdvancementRoll(roll);
 
     const isPromoted = roll.total >= assignment.advancement.target;
@@ -457,11 +524,14 @@ export default function TermResolutionStep({
 
     term.advancementRoll = roll;
     term.advanced = isPromoted;
+    term.autoPassNext = undefined;
+    term.eventAdvancementDM = 0;
 
     if (isPromoted) {
       const newRank = term.currentRank + 1;
       term.rankGained = 1;
       term.currentRank = newRank;
+      Object.assign(term, grantAdvancementTraining());
 
       const rankInfo = getRankInfo(career, newRank, currentTerm.commissioned ?? false);
       if (rankInfo?.skill) {
@@ -472,7 +542,13 @@ export default function TermResolutionStep({
     }
 
     updateCharacterFields(doc, character.id, { terms: updatedTerms });
-    finishTerm(updatedTerms);
+    if (isPromoted) {
+      setSelectedTable(undefined);
+      setSkillGained(undefined);
+      setPhase('skill');
+    } else {
+      finishTerm(updatedTerms);
+    }
   };
 
   const handleContinue = () => {
@@ -501,7 +577,7 @@ export default function TermResolutionStep({
     setSurvivalRoll(undefined);
     setEventRoll(undefined);
     setEvent(undefined);
-    setEventAdvancementDM(0);
+    setSelectedEventChoice(undefined);
     setSkillGained(undefined);
     setCommissionRoll(undefined);
     setCommissioned(undefined);
@@ -1129,10 +1205,43 @@ export default function TermResolutionStep({
                 currentUserId={currentUserId}
               />
             ) : (
-              phase === 'event_choice' && (
+              phase === 'event_choice' &&
+              event && (
                 <div className="mt-4 pt-4 border-t border-zinc-800">
+                  <ul className="text-sm text-label space-y-2 mb-4" aria-label="Event effects">
+                    {[
+                      ...(event.effects ?? []),
+                      ...(event.choices?.find((choice) => choice.id === selectedEventChoice)
+                        ?.effects ?? []),
+                    ].map((effect) => (
+                      <li key={`${effect.type}-${effect.target}-${effect.value}`}>
+                        {effect.target}: {effect.value}
+                      </li>
+                    ))}
+                  </ul>
+                  {event.choices?.length ? (
+                    <fieldset className="space-y-3 mb-4">
+                      <legend className="text-label mb-2">Choose an outcome</legend>
+                      {event.choices.map((choice) => (
+                        <label
+                          key={choice.id}
+                          className="flex items-center gap-3 text-sm text-heading"
+                        >
+                          <input
+                            type="radio"
+                            name="career-event-choice"
+                            value={choice.id}
+                            checked={selectedEventChoice === choice.id}
+                            onChange={() => setSelectedEventChoice(choice.id)}
+                          />
+                          {choice.description}
+                        </label>
+                      ))}
+                    </fieldset>
+                  ) : null}
                   <SciFiButton
                     onClick={confirmEvent}
+                    disabled={!canConfirmEvent(event, selectedEventChoice)}
                     theme="slate"
                     scifiVariant="ghost"
                     className="w-full"
