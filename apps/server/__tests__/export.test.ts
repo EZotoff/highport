@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import * as Y from 'yjs';
+import { bearer, secret } from './api-token.js';
+
+vi.mock('../src/lib/authz.js', () => ({ requireCampaignRole: vi.fn(async () => undefined) }));
 import {
   registerExportRoutes,
   extractNodesFromYDoc,
@@ -68,13 +71,19 @@ describe('Export Routes', () => {
   let fastify: FastifyInstance;
 
   beforeAll(async () => {
+    vi.stubEnv('AUTH_SECRET', secret);
+    vi.stubEnv('HOCUSPOCUS_JWT_SECRET', secret);
     fastify = Fastify();
+    fastify.addHook('onRequest', async (request) => {
+      request.headers.authorization = bearer();
+    });
     await registerExportRoutes(fastify);
     await fastify.ready();
   });
 
   afterAll(async () => {
     await fastify.close();
+    vi.unstubAllEnvs();
   });
 
   beforeEach(() => {

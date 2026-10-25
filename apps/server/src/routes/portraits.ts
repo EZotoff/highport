@@ -8,6 +8,19 @@ import {
   searchPortraits,
 } from '../services/portrait-service.js';
 import type { PortraitTags } from '@highport/shared/types/portrait';
+import { eq } from 'drizzle-orm';
+import { db } from '../db/client.js';
+import { portraits } from '../db/schema.js';
+import { requirePrincipal } from '../lib/principal.js';
+import { AuthorizationError, requireCampaignRole } from '../lib/authz.js';
+import { resourceCampaign } from '../lib/resource-authz.js';
+
+async function authorizePortrait(portraitId: string, userId: string): Promise<string> {
+  const portrait = await db.query.portraits.findFirst({ where: eq(portraits.id, portraitId) });
+  if (!portrait) throw new AuthorizationError();
+  await requireCampaignRole(portrait.campaignId, userId, ['gm', 'player']);
+  return portrait.campaignId;
+}
 
 interface PortraitGenerateBody {
   campaignId: string;
@@ -55,12 +68,9 @@ interface NodePortraitBody {
 export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post<{ Body: PortraitGenerateBody }>(
     '/api/portraits/generate',
+    { preHandler: requirePrincipal },
     async (request, reply) => {
-      const userId = request.headers['x-user-id'] as string | undefined;
-      if (!userId) {
-        reply.code(401);
-        return { error: 'Missing X-User-Id header' };
-      }
+      const userId = request.principal.userId;
 
       const { campaignId, tags } = request.body;
       if (!campaignId || !tags) {
@@ -68,6 +78,12 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
         return { error: 'campaignId and tags are required' };
       }
 
+      await requireCampaignRole(campaignId, userId, ['gm', 'player']);
+      if (
+        request.body.subjectNodeId &&
+        (await resourceCampaign(request.body.subjectNodeId, 'node')) !== campaignId
+      )
+        throw new AuthorizationError();
       try {
         const result = await generatePortrait({
           campaignId,
@@ -101,8 +117,10 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
 
   fastify.get<{ Params: PortraitIdParams }>(
     '/api/portraits/:portraitId/image',
+    { preHandler: requirePrincipal },
     async (request, reply) => {
       const { portraitId } = request.params;
+      await authorizePortrait(portraitId, request.principal.userId);
 
       // Generate ETag from portraitId (immutable content per ID)
       const etag = `"${portraitId}"`;
@@ -123,7 +141,7 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
 
       // Set caching headers (immutable content)
       reply.header('Content-Type', result.mimeType);
-      reply.header('Cache-Control', 'public, max-age=31536000, immutable');
+      reply.header('Cache-Control', 'private, no-store');
       reply.header('ETag', etag);
 
       return result.data;
@@ -132,6 +150,7 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
 
   fastify.get<{ Querystring: PortraitSearchQuery }>(
     '/api/portraits/search',
+    { preHandler: requirePrincipal },
     async (request, reply) => {
       const { campaignId, tags, limit, excludeProtected } = request.query;
       if (!campaignId) {
@@ -139,6 +158,7 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
         return { error: 'campaignId is required' };
       }
 
+      await requireCampaignRole(campaignId, request.principal.userId, ['gm', 'player']);
       let parsedTags: Partial<PortraitTags> | undefined;
       if (tags) {
         try {
@@ -162,12 +182,9 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
 
   fastify.post<{ Params: PortraitIdParams; Body: PortraitRemixBody }>(
     '/api/portraits/:portraitId/remix',
+    { preHandler: requirePrincipal },
     async (request, reply) => {
-      const userId = request.headers['x-user-id'] as string | undefined;
-      if (!userId) {
-        reply.code(401);
-        return { error: 'Missing X-User-Id header' };
-      }
+      const userId = request.principal.userId;
 
       const { portraitId } = request.params;
       const { campaignId, promptDelta } = request.body;
@@ -176,6 +193,13 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
         return { error: 'campaignId and promptDelta are required' };
       }
 
+      await authorizePortrait(portraitId, userId);
+      await requireCampaignRole(campaignId, userId, ['gm', 'player']);
+      if (
+        request.body.targetNodeId &&
+        (await resourceCampaign(request.body.targetNodeId, 'node')) !== campaignId
+      )
+        throw new AuthorizationError();
       try {
         const result = await remixPortrait({
           sourcePortraitId: portraitId,
@@ -203,12 +227,9 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
 
   fastify.post<{ Params: NodePortraitParams; Body: NodePortraitBody }>(
     '/api/nodes/:nodeId/portrait',
+    { preHandler: requirePrincipal },
     async (request, reply) => {
-      const userId = request.headers['x-user-id'] as string | undefined;
-      if (!userId) {
-        reply.code(401);
-        return { error: 'Missing X-User-Id header' };
-      }
+      const userId = request.principal.userId;
 
       const { nodeId } = request.params;
       const { portraitId } = request.body;
@@ -217,6 +238,8 @@ export async function registerPortraitRoutes(fastify: FastifyInstance): Promise<
         return { error: 'portraitId is required' };
       }
 
+      const campaignId = await authorizePortrait(portraitId, userId);
+      if ((await resourceCampaign(nodeId, 'node')) !== campaignId) throw new AuthorizationError();
       await attachPortrait(portraitId, nodeId);
       return { status: 'attached' };
     },

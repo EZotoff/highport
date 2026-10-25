@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import * as Y from 'yjs';
 import { fetchDocumentState } from '../ws/hocuspocus.js';
+import { requirePrincipal } from '../lib/principal.js';
+import { requireCampaignRole } from '../lib/authz.js';
 
 interface FoundryActorExport {
   _id: string;
@@ -153,8 +155,9 @@ function matchActorsToNodes(actors: FoundryActor[], nodes: GraphNode[]): ImportR
 export async function registerExportRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get<{
     Querystring: { campaignId?: string };
-  }>('/api/export/actors', async (req, reply) => {
+  }>('/api/export/actors', { preHandler: requirePrincipal }, async (req, reply) => {
     const campaignId = req.query.campaignId || DEFAULT_CAMPAIGN_ID;
+    await requireCampaignRole(campaignId, req.principal.userId, ['gm']);
     const docId = `${campaignId}:${DOC_TYPE}`;
 
     try {
@@ -178,8 +181,9 @@ export async function registerExportRoutes(fastify: FastifyInstance): Promise<vo
 
   fastify.get<{
     Querystring: { campaignId?: string };
-  }>('/api/export/json', async (req, reply) => {
+  }>('/api/export/json', { preHandler: requirePrincipal }, async (req, reply) => {
     const campaignId = req.query.campaignId || DEFAULT_CAMPAIGN_ID;
+    await requireCampaignRole(campaignId, req.principal.userId, ['gm']);
     const docId = `${campaignId}:${DOC_TYPE}`;
 
     try {
@@ -207,8 +211,9 @@ export async function registerExportRoutes(fastify: FastifyInstance): Promise<vo
 
   fastify.post<{
     Body: ImportRequestBody;
-  }>('/api/import/actors', async (req, reply) => {
+  }>('/api/import/actors', { preHandler: requirePrincipal }, async (req, reply) => {
     const { actors, campaignId = DEFAULT_CAMPAIGN_ID } = req.body;
+    await requireCampaignRole(campaignId, req.principal.userId, ['gm']);
     const docId = `${campaignId}:${DOC_TYPE}`;
 
     if (!actors || !Array.isArray(actors)) {

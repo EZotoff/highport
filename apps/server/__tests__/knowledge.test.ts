@@ -1,27 +1,30 @@
 import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
+import { getTableName } from 'drizzle-orm';
+import { characterKnowledge, ingestedDocuments } from '../src/db/schema.js';
 import { registerKnowledgeRoutes } from '../src/routes/knowledge.js';
 import { registerDocumentRoutes } from '../src/routes/documents.js';
+import { bearer, secret } from './api-token.js';
+const fixture = vi.hoisted(() => ({ documentExists: true }));
 
-function getTableName(table: unknown): string {
-  if (!table || typeof table !== 'object') return '';
-  const tableObj = table as Record<string | symbol, unknown>;
-  for (const key of Object.getOwnPropertySymbols(tableObj)) {
-    const val = tableObj[key];
-    if (val && typeof val === 'object' && 'name' in val) {
-      return (val as { name: string }).name;
-    }
-  }
-  if ('_' in tableObj && tableObj._ && typeof tableObj._ === 'object' && 'name' in tableObj._) {
-    return (tableObj._ as { name: string }).name;
-  }
-  return '';
-}
+vi.mock('../src/lib/resource-authz.js', () => ({
+  resourceCampaign: vi.fn(async () => 'campaign_default'),
+}));
+vi.mock('../src/lib/authz.js', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../src/lib/authz.js')>();
+  return {
+    ...original,
+    getMembership: vi.fn(async () => ({ role: 'gm' })),
+    requireCampaignRole: vi.fn(async (_campaign: string, userId: string) => {
+      if (userId === 'player') throw new original.AuthorizationError();
+    }),
+  };
+});
 
 vi.mock('../src/db/client.js', () => {
   const mockData: { grants: Record<string, unknown>[]; documents: Record<string, unknown>[] } = {
     grants: [],
-    documents: [],
+    documents: [{ id: 'doc_123', campaignId: 'campaign_default' }],
   };
 
   return {
@@ -32,12 +35,17 @@ vi.mock('../src/db/client.js', () => {
       select: vi.fn(() => ({
         from: vi.fn((table: unknown) => ({
           where: vi.fn(() => {
-            const tableName = getTableName(table);
+            const tableName =
+              table === characterKnowledge
+                ? getTableName(characterKnowledge)
+                : table === ingestedDocuments
+                  ? getTableName(ingestedDocuments)
+                  : '';
             if (tableName === 'character_knowledge') {
               return Promise.resolve(mockData.grants);
             }
             if (tableName === 'ingested_documents') {
-              return Promise.resolve(mockData.documents);
+              return Promise.resolve(fixture.documentExists ? mockData.documents : []);
             }
             return Promise.resolve([]);
           }),
@@ -69,6 +77,8 @@ describe('Knowledge Routes', () => {
   let fastify: FastifyInstance;
 
   beforeAll(async () => {
+    vi.stubEnv('AUTH_SECRET', secret);
+    vi.stubEnv('HOCUSPOCUS_JWT_SECRET', secret);
     fastify = Fastify();
     await registerKnowledgeRoutes(fastify);
     await fastify.ready();
@@ -83,7 +93,7 @@ describe('Knowledge Routes', () => {
       const response = await fastify.inject({
         method: 'POST',
         url: '/api/knowledge/grant',
-        headers: { 'x-user-id': 'user_123' },
+        headers: { authorization: bearer('user_123') },
         payload: { characterId: 'char_abc', knowledgeTag: 'secret:lost-city' },
       });
 
@@ -97,7 +107,7 @@ describe('Knowledge Routes', () => {
       const response = await fastify.inject({
         method: 'POST',
         url: '/api/knowledge/grant',
-        headers: { 'x-user-id': 'user_123' },
+        headers: { authorization: bearer('user_123') },
         payload: { characterId: 'char_abc', knowledgeTag: 'public' },
       });
 
@@ -106,7 +116,7 @@ describe('Knowledge Routes', () => {
       expect(data.error).toContain('secret:');
     });
 
-    it('rejects missing user header with 401', async () => {
+    it('rejects missing token with 401', async () => {
       const response = await fastify.inject({
         method: 'POST',
         url: '/api/knowledge/grant',
@@ -122,6 +132,7 @@ describe('Knowledge Routes', () => {
       const response = await fastify.inject({
         method: 'GET',
         url: '/api/knowledge/char_xyz',
+        headers: { authorization: bearer() },
       });
 
       expect(response.statusCode).toBe(200);
@@ -130,23 +141,21 @@ describe('Knowledge Routes', () => {
   });
 
   describe('GET /api/knowledge/scope', () => {
-    it('returns public scope for anonymous user', async () => {
+    it('rejects anonymous scope access', async () => {
       const response = await fastify.inject({
         method: 'GET',
         url: '/api/knowledge/scope',
       });
 
-      expect(response.statusCode).toBe(200);
-      expect(response.json().scope).toContain('public');
+      expect(response.statusCode).toBe(401);
     });
 
-    it('includes gm in scope when x-is-gm is true', async () => {
+    it('includes gm in scope for a signed GM', async () => {
       const response = await fastify.inject({
         method: 'GET',
         url: '/api/knowledge/scope',
         headers: {
-          'x-user-id': 'user_123',
-          'x-is-gm': 'true',
+          authorization: bearer('user_123'),
         },
       });
 
@@ -159,10 +168,9 @@ describe('Knowledge Routes', () => {
     it('includes char scope when character-id is provided', async () => {
       const response = await fastify.inject({
         method: 'GET',
-        url: '/api/knowledge/scope',
+        url: '/api/knowledge/scope?characterId=char_abc',
         headers: {
-          'x-user-id': 'user_123',
-          'x-character-id': 'char_abc',
+          authorization: bearer('user_123'),
         },
       });
 
@@ -179,6 +187,8 @@ describe('Document Routes', () => {
   let fastify: FastifyInstance;
 
   beforeAll(async () => {
+    vi.stubEnv('AUTH_SECRET', secret);
+    vi.stubEnv('HOCUSPOCUS_JWT_SECRET', secret);
     fastify = Fastify();
     await registerDocumentRoutes(fastify);
     await fastify.ready();
@@ -189,6 +199,7 @@ describe('Document Routes', () => {
   });
 
   beforeEach(() => {
+    fixture.documentExists = true;
     vi.clearAllMocks();
     global.fetch = vi.fn(() => Promise.resolve(new Response('{}', { status: 200 })));
   });
@@ -198,7 +209,7 @@ describe('Document Routes', () => {
       const response = await fastify.inject({
         method: 'PATCH',
         url: '/api/documents/doc_123/scope',
-        headers: { 'x-is-gm': 'false' },
+        headers: { authorization: bearer('player') },
         payload: { accessScope: ['public', 'gm'] },
       });
 
@@ -206,10 +217,11 @@ describe('Document Routes', () => {
     });
 
     it('returns 404 for non-existent document', async () => {
+      fixture.documentExists = false;
       const response = await fastify.inject({
         method: 'PATCH',
         url: '/api/documents/doc_nonexistent/scope',
-        headers: { 'x-is-gm': 'true' },
+        headers: { authorization: bearer() },
         payload: { accessScope: ['public', 'gm'] },
       });
 
@@ -219,9 +231,11 @@ describe('Document Routes', () => {
 
   describe('GET /api/documents/:sourceId', () => {
     it('returns 404 for non-existent document', async () => {
+      fixture.documentExists = false;
       const response = await fastify.inject({
         method: 'GET',
         url: '/api/documents/doc_nonexistent',
+        headers: { authorization: bearer() },
       });
 
       expect(response.statusCode).toBe(404);
