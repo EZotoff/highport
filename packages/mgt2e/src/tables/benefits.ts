@@ -23,17 +23,13 @@ export function rollCashBenefit(
 export function rollMusteringBenefit(
   career: CareerDefinition,
   modifier: number = 0,
-  isHighRank: boolean = false,
 ): BenefitRollResult {
   const result = roll1d6(modifier);
   // Clamp to valid index (1-6 maps to index 0-5, or 1-7 to 0-6)
   const index = Math.min(Math.max(result.total, 1), career.benefitTable.length) - 1;
   const entry = career.benefitTable[index];
 
-  // High rank (5+) may get alternate benefit
-  const benefit = isHighRank && entry.orHighRank ? entry.orHighRank : entry.benefit;
-
-  return { roll: result, benefit };
+  return { roll: result, benefit: entry.benefit };
 }
 
 export function getCashBenefit(career: CareerDefinition, rollValue: number): number {

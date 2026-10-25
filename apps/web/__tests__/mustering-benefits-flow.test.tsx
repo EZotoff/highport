@@ -61,7 +61,7 @@ it('persists characteristic and benefit record in one transaction when rolled', 
     benefits: ['+1 INT'],
     mustering: { rollsUsed: 1 },
   });
-  expect(screen.getByText('Rolls Remaining').previousElementSibling?.textContent).toBe('2');
+  expect(screen.getByText('Rolls Remaining').previousElementSibling?.textContent).toBe('3');
 });
 
 it('finalizes the mechanically increased characteristic into actual node metadata', () => {
@@ -89,7 +89,7 @@ it('preserves roll order across reload when cash precedes a benefit', () => {
   render(<MusteringOutStep characterId={id} />);
   // Then
   expect(getCharacter(doc, id)?.mustering?.rollHistory).toMatchObject([
-    { rollNumber: 1, type: 'cash', roll: 1 },
+    { rollNumber: 1, type: 'cash', roll: 2 },
     { rollNumber: 2, type: 'benefit', roll: 2, result: '+1 INT' },
   ]);
   expect(screen.getByText('#1')).toBeTruthy();
@@ -131,3 +131,26 @@ it.each(['+1 EDU', 'Two Ship Shares'])(
     expect(screen.getByText(choice)).toBeTruthy();
   },
 );
+
+it('disables a fourth cash roll but allows a benefit after three lifetime cash rolls', () => {
+  // Given three previous cash rolls, when mustering resumes, then only benefits remain available.
+  updateCharacterFields(doc, id, {
+    mustering: {
+      totalRolls: 4,
+      rollsUsed: 3,
+      cashRollsUsed: 3,
+      benefits: [],
+      credits: 0,
+      shipShares: 0,
+    },
+  });
+  render(<MusteringOutStep characterId={id} />);
+  expect(screen.getByRole('button', { name: /Roll Cash/ })).toHaveProperty('disabled', true);
+  setRandomSeed(7);
+  fireEvent.click(screen.getByRole('button', { name: /Roll Benefits/ }));
+  expect(getCharacter(doc, id)?.mustering).toMatchObject({
+    rollsUsed: 4,
+    cashRollsUsed: 3,
+    benefits: ['+1 INT'],
+  });
+});
