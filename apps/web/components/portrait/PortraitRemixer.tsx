@@ -11,6 +11,7 @@ import {
 import { SciFiButton, SciFiSelect, SciFiBadge } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { usePortraitGenerator } from '@/lib/portrait/usePortrait';
+import { normalizeImageUrl } from '@/lib/portrait/image-url';
 import { PortraitUnavailableNotice } from './PortraitUnavailableNotice';
 import { cn } from '@/lib/utils';
 import type {
@@ -29,8 +30,6 @@ interface PortraitRemixerProps {
   targetNodeId?: string;
   onRemixed: (newPortrait: PortraitRecord) => void;
 }
-
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:18122';
 
 const GENDER_OPTIONS = [
   { value: 'none', label: 'Inherit Gender' },
@@ -129,12 +128,6 @@ export function PortraitRemixer({
       onRemixed(remixedPortrait);
       onOpenChange(false);
     }
-  };
-
-  const normalizeImageUrl = (url?: string) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `${SERVER_URL}${url}`;
   };
 
   return (

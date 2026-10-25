@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { apiFetch } from '@/lib/api-client';
+import { normalizeImageUrl } from '@/lib/portrait/image-url';
 import {
   Dialog,
   DialogContent,
@@ -97,14 +99,6 @@ export function PortraitLibrary({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const normalizeImageUrl = useCallback((imageUrl?: string): string | undefined => {
-    if (!imageUrl) return undefined;
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    return `${SERVER_URL}${imageUrl}`;
-  }, []);
-
   const fetchPortraits = useCallback(async () => {
     if (!campaignId || !open) return;
 
@@ -143,15 +137,11 @@ export function PortraitLibrary({
       }
 
       const params = new URLSearchParams({
-        campaign_id: campaignId,
+        campaignId,
         tags: JSON.stringify(tags),
       });
 
-      const response = await fetch(`${SERVER_URL}/api/portraits/search?${params.toString()}`, {
-        headers: {
-          'X-User-Id': user.userId,
-        },
-      });
+      const response = await apiFetch(`${SERVER_URL}/api/portraits/search?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Search failed: ${response.statusText}`);
