@@ -43,6 +43,13 @@
       "when": 1772304784849,
       "tag": "0005_hard_stephen_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792893367026,
+      "tag": "0006_slim_sabretooth",
+      "breakpoints": true
     }
   ]
 }

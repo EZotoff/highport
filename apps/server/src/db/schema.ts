@@ -9,6 +9,7 @@ import {
   check,
   jsonb,
   boolean,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -31,6 +32,22 @@ export const campaigns = pgTable('campaigns', {
   ownerId: varchar('owner_id', { length: 64 }).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const campaignMembers = pgTable(
+  'campaign_members',
+  {
+    campaignId: varchar('campaign_id', { length: 64 })
+      .notNull()
+      .references(() => campaigns.id, { onDelete: 'cascade' }),
+    userId: varchar('user_id', { length: 64 }).notNull(),
+    role: varchar('role', { length: 20 }).$type<'gm' | 'player'>().notNull(),
+    joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.campaignId, table.userId] }),
+    roleCheck: check('campaign_members_role_check', sql`${table.role} IN ('gm', 'player')`),
+  }),
+);
 
 export const documents = pgTable(
   'documents',
