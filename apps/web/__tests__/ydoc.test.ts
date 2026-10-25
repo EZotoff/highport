@@ -3,6 +3,7 @@ import * as Y from 'yjs';
 import type { GraphNode, GraphEdge } from '@highport/shared/types/graph';
 import { createYDoc, getNodesMap, getEdgesMap } from '../lib/ydoc';
 import {
+  nodeToYMap,
   yMapToNode,
   yMapToEdge,
   addNode,
@@ -11,6 +12,61 @@ import {
   addEdge,
   deleteEdge,
 } from '../lib/yjs-helpers';
+
+describe('node provenance persistence', () => {
+  const node: GraphNode = {
+    id: 'provenance-node',
+    type: 'npc',
+    label: 'Contact',
+    position: { x: 0, y: 0 },
+    metadata: {},
+    locked: false,
+    hidden: false,
+    created_at: 1,
+    created_by: 'player',
+  };
+  const provenance: NonNullable<GraphNode['provenance']> = {
+    source: 'ai',
+    status: 'draft',
+    pendingReviewBy: 'gm',
+    generatedAt: 2,
+    derivedFrom: 'event-roll-7',
+  };
+
+  it('roundtrips provenance when a node is added', () => {
+    // Given
+    const doc = createYDoc();
+    // When
+    addNode(doc, { ...node, provenance });
+    const stored = getNodesMap(doc).get(node.id);
+    if (!stored) throw new Error('Missing node fixture');
+    // Then
+    expect(yMapToNode(stored).provenance).toEqual(provenance);
+  });
+
+  it('stores plain provenance when a node is converted', () => {
+    // Given
+    const doc = createYDoc();
+    // When: attach the conversion before reading its Y.Map.
+    const stored = nodeToYMap({ ...node, provenance });
+    getNodesMap(doc).set(node.id, stored);
+    // Then
+    expect(stored.get('provenance')).toEqual(provenance);
+  });
+
+  it('keeps legacy fields intact when provenance is absent', () => {
+    // Given
+    const doc = createYDoc();
+    const stored = nodeToYMap(node);
+    getNodesMap(doc).set(node.id, stored);
+    // When
+    const recovered = yMapToNode(stored);
+    // Then
+    expect(stored.get('provenance')).toBeUndefined();
+    expect(recovered.provenance).toBeUndefined();
+    expect(recovered).toEqual(node);
+  });
+});
 
 describe('Yjs Document Structure', () => {
   let doc: Y.Doc;
