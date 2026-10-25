@@ -7,6 +7,7 @@ import { useParticipants } from '../../lib/chargen/useParticipants';
 import { createCharacter } from '../../lib/chargen/state';
 import { getYDoc } from '../../lib/ydoc';
 import { getOrCreateUser } from '../../lib/identity';
+import { useChargenUserId } from '../../lib/chargen/identity';
 import { Loader2, Users, AlertCircle, Shield } from 'lucide-react';
 import { SciFiInput, SciFiButton } from '@/components/ui/scifi';
 
@@ -14,6 +15,7 @@ export default function SessionJoinModal() {
   const router = useRouter();
   const session = useSession();
   const participants = useParticipants();
+  const userId = useChargenUserId();
 
   const [playerName, setPlayerName] = useState('');
   const [isJoining, setIsJoining] = useState(false);
@@ -39,9 +41,7 @@ export default function SessionJoinModal() {
   // Check if already joined
   useEffect(() => {
     if (currentUser && participants.length > 0) {
-      const myChar = participants.find(
-        (p) => p.userId === currentUser.userId && !p.isGM,
-      )?.character;
+      const myChar = participants.find((p) => p.userId === userId && !p.isGM)?.character;
       if (myChar) {
         localStorage.setItem(
           'highport_active_character',
@@ -53,7 +53,7 @@ export default function SessionJoinModal() {
         router.push('/chargen');
       }
     }
-  }, [currentUser, participants, router]);
+  }, [currentUser, userId, participants, router]);
 
   useEffect(() => {
     if (!modalRef.current) return;
@@ -92,7 +92,7 @@ export default function SessionJoinModal() {
       return;
     }
 
-    if (!currentUser) return;
+    if (!currentUser || !userId) return;
 
     setIsJoining(true);
     setError(null);
@@ -105,7 +105,7 @@ export default function SessionJoinModal() {
       localStorage.setItem('highport_user', JSON.stringify(updatedUser));
 
       // Create character
-      const charId = createCharacter(doc, currentUser.userId, playerName);
+      const charId = createCharacter(doc, userId, playerName);
 
       // Set active character
       localStorage.setItem(

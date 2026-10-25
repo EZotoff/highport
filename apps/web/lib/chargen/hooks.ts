@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import * as Y from 'yjs';
 import { getYDoc } from '../ydoc';
+import { useChargenUserId } from './identity';
 import {
   getCharactersMap,
   createCharacter,
@@ -94,12 +95,14 @@ export function useAllCharacters(): ChargenCharacter[] {
 
 export function useChargenActions() {
   const doc = getYDoc();
+  const userId = useChargenUserId();
 
   const create = useCallback(
-    (playerId: string, name?: string): string => {
-      return createCharacter(doc, playerId, name);
+    (_playerId: string, name?: string): string => {
+      if (!userId) throw new Error('Authenticated chargen identity required');
+      return createCharacter(doc, userId, name);
     },
-    [doc],
+    [doc, userId],
   );
 
   const update = useCallback(
