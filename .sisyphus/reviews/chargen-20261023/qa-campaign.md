@@ -21,8 +21,8 @@ authorize against the NextAuth principal. Effects: the GM panel never rendered f
 (no draft approval possible) and the first real cross-character accept returned **403 "Campaign access denied"**.
 Confirmed independently by Q1 and Q2. Fix: `63c06c0` — shared NextAuth identity helper
 (`apps/web/lib/chargen/identity.ts`) used by all creation callers; mock id retained only for the
-LOCAL_MODE offline path. Server rule confirmed (not relaxed): _acceptLink = campaign role gm|player AND
-principal owns source or target_; GM draft resolution requires campaign role `gm`.
+LOCAL*MODE offline path. Server rule confirmed (not relaxed): \_acceptLink = campaign role gm|player AND
+principal owns source or target*; GM draft resolution requires campaign role `gm`.
 
 **Defect B — joining a session clobbered `chargen.session` (multi-player data loss).** Read accessors
 created and persisted an empty nested `Y.Map` when the key was absent; because a nested map is a single
@@ -52,3 +52,32 @@ whole-value key, a joining client's empty map won the merge and replaced the pop
   GM draft reject/edit propagation across clients.
 - RV2: aging at 36, rank-5 benefit roll count + non-zero DM, choice-gated event with a screenshot that
   actually shows the options, specialty/no-pipe skill keys, second characteristic benefit.
+
+## Campaign 2 — RV1 / RV2 (post-fix re-verification, no workarounds)
+
+| Lane | Check                              | Verdict                                                                                                                                                                                                                                                                                                                                    |
+| ---- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ | ----------------------------------- | -------- | ------ | --------------------------------------------------------------------------------------------- |
+| RV1  | RV1a GM panel + ownership          | **PASS** — GM panel renders (SESSION SETTINGS / PENDING APPROVALS / CROSS-CHARACTER PROPOSALS / PENDING AI REVIEW); the new character's `playerId` = authenticated GM id (stale localStorage anon id untouched) → fix `63c06c0` confirmed                                                                                                  |
+| RV1  | RV1b concurrent dual-accept        | **PASS** — both accepted via the real UI (mode switched to Player-to-Player through the GM settings UI); `status=accepted`, `acceptedBy=[gmChar, playerChar]`, exactly ONE edge `xlink-3113a95e` (toolkit + server-persisted `GET /api/doc/<sid>/graph` HTTP 200); 'Campaign access denied' count unchanged (11→11), both accept POSTs 200 |
+| RV1  | RV1c join preserves session        | **PASS** — before/after JSON identical (`createdBy` = GM id, `createdAt` preserved, keys intact), read AFTER the join with NO GM reload → fix `2453341` confirmed                                                                                                                                                                          |
+| RV1  | RV1d GM reject/edit across clients | **PASS** — draft `RV1-ALPHA` appeared in PENDING AI REVIEW; GM Reject → `status=rejected` (reviewLog by the GM auth id) and the second client never sees it; draft `RV1-EDIT` edited via the panel → second client (no reload) shows the EDITED text, stale and alpha both absent                                                          |
+| RV2  | R2a aging                          | **PASS** — losses now apply at positive totals (minor band: STR 8→7; moderate band: STR 8→7, END 6→5; 'none' band at total 6) — the old inversion is fixed, verified live with screenshots of the aging panel                                                                                                                              |
+| RV2  | R2b benefit rolls + DM             | **PASS** — rank 5 → "Rolls Remaining = 3" (1 survived term + rank band 4-5 → +2, NOT raw 1+rank=6); "Rolled: 7" observed, impossible on 1d6 without DM+1 → non-zero benefit DM at rank 5 proven                                                                                                                                            |
+| RV2  | R2c choice-gated event             | **PASS** — Navy event 11 renders "Choose an outcome" radios; Continue disabled with nothing picked, enabled after the pick; effect applied on confirm (`tactics.naval` 1)                                                                                                                                                                  |
+| RV2  | R2d training + specialty           | **PASS** — Scholar basic training at level 0; NO '                                                                                                                                                                                                                                                                                         | ' key in any skills map (both 'drive | flyer' and the event's 'electronics | engineer | gunner | pilot' resolved); specialty appears as compound key `tactics.naval` 1 with parent `tactics` 0 |
+| RV2  | R2e characteristic benefit         | **PASS** — "Rolled: 2 → +1 EDU": EDU 6→7 exactly +1, SOC unchanged                                                                                                                                                                                                                                                                         |
+
+Workarounds used by RV1: **NONE**. Both defects are fixed on the real surface for a plain authenticated user.
+
+### New defect from RV2 — compound mustering benefits apply nothing
+
+Compound benefits (all CRB "player chooses one") fall through `parseBenefit` to `type:'other'` → no mechanical effect:
+
+- `+1 EDU or Two Ship Shares` (navy roll 3)
+- `+1 END or Cybernetic Implant` · `Armour or +1 END` (army roll 6)
+- `Personal Vehicle or Ship Share` (navy roll 1) · `Ship's Boat or Two Ship Shares` (merchant roll 6)
+- `Gun Combat (any) 1 or Melee (blade) 1` (marine rank benefit)
+- `SOC 10 or +1 SOC, whichever is higher` (army/command rank 5-6)
+
+Fix dispatched: `agent/sisyphus/chargen-fix-benefit-choice` — compound-aware parser + player choice in
+MusteringOutStep + auto-resolution of the take-the-better form, with unit + component tests.

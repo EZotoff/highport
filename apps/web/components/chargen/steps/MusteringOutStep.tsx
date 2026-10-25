@@ -1,16 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import type { MusteringState } from '../../../lib/chargen/types';
+import type { MusteringState, MusteringRoll } from '../../../lib/chargen/types';
 import { getYDoc } from '../../../lib/ydoc';
 import { useCharacter } from '../../../lib/chargen/hooks';
-import { updateCharacterFields } from '../../../lib/chargen/state';
+import { getCharacter, updateCharacterFields } from '../../../lib/chargen/state';
 import { getCareer } from '@highport/mgt2e';
 import { SciFiButton } from '@/components/ui/scifi';
 import { Coins, Gift } from 'lucide-react';
+import { MusteringBenefitChoice, MusteringBenefitLedger } from './MusteringBenefits';
 import {
   calculateTotalBenefitRolls,
-  applyCharacteristicBenefit,
+  applyMusteringBenefit,
+  parseBenefitChoice,
+  resolveBenefitChoice,
   rollBenefit,
   isHighRank,
   getGamblingBonus,
@@ -21,18 +24,10 @@ interface MusteringOutStepProps {
   characterId: string | null;
 }
 
-interface CollectedBenefit {
-  rollNumber: number;
-  type: 'cash' | 'benefit';
-  roll: number;
-  result: string | number;
-}
-
 const MAX_CASH_ROLLS = 3;
 
 export default function MusteringOutStep({ characterId }: MusteringOutStepProps) {
   const character = useCharacter(characterId);
-  const [collectedBenefits, setCollectedBenefits] = useState<CollectedBenefit[]>([]);
   const [lastRollResult, setLastRollResult] = useState<BenefitRollResult | null>(null);
   const [showRollResult, setShowRollResult] = useState(false);
 
@@ -41,7 +36,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
   const totalRolls = calculateTotalBenefitRolls(character);
   const mustering = character.mustering;
   const cashRollsUsed = mustering?.cashRollsUsed ?? 0;
-  const rollsUsed = mustering?.rollsUsed ?? collectedBenefits.length;
+  const rollsUsed = mustering?.rollsUsed ?? 0;
   const rollsRemaining = totalRolls - rollsUsed;
 
   const finalTerm = character.terms[character.terms.length - 1];
@@ -50,22 +45,26 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
   const gamblingBonus = getGamblingBonus(character);
 
   // Calculate totals for display
-  const totalCredits = collectedBenefits
-    .filter((b) => b.type === 'cash')
-    .reduce((sum, b) => sum + (b.result as number), character.credits);
+  const totalCredits = character.credits;
+  const shipShares = mustering?.shipShares ?? 0;
+  const pending = mustering?.pendingBenefit;
+  const pendingChoice = pending ? parseBenefitChoice(pending.source) : null;
+  const receivedBenefits = mustering?.rollHistory ?? [];
 
-  const shipShares =
-    collectedBenefits.length > 0
-      ? collectedBenefits
-          .filter((b) => b.type === 'benefit' && String(b.result).includes('Ship Share'))
-          .reduce((sum, b) => {
-            const match = String(b.result).match(/(\d+)\s*Ship/i);
-            return sum + (match ? parseInt(match[1]) : 1);
-          }, 0)
-      : (mustering?.shipShares ?? 0);
+  const handleChoice = (benefit: string) => {
+    const doc = getYDoc();
+    const latest = getCharacter(doc, character.id);
+    if (
+      !latest?.mustering?.pendingBenefit ||
+      latest.mustering.pendingBenefit.source !== pending?.source ||
+      !pendingChoice?.alternatives.some((alternative) => alternative.label === benefit)
+    )
+      return;
+    updateCharacterFields(doc, character.id, applyMusteringBenefit(latest, benefit));
+  };
 
   const handleRoll = (type: 'cash' | 'benefit') => {
-    if (rollsRemaining <= 0) return;
+    if (rollsRemaining <= 0 || pending) return;
     if (type === 'cash' && cashRollsUsed >= MAX_CASH_ROLLS) return;
 
     const result = rollBenefit(character, type);
@@ -79,56 +78,52 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
       shipShares: 0,
     };
 
-    const resultVal = result.result;
-    const isShipShare =
-      type === 'benefit' && typeof resultVal === 'string' && resultVal.includes('Ship Share');
-    let shipShareCount = 0;
-    if (isShipShare) {
-      const match = String(resultVal).match(/(\d+)\s*Ship/i);
-      shipShareCount = match ? parseInt(match[1], 10) : 1;
-    }
-
     const newMustering: MusteringState = {
-      totalRolls: currentMustering.totalRolls,
+      ...currentMustering,
       rollsUsed: currentMustering.rollsUsed + 1,
       cashRollsUsed:
         type === 'cash' ? currentMustering.cashRollsUsed + 1 : currentMustering.cashRollsUsed,
-      benefits:
-        type === 'benefit'
-          ? [...currentMustering.benefits, resultVal as string]
-          : currentMustering.benefits,
-      credits:
-        type === 'cash'
-          ? currentMustering.credits + (resultVal as number)
-          : currentMustering.credits,
-      shipShares: currentMustering.shipShares + shipShareCount,
     };
-
-    const newBenefit: CollectedBenefit = {
+    const source = String(result.result);
+    const choice = parseBenefitChoice(source);
+    const selected = resolveBenefitChoice(character, choice);
+    if (type === 'benefit' && !selected) {
+      updateCharacterFields(getYDoc(), character.id, {
+        mustering: { ...newMustering, pendingBenefit: { source, roll: result.roll.total } },
+      });
+      return;
+    }
+    const resultVal = type === 'benefit' ? (selected?.label ?? source) : Number(result.result);
+    const newBenefit: MusteringRoll = {
       rollNumber: currentMustering.rollsUsed + 1,
       type,
       roll: result.roll.total,
       result: resultVal,
     };
 
-    setCollectedBenefits((prev) => [...prev, newBenefit]);
-    setLastRollResult(result);
+    setLastRollResult({ ...result, result: resultVal });
     setShowRollResult(true);
 
     const doc = getYDoc();
     if (type === 'cash') {
       updateCharacterFields(doc, character.id, {
-        mustering: newMustering,
-        credits: character.credits + (resultVal as number),
+        mustering: {
+          ...newMustering,
+          credits: currentMustering.credits + Number(resultVal),
+          rollHistory: [...(currentMustering.rollHistory ?? []), newBenefit],
+        },
+        credits: character.credits + Number(resultVal),
       });
     } else {
-      const benefit = String(resultVal);
-      const characteristics = applyCharacteristicBenefit(character.characteristics, benefit);
-      updateCharacterFields(doc, character.id, {
-        mustering: newMustering,
-        benefits: [...character.benefits, benefit],
-        ...(characteristics ? { characteristics } : {}),
-      });
+      updateCharacterFields(
+        doc,
+        character.id,
+        applyMusteringBenefit(
+          { ...character, mustering: newMustering },
+          String(resultVal),
+          newBenefit,
+        ),
+      );
     }
 
     // Hide result after delay
@@ -171,7 +166,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
           <div className="grid grid-cols-2 gap-4 mb-6">
             <SciFiButton
               onClick={() => handleRoll('cash')}
-              disabled={cashRollsUsed >= MAX_CASH_ROLLS}
+              disabled={cashRollsUsed >= MAX_CASH_ROLLS || Boolean(pending)}
               scifiVariant="secondary"
               theme="amber"
               className="h-auto flex-col gap-2 p-4"
@@ -184,6 +179,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
             </SciFiButton>
             <SciFiButton
               onClick={() => handleRoll('benefit')}
+              disabled={Boolean(pending)}
               scifiVariant="secondary"
               theme="cyan"
               className="h-auto flex-col gap-2 p-4"
@@ -193,6 +189,14 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
               {highRank && <div className="text-xs opacity-75">High Rank Alternate</div>}
             </SciFiButton>
           </div>
+        )}
+
+        {pendingChoice && pending && (
+          <MusteringBenefitChoice
+            choice={pendingChoice}
+            roll={pending.roll}
+            onChoose={handleChoice}
+          />
         )}
 
         {/* Last Roll Result */}
@@ -208,28 +212,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         )}
 
         {/* Collected Benefits */}
-        {collectedBenefits.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-bold text-heading mb-3 font-display">Benefits Received</h3>
-            <div className="space-y-2">
-              {collectedBenefits.map((b, i) => (
-                <div key={i} className="flex items-center gap-3 bg-zinc-950 rounded p-3">
-                  <span className="text-subtle text-sm">#{b.rollNumber}</span>
-                  <span className={b.type === 'cash' ? 'text-amber-400' : 'text-cyan-400'}>
-                    {b.type === 'cash' ? (
-                      <Coins className="w-5 h-5 text-amber-400" />
-                    ) : (
-                      <Gift className="w-5 h-5 text-cyan-400" />
-                    )}
-                  </span>
-                  <span className="text-heading">
-                    {b.type === 'cash' ? `Cr${(b.result as number).toLocaleString()}` : b.result}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <MusteringBenefitLedger benefits={receivedBenefits} />
 
         {/* Totals */}
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-800">
@@ -250,6 +233,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
       <div className="flex justify-between">
         <SciFiButton
           scifiVariant="ghost"
+          disabled={Boolean(pending)}
           theme="slate"
           onClick={() => {
             const doc = getYDoc();
@@ -259,7 +243,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
           ← Back
         </SciFiButton>
 
-        {rollsRemaining === 0 && (
+        {rollsRemaining === 0 && !pending && (
           <SciFiButton onClick={handleFinalize} theme="cyan" glow>
             Continue →
           </SciFiButton>
