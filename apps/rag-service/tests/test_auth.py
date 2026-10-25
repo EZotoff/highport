@@ -171,3 +171,25 @@ def test_jwt_fails_closed_when_secret_is_missing(monkeypatch: pytest.MonkeyPatch
     with pytest.raises(HTTPException) as caught:
         verify_api_jwt(sign_token())
     assert caught.value.status_code == 401
+
+
+def test_jwt_expires_at_current_whole_second(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Given a token expiring at the game API's current whole second.
+    monkeypatch.setattr("auth.time.time", lambda: 1000.9)
+    token = sign_token({"sub": "user", "purpose": "api", "iat": 1, "exp": 1000})
+    # When verification runs, then equality is expired, not still authorized.
+    with pytest.raises(HTTPException) as caught:
+        verify_api_jwt(token)
+    assert caught.value.status_code == 401
+
+
+@pytest.mark.parametrize("claims", [
+    {"sub": "user", "purpose": "api", "iat": 1, "exp": 1000.5},
+    {"sub": "user", "purpose": "api", "iat": 2000, "exp": 3000},
+])
+def test_numeric_dates_match_game_api(claims: dict[str, JsonValue], monkeypatch: pytest.MonkeyPatch) -> None:
+    # Given the game API's whole-second expiry clock and finite numeric dates.
+    monkeypatch.setattr("auth.time.time", lambda: 1000.9)
+    token = sign_token(claims)
+    # When verification runs, then fractional expiry and future iat match its semantics.
+    assert verify_api_jwt(token).user_id == "user"
