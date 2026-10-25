@@ -10,6 +10,7 @@ import { SciFiButton } from '@/components/ui/scifi';
 import { Coins, Gift } from 'lucide-react';
 import {
   calculateTotalBenefitRolls,
+  applyCharacteristicBenefit,
   rollBenefit,
   isHighRank,
   getGamblingBonus,
@@ -121,9 +122,12 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
         credits: character.credits + (resultVal as number),
       });
     } else {
+      const benefit = String(resultVal);
+      const characteristics = applyCharacteristicBenefit(character.characteristics, benefit);
       updateCharacterFields(doc, character.id, {
         mustering: newMustering,
-        benefits: [...character.benefits, resultVal as string],
+        benefits: [...character.benefits, benefit],
+        ...(characteristics ? { characteristics } : {}),
       });
     }
 

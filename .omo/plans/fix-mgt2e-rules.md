@@ -159,7 +159,7 @@ CRB conformance authority: no in-repo rules document in `packages/mgt2e/` states
      QA scenarios (name the exact tool + invocation): happy — vitest chargen-unit.test.ts band table; failure — `setRandomSeed` a deterministically low roll at rank 5 and assert the +1 DM lands the expected entry. Evidence `.omo/evidence/fix-mgt2e-rules/task-6-benefit-math.log`
      Commit: Y | fix(web): benefit-roll counts use rank bands and survived terms; apply rank DM
 
-- [ ] 7. F05-7 — Apply characteristic mustering benefits atomically (web; failing test first)
+- [x] 7. F05-7 — Apply characteristic mustering benefits atomically (web; failing test first)
      What to do / Must NOT do: FIRST add failing test `apps/web/__tests__/mustering-benefits.test.ts` for a new pure helper `applyCharacteristicBenefit(characteristics: CharacteristicSet, benefit: string): CharacteristicSet | null` in `apps/web/lib/chargen/mustering.ts` — parse `'+1 INT'` (reuse `parseBenefit` in the same file, lines 69-92) and return the incremented map; non-characteristic benefits return null. THEN wire `MusteringOutStep.tsx` `handleRoll` (benefit branch, lines ~95-128): compute `applied = applyCharacteristicBenefit(character.characteristics, resultVal)`; in the SAME `updateCharacterFields` call include `characteristics: applied` when non-null alongside `benefits: [...character.benefits, resultVal]` (string record is retained for display — both the record and the mechanical effect exist). Re-check `finalize.ts` `createCharacterNode` (lines 40-54): no change needed once characteristics are mutated at roll time — add a unit assertion that a finalized node's `metadata.characteristics.INT` reflects an earlier `+1 INT` benefit (via the helper + a finalize-shaped object, no Y.Doc required). Guard against benefits exceeding characteristic limits only if an existing helper exists (do not invent a new cap rule). Do NOT change cash handling, ship shares, or the ServiceRecord rendering.
      Parallelization: Wave 6 | Blocked by: T6 | Blocks: —
      References: apps/web/components/chargen/steps/MusteringOutStep.tsx:95-132; apps/web/lib/chargen/mustering.ts:68-92; apps/web/lib/chargen/finalize.ts:35-59; apps/web/lib/chargen/types.ts (CharacteristicSet import path)
@@ -201,3 +201,5 @@ One commit per todo, Conventional Commits (`fix(mgt2e): …` / `fix(web): …`),
 ## Execution Record
 
 Execution baseline: 0038414 (branch agent/sisyphus/chargen-fix-d, on top of merged Plans C, B, A)
+
+Implementation T1-T7 complete (eight findings). Per-todo RED/GREEN receipts and changed-file inventory: `.omo/evidence/fix-mgt2e-rules/task-*.md`. Regression sweep: web 340/340, mgt2e 23/23, web typecheck and package build exit 0. F1-F4 intentionally unrun and unchecked; reserved for orchestrator. No push/merge or dev servers.

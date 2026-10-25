@@ -5,7 +5,7 @@ import {
   rollMusteringBenefit,
   getCharacteristicModifier,
 } from '@highport/mgt2e';
-import type { CareerDefinition, DiceResult } from '@highport/mgt2e';
+import type { CareerDefinition, CharacteristicSet, DiceResult } from '@highport/mgt2e';
 import type { ChargenCharacter, MusteringState } from './types';
 
 export function calculateTotalBenefitRolls(character: ChargenCharacter): number {
@@ -93,4 +93,44 @@ export function parseBenefit(benefit: string): {
     return { type: 'vehicle', value: benefit };
 
   return { type: 'other', value: benefit };
+}
+
+export function applyCharacteristicBenefit(
+  characteristics: CharacteristicSet,
+  benefit: string,
+): CharacteristicSet | null {
+  const parsed = parseBenefit(benefit);
+  const type = parsed.type;
+  switch (type) {
+    case 'characteristic': {
+      const [stat, bonus] = String(parsed.value).split(' ');
+      switch (stat) {
+        case 'STR':
+        case 'DEX':
+        case 'END':
+        case 'INT':
+        case 'EDU':
+        case 'SOC':
+          return {
+            ...characteristics,
+            [stat]:
+              (typeof characteristics[stat] === 'number' ? characteristics[stat] : 0) +
+              Number(bonus),
+          };
+        default:
+          return null;
+      }
+    }
+    case 'item':
+    case 'shares':
+    case 'membership':
+    case 'vehicle':
+    case 'weapon':
+    case 'other':
+      return null;
+    default: {
+      const unhandled: never = type;
+      throw new RangeError(`Unknown benefit type: ${unhandled}`);
+    }
+  }
 }
