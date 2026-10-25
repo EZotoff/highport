@@ -7,14 +7,13 @@ import type {
   CharacteristicSet,
   DiceResult,
   EventSpawn,
-  MentalCharacteristicCode,
-  PhysicalCharacteristicCode,
   SkillTableEntry,
 } from '@highport/mgt2e';
 import {
   getCareer,
   getCareerFlavor,
   getCommissionModifier,
+  getAgingEffect,
   roll1d6,
   rollAgingCheck,
   rollCareerEvent,
@@ -59,6 +58,7 @@ import { ChapterCard } from '../ChapterCard';
 import ConnectionSuggestions from '../ConnectionSuggestions';
 import EntitySpawnForm from '../EntitySpawnForm';
 import { NarrativeUnavailableNotice } from '../NarrativeUnavailableNotice';
+import { AgingResolution } from './AgingResolution';
 
 interface TermResolutionStepProps {
   characterId: string | null;
@@ -75,16 +75,30 @@ type TermPhase =
   | 'aging'
   | 'complete';
 
-const PHYSICAL_AGING_STATS: PhysicalCharacteristicCode[] = ['STR', 'DEX', 'END'];
-const MENTAL_AGING_STATS: MentalCharacteristicCode[] = ['INT', 'EDU', 'SOC'];
-
 export default function TermResolutionStep({
   characterId,
   currentUserId,
 }: TermResolutionStepProps) {
   const character = useCharacter(characterId);
+  if (!character) return <div className="text-subtle">Loading character...</div>;
+  return (
+    <LoadedTermResolution key={character.id} character={character} currentUserId={currentUserId} />
+  );
+}
 
-  const [phase, setPhase] = useState<TermPhase>('survival');
+function LoadedTermResolution({
+  character,
+  currentUserId,
+}: {
+  readonly character: ChargenCharacter;
+  readonly currentUserId: string;
+}) {
+  const characterId = character.id;
+  const savedAgingTerm = character?.terms[character.terms.length - 1];
+  const unresolvedAging = savedAgingTerm?.agingRoll && !savedAgingTerm.agingResolved;
+  const [phase, setPhase] = useState<TermPhase>(
+    unresolvedAging ? 'aging' : savedAgingTerm?.agingResolved ? 'complete' : 'survival',
+  );
   const [survivalRoll, setSurvivalRoll] = useState<DiceResult | undefined>();
   const [eventRoll, setEventRoll] = useState<DiceResult | undefined>();
   const [event, setEvent] = useState<CareerEvent | undefined>();
@@ -99,12 +113,14 @@ export default function TermResolutionStep({
   const [commissionSkipped, setCommissionSkipped] = useState(false);
   const [advancementRoll, setAdvancementRoll] = useState<DiceResult | undefined>();
   const [advanced, setAdvanced] = useState<boolean>(false);
-  const [agingCheck, setAgingCheck] = useState<AgingCheckResult | undefined>();
-  const [selectedPhysicalLosses, setSelectedPhysicalLosses] = useState<
-    PhysicalCharacteristicCode[]
-  >([]);
-  const [selectedMentalLosses, setSelectedMentalLosses] = useState<MentalCharacteristicCode[]>([]);
-  const [pendingAgingStatus, setPendingAgingStatus] = useState<ChargenStatus | undefined>();
+  const [agingCheck, setAgingCheck] = useState<AgingCheckResult | undefined>(
+    unresolvedAging && savedAgingTerm?.agingRoll
+      ? { ...getAgingEffect(savedAgingTerm.agingRoll.total), roll: savedAgingTerm.agingRoll }
+      : undefined,
+  );
+  const [pendingAgingStatus, setPendingAgingStatus] = useState<ChargenStatus | undefined>(
+    savedAgingTerm?.agingMusteringOut ? 'mustering_out' : undefined,
+  );
   const [pendingSpawns, setPendingSpawns] = useState<EventSpawn[]>([]);
   const [currentSpawnIndex, setCurrentSpawnIndex] = useState(0);
 
@@ -145,6 +161,12 @@ export default function TermResolutionStep({
   }, [characterId, termNumber, authoritativeEventStatus, authoritativeEventValue]);
 
   if (!character) return <div className="text-subtle">Loading character...</div>;
+  if (character.terms.some((term) => term.agingCrisis === 'died'))
+    return (
+      <div role="alert" className="text-red-400">
+        Traveller died in an ageing crisis.
+      </div>
+    );
 
   const currentTerm = character.terms[character.terms.length - 1];
   if (!currentTerm) return <div className="text-red-400">Error: No active term found.</div>;
@@ -168,28 +190,23 @@ export default function TermResolutionStep({
   const conscriptionSurvivalDM =
     currentTerm.drafted === true ? (currentTerm.survivalDmBonus ?? 0) : 0;
 
-  const finishTerm = (
-    termsOverride?: CareerTermResult[],
-    statusAfterAging?: ChargenStatus,
-    endurance = character.characteristics.END || 0,
-  ) => {
+  const finishTerm = (termsOverride?: CareerTermResult[], statusAfterAging?: ChargenStatus) => {
     const doc = getYDoc();
     const finalAge = character.age + 4;
     const totalTermsCompleted = character.terms.length;
     const updatedTerms = [...(termsOverride ?? character.terms)];
 
     if (finalAge >= 34) {
-      const check = rollAgingCheck(endurance, totalTermsCompleted);
+      const check = rollAgingCheck(totalTermsCompleted);
       const currentTermIndex = character.terms.length - 1;
       updatedTerms[currentTermIndex] = {
         ...updatedTerms[currentTermIndex],
         agingRoll: check.roll,
         agingEffect: check.tier,
+        agingMusteringOut: statusAfterAging === 'mustering_out',
       };
 
       setAgingCheck(check);
-      setSelectedPhysicalLosses([]);
-      setSelectedMentalLosses([]);
       setPendingAgingStatus(statusAfterAging);
       updateCharacterFields(doc, character.id, {
         age: finalAge,
@@ -218,53 +235,6 @@ export default function TermResolutionStep({
       return;
     }
     setPhase('complete');
-  };
-
-  const togglePhysicalLoss = (stat: PhysicalCharacteristicCode) => {
-    setSelectedPhysicalLosses((selected) => {
-      if (selected.includes(stat)) return selected.filter((value) => value !== stat);
-      if (agingCheck && selected.length >= agingCheck.physicalLosses) return selected;
-      return [...selected, stat];
-    });
-  };
-
-  const toggleMentalLoss = (stat: MentalCharacteristicCode) => {
-    setSelectedMentalLosses((selected) => {
-      if (selected.includes(stat)) return selected.filter((value) => value !== stat);
-      if (agingCheck && selected.length >= agingCheck.mentalLosses) return selected;
-      return [...selected, stat];
-    });
-  };
-
-  const applyAgingLosses = () => {
-    if (!agingCheck) return;
-    if (selectedPhysicalLosses.length !== agingCheck.physicalLosses) return;
-    if (selectedMentalLosses.length !== agingCheck.mentalLosses) return;
-
-    const doc = getYDoc();
-    const newCharacteristics = { ...character.characteristics };
-
-    selectedPhysicalLosses.forEach((stat) => {
-      newCharacteristics[stat] = Math.max(0, (newCharacteristics[stat] || 0) - 1);
-    });
-    selectedMentalLosses.forEach((stat) => {
-      newCharacteristics[stat] = Math.max(0, (newCharacteristics[stat] || 0) - 1);
-    });
-
-    const updatedTerms = [...character.terms];
-    const currentTermIndex = character.terms.length - 1;
-    updatedTerms[currentTermIndex] = {
-      ...updatedTerms[currentTermIndex],
-      agingPhysicalLosses: selectedPhysicalLosses,
-      agingMentalLosses: selectedMentalLosses,
-    };
-
-    updateCharacterFields(doc, character.id, {
-      characteristics: newCharacteristics,
-      terms: updatedTerms,
-    });
-
-    continueAfterAging();
   };
 
   const handleSurvivalRoll = () => {
@@ -408,7 +378,6 @@ export default function TermResolutionStep({
       const statBonus = parseCharacteristicBonus(resolved.skill);
 
       const doc = getYDoc();
-      let endurance = character.characteristics.END;
       if (statBonus) {
         const newStats = { ...character.characteristics };
         const statKey = statBonus.stat as keyof CharacteristicSet;
@@ -418,7 +387,6 @@ export default function TermResolutionStep({
           newStats[statKey] = statBonus.value;
         }
         updateCharacterFields(doc, character.id, { characteristics: newStats });
-        endurance = newStats.END;
         setSkillGained({ skill: skillName });
       } else {
         const newSkills = applySkillGain(character.skills, resolved.skill, resolved.specialty);
@@ -432,7 +400,7 @@ export default function TermResolutionStep({
       if (currentTerm.trainingRollPending) {
         term.trainingRollPending = false;
         term.advancementTrainingRoll = roll;
-        finishTerm(updatedTerms, undefined, endurance);
+        finishTerm(updatedTerms);
         return;
       }
       updateCharacterFields(doc, character.id, { terms: updatedTerms });
@@ -585,8 +553,6 @@ export default function TermResolutionStep({
     setAdvancementRoll(undefined);
     setAdvanced(false);
     setAgingCheck(undefined);
-    setSelectedPhysicalLosses([]);
-    setSelectedMentalLosses([]);
     setPendingAgingStatus(undefined);
   };
 
@@ -1464,87 +1430,8 @@ export default function TermResolutionStep({
 
   const renderAging = () => {
     if (!agingCheck) return null;
-
-    const needsChoices = agingCheck.physicalLosses > 0 || agingCheck.mentalLosses > 0;
-    const canApplyLosses =
-      selectedPhysicalLosses.length === agingCheck.physicalLosses &&
-      selectedMentalLosses.length === agingCheck.mentalLosses;
-
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-in fade-in mt-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-heading font-display">Aging Check</h3>
-          <span className="text-subtle font-mono">Age {character.age}</span>
-        </div>
-
-        <div className="bg-zinc-950 rounded p-4 border border-zinc-800 text-center mb-4">
-          <div className="text-3xl font-mono font-bold mb-2">
-            <span className={needsChoices ? 'text-amber-400' : 'text-green-400'}>
-              {agingCheck.roll.total}
-            </span>
-          </div>
-          <div className="text-sm text-subtle mb-2">
-            Roll: {agingCheck.roll.rolls[0]} + {agingCheck.roll.rolls[1]} + DM{' '}
-            {agingCheck.roll.modifier}
-          </div>
-          <div className={needsChoices ? 'text-amber-300 font-bold' : 'text-green-400 font-bold'}>
-            {agingCheck.description}
-          </div>
-        </div>
-
-        {agingCheck.physicalLosses > 0 && (
-          <div className="mb-4">
-            <h4 className="text-label font-bold mb-2">
-              Choose {agingCheck.physicalLosses} physical characteristic
-              {agingCheck.physicalLosses > 1 ? 's' : ''} to reduce
-            </h4>
-            <div className="grid grid-cols-3 gap-3">
-              {PHYSICAL_AGING_STATS.map((stat) => (
-                <SciFiButton
-                  key={stat}
-                  theme={selectedPhysicalLosses.includes(stat) ? 'amber' : 'slate'}
-                  scifiVariant={selectedPhysicalLosses.includes(stat) ? 'outline' : 'secondary'}
-                  onClick={() => togglePhysicalLoss(stat)}
-                >
-                  {stat} {character.characteristics[stat]}
-                </SciFiButton>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {agingCheck.mentalLosses > 0 && (
-          <div className="mb-4">
-            <h4 className="text-label font-bold mb-2">
-              Choose {agingCheck.mentalLosses} mental/social characteristic to reduce
-            </h4>
-            <div className="grid grid-cols-3 gap-3">
-              {MENTAL_AGING_STATS.map((stat) => (
-                <SciFiButton
-                  key={stat}
-                  theme={selectedMentalLosses.includes(stat) ? 'amber' : 'slate'}
-                  scifiVariant={selectedMentalLosses.includes(stat) ? 'outline' : 'secondary'}
-                  onClick={() => toggleMentalLoss(stat)}
-                >
-                  {stat} {character.characteristics[stat]}
-                </SciFiButton>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-center">
-          {needsChoices ? (
-            <SciFiButton theme="amber" glow disabled={!canApplyLosses} onClick={applyAgingLosses}>
-              Apply Aging Effects
-            </SciFiButton>
-          ) : (
-            <SciFiButton theme="cyan" glow onClick={continueAfterAging}>
-              Continue
-            </SciFiButton>
-          )}
-        </div>
-      </div>
+      <AgingResolution character={character} check={agingCheck} onContinue={continueAfterAging} />
     );
   };
 
@@ -1600,16 +1487,20 @@ export default function TermResolutionStep({
         </div>
       </div>
 
-      {renderSurvival()}
-      {phase !== 'survival' && !mishap && renderEvent()}
-      {['skill', 'commission', 'advancement', 'aging', 'complete'].includes(phase) &&
-        !mishap &&
-        renderSkill()}
-      {['commission', 'advancement', 'aging', 'complete'].includes(phase) &&
-        !mishap &&
-        shouldRenderCommission &&
-        renderCommission()}
-      {['advancement', 'aging', 'complete'].includes(phase) && !mishap && renderAdvancement()}
+      {!currentTerm.agingRoll && (
+        <>
+          {renderSurvival()}
+          {phase !== 'survival' && !mishap && renderEvent()}
+          {['skill', 'commission', 'advancement', 'complete'].includes(phase) &&
+            !mishap &&
+            renderSkill()}
+          {['commission', 'advancement', 'complete'].includes(phase) &&
+            !mishap &&
+            shouldRenderCommission &&
+            renderCommission()}
+          {['advancement', 'complete'].includes(phase) && !mishap && renderAdvancement()}
+        </>
+      )}
       {phase === 'aging' && renderAging()}
       {phase === 'complete' && !mishap && renderComplete()}
     </div>

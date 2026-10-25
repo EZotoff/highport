@@ -210,7 +210,7 @@ describe('term mechanical interactions', () => {
     });
     expect(getCharacter(doc, id)?.terms[0].skillsGained).toHaveLength(gains + 1);
     expect(getCharacter(doc, id)?.age).toBe(age + 4);
-    if (age === 30) expect(getCharacter(doc, id)?.terms[0].agingRoll?.modifier).toBe(0);
+    if (age === 30) expect(getCharacter(doc, id)?.terms[0].agingRoll?.modifier).toBe(-1);
     act(() => vi.advanceTimersByTime(3000));
     expect(getCharacter(doc, id)?.age).toBe(age + 4);
     expect(screen.queryByRole('button', { name: 'Roll Advancement' })).toBeNull();

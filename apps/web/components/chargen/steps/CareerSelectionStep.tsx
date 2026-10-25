@@ -60,9 +60,10 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
     setSelectedCareer(careerId);
 
     const dm = getQualificationDM(career);
-    const rollResult = roll2d6();
+    const autoFail = character.terms.some((term) => term.agingCrisis === 'paid');
+    const rollResult = autoFail ? { total: 0 } : roll2d6();
     const total = rollResult.total + dm;
-    const success = total >= career.qualification.target;
+    const success = !autoFail && total >= career.qualification.target;
 
     setQualificationResult({
       roll: rollResult.total,
@@ -199,6 +200,12 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
   };
 
   if (!character) return <div className="text-subtle">Loading character...</div>;
+  if (character.terms.some((term) => term.agingCrisis === 'died'))
+    return (
+      <div role="alert" className="text-red-400">
+        Traveller died in an ageing crisis.
+      </div>
+    );
 
   // View: Qualification Result (Success/Fail)
   if (selectedCareer && qualificationResult) {
