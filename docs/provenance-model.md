@@ -113,7 +113,7 @@ As the system matures, additional narrative fields (NPC descriptions, connection
 
 ## The AI Invasiveness Dial
 
-Meat generation is controlled by three invasiveness levels, set per session by the GM (see `SessionSettings.aiVerbosity` in [`apps/web/lib/chargen/types.ts`](../apps/web/lib/chargen/types.ts)). This is described in full in [CONCEPT.md](../CONCEPT.md) "AI invasiveness — three modes."
+Meat generation is controlled by three invasiveness levels, defined per session in `SessionSettings.aiVerbosity` (see [`apps/web/lib/chargen/types.ts`](../apps/web/lib/chargen/types.ts)). This is described in full in [CONCEPT.md](../CONCEPT.md) "AI invasiveness — three modes." **Note:** the session-level setting is defined in the type system and has a default (`'inspiration'`), but the live UI currently uses local React state in `ChargenWizard` rather than reading from the session. A GM control to change it and wiring to consume it from the enrichment flow are pending — see [ROADMAP.md](../ROADMAP.md) Known Issue #6.
 
 | Mode          | Public name | What it produces                                                                      |
 | ------------- | ----------- | ------------------------------------------------------------------------------------- |
@@ -132,7 +132,7 @@ The provenance model is designed around player and GM agency:
 1. **Reject** any AI draft. A rejected draft is invisible to display (via `unwrapAIField`) and can be regenerated.
 2. **Accept** a draft as-is. It becomes canonical meat.
 3. **Edit** a draft before accepting. The `status: "edited"` + `source: "player"` tag tells the system (and other players) that a human shaped the output.
-4. **GM overrides**: The GM can accept, reject, or edit any player's AI drafts via the GM control panel (though the current UI primarily surfaces this for connection requests). Session-level controls — allowed careers, approval requirements, session lock — are tracked in `SessionSettings` and administered through [GMControlPanel.tsx](../apps/web/components/chargen/GMControlPanel.tsx).
+4. **GM overrides** (planned): The architecture intends for the GM to accept, reject, or edit any player's AI drafts via the GM control panel. The current UI does **not** yet implement this — the GM panel surfaces session toggles and the cross-character connection-request queue (which is player-initiated, not AI-initiated). Direct GM editing of `AIProvenance`-wrapped fields (event descriptions, NPC details) is a planned feature. Session-level controls — allowed careers, approval requirements, session lock — are tracked in `SessionSettings` and toggled through [GMControlPanel.tsx](../apps/web/components/chargen/GMControlPanel.tsx), though several of these flags are not yet enforced in the code paths that should consult them — see [ROADMAP.md](../ROADMAP.md) Known Issue #7.
 
 Skeleton data is permanent: once rolled, characteristics, career paths, events, and die results are immutable in the character record. No player or GM action can rewrite the dice.
 

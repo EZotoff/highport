@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GlassPanel, SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../lib/chargen/hooks';
@@ -44,6 +44,14 @@ export default function ChargenWizard() {
     finalized: 4,
   };
   const currentStep = statusToStep[character?.status ?? 'background'] ?? 0;
+  const stepScrollRef = useRef<HTMLDivElement>(null);
+
+  // Reset scroll position when the wizard advances between steps — the scroller
+  // div persists across step swaps, so without this the new step inherits the
+  // previous step's scroll offset.
+  useEffect(() => {
+    stepScrollRef.current?.scrollTo({ top: 0 });
+  }, [currentStep]);
 
   useEffect(() => {
     const doc = getYDoc();
@@ -135,7 +143,9 @@ export default function ChargenWizard() {
       case 1:
         return <CareerSelectionStep characterId={characterId} />;
       case 2:
-        return <TermResolutionStep characterId={characterId} currentUserId={currentSessionUserId} />;
+        return (
+          <TermResolutionStep characterId={characterId} currentUserId={currentSessionUserId} />
+        );
       case 3:
         return <MusteringOutStep characterId={characterId} />;
       case 4:
@@ -184,7 +194,10 @@ export default function ChargenWizard() {
           <StepNavigation steps={STEPS} currentStep={currentStep} />
         </div>
         <div className="w-full lg:w-[320px] lg:shrink-0">
-          <VerbositySelector value={session?.settings?.aiVerbosity ?? 'inspiration'} onChange={(level) => actions.updateSettings({ aiVerbosity: level })} />
+          <VerbositySelector
+            value={session?.settings?.aiVerbosity ?? 'inspiration'}
+            onChange={(level) => actions.updateSettings({ aiVerbosity: level })}
+          />
         </div>
       </div>
 
@@ -202,7 +215,10 @@ export default function ChargenWizard() {
           className={`flex flex-col h-full overflow-hidden min-w-0 min-h-0 px-2 lg:px-4 ${isGM ? 'pb-16' : ''}`}
           data-testid="main-content"
         >
-          <div className="flex-1 overflow-y-auto pr-2 pb-4 custom-scrollbar min-h-0">
+          <div
+            ref={stepScrollRef}
+            className="flex-1 overflow-y-auto pr-2 pb-4 custom-scrollbar min-h-0"
+          >
             {renderStepContent()}
           </div>
 
