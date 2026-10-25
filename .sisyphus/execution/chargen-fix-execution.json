@@ -13,17 +13,20 @@
       "key": "C",
       "plan": ".omo/plans/fix-server-authz.md",
       "reviews": ".omo/plans/fix-server-authz.reviews.md",
-      "status": "in_progress",
+      "status": "done",
       "rationale": "security CRITICALs are live-exposed (WS token not doc-scoped, no Yjs write authz, X-User-Id impersonation); independent of the TermResolutionStep seam; executes before B so the shared export.ts seam flows C->B",
       "branch": "agent/sisyphus/chargen-fix-c",
-      "started": "2026-10-25T01:52:00+01:00"
+      "started": "2026-10-25T01:52:00+01:00",
+      "completed": "2026-10-25T03:35:00+01:00",
+      "evidence": "F1-F4 APPROVE in .omo/plans/fix-server-authz.md Execution Record; curls/WS in .sisyphus/evidence/authz-curl.md; branch agent/sisyphus/chargen-fix-c (13 commits) merged no-ff to main"
     },
     {
       "key": "B",
       "plan": ".omo/plans/fix-provenance-pipeline.md",
       "reviews": ".omo/plans/fix-provenance-pipeline.reviews.md",
-      "status": "pending",
-      "rationale": "surgical; settles authoritative-provenance display semantics that A and D build on"
+      "status": "in_progress",
+      "rationale": "surgical; settles authoritative-provenance display semantics that A and D build on",
+      "started": "2026-10-25T03:35:00+01:00"
     },
     {
       "key": "A",
@@ -57,5 +60,5 @@
   ],
   "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
   "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
-  "updated": "2026-10-25T01:52:00+01:00"
+  "updated": "2026-10-25T03:35:00+01:00"
 }

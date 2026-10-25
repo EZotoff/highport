@@ -123,5 +123,9 @@ Environment gate first: `docker compose up -d` (PostgreSQL 18123) — required b
 
 Execution baseline: 0fe8d9064e54e2932831d8b1e65e355915312b0b (branch agent/sisyphus/chargen-fix-c)
 
-<!-- F-box verdicts are appended here by the orchestrator during execution, e.g.:
-F#1: APPROVE — bash `pnpm --filter server test` exit 0 -->
+<!-- F-box verdicts recorded by the orchestrator, 2026-10-25 -->
+
+F#1: APPROVE — bash `pnpm --filter @highport/server typecheck && build && docker compose up -d && test` exit 0; 126 passed / 37 pre-existing skips; routes-authz 41 cases green
+F#2: APPROVE — bash `pnpm --filter @highport/web typecheck && test` exit 0; 251 passed; grep -ri 'x-user-id|x-is-gm|x-character-id' apps/web/{lib,app,components} → 0 matches
+F#3: APPROVE — .sisyphus/evidence/authz-curl.md: header-only→401, non-member /api/doc→403 (real camp id), X-Is-GM spoof→404-on-nonexistent (403 case in unit fixtures), knowledge grant no-token→401, GM happy path→201/200, purpose separation→401
+F#4: APPROVE — .sisyphus/evidence/authz-curl.md: live WS handshake member→own camp AUTHENTICATED; outsider→REJECTED permission-denied; member→unknown campaign REJECTED, no auto-create
