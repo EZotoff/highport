@@ -71,6 +71,29 @@
   ],
   "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
   "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
-  "updated": "2026-10-25T05:05:00+01:00",
-  "campaign_complete": true
+  "updated": "2026-10-25T21:15:00+02:00",
+  "campaign_complete": true,
+  "qa_campaign": {
+    "status": "complete",
+    "lanes": [
+      "Q1 two-player link",
+      "Q2 GM draft resolve",
+      "Q3 export/authz receipts",
+      "Q4 rules edges (aborted -> re-run as RV2)",
+      "RV1 identity re-verify",
+      "RV2 rules edges re-verify",
+      "RV3 benefit forms"
+    ],
+    "record": ".sisyphus/reviews/chargen-20261023/qa-campaign.md",
+    "evidence": ".sisyphus/evidence/qa-20261025/",
+    "defects_found_and_fixed": [
+      "chargen identity mismatch (GM panel unreachable, accept 403) \u2014 63c06c0",
+      "join clobbered chargen.session (multi-player data loss) \u2014 2453341",
+      "wizard Create button clipped by GlassPanel flex min-size \u2014 bb889b7",
+      "joined session id ignored (sessionStorage vs localStorage) \u2014 bb889b7",
+      "compound mustering benefits applied nothing \u2014 301669b",
+      "and-form mustering grants applied nothing \u2014 333c4be"
+    ],
+    "verdicts": "Q1/Q2/Q3 PASS, Q4 inconclusive, RV1 4/4 PASS, RV2 5/5 PASS, RV3 pending"
+  }
 }
