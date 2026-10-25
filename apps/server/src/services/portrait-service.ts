@@ -279,7 +279,10 @@ export class PortraitService implements PortraitServiceApi {
     try {
       response = await fetch(`${RAG_SERVICE_URL}/ai/portraits/tags`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RAG-Service-Secret': process.env.RAG_SERVICE_SECRET ?? '',
+        },
         body: JSON.stringify({
           appearance_text: appearanceText,
           career: tags.career?.career_type || null,
@@ -314,7 +317,10 @@ export class PortraitService implements PortraitServiceApi {
     try {
       response = await fetch(`${RAG_SERVICE_URL}/ai/portraits/image`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RAG-Service-Secret': process.env.RAG_SERVICE_SECRET ?? '',
+        },
         body: JSON.stringify({
           tags: input.tags,
           appearance_text: input.appearanceText,
