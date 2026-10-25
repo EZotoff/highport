@@ -139,6 +139,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
         });
       }
     }
+    // GM authority intentionally resolves outright, unlike the player dual-acceptance gate.
     await resolveCrossCharacterLink(doc, proposal.id, true);
     setEditingProposalId(null);
     setEditedDescription('');

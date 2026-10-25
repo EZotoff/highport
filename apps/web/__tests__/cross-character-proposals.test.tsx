@@ -370,6 +370,31 @@ describe('CrossCharacterProposalList Component', () => {
     expect(screen.getByText('No proposed links involving your character')).toBeDefined();
   });
 
+  it('records only the current player vote when Accept is clicked', async () => {
+    // Given
+    const doc = new Y.Doc();
+    vi.mocked(getYDoc).mockReturnValue(doc);
+    const id = addCrossCharacterLink(doc, {
+      sourceCharId: 'char-1',
+      targetCharId: 'char-2',
+      relationship: 'Rival',
+      description: '',
+    });
+    vi.mocked(useCrossCharacterLinks).mockReturnValue(getCrossCharacterLinks(doc));
+    const { unmount } = render(<CrossCharacterProposalList currentCharId="char-2" />);
+    // When
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+    });
+    // Then
+    expect(getCrossCharacterLinks(doc)).toEqual([
+      expect.objectContaining({ id, status: 'pending', acceptedBy: ['char-2'] }),
+    ]);
+    expect(getEdgesMap(doc).size).toBe(0);
+    unmount();
+    doc.destroy();
+  });
+
   it('renders proposals and handles Accept/Dismiss clicks', async () => {
     const mockProposals: CrossCharacterLinkProposal[] = [
       {
