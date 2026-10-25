@@ -10,6 +10,7 @@ import {
   removeCrossCharacterLink,
   createCharacter,
   getCharacter,
+  resolveCrossCharacterLink,
 } from '../lib/chargen/state';
 import { createCharacterNode } from '../lib/chargen/finalize';
 import { getNodesMap, getEdgesMap, getYDoc } from '../lib/ydoc';
@@ -142,6 +143,68 @@ describe('Cross-character link player-to-player flow', () => {
     expect(edge.get('source_id')).toBe(node2.graphNodeId);
     expect(edge.get('target_id')).toBe(node1.graphNodeId);
     expect(edge.get('relation_label')).toBe('Rival');
+  });
+});
+
+describe('concurrent dual-acceptance across synced docs', () => {
+  async function concurrentAcceptance() {
+    const docA = new Y.Doc();
+    const docB = new Y.Doc();
+    createSession(docA, 'campaign-123', 'gm-user-1');
+    const source = createCharacter(docA, 'player-1', 'Zara');
+    const target = createCharacter(docA, 'player-2', 'Milo');
+    vi.mocked(getYDoc).mockReturnValue(docA);
+    const sourceCharacter = getCharacter(docA, source);
+    const targetCharacter = getCharacter(docA, target);
+    if (!sourceCharacter || !targetCharacter) throw new Error('Missing fixture characters');
+    createCharacterNode(sourceCharacter);
+    createCharacterNode(targetCharacter);
+    const linkId = addCrossCharacterLink(docA, {
+      sourceCharId: source,
+      targetCharId: target,
+      relationship: 'Rival',
+      description: '',
+    });
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    await acceptCrossCharacterLink(docA, linkId, source);
+    await acceptCrossCharacterLink(docB, linkId, target);
+    const updateA = Y.encodeStateAsUpdate(docA);
+    const updateB = Y.encodeStateAsUpdate(docB);
+    Y.applyUpdate(docA, updateB);
+    Y.applyUpdate(docB, updateA);
+    const { reconcileCrossCharacterLinkEdges } = await import('../lib/chargen/state');
+    expect(typeof reconcileCrossCharacterLinkEdges).toBe('function');
+    reconcileCrossCharacterLinkEdges(docA);
+    reconcileCrossCharacterLinkEdges(docB);
+    Y.applyUpdate(docA, Y.encodeStateAsUpdate(docB));
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    return { docA, docB, linkId, source, target };
+  }
+
+  it('converges to accepted with one edge when players accept offline', async () => {
+    // Given / When: isolated accepts followed by merge and explicit repair.
+    const { docA, docB, source, target } = await concurrentAcceptance();
+    // Then
+    for (const doc of [docA, docB]) {
+      expect(getCrossCharacterLinks(doc)[0].acceptedBy?.sort()).toEqual([source, target].sort());
+      expect(getCrossCharacterLinks(doc)[0].status).toBe('accepted');
+      expect(getEdgesMap(doc).size).toBe(1);
+      doc.destroy();
+    }
+  });
+
+  it('removes the accepted edge when GM rejects after convergence', async () => {
+    // Given
+    const { docA, docB, linkId } = await concurrentAcceptance();
+    // When
+    await resolveCrossCharacterLink(docA, linkId, false);
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    // Then
+    for (const doc of [docA, docB]) {
+      expect(getCrossCharacterLinks(doc)[0].status).toBe('rejected');
+      expect(getEdgesMap(doc).size).toBe(0);
+      doc.destroy();
+    }
   });
 });
 
