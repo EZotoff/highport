@@ -38,13 +38,15 @@ export default function JoinSessionPage() {
       await provisionChargenSession(sessionId);
       if (cancelled) return;
       initProvider(doc, sessionId);
-      if (cancelled) return;
-      initProvider(doc, sessionId);
       clearTimeout(fallback);
       setIsReady(true);
     });
 
+    // Write to BOTH storages: getSessionId reads localStorage first, so the joined
+    // session must land there too or a pre-existing localStorage id would win and
+    // the user would silently stay on the wrong document.
     sessionStorage.setItem('highport_session_id:graph', sessionId);
+    localStorage.setItem('highport_session_id:graph', sessionId);
 
     return () => {
       cancelled = true;
