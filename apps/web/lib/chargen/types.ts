@@ -128,6 +128,8 @@ export interface CareerTermResult {
 
   advancementRoll?: DiceResult;
   advanced: boolean;
+  trainingRollPending?: boolean;
+  advancementTrainingRoll?: DiceResult;
   rankGained?: number;
   currentRank: number;
 

@@ -29,6 +29,7 @@ import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
 import { applyForcedMusterOut } from '../../../lib/chargen/muster-out';
 import { canConfirmEvent, resolveEventEffects } from '../../../lib/chargen/event-effects';
+import { grantAdvancementTraining } from '../../../lib/chargen/training';
 import { unwrapAIField } from '../../../lib/chargen/types';
 import {
   applySkillGain,
@@ -167,14 +168,18 @@ export default function TermResolutionStep({
   const conscriptionSurvivalDM =
     currentTerm.drafted === true ? (currentTerm.survivalDmBonus ?? 0) : 0;
 
-  const finishTerm = (termsOverride?: CareerTermResult[], statusAfterAging?: ChargenStatus) => {
+  const finishTerm = (
+    termsOverride?: CareerTermResult[],
+    statusAfterAging?: ChargenStatus,
+    endurance = character.characteristics.END || 0,
+  ) => {
     const doc = getYDoc();
     const finalAge = character.age + 4;
     const totalTermsCompleted = character.terms.length;
     const updatedTerms = [...(termsOverride ?? character.terms)];
 
     if (finalAge >= 34) {
-      const check = rollAgingCheck(character.characteristics.END || 0, totalTermsCompleted);
+      const check = rollAgingCheck(endurance, totalTermsCompleted);
       const currentTermIndex = character.terms.length - 1;
       updatedTerms[currentTermIndex] = {
         ...updatedTerms[currentTermIndex],
@@ -403,6 +408,7 @@ export default function TermResolutionStep({
       const statBonus = parseCharacteristicBonus(resolved.skill);
 
       const doc = getYDoc();
+      let endurance = character.characteristics.END;
       if (statBonus) {
         const newStats = { ...character.characteristics };
         const statKey = statBonus.stat as keyof CharacteristicSet;
@@ -412,6 +418,7 @@ export default function TermResolutionStep({
           newStats[statKey] = statBonus.value;
         }
         updateCharacterFields(doc, character.id, { characteristics: newStats });
+        endurance = newStats.END;
         setSkillGained({ skill: skillName });
       } else {
         const newSkills = applySkillGain(character.skills, resolved.skill, resolved.specialty);
@@ -422,6 +429,12 @@ export default function TermResolutionStep({
       const updatedTerms = [...character.terms];
       const term = updatedTerms[character.terms.length - 1];
       term.skillsGained.push({ skill: skillName, level: 1 });
+      if (currentTerm.trainingRollPending) {
+        term.trainingRollPending = false;
+        term.advancementTrainingRoll = roll;
+        finishTerm(updatedTerms, undefined, endurance);
+        return;
+      }
       updateCharacterFields(doc, character.id, { terms: updatedTerms });
     }
 
@@ -518,6 +531,7 @@ export default function TermResolutionStep({
       const newRank = term.currentRank + 1;
       term.rankGained = 1;
       term.currentRank = newRank;
+      Object.assign(term, grantAdvancementTraining());
 
       const rankInfo = getRankInfo(career, newRank, currentTerm.commissioned ?? false);
       if (rankInfo?.skill) {
@@ -528,7 +542,13 @@ export default function TermResolutionStep({
     }
 
     updateCharacterFields(doc, character.id, { terms: updatedTerms });
-    finishTerm(updatedTerms);
+    if (isPromoted) {
+      setSelectedTable(undefined);
+      setSkillGained(undefined);
+      setPhase('skill');
+    } else {
+      finishTerm(updatedTerms);
+    }
   };
 
   const handleContinue = () => {
@@ -1193,8 +1213,8 @@ export default function TermResolutionStep({
                       ...(event.effects ?? []),
                       ...(event.choices?.find((choice) => choice.id === selectedEventChoice)
                         ?.effects ?? []),
-                    ].map((effect, index) => (
-                      <li key={`${effect.type}-${effect.target}-${index}`}>
+                    ].map((effect) => (
+                      <li key={`${effect.type}-${effect.target}-${effect.value}`}>
                         {effect.target}: {effect.value}
                       </li>
                     ))}

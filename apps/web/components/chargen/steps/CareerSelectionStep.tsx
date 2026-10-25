@@ -14,6 +14,7 @@ import {
 } from '@highport/mgt2e';
 import type { CareerDefinition } from '@highport/mgt2e';
 import type { CareerTermResult } from '../../../lib/chargen/types';
+import { grantBasicTraining } from '../../../lib/chargen/training';
 
 const CONSCRIPTION_SURVIVAL_DM = 2;
 
@@ -95,7 +96,12 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
     };
 
     const doc = getYDoc();
+    const skills = grantBasicTraining(character, career, character.terms.length === 0);
+    newTerm.skillsGained = Object.keys(skills)
+      .filter((skill) => !(skill in character.skills))
+      .map((skill) => ({ skill, level: 0 }));
     updateCharacterFields(doc, character.id, {
+      skills,
       terms: [...(character.terms || []), newTerm],
       currentTermIndex: character.terms?.length || 0,
       status: 'term_resolution',
@@ -105,6 +111,8 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
   // Handle becoming a Drifter (no qualification)
   const becomeDrifter = () => {
     if (!character) return;
+    const career = getCareer('drifter');
+    if (!career) return;
 
     const newTerm: CareerTermResult = {
       termNumber: (character.terms?.length || 0) + 1,
@@ -119,7 +127,12 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
     };
 
     const doc = getYDoc();
+    const skills = grantBasicTraining(character, career, character.terms.length === 0);
+    newTerm.skillsGained = Object.keys(skills)
+      .filter((skill) => !(skill in character.skills))
+      .map((skill) => ({ skill, level: 0 }));
     updateCharacterFields(doc, character.id, {
+      skills,
       terms: [...(character.terms || []), newTerm],
       currentTermIndex: character.terms?.length || 0,
       status: 'term_resolution',
@@ -162,7 +175,12 @@ export default function CareerSelectionStep({ characterId }: CareerSelectionStep
     };
 
     const doc = getYDoc();
+    const skills = grantBasicTraining(character, career, character.terms.length === 0);
+    newTerm.skillsGained = Object.keys(skills)
+      .filter((skill) => !(skill in character.skills))
+      .map((skill) => ({ skill, level: 0 }));
     updateCharacterFields(doc, character.id, {
+      skills,
       terms: [...(character.terms || []), newTerm],
       currentTermIndex: character.terms?.length || 0,
       status: 'term_resolution',

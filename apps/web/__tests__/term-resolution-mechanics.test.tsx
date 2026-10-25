@@ -181,4 +181,38 @@ describe('term mechanical interactions', () => {
     });
     expect(getCharacter(doc, id)?.terms[0].autoPassNext).toBeUndefined();
   });
+
+  it.each([18, 30])('waits for promotion training and ages exactly once from age %s', (age) => {
+    updateCharacterFields(doc, id, {
+      age,
+      characteristics: { STR: 7, DEX: 7, END: 8, INT: 7, EDU: 7, SOC: 7 },
+    });
+    showEvent({ roll: 7, description: 'Quiet term' });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Service Skills' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Roll 1d6' }));
+    act(() => vi.advanceTimersByTime(1500));
+    fireEvent.click(screen.getByRole('button', { name: 'Skip Commission' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Roll Advancement' }));
+    const pending = getCharacter(doc, id);
+    expect(pending?.terms[0].trainingRollPending).toBe(true);
+    expect(pending?.age).toBe(age);
+    const gains = pending?.terms[0].skillsGained.length ?? 0;
+    setDiceOverrideInterceptor(({ target }) => ({
+      total: target ?? 3,
+      success: target === undefined ? undefined : true,
+    }));
+    fireEvent.click(screen.getByRole('button', { name: 'Personal Development' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Roll 1d6' }));
+    expect(getCharacter(doc, id)?.terms[0]).toMatchObject({
+      trainingRollPending: false,
+      advancementTrainingRoll: { dice: '1d6' },
+    });
+    expect(getCharacter(doc, id)?.terms[0].skillsGained).toHaveLength(gains + 1);
+    expect(getCharacter(doc, id)?.age).toBe(age + 4);
+    if (age === 30) expect(getCharacter(doc, id)?.terms[0].agingRoll?.modifier).toBe(0);
+    act(() => vi.advanceTimersByTime(3000));
+    expect(getCharacter(doc, id)?.age).toBe(age + 4);
+    expect(screen.queryByRole('button', { name: 'Roll Advancement' })).toBeNull();
+  });
 });
