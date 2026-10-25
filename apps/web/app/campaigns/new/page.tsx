@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { apiFetch } from '@/lib/api-client';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { CosmicBackground } from '@/components/ui/scifi';
@@ -19,7 +19,6 @@ export default function NewCampaignPage() {
   const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
   const router = useRouter();
-  const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +31,10 @@ export default function NewCampaignPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/campaigns`, {
+      const res = await apiFetch(`${API_BASE}/api/campaigns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': session?.user?.id || '',
         },
         body: JSON.stringify({
           name: trimmedName,

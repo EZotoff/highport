@@ -103,7 +103,7 @@ describe('ScopeEditor', () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/documents/doc_123/scope',
+        'http://localhost:18122/api/documents/doc_123/scope',
         expect.objectContaining({
           method: 'PATCH',
           body: expect.any(String),

@@ -7,9 +7,9 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
   new Headers(init?.headers).forEach((value, key) => {
     headers.set(key, value);
   });
-  for (const header of ['X-User-Id', 'X-Is-GM', 'X-Character-Id', 'Authorization']) {
-    headers.delete(header);
-  }
+  for (const header of [...headers.keys()])
+    if (/^x-(user-id|is-gm|character-id)$/i.test(header)) headers.delete(header);
+  headers.delete('Authorization');
   if (session?.apiToken) headers.set('Authorization', `Bearer ${session.apiToken}`);
   return fetch(input, { ...init, headers });
 }

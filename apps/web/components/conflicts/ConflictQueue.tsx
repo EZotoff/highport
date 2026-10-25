@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/lib/api-client';
 
 interface ConflictItem {
   id: string;
@@ -22,7 +23,7 @@ export function ConflictQueue() {
 
   const fetchConflicts = useCallback(async () => {
     try {
-      const res = await fetch(`${SERVER_URL}/api/conflicts`);
+      const res = await apiFetch(`${SERVER_URL}/api/conflicts`);
       const data = await res.json();
       setConflicts(data.conflicts || []);
       setError(null);
@@ -39,7 +40,7 @@ export function ConflictQueue() {
 
   const handleResolve = async (id: string, resolution: 'keep_foundry' | 'keep_highport') => {
     try {
-      await fetch(`${SERVER_URL}/api/conflicts/${id}/resolve`, {
+      await apiFetch(`${SERVER_URL}/api/conflicts/${id}/resolve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resolution, resolvedBy: 'gm' }),
@@ -52,8 +53,8 @@ export function ConflictQueue() {
 
   const handleDismiss = async (id: string) => {
     try {
-      await fetch(`${SERVER_URL}/api/conflicts/${id}/dismiss`, {
-        method: 'POST',
+      await apiFetch(`${SERVER_URL}/api/conflicts/${id}`, {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resolvedBy: 'gm' }),
       });

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { getSession } from 'next-auth/react';
 import {
   generateEventDescription,
   generateNPCDetails,
@@ -393,6 +394,7 @@ describe('Narrative API', () => {
     });
 
     it('should convert characters and shared history to snake_case for API', async () => {
+      vi.mocked(getSession).mockResolvedValueOnce({ apiToken: 'signed-api', expires: '' });
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ proposals: [] }),
@@ -410,11 +412,10 @@ describe('Narrative API', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          headers: {
+          headers: new Headers({
             'Content-Type': 'application/json',
-            'X-Character-Id': 'char-1',
-            'X-Is-GM': 'true',
-          },
+            Authorization: 'Bearer signed-api',
+          }),
         }),
       );
     });
@@ -516,6 +517,7 @@ describe('Narrative API', () => {
         json: async () => ({ proposals: [] }),
       });
 
+      vi.mocked(getSession).mockResolvedValueOnce({ apiToken: 'signed-api', expires: '' });
       await generateLifepathReview(mockCharacter, ['campaign context'], true);
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
@@ -530,11 +532,10 @@ describe('Narrative API', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          headers: {
+          headers: new Headers({
             'Content-Type': 'application/json',
-            'X-Character-Id': 'char-1',
-            'X-Is-GM': 'true',
-          },
+            Authorization: 'Bearer signed-api',
+          }),
         }),
       );
     });
