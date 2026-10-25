@@ -5,6 +5,7 @@ import { SciFiButton } from '@/components/ui/scifi';
 import type { SpawnedEntityRef } from '../../lib/chargen/types';
 import { updateCharacterFields } from '../../lib/chargen/state';
 import { getYDoc } from '../../lib/ydoc';
+import { apiFetch } from '../../lib/api-client';
 
 interface ConnectionSuggestion {
   source: string;
@@ -54,7 +55,7 @@ export default function ConnectionSuggestions({
     try {
       const currentCareer = careerHistory[careerHistory.length - 1] || null;
 
-      const response = await fetch(`${RAG_SERVICE_URL}/narrative/suggest-connections`, {
+      const response = await apiFetch(`${RAG_SERVICE_URL}/narrative/suggest-connections`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

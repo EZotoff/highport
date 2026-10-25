@@ -68,7 +68,7 @@ export async function generateEventDescription(params: {
       guidance: params.guidance || undefined,
     };
 
-    const response = await fetch(`${RAG_SERVICE_URL}/narrative/event-description`, {
+    const response = await apiFetch(`${RAG_SERVICE_URL}/narrative/event-description`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export async function generateNPCDetails(params: {
       verbosity: params.verbosity,
     };
 
-    const response = await fetch(`${RAG_SERVICE_URL}/narrative/npc-details`, {
+    const response = await apiFetch(`${RAG_SERVICE_URL}/narrative/npc-details`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ export async function generateMishapDescription(params: {
       guidance: params.guidance || undefined,
     };
 
-    const response = await fetch(`${RAG_SERVICE_URL}/narrative/mishap-description`, {
+    const response = await apiFetch(`${RAG_SERVICE_URL}/narrative/mishap-description`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
