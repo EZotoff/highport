@@ -9,13 +9,14 @@ from uuid import uuid4
 from dataclasses import dataclass
 from typing import Protocol
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from auth import require_service
 
 from services.chunker import chunk_text
 from services.entity_extractor import extract_entities
 
 
-router = APIRouter(prefix="/ingest", tags=["ingestion"])
+router = APIRouter(prefix="/ingest", tags=["ingestion"], dependencies=[Depends(require_service)])
 
 
 class EmbeddingsProtocol(Protocol):
