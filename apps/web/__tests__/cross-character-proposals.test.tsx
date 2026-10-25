@@ -198,6 +198,25 @@ describe('Cross-character link player-to-player flow', () => {
 });
 
 describe('concurrent dual-acceptance across synced docs', () => {
+  it('retains acceptedBy keys when an attached proposal round-trips through Yjs', () => {
+    // Given
+    const doc = new Y.Doc();
+    const clone = new Y.Doc();
+    addCrossCharacterLink(doc, {
+      sourceCharId: 'char-1',
+      targetCharId: 'char-2',
+      relationship: 'Rival',
+      description: '',
+      acceptedBy: ['char-1'],
+    });
+    // When
+    Y.applyUpdate(clone, Y.encodeStateAsUpdate(doc));
+    // Then
+    expect(getCrossCharacterLinks(clone)[0].acceptedBy).toEqual(['char-1']);
+    doc.destroy();
+    clone.destroy();
+  });
+
   it('collapses concurrent finalization edges for the same finalized node pair', async () => {
     // Given: both replicas know the same finalized graph identities.
     const docA = new Y.Doc();

@@ -148,6 +148,7 @@ export function createCharacter(doc: Y.Doc, playerId: string, name?: string): st
 
   doc.transact(() => {
     const charMap = new Y.Map();
+    characters.set(charId, charMap);
     Object.entries(character).forEach(([key, value]) => {
       if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
         charMap.set(key, JSON.parse(JSON.stringify(value)));
@@ -155,7 +156,6 @@ export function createCharacter(doc: Y.Doc, playerId: string, name?: string): st
         charMap.set(key, value);
       }
     });
-    characters.set(charId, charMap);
   }, 'chargen-create');
   saveCharacterSnapshot(character);
 
@@ -393,6 +393,7 @@ export function addEntityToPool(doc: Y.Doc, entity: Omit<SharedSpawnedEntity, 'i
 
   doc.transact(() => {
     const entityMap = new Y.Map();
+    entityPool.set(entityId, entityMap);
     entityMap.set('id', entityId);
     Object.entries(entity).forEach(([key, value]) => {
       if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
@@ -401,7 +402,6 @@ export function addEntityToPool(doc: Y.Doc, entity: Omit<SharedSpawnedEntity, 'i
         entityMap.set(key, value);
       }
     });
-    entityPool.set(entityId, entityMap);
   }, 'entity-pool-add');
 
   return entityId;
@@ -670,11 +670,16 @@ export function addCrossCharacterLink(
     generatedAt: Date.now(),
   };
   const acceptedBy = fullLink.acceptedBy ?? [];
-  const linkMap = new Y.Map<unknown>(Object.entries(fullLink));
-  linkMap.set('acceptedBy', new Y.Map(acceptedBy.map((characterId) => [characterId, true])));
+  const linkMap = new Y.Map<unknown>();
 
   doc.transact(() => {
     linksMap.set(linkId, linkMap);
+    for (const [key, value] of Object.entries(fullLink)) {
+      if (key !== 'acceptedBy' && key !== 'resolution') linkMap.set(key, value);
+    }
+    const acceptedByMap = new Y.Map<boolean>();
+    linkMap.set('acceptedBy', acceptedByMap);
+    for (const characterId of acceptedBy) acceptedByMap.set(characterId, true);
   }, 'cross-character-link-add');
 
   return linkId;

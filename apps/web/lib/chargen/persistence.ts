@@ -77,8 +77,8 @@ export function restoreCharacterSnapshot(doc: Y.Doc, charId: string): ChargenCha
 
   doc.transact(() => {
     const charMap = new Y.Map<unknown>();
-    writeCharacterToMap(charMap, snapshot);
     characters.set(charId, charMap);
+    writeCharacterToMap(charMap, snapshot);
   }, 'chargen-local-restore');
 
   return snapshot;
