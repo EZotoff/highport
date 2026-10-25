@@ -612,6 +612,22 @@ export function getCrossCharacterLinksMap(doc: Y.Doc): Y.Map<Y.Map<unknown>> {
 export function yMapToCrossCharacterLink(linkMap: Y.Map<unknown>): CrossCharacterLinkProposal {
   const acceptedByMap = linkMap.get('acceptedBy');
   const acceptedBy = acceptedByMap instanceof Y.Map ? Array.from(acceptedByMap.keys()) : [];
+  const rawResolution = linkMap.get('resolution');
+  const resolution =
+    typeof rawResolution === 'object' &&
+    rawResolution !== null &&
+    'by' in rawResolution &&
+    rawResolution.by === 'gm' &&
+    'status' in rawResolution &&
+    (rawResolution.status === 'accepted' || rawResolution.status === 'rejected')
+      ? { status: rawResolution.status, by: 'gm' as const }
+      : undefined;
+  const status =
+    resolution?.status ??
+    (acceptedBy.includes(linkMap.get('sourceCharId')) &&
+    acceptedBy.includes(linkMap.get('targetCharId'))
+      ? 'accepted'
+      : 'pending');
   return {
     id: linkMap.get('id') as string,
     sourceCharId: linkMap.get('sourceCharId') as string,
@@ -620,14 +636,24 @@ export function yMapToCrossCharacterLink(linkMap: Y.Map<unknown>): CrossCharacte
     targetEntityId: linkMap.get('targetEntityId') as string | undefined,
     relationship: linkMap.get('relationship') as string,
     description: linkMap.get('description') as string,
-    status: linkMap.get('status') as CrossCharacterLinkProposal['status'],
+    status,
+    ...(resolution ? { resolution } : {}),
     generatedAt: linkMap.get('generatedAt') as number,
     ...(acceptedBy.length > 0 ? { acceptedBy } : {}),
   };
 }
 
 export function getCrossCharacterLinks(doc: Y.Doc): CrossCharacterLinkProposal[] {
-  return Array.from(getCrossCharacterLinksMap(doc).values(), yMapToCrossCharacterLink);
+  const links = doc.getMap('chargen').get('crossCharacterLinks');
+  return links instanceof Y.Map ? Array.from(links.values(), yMapToCrossCharacterLink) : [];
+}
+
+export function reconcileCrossCharacterLinkEdges(doc: Y.Doc): void {
+  doc.transact(() => {
+    for (const link of getCrossCharacterLinks(doc)) {
+      if (link.status === 'accepted') createCrossCharacterLinkEdge(doc, link);
+    }
+  }, 'cross-character-link-reconcile');
 }
 
 export function addCrossCharacterLink(
@@ -739,17 +765,15 @@ export async function acceptCrossCharacterLink(
   const linkMap = getCrossCharacterLinksMap(doc).get(linkId);
   if (!linkMap) return;
   const acceptedBy = linkMap.get('acceptedBy');
+  reconcileCrossCharacterLinkEdges(doc);
   if (!(acceptedBy instanceof Y.Map) || acceptedBy.has(characterId)) return;
-  const link = yMapToCrossCharacterLink(linkMap);
-  const bothAccepted =
-    (characterId === link.sourceCharId || acceptedBy.has(link.sourceCharId)) &&
-    (characterId === link.targetCharId || acceptedBy.has(link.targetCharId));
 
   doc.transact(() => {
     acceptedBy.set(characterId, true);
-    linkMap.set('status', bothAccepted ? 'accepted' : 'pending');
+    const link = yMapToCrossCharacterLink(linkMap);
+    linkMap.set('status', link.status);
 
-    if (bothAccepted) {
+    if (link.status === 'accepted') {
       createCrossCharacterLinkEdge(doc, link);
     }
   }, 'cross-character-link-accept');

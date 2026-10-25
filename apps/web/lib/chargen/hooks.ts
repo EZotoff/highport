@@ -17,6 +17,7 @@ import {
   yMapToLifepathProposal,
   getCrossCharacterLinksMap,
   yMapToCrossCharacterLink,
+  reconcileCrossCharacterLinkEdges,
 } from './state';
 import type {
   ChargenCharacter,
@@ -195,7 +196,9 @@ export function useLifepathProposals(characterId?: string): LifepathProposal[] {
     const updateProposals = () => {
       const all = Array.from(proposalsMap.values(), yMapToLifepathProposal);
       if (characterId) {
-        setProposals(all.filter((p) => p.characterId === characterId || p.characterId === undefined));
+        setProposals(
+          all.filter((p) => p.characterId === characterId || p.characterId === undefined),
+        );
       } else {
         setProposals(all);
       }
@@ -220,6 +223,7 @@ export function useCrossCharacterLinks(): CrossCharacterLinkProposal[] {
     const linksMap = getCrossCharacterLinksMap(doc);
 
     const updateLinks = () => {
+      reconcileCrossCharacterLinkEdges(doc);
       setLinks(Array.from(linksMap.values(), yMapToCrossCharacterLink));
     };
 

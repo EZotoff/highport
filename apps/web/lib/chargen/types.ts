@@ -251,6 +251,7 @@ export interface CrossCharacterLinkProposal {
   status: 'pending' | 'accepted' | 'rejected';
   generatedAt: number;
   acceptedBy?: string[];
+  resolution?: { readonly status: 'accepted' | 'rejected'; readonly by: 'gm' };
 }
 
 /** Default session settings */

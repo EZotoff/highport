@@ -107,6 +107,33 @@ describe('Cross-character link player-to-player flow', () => {
     expect(edge.get('relation_label')).toBe('Rival');
   });
 
+  it('repairs a missing edge when an already-recorded player accepts again', async () => {
+    // Given
+    const source = createCharacter(doc, 'player-1', 'Zara');
+    const target = createCharacter(doc, 'player-2', 'Milo');
+    const a = getCharacter(doc, source);
+    const b = getCharacter(doc, target);
+    if (!a || !b) throw new Error('Missing fixture characters');
+    createCharacterNode(a);
+    createCharacterNode(b);
+    const id = addCrossCharacterLink(doc, {
+      sourceCharId: source,
+      targetCharId: target,
+      relationship: 'Rival',
+      description: '',
+      acceptedBy: [source, target],
+    });
+    // When
+    await acceptCrossCharacterLink(doc, id, source);
+    // Then
+    expect(getCrossCharacterLinks(doc)[0].status).toBe('accepted');
+    expect(getEdgesMap(doc).size).toBe(1);
+    const updates = vi.fn();
+    doc.on('update', updates);
+    await acceptCrossCharacterLink(doc, id, source);
+    expect(updates).not.toHaveBeenCalled();
+  });
+
   it('creates graph edge during finalization if link was already accepted', async () => {
     // Create two characters in Yjs
     const char1Id = createCharacter(doc, 'player-1', 'Zara');

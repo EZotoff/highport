@@ -85,8 +85,17 @@ export function acceptLink(doc: Y.Doc, linkId: string, userId: string): void {
   for (const id of parties) acceptedBy.set(id, true);
   link.set('by', userId);
   const both = acceptedBy.has(source) && acceptedBy.has(target);
-  link.set('status', both ? 'accepted' : 'pending');
-  if (!both) return;
+  const resolution = link.get('resolution');
+  const status =
+    record(resolution) &&
+    resolution['by'] === 'gm' &&
+    (resolution['status'] === 'accepted' || resolution['status'] === 'rejected')
+      ? resolution['status']
+      : both
+        ? 'accepted'
+        : 'pending';
+  link.set('status', status);
+  if (status !== 'accepted') return;
   createLinkEdge(doc, linkId, link);
 }
 
