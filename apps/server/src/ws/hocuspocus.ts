@@ -9,6 +9,7 @@ import { db } from '../db/client.js';
 import { campaigns, documents, documentUpdates } from '../db/schema.js';
 import { logger } from '../lib/logger.js';
 import { authorizeDocument, AuthorizationError, parseDocumentName } from '../lib/authz.js';
+import { auditUpdate, initializeAudit } from '../services/privilege-auditor.js';
 
 const HOCUSPOCUS_PORT = 18121;
 const HOCUSPOCUS_JWT_PURPOSE = 'hocuspocus';
@@ -214,8 +215,15 @@ export const hocuspocus = new Hocuspocus({
     }
   },
 
-  async onChange({ documentName, update }) {
+  async afterLoadDocument({ document }) {
+    initializeAudit(document);
+  },
+
+  async onChange({ documentName, document, update, transactionOrigin }) {
     if (!update) return;
+    const keyPaths = auditUpdate(document, update, transactionOrigin);
+    if (keyPaths.length > 0) logger.warn('chargen.privilege_violation', { documentName, keyPaths });
+    if (transactionOrigin === 'server-command') return;
 
     if (!(await ensureDocumentExists(documentName))) throw new HocuspocusAuthenticationError();
 
