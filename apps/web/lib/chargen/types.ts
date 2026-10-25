@@ -161,7 +161,16 @@ export interface SpawnedEntityRef {
   };
 }
 
+export interface MusteringRoll {
+  readonly rollNumber: number;
+  readonly type: 'cash' | 'benefit';
+  readonly roll: number;
+  readonly result: string | number;
+}
+
 export interface MusteringState {
+  rollHistory?: MusteringRoll[];
+  pendingBenefit?: { readonly source: string; readonly roll: number };
   totalRolls: number;
   rollsUsed: number;
   cashRollsUsed: number;

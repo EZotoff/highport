@@ -1,12 +1,13 @@
-import {
-  getCareer,
-  roll1d6,
-  rollCashBenefit,
-  rollMusteringBenefit,
-  getCharacteristicModifier,
-} from '@highport/mgt2e';
-import type { CareerDefinition, CharacteristicSet, DiceResult } from '@highport/mgt2e';
-import type { ChargenCharacter, MusteringState } from './types';
+export {
+  parseBenefit,
+  parseBenefitChoice,
+  applyCharacteristicBenefit,
+  applyMusteringBenefit,
+  resolveBenefitChoice,
+} from './mustering-benefits';
+import { getCareer, rollCashBenefit, rollMusteringBenefit } from '@highport/mgt2e';
+import type { DiceResult } from '@highport/mgt2e';
+import type { ChargenCharacter } from './types';
 
 export function calculateTotalBenefitRolls(character: ChargenCharacter): number {
   const terms = character.terms.filter((term) => term.survived === true).length;
@@ -66,71 +67,5 @@ export function rollBenefit(
       result: result.benefit || '',
       isHighRankAlternate: highRank && result.benefit?.includes('High Rank'),
     };
-  }
-}
-
-// Parse benefit string to determine type
-export function parseBenefit(benefit: string): {
-  type: 'characteristic' | 'item' | 'shares' | 'membership' | 'vehicle' | 'weapon' | 'other';
-  value: string | number;
-} {
-  // Characteristic bonus: "+1 INT", "+1 EDU", etc.
-  const charMatch = benefit.match(/^\+(\d+)\s+(STR|DEX|END|INT|EDU|SOC)$/);
-  if (charMatch) {
-    return { type: 'characteristic', value: `${charMatch[2]} +${charMatch[1]}` };
-  }
-
-  // Ship shares
-  if (benefit.includes('Ship Share')) {
-    const shareMatch = benefit.match(/(\d+)\s*Ship\s*Share/i);
-    return { type: 'shares', value: shareMatch ? parseInt(shareMatch[1]) : 1 };
-  }
-
-  // Common benefits
-  if (benefit.includes('TAS')) return { type: 'membership', value: 'TAS Membership' };
-  if (benefit.includes('Weapon')) return { type: 'weapon', value: benefit };
-  if (benefit.includes('Vehicle') || benefit.includes('Yacht'))
-    return { type: 'vehicle', value: benefit };
-
-  return { type: 'other', value: benefit };
-}
-
-export function applyCharacteristicBenefit(
-  characteristics: CharacteristicSet,
-  benefit: string,
-): CharacteristicSet | null {
-  const parsed = parseBenefit(benefit);
-  const type = parsed.type;
-  switch (type) {
-    case 'characteristic': {
-      const [stat, bonus] = String(parsed.value).split(' ');
-      switch (stat) {
-        case 'STR':
-        case 'DEX':
-        case 'END':
-        case 'INT':
-        case 'EDU':
-        case 'SOC':
-          return {
-            ...characteristics,
-            [stat]:
-              (typeof characteristics[stat] === 'number' ? characteristics[stat] : 0) +
-              Number(bonus),
-          };
-        default:
-          return null;
-      }
-    }
-    case 'item':
-    case 'shares':
-    case 'membership':
-    case 'vehicle':
-    case 'weapon':
-    case 'other':
-      return null;
-    default: {
-      const unhandled: never = type;
-      throw new RangeError(`Unknown benefit type: ${unhandled}`);
-    }
   }
 }
