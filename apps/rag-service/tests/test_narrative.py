@@ -710,7 +710,7 @@ async def test_lifepath_review_non_gm_scope_excludes_gm(client, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_cross_character_links_gm_scope_includes_gm(client, monkeypatch):
+async def test_cross_character_links_spoofed_gm_scope_excludes_gm(client, monkeypatch):
     generator = NarrativeGenerator(
         llm=MockGeminiProvider(responses={"default": '{"proposals": []}'})
     )
@@ -730,7 +730,7 @@ async def test_cross_character_links_gm_scope_includes_gm(client, monkeypatch):
         )
 
         assert response.status_code == 200
-        retrieve_context.assert_awaited_once_with(ANY, ["public", "gm"])
+        retrieve_context.assert_awaited_once_with(ANY, ["public"])
     finally:
         clear_dependencies()
 

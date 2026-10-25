@@ -49,27 +49,27 @@ def empty_mock_pinecone():
 
 
 @pytest_asyncio.fixture
-async def scope_client(mock_pinecone_with_vectors):
+async def scope_client(mock_pinecone_with_vectors, service_headers):
     from httpx import AsyncClient, ASGITransport
     from main import app
     from routers.scope import set_scope_dependencies, clear_scope_dependencies
 
     set_scope_dependencies(pinecone=mock_pinecone_with_vectors)
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+    async with AsyncClient(transport=transport, base_url="http://test", headers=service_headers) as ac:
         yield ac, mock_pinecone_with_vectors
     clear_scope_dependencies()
 
 
 @pytest_asyncio.fixture
-async def empty_scope_client(empty_mock_pinecone):
+async def empty_scope_client(empty_mock_pinecone, service_headers):
     from httpx import AsyncClient, ASGITransport
     from main import app
     from routers.scope import set_scope_dependencies, clear_scope_dependencies
 
     set_scope_dependencies(pinecone=empty_mock_pinecone)
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+    async with AsyncClient(transport=transport, base_url="http://test", headers=service_headers) as ac:
         yield ac, empty_mock_pinecone
     clear_scope_dependencies()
 
@@ -116,7 +116,7 @@ async def test_update_scope_no_vectors_found(empty_scope_client):
 
 
 @pytest.mark.asyncio
-async def test_update_scope_pinecone_not_configured():
+async def test_update_scope_pinecone_not_configured(service_headers):
     from httpx import AsyncClient, ASGITransport
     from main import app
     from routers.scope import set_scope_dependencies, clear_scope_dependencies
@@ -124,7 +124,7 @@ async def test_update_scope_pinecone_not_configured():
     set_scope_dependencies(pinecone=None)
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
+    async with AsyncClient(transport=transport, base_url="http://test", headers=service_headers) as client:
         response = await client.post(
             "/update-scope",
             json={"source_id": "doc_123", "access_scope": ["public"]},
@@ -133,14 +133,14 @@ async def test_update_scope_pinecone_not_configured():
     clear_scope_dependencies()
 
 @pytest.mark.asyncio
-async def test_update_scope_validates_request():
+async def test_update_scope_validates_request(service_headers):
     from httpx import AsyncClient, ASGITransport
     from main import app
     from routers.scope import set_scope_dependencies, clear_scope_dependencies
 
     set_scope_dependencies(pinecone=MockPineconeWithUpdate())
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
+    async with AsyncClient(transport=transport, base_url="http://test", headers=service_headers) as client:
         response = await client.post("/update-scope", json={})
         assert response.status_code == 422
     clear_scope_dependencies()
