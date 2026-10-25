@@ -85,8 +85,17 @@ export function acceptLink(doc: Y.Doc, linkId: string, userId: string): void {
   for (const id of parties) acceptedBy.set(id, true);
   link.set('by', userId);
   const both = acceptedBy.has(source) && acceptedBy.has(target);
-  link.set('status', both ? 'accepted' : 'pending');
-  if (!both) return;
+  const resolution = link.get('resolution');
+  const status =
+    record(resolution) &&
+    resolution['by'] === 'gm' &&
+    (resolution['status'] === 'accepted' || resolution['status'] === 'rejected')
+      ? resolution['status']
+      : both
+        ? 'accepted'
+        : 'pending';
+  link.set('status', status);
+  if (status !== 'accepted') return;
   createLinkEdge(doc, linkId, link);
 }
 
@@ -104,8 +113,17 @@ export function createLinkEdge(doc: Y.Doc, linkId: string, link: Y.Map<unknown>)
   });
   if (!sourceNode || !targetNode) return;
   const edges = doc.getMap<Y.Map<unknown>>('edges');
-  const id = `chargen-link-${linkId}`;
+  const relationship = link.get('relationship');
+  if (typeof relationship !== 'string') throw new CommandError(404, 'Link not found');
+  const id = crossLinkEdgeId(sourceNode, targetNode, relationship);
   if (edges.has(id)) return;
+  for (const edge of edges.values()) {
+    if (
+      (edge.get('source_id') === sourceNode && edge.get('target_id') === targetNode) ||
+      (edge.get('source_id') === targetNode && edge.get('target_id') === sourceNode)
+    )
+      return;
+  }
   const edge = new Y.Map<unknown>();
   edges.set(id, edge);
   for (const [key, value] of Object.entries({
@@ -120,4 +138,30 @@ export function createLinkEdge(doc: Y.Doc, linkId: string, link: Y.Map<unknown>)
     hidden: false,
   }))
     edge.set(key, value);
+}
+
+export function crossLinkEdgeId(source: string, target: string, relationship: string): string {
+  let hash = 0x811c9dc5;
+  for (const byte of new TextEncoder().encode(
+    JSON.stringify([...[source, target].sort(), relationship]),
+  )) {
+    hash = Math.imul(hash ^ byte, 0x01000193);
+  }
+  return `xlink-${(hash >>> 0).toString(16).padStart(8, '0')}`;
+}
+
+export function removeLinkEdge(doc: Y.Doc, link: Y.Map<unknown>): void {
+  const source = link.get('sourceCharId');
+  const target = link.get('targetCharId');
+  const relationship = link.get('relationship');
+  let sourceNode: string | undefined;
+  let targetNode: string | undefined;
+  doc.getMap<Y.Map<unknown>>('nodes').forEach((node, id) => {
+    const metadata = node.get('metadata');
+    if (!record(metadata)) return;
+    if (metadata['chargenId'] === source) sourceNode = id;
+    if (metadata['chargenId'] === target) targetNode = id;
+  });
+  if (sourceNode && targetNode && typeof relationship === 'string')
+    doc.getMap('edges').delete(crossLinkEdgeId(sourceNode, targetNode, relationship));
 }

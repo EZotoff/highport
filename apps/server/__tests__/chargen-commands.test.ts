@@ -3,6 +3,12 @@ import Fastify from 'fastify';
 import * as Y from 'yjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerChargenCommandRoutes } from '../src/routes/chargen-commands.js';
+import {
+  acceptLink,
+  crossLinkEdgeId,
+  map,
+  removeLinkEdge,
+} from '../src/services/chargen-command.js';
 
 const mocks = vi.hoisted(() => ({ members: vi.fn(), insert: vi.fn(), connect: vi.fn() }));
 vi.mock('../src/db/client.js', () => ({
@@ -75,6 +81,37 @@ describe('chargen command authorization', () => {
     decision: 'accepted',
   };
   const resolveUrl = '/api/chargen/camp/session/drafts/draft/resolve';
+
+  it('preserves GM rejection and repairs accepted edges through the authorized accept service', () => {
+    // Given
+    const doc = fixture();
+    const link = map(map(doc.getMap('chargen').get('crossCharacterLinks')).get('link'));
+    link.set('relationship', 'Rival');
+    for (const [nodeId, characterId] of [
+      ['node-a', 'char-a'],
+      ['node-b', 'char-b'],
+    ]) {
+      const node = new Y.Map<unknown>();
+      doc.getMap('nodes').set(nodeId, node);
+      node.set('metadata', { chargenId: characterId });
+    }
+    // When / Then
+    doc.transact(() => {
+      acceptLink(doc, 'link', 'player-a');
+      acceptLink(doc, 'link', 'player-b');
+    });
+    const id = crossLinkEdgeId('node-a', 'node-b', 'Rival');
+    expect(id).toBe(crossLinkEdgeId('node-b', 'node-a', 'Rival'));
+    expect(doc.getMap('edges').has(id)).toBe(true);
+    doc.transact(() => {
+      link.set('resolution', { status: 'rejected', by: 'gm' });
+      removeLinkEdge(doc, link);
+      acceptLink(doc, 'link', 'player-a');
+    });
+    expect(link.get('status')).toBe('rejected');
+    expect(doc.getMap('edges').size).toBe(0);
+    doc.destroy();
+  });
 
   it('rejects resolution when no token is supplied', async () => {
     // Given

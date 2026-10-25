@@ -7,6 +7,7 @@ import {
   getAllCharacters,
   setBackgroundSkills,
   advanceStatus,
+  getEntityPool,
 } from '../lib/chargen/state';
 import type { CareerTermResult, AIProvenance } from '../lib/chargen/types';
 
@@ -25,7 +26,8 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock('../lib/ydoc', () => ({
+vi.mock('../lib/ydoc', async () => ({
+  ...(await vi.importActual<typeof import('../lib/ydoc')>('../lib/ydoc')),
   getYDoc: mocks.mockGetYDoc,
 }));
 
@@ -118,6 +120,28 @@ describe('Chargen Flow Integration', () => {
       expect(edgeArg.source_id).toBe('char-1');
       expect(edgeArg.target_id).toBe(result.graphNodeId);
       expect(edgeArg.relation_label).toBe('Allied with');
+    });
+
+    it('emits one update containing graph node, edge and pool entry when spawning', async () => {
+      // Given
+      const real = await vi.importActual<typeof import('../lib/yjs-helpers')>('../lib/yjs-helpers');
+      mocks.mockAddNode.mockImplementationOnce(real.addNode);
+      mocks.mockAddEdge.mockImplementationOnce(real.addEdge);
+      const updates: Uint8Array[] = [];
+      doc.on('update', (update: Uint8Array) => updates.push(update));
+      // When
+      const entity = spawnEntity({
+        spawn: { type: 'npc', relationship: 'ally', required: false },
+        name: 'Atomic NPC',
+        characterId: 'char-1',
+        termNumber: 1,
+        eventRoll: 6,
+      });
+      // Then
+      expect(updates).toHaveLength(1);
+      expect(doc.getMap('nodes').has(entity.graphNodeId)).toBe(true);
+      expect(doc.getMap('edges').size).toBe(1);
+      expect(getEntityPool(doc).map((entry) => entry.graphNodeId)).toEqual([entity.graphNodeId]);
     });
 
     it('stores provenance with source ai on the graph node when provided', () => {

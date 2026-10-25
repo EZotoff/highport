@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  yjs: ^13.6.0
+  yjs: ~13.6.29
 
 importers:
 
@@ -66,7 +66,7 @@ importers:
         specifier: ^8.19.0
         version: 8.19.0
       yjs:
-        specifier: ^13.6.0
+        specifier: ~13.6.29
         version: 13.6.29
     devDependencies:
       '@types/bcryptjs':
@@ -166,7 +166,7 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(yjs@13.6.29)
       yjs:
-        specifier: ^13.6.0
+        specifier: ~13.6.29
         version: 13.6.29
     devDependencies:
       '@playwright/test':
@@ -1195,19 +1195,19 @@ packages:
   '@hocuspocus/extension-database@2.15.3':
     resolution: {integrity: sha512-+PVlPwfdVyOase68WEBb105ZwglhCLVeGpyNa3uwnmH+Ers7OKGLma2SDMKn3Vcb5oHzTzEGx7jNt+32KTEKXA==}
     peerDependencies:
-      yjs: ^13.6.0
+      yjs: ~13.6.29
 
   '@hocuspocus/provider@2.15.3':
     resolution: {integrity: sha512-oadN05m+KL4ylNKVo5YspNG4MXkT2Y+FUFzrgigpQeTjQibkPUwCNmUnkUxMgrGRgxb+O0lJCfirFIJMxedctA==}
     peerDependencies:
       y-protocols: ^1.0.6
-      yjs: ^13.6.0
+      yjs: ~13.6.29
 
   '@hocuspocus/server@2.15.3':
     resolution: {integrity: sha512-Ju4ty4/7JtmvivcP7gKReOLf8KrFwN7Yx/5VhXYh4TRULy4kSo2fsDVUaluPp0neZa6PbVhizJuzlOim73IEbQ==}
     peerDependencies:
       y-protocols: ^1.0.6
-      yjs: ^13.6.0
+      yjs: ~13.6.29
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -4856,13 +4856,13 @@ packages:
     resolution: {integrity: sha512-9oCFRSPPzBK7/w5vOkJBaVCQZKHXB/v6SIT+WYhnJxlEC61juqG0hBrAf+y3gmSMLFLwICNH9nQ53uscuse6Hg==}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
     peerDependencies:
-      yjs: ^13.6.0
+      yjs: ~13.6.29
 
   y-protocols@1.0.7:
     resolution: {integrity: sha512-YSVsLoXxO67J6eE/nV4AtFtT3QEotZf5sK5BHxFBXso7VDUT3Tx07IfA6hsu5Q5OmBdMkQVmFZ9QOA7fikWvnw==}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
     peerDependencies:
-      yjs: ^13.6.0
+      yjs: ~13.6.29
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}

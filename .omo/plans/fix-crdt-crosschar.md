@@ -78,7 +78,7 @@ Edge invariant: an `accepted` link has AT MOST ONE edge between its node pair, w
 
 ## Todos
 
-- [ ] 1. [F01-1 + F03-1, TEST-FIRST] Add failing two-doc concurrent dual-acceptance regression test — expect RED on current code.
+- [x] 1. [F01-1 + F03-1, TEST-FIRST] Add failing two-doc concurrent dual-acceptance regression test — expect RED on current code.
   - Files: `apps/web/__tests__/cross-character-proposals.test.tsx` (new `describe('concurrent dual-acceptance across synced docs')` block; no React rendering needed).
   - Approach — build the repro from `.sisyphus/reviews/chargen-20261023/01-crdt-sync.md` forced-check e (REPRODUCED exit=0): create `docA = new Y.Doc()`, `docB = new Y.Doc()`; exchange updates bidirectionally with `Y.encodeStateAsUpdate` / `Y.applyUpdate` helpers defined locally in the test file (`const sync = (a: Y.Doc, b: Y.Doc) => { a.on('update', u => Y.applyUpdate(b, u, 'remote')); b.on('update', u => Y.applyUpdate(a, u, 'remote')); }` — wire BEFORE seeding, mirroring the lane repro). Seed identical link via `addCrossCharacterLink` on docA, sync to docB. Then WITHOUT syncing in between: `acceptCrossCharacterLink(docA, linkId, 'char-1')` and `acceptCrossCharacterLink(docB, linkId, 'char-2')`. Sync both ways. IMPORTANT (Momus round-1 fix #1): since neither accept runs post-merge, edge materialization needs the reconciliation path — the test MUST call `reconcileCrossCharacterLinkEdges(docA); reconcileCrossCharacterLinkEdges(docB);` after the final sync, mirroring the production hooks wiring. Assert on both docs after that: merged `acceptedBy` contains both `char-1` and `char-2`; derived `status === 'accepted'`; exactly one edge exists in `getEdgesMap(doc)` between the two finalized character nodes (create + finalize both characters first via `createCharacter` + `createCharacterNode` as in the existing edge test at lines 73-80).
   - RED-safety for the not-yet-existing export (Momus round-2 non-blocking fix): do NOT add a top-level static import of `reconcileCrossCharacterLinkEdges` — a missing named export can fail the whole file at ESM link time and break the existing 45 tests. Instead, inside the new test body use a dynamic import: `const { reconcileCrossCharacterLinkEdges } = await import('../lib/chargen/state');` then first assertion `expect(typeof reconcileCrossCharacterLinkEdges).toBe('function')` — pre-Task-2 this assertion fails cleanly as the RED signal (test-level failure, file still loads, other tests unaffected); post-Task-2 it passes and the edge assertions run.
@@ -86,51 +86,51 @@ Edge invariant: an `accepted` link has AT MOST ONE edge between its node pair, w
   - Test: this IS the test task. Run: `pnpm --filter web exec vitest run __tests__/cross-character-proposals.test.tsx`.
   - Expected NOW: new tests FAIL (status stuck `'pending'`, no edge; reject does not remove edge). Existing 45 tests still pass. Commit the RED test as `test(chargen): add failing two-doc concurrent dual-acceptance repro (F01-1/F01-3)`.
 
-- [ ] 2. [F01-1] Derive status from merged `acceptedBy`; add post-merge edge reconciliation; fix concurrent dual-acceptance.
+- [x] 2. [F01-1] Derive status from merged `acceptedBy`; add post-merge edge reconciliation; fix concurrent dual-acceptance.
   - Files: `apps/web/lib/chargen/state.ts` — `yMapToCrossCharacterLink` (:606-621), `acceptCrossCharacterLink` (:720-738), `addCrossCharacterLink` (:627-649), plus NEW exported `reconcileCrossCharacterLinkEdges(doc: Y.Doc): void`; `apps/web/lib/chargen/hooks.ts` — `useCrossCharacterLinks` (:215-235).
   - Approach: implement the target state model above. (1) `yMapToCrossCharacterLink` reads `resolution` (plain object stored under key `'resolution'`, validate shape without `as any` — narrow via `typeof` guards) and computes status per the derivation rule, ignoring the stored `status` scalar. (2) NEW `reconcileCrossCharacterLinkEdges(doc)`: for every link in `getCrossCharacterLinks(doc)` with derived status `'accepted'`, ensure the deterministic edge exists between the node pair (via `createCrossCharacterLinkEdge`, idempotent per Task 4 — skip when either node is missing). Run the whole sweep in one `doc.transact`, origin `'cross-character-link-reconcile'`; must be a strict no-op (zero writes) when all accepted links already have edges. `getCrossCharacterLinks` itself is NOT modified — it stays a pure read; reconcile calling it is safe because nothing calls reconcile from within the read path (the single production wiring point is the hooks layer, per (5); Momus round-2 fix #1). (3) `acceptCrossCharacterLink`: call `reconcileCrossCharacterLinkEdges(doc)` (or inline the ensure-edge step) BEFORE the `acceptedBy.has(characterId)` early return — the early return must NOT block repairing an accepted-by-both link that is missing its edge (Momus round-1 fix #2). Order inside the function: reconcile/repair first, then if this call changes nothing (already accepted by this character AND edge present) return as a no-op; otherwise proceed: `acceptedBy.set(characterId, true)`, compute `bothAccepted` INSIDE `doc.transact` re-reading `acceptedBy` after the set, write derived `status` cache scalar, and ensure edge when derived-accepted. (4) `addCrossCharacterLink` stores `resolution: undefined` absent; no other change (pre-attach fix is Task 6). (5) SINGLE production wiring point (Momus round-2 fix #1): `useCrossCharacterLinks`' `updateLinks` callback in `hooks.ts` calls `reconcileCrossCharacterLinkEdges(doc)` before `setLinks`, so any replica repairs its edges on the first UI read after a merge. Do NOT add reconcile invocations anywhere else (not in `getCrossCharacterLinks`, not in a raw doc observer, not in GMControlPanel).
   - Types: add `resolution?: { status: 'accepted' | 'rejected'; by: 'gm' }` to `CrossCharacterLinkProposal` in `apps/web/lib/chargen/types.ts` (additive, optional).
   - Test: the Task 1 dual-acceptance test flips GREEN (status derived on read; reconcile materializes the single edge on both docs). Existing single-doc dual-accept test (lines 42-71) must still pass unchanged; the existing re-accept no-op assertion (lines 61-64) still holds because reconcile is a no-op when the edge already exists.
   - Verify: `pnpm --filter web exec vitest run __tests__/cross-character-proposals.test.tsx` → all pass. Done-criteria (F01-1): two-doc concurrent dual-accept converges to `status='accepted'` with exactly one edge on both docs after `reconcileCrossCharacterLinkEdges`; `acceptCrossCharacterLink` repairs a missing edge even when the accepting character is already recorded.
 
-- [ ] 3. [F01-3] Guard GM resolution: transition rules + edge coupling in-transact.
+- [x] 3. [F01-3] Guard GM resolution: transition rules + edge coupling in-transact.
   - Files: `apps/web/lib/chargen/state.ts` — `resolveCrossCharacterLink` (:651-658).
   - Approach: inside a single `doc.transact`: (1) read current DERIVED status (via the Task 2 derivation, computed from `acceptedBy` + existing `resolution`); (2) write `resolution = { status: accepted ? 'accepted' : 'rejected', by: 'gm' }`; (3) couple the edge: if final status is `accepted`, attempt `createCrossCharacterLinkEdge` (idempotent); if final status is `rejected` and an edge with the deterministic cross-link id exists between the node pair, delete it (`getEdgesMap(doc).delete(edgeId)`); (4) update the `status` cache scalar. Idempotent re-resolve to the same status is a no-op (skip the transact if unchanged).
   - Test: Task 1's reject-couples-edge assertion flips GREEN. Add one sequential test: GM accepts a pending link outright → status `accepted`, edge exists; then GM rejects → edge removed, status `rejected`.
   - Verify: `pnpm --filter web exec vitest run __tests__/cross-character-proposals.test.tsx` and `pnpm --filter web exec vitest run __tests__/GMControlPanel.test.tsx` → pass. Done-criteria (F01-3): no status write happens outside a transact that also reconciles the edge; accepted→rejected removes the edge deterministically.
 
-- [ ] 4. [F01-5] Deterministic cross-link edge ids; idempotent edge creation.
+- [x] 4. [F01-5] Deterministic cross-link edge ids; idempotent edge creation.
   - Files: `apps/web/lib/chargen/state.ts` — new exported helper `crossLinkEdgeId(sourceNodeId: string, targetNodeId: string, relationship: string): string` (implementation: sort the two node ids lexicographically, concatenate with relationship, hash — use a small synchronous hash, e.g. FNV-1a over the UTF-8 bytes formatted as hex, prefixed `xlink-`; NO async, NO new dependency); `createCrossCharacterLinkEdge` (:683-718).
   - Files: `apps/web/lib/chargen/finalize.ts` (:78-119) — the accepted-cross-link edge creation loop.
   - Approach: in `createCrossCharacterLinkEdge`, replace the full edge-scan TOCTOU check with `edges.has(crossLinkEdgeId(...))`; use the deterministic id for the `GraphEdge`. Keep the existing scan as a secondary guard for legacy duplicates ONLY (one pass, same function) — or, simpler and preferred: keep the scan but ALSO create with the deterministic id; the `has()` check makes concurrent creates collapse. In `finalize.ts`, replace the local scan+`crypto.randomUUID()` with the same `crossLinkEdgeId` id and `has()` guard (the finalize loop's edge is between the same node pair, so ids collide exactly when they should).
   - Test: add to `cross-character-proposals.test.tsx` a two-doc test: finalize both characters concurrently on docA and docB for an already-accepted link, sync, assert exactly one edge (no duplicate).
   - Verify: `pnpm --filter web exec vitest run __tests__/cross-character-proposals.test.tsx` and `pnpm --filter web exec vitest run lib/chargen/__tests__` → pass. Done-criteria (F01-5): concurrent finalize produces a single edge; `crossLinkEdgeId` is pure and exported for tests.
 
-- [ ] 5. [F01-2] Atomic `spawnEntity`: one transaction for graph node + edge + entity pool.
+- [x] 5. [F01-2] Atomic `spawnEntity`: one transaction for graph node + edge + entity pool.
   - Files: `apps/web/lib/chargen/entity-spawner.ts` (:57-73).
   - Approach: wrap ALL THREE writes in one `doc.transact(() => { addNode(doc, node); addEdge(doc, edge); addEntityToPool(doc, {...}); }, 'chargen-spawn')`. Nested `doc.transact` inside `addEntityToPool` (`state.ts:388-399`) merges into the outer transaction (Yjs semantics) — do NOT change `addEntityToPool`'s signature. The portrait attach in `EntitySpawnForm.tsx:261-268` already runs after `spawnEntity` returns; no change needed there — CONFIRM this ordering survives (the await-gap cited in the finding was between pool write and term write; with pool inside the atomic block the gap no longer splits shared state).
   - Residual (documented, NOT fixed): `apps/web/components/chargen/steps/TermResolutionStep.tsx:326-334` term-record write remains a separate transaction; a crash between it and spawn leaves a graph node + pool entry without a term record — acceptable per lane sketch (term record is recoverable bookkeeping; orphan nodes were the durable harm).
   - Test: extend `apps/web/__tests__/chargen-flow-integration.test.ts` (near existing spawn tests at :94): spawn, then assert node, edge, and pool entry all exist AND `doc.transaction` fired as ONE update — assert via collecting `doc.on('update', ...)` events during `spawnEntity` and expecting exactly 1 update emission for the three writes.
   - Verify: `pnpm --filter web exec vitest run __tests__/chargen-flow-integration.test.ts` → pass, existing 3 spawn tests intact. Done-criteria (F01-2): graph + pool written in a single update; portrait attach strictly after.
 
-- [ ] 6. [F01-4] Eliminate pre-attach Y.Map mutations; pin yjs.
+- [x] 6. [F01-4] Eliminate pre-attach Y.Map mutations; pin yjs.
   - Files: `apps/web/lib/chargen/state.ts` — `createCharacter` (:148-157), `addEntityToPool` (:388-398), `addCrossCharacterLink` (:641-642); `apps/web/lib/chargen/persistence.ts` — `restoreCharacterSnapshot`/`writeCharacterToMap` (:70-82); `apps/web/package.json` (yjs dep).
   - Approach: apply the AGENTS.md attach-first pattern everywhere a `new Y.Map()` is populated before insertion: attach the empty map (or attach-and-return) FIRST, then set entries inside the same `doc.transact`. Concretely: (1) `createCharacter`: `characters.set(charId, charMap)` where `charMap = new Y.Map()` — restructure to set the empty map, then populate in the same transact (attach-then-mutate within one transact is the sanctioned pattern). (2) `addEntityToPool`: same restructure. (3) `addCrossCharacterLink`: replace `new Y.Map<unknown>(Object.entries(fullLink))` + pre-attach `acceptedBy` set (:641-642) with: create empty `linkMap`, inside transact `linksMap.set(linkId, linkMap)` then `linkMap.set('acceptedBy', attachedNestedMap)` where the nested acceptedBy Y.Map is also attached to `linkMap` BEFORE its keys are set. (4) `persistence.ts` `writeCharacterToMap` call site: same attach-first restructure. (5) Pin `yjs` to `~13.6.29` in `apps/web/package.json` (preserve any `y-indexeddb`/partner constraints; run `pnpm install` and commit the lockfile).
   - Test: existing suites are the regression net — `apps/web/__tests__/chargen-state.test.ts` (33 tests) and `apps/web/lib/chargen/__tests__/persistence.test.ts` exercise all four write paths. Add one assertion test to `cross-character-proposals.test.tsx`: after `addCrossCharacterLink` + doc clone via `Y.encodeStateAsUpdate` round-trip into a fresh doc, `yMapToCrossCharacterLink` still returns `acceptedBy` keys (prelimContent round-trip guard).
   - Verify: `pnpm --filter web exec vitest run lib/chargen/__tests__ __tests__/chargen-state.test.ts` and `pnpm --filter web exec vitest run __tests__/cross-character-proposals.test.tsx` → pass. Done-criteria (F01-4): `grep -n "new Y.Map(" apps/web/lib/chargen/state.ts apps/web/lib/chargen/persistence.ts` shows no construction that is populated before its attachment line within the same function; yjs pinned.
 
-- [ ] 7. [F03-2] Test the generation→Yjs write path.
+- [x] 7. [F03-2] Test the generation→Yjs write path.
   - Files: NEW `apps/web/__tests__/useNarrative-yjs-write.test.ts`. `apps/web/__tests__/useNarrative.test.ts` is LEFT UNTOUCHED (Momus round-2 fix #2: replacing its file-level `../lib/chargen/state` mock with importActual would break its existing `addCrossCharacterLink` spy assertion at :268-295).
   - Approach: in the new file, mock ONLY `../lib/ydoc` (`vi.mock('../lib/ydoc', ...)` using `vi.importActual` spread + `getYDoc: vi.fn()` override, same pattern as `cross-character-proposals.test.tsx:26-32`) returning a real `Y.Doc`; do NOT mock `../lib/chargen/state` — real state functions run against the real doc. Mock `narrativeApi`/`useAllCharacters` only as needed to drive `useCrossCharacterLinks(...).refresh()` from `../lib/chargen/useNarrative` (mock its external HTTP-layer dependencies the same way `useNarrative.test.ts` does, without touching its state mock). Then: seed one existing link via the real `addCrossCharacterLink`, make the mocked `generateCrossCharacterLinks` return one NEW proposal plus one duplicate of the seeded link, call `refresh()`, and assert (1) `getCrossCharacterLinks(doc)` contains exactly the new proposal (dedup respected), (2) the link's `id`/`status: 'pending'`/`generatedAt` were written INTO the Yjs `chargen.crossCharacterLinks` map (read the raw map, not hook state, to pin the Yjs write path per the finding).
   - Test: this IS the test task; expect GREEN immediately (no product change) — if it fails, the generation write path is already broken and STOP + report instead of "fixing" useNarrative beyond scope.
   - Verify: `pnpm --filter web exec vitest run __tests__/useNarrative-yjs-write.test.ts __tests__/useNarrative.test.ts` → both pass; the pre-existing useNarrative tests are byte-unchanged. Done-criteria (F03-2): a regression deleting the `addCrossCharacterLink` call at `useNarrative.ts:193` fails the new file's test.
 
-- [ ] 8. [F03-3] Component test: player accept path goes through `acceptCrossCharacterLink`.
+- [x] 8. [F03-3] Component test: player accept path goes through `acceptCrossCharacterLink`.
   - Files: `apps/web/__tests__/cross-character-proposals.test.tsx` (extend the existing mocked-hooks component block).
   - Approach: render `CrossCharacterProposalList` with a pending proposal (mock `useCrossCharacterLinks`/`useAllCharacters` as the file already does at :21-24), click the accept control, and assert `acceptCrossCharacterLink` was called with `(doc, proposal.id, <characterId>)` (spy via `vi.spyOn` on the state module or assert on resulting Y.Doc state — prefer asserting real Y.Doc state after unmocking state module: status derived-accepted flow for the accepting party). Note in a code comment at `GMControlPanel.tsx:133` (comment only, no behavior change) that GM accept is an intentional GM-authority resolution, distinct from the player dual-acceptance gate.
   - Verify: `pnpm --filter web exec vitest run __tests__/cross-character-proposals.test.tsx` and `pnpm --filter web exec vitest run __tests__/GMControlPanel.test.tsx` → pass. Done-criteria (F03-3): the player-side dual-acceptance gate has direct component-level coverage, not only indirect coverage.
 
-- [ ] 9. [F03-5] Dedicated tests for `hooks.ts` observer lifecycle.
+- [x] 9. [F03-5] Dedicated tests for `hooks.ts` observer lifecycle.
   - Files: new `apps/web/__tests__/chargen-hooks.test.tsx`.
   - Approach: use `@testing-library/react` `renderHook`. Mock `getYDoc` to a fresh real `Y.Doc` (importActual pattern). Cover at minimum `useAllCharacters` (:68-92) and `useCrossCharacterLinks` (:215-235): (1) initial render reflects seeded state; (2) a Yjs write AFTER mount triggers re-render with new data (`act(() => doc.transact(...))`); (3) `unmount()` removes the observer — write to the doc after unmount and assert no state update / no React warning (assert via a spy on `unobserveDeep` being called, plus rerender-absence where feasible). Follow the existing mock style in `cross-character-proposals.test.tsx:26-32`.
   - Verify: `pnpm --filter web exec vitest run __tests__/chargen-hooks.test.tsx` → pass. Done-criteria (F03-5): every hook with an observe/observeDeep subscription has an unmount-cleanup assertion.
@@ -146,4 +146,40 @@ Edge invariant: an `accepted` link has AT MOST ONE edge between its node pair, w
 
 ## Execution Record
 
-Execution baseline: <full HEAD SHA of the execution worktree — or the repo, if no worktree>
+Execution baseline: 5f952bf (branch agent/sisyphus/chargen-fix-a, on top of merged Plans C and B)
+
+Todos 1–9 implemented. Per-todo verification: 1 RED (2 expected failures, 5 existing pass); 2/3 intermediate edge-ID dependencies remained RED until 4; 4 GREEN (34 web tests plus 6 authorized-command tests); 5 RED (3 updates), then GREEN (11 tests); 6 GREEN (57 tests); 7 GREEN (14 tests); 8 GREEN (21 tests); 9 GREEN (7 tests). LSP: no errors in all 14 changed TypeScript files. F1–F4 intentionally not run by worker.
+
+Deviations: server command accept/resolve/edge helpers updated alongside client state to preserve merged Plan C authorization semantics. Stable edge-id helper introduced in 3 for rejection, creation switched in 4. Root Yjs override also needed pinning; additive follow-up commit required because history-rewrite safety blocked folding it into 6. Original useNarrative.test.ts and Plan B/D UI behavior untouched. Concurrent finalize test fixes existing node identities to isolate edge convergence, not concurrent creation of distinct character nodes.
+
+Changed-file inventory (workspace-relative):
+
+```text
+.omo/plans/fix-crdt-crosschar.md
+apps/server/__tests__/chargen-commands.test.ts
+apps/server/src/routes/chargen-commands.ts
+apps/server/src/services/chargen-command.ts
+apps/web/__tests__/chargen-flow-integration.test.ts
+apps/web/__tests__/cross-character-proposals.test.tsx
+apps/web/__tests__/useNarrative-yjs-write.test.ts
+apps/web/__tests__/chargen-hooks.test.tsx
+apps/web/components/chargen/GMControlPanel.tsx
+apps/web/lib/chargen/entity-spawner.ts
+apps/web/lib/chargen/finalize.ts
+apps/web/lib/chargen/hooks.ts
+apps/web/lib/chargen/persistence.ts
+apps/web/lib/chargen/state.ts
+apps/web/lib/chargen/types.ts
+apps/web/package.json
+package.json
+pnpm-lock.yaml
+```
+
+Size audit: state.ts 767, cross-character-proposals.test.tsx 363, chargen-flow-integration.test.ts 314, GMControlPanel.tsx 594 nonblank/non-line-comment lines; existing oversized modules retained under the binding no-refactor scope. Types (229) and finalize (203) are in the warning band. Remaining changed TS files are below 200. Self-review: no new untyped escapes, production routing preserved, real-Yjs regressions cover convergence/atomicity, no speculative refactor.
+
+<!-- F-box verdicts recorded by the orchestrator, 2026-10-25 -->
+
+F#1: APPROVE — bash vitest run (9 chargen files incl. new useNarrative-yjs-write + chargen-hooks) exit 0; 68 passed (baseline 45/45 exceeded)
+F#2: APPROVE — bash `pnpm --filter @highport/web test` exit 0; 286 passed
+F#3: APPROVE — repair cycle 2 (7c8e90b): `pnpm --filter @highport/web typecheck` exit 0; `as any` count in apps/web/lib/chargen = 1, pre-existing in useChargenNotifications.ts (untouched by branch) → zero NEW occurrences per plan wording
+F#4: APPROVE — closure map: F01-1→cross-character-proposals.test.tsx:134,200(repair+concurrent block); F01-2→chargen-flow-integration.test.ts:125(single-update spawn); F01-3→:110(GM acceptance + rejection/edge coupling); F01-4→:«retains acceptedBy keys when an attached proposal round-trips through Yjs» (d6fb978); F01-5→:220(concurrent finalization edge collapse); F03-1→:200(two-doc synced describe); F03-2→useNarrative-yjs-write.test.ts (14 tests); F03-3→fab3fc4 component-click gate; F03-5→chargen-hooks.test.ts (7 lifecycle tests). Anti-regression scratch: disabling hooks-layer reconcile does NOT flip todo-1 tests because acceptCrossCharacterLink self-repairs (state.ts:797, intentional accept-repair path per design) — hooks wiring present (hooks.ts:226) but tested scenarios are covered by accept-path repair; recorded verbatim.

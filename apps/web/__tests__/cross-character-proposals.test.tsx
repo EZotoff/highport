@@ -10,6 +10,7 @@ import {
   removeCrossCharacterLink,
   createCharacter,
   getCharacter,
+  resolveCrossCharacterLink,
 } from '../lib/chargen/state';
 import { createCharacterNode } from '../lib/chargen/finalize';
 import { getNodesMap, getEdgesMap, getYDoc } from '../lib/ydoc';
@@ -106,6 +107,57 @@ describe('Cross-character link player-to-player flow', () => {
     expect(edge.get('relation_label')).toBe('Rival');
   });
 
+  it('allows GM acceptance without player votes and couples rejection to the edge', async () => {
+    // Given
+    const source = createCharacter(doc, 'player-1', 'Zara');
+    const target = createCharacter(doc, 'player-2', 'Milo');
+    const a = getCharacter(doc, source);
+    const b = getCharacter(doc, target);
+    if (!a || !b) throw new Error('Missing fixture characters');
+    createCharacterNode(a);
+    createCharacterNode(b);
+    const id = addCrossCharacterLink(doc, {
+      sourceCharId: source,
+      targetCharId: target,
+      relationship: 'Rival',
+      description: '',
+    });
+    // When / Then
+    await resolveCrossCharacterLink(doc, id, true);
+    expect(getCrossCharacterLinks(doc)[0].status).toBe('accepted');
+    expect(getEdgesMap(doc).size).toBe(1);
+    await resolveCrossCharacterLink(doc, id, false);
+    expect(getCrossCharacterLinks(doc)[0].status).toBe('rejected');
+    expect(getEdgesMap(doc).size).toBe(0);
+  });
+
+  it('repairs a missing edge when an already-recorded player accepts again', async () => {
+    // Given
+    const source = createCharacter(doc, 'player-1', 'Zara');
+    const target = createCharacter(doc, 'player-2', 'Milo');
+    const a = getCharacter(doc, source);
+    const b = getCharacter(doc, target);
+    if (!a || !b) throw new Error('Missing fixture characters');
+    createCharacterNode(a);
+    createCharacterNode(b);
+    const id = addCrossCharacterLink(doc, {
+      sourceCharId: source,
+      targetCharId: target,
+      relationship: 'Rival',
+      description: '',
+      acceptedBy: [source, target],
+    });
+    // When
+    await acceptCrossCharacterLink(doc, id, source);
+    // Then
+    expect(getCrossCharacterLinks(doc)[0].status).toBe('accepted');
+    expect(getEdgesMap(doc).size).toBe(1);
+    const updates = vi.fn();
+    doc.on('update', updates);
+    await acceptCrossCharacterLink(doc, id, source);
+    expect(updates).not.toHaveBeenCalled();
+  });
+
   it('creates graph edge during finalization if link was already accepted', async () => {
     // Create two characters in Yjs
     const char1Id = createCharacter(doc, 'player-1', 'Zara');
@@ -142,6 +194,131 @@ describe('Cross-character link player-to-player flow', () => {
     expect(edge.get('source_id')).toBe(node2.graphNodeId);
     expect(edge.get('target_id')).toBe(node1.graphNodeId);
     expect(edge.get('relation_label')).toBe('Rival');
+  });
+});
+
+describe('concurrent dual-acceptance across synced docs', () => {
+  it('retains acceptedBy keys when an attached proposal round-trips through Yjs', () => {
+    // Given
+    const doc = new Y.Doc();
+    const clone = new Y.Doc();
+    addCrossCharacterLink(doc, {
+      sourceCharId: 'char-1',
+      targetCharId: 'char-2',
+      relationship: 'Rival',
+      description: '',
+      acceptedBy: ['char-1'],
+    });
+    // When
+    Y.applyUpdate(clone, Y.encodeStateAsUpdate(doc));
+    // Then
+    expect(getCrossCharacterLinks(clone)[0].acceptedBy).toEqual(['char-1']);
+    doc.destroy();
+    clone.destroy();
+  });
+
+  it('collapses concurrent finalization edges for the same finalized node pair', async () => {
+    // Given: both replicas know the same finalized graph identities.
+    const docA = new Y.Doc();
+    const docB = new Y.Doc();
+    vi.mocked(getYDoc).mockReturnValue(docA);
+    const source = createCharacter(docA, 'player-1', 'Zara');
+    const target = createCharacter(docA, 'player-2', 'Milo');
+    const a = getCharacter(docA, source);
+    const b = getCharacter(docA, target);
+    if (!a || !b) throw new Error('Missing fixture characters');
+    const sourceNodeId = '11111111-1111-4111-8111-111111111111';
+    const targetNodeId = '22222222-2222-4222-8222-222222222222';
+    const uuid = vi.spyOn(crypto, 'randomUUID');
+    uuid.mockReturnValueOnce(sourceNodeId);
+    createCharacterNode(a);
+    uuid.mockReturnValueOnce(targetNodeId);
+    createCharacterNode(b);
+    addCrossCharacterLink(docA, {
+      sourceCharId: source,
+      targetCharId: target,
+      relationship: 'Rival',
+      description: '',
+      acceptedBy: [source, target],
+    });
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    // When: each replica finalizes one party while disconnected.
+    try {
+      uuid.mockReturnValueOnce(sourceNodeId);
+      createCharacterNode(a);
+      vi.mocked(getYDoc).mockReturnValue(docB);
+      uuid.mockReturnValueOnce(targetNodeId);
+      createCharacterNode(b);
+    } finally {
+      uuid.mockRestore();
+    }
+    Y.applyUpdate(docA, Y.encodeStateAsUpdate(docB));
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    // Then
+    expect(getEdgesMap(docA).size).toBe(1);
+    expect(getEdgesMap(docB).size).toBe(1);
+    docA.destroy();
+    docB.destroy();
+  });
+
+  async function concurrentAcceptance() {
+    const docA = new Y.Doc();
+    const docB = new Y.Doc();
+    createSession(docA, 'campaign-123', 'gm-user-1');
+    const source = createCharacter(docA, 'player-1', 'Zara');
+    const target = createCharacter(docA, 'player-2', 'Milo');
+    vi.mocked(getYDoc).mockReturnValue(docA);
+    const sourceCharacter = getCharacter(docA, source);
+    const targetCharacter = getCharacter(docA, target);
+    if (!sourceCharacter || !targetCharacter) throw new Error('Missing fixture characters');
+    createCharacterNode(sourceCharacter);
+    createCharacterNode(targetCharacter);
+    const linkId = addCrossCharacterLink(docA, {
+      sourceCharId: source,
+      targetCharId: target,
+      relationship: 'Rival',
+      description: '',
+    });
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    await acceptCrossCharacterLink(docA, linkId, source);
+    await acceptCrossCharacterLink(docB, linkId, target);
+    const updateA = Y.encodeStateAsUpdate(docA);
+    const updateB = Y.encodeStateAsUpdate(docB);
+    Y.applyUpdate(docA, updateB);
+    Y.applyUpdate(docB, updateA);
+    const { reconcileCrossCharacterLinkEdges } = await import('../lib/chargen/state');
+    expect(typeof reconcileCrossCharacterLinkEdges).toBe('function');
+    reconcileCrossCharacterLinkEdges(docA);
+    reconcileCrossCharacterLinkEdges(docB);
+    Y.applyUpdate(docA, Y.encodeStateAsUpdate(docB));
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    return { docA, docB, linkId, source, target };
+  }
+
+  it('converges to accepted with one edge when players accept offline', async () => {
+    // Given / When: isolated accepts followed by merge and explicit repair.
+    const { docA, docB, source, target } = await concurrentAcceptance();
+    // Then
+    for (const doc of [docA, docB]) {
+      expect(getCrossCharacterLinks(doc)[0].acceptedBy?.sort()).toEqual([source, target].sort());
+      expect(getCrossCharacterLinks(doc)[0].status).toBe('accepted');
+      expect(getEdgesMap(doc).size).toBe(1);
+      doc.destroy();
+    }
+  });
+
+  it('removes the accepted edge when GM rejects after convergence', async () => {
+    // Given
+    const { docA, docB, linkId } = await concurrentAcceptance();
+    // When
+    await resolveCrossCharacterLink(docA, linkId, false);
+    Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+    // Then
+    for (const doc of [docA, docB]) {
+      expect(getCrossCharacterLinks(doc)[0].status).toBe('rejected');
+      expect(getEdgesMap(doc).size).toBe(0);
+      doc.destroy();
+    }
   });
 });
 
@@ -191,6 +368,31 @@ describe('CrossCharacterProposalList Component', () => {
     render(<CrossCharacterProposalList currentCharId="char-1" />);
 
     expect(screen.getByText('No proposed links involving your character')).toBeDefined();
+  });
+
+  it('records only the current player vote when Accept is clicked', async () => {
+    // Given
+    const doc = new Y.Doc();
+    vi.mocked(getYDoc).mockReturnValue(doc);
+    const id = addCrossCharacterLink(doc, {
+      sourceCharId: 'char-1',
+      targetCharId: 'char-2',
+      relationship: 'Rival',
+      description: '',
+    });
+    vi.mocked(useCrossCharacterLinks).mockReturnValue(getCrossCharacterLinks(doc));
+    const { unmount } = render(<CrossCharacterProposalList currentCharId="char-2" />);
+    // When
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+    });
+    // Then
+    expect(getCrossCharacterLinks(doc)).toEqual([
+      expect.objectContaining({ id, status: 'pending', acceptedBy: ['char-2'] }),
+    ]);
+    expect(getEdgesMap(doc).size).toBe(0);
+    unmount();
+    doc.destroy();
   });
 
   it('renders proposals and handles Accept/Dismiss clicks', async () => {
