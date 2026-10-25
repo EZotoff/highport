@@ -22,7 +22,7 @@ def setup_dependencies():
 
 
 @pytest.mark.asyncio
-async def test_query_flow():
+async def test_query_flow(auth_headers):
     """Test full query flow with mocks."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -48,7 +48,7 @@ async def test_query_flow():
         response = await client.post(
             "/query",
             json={"query": "Where is the artifact?"},
-            headers={"X-User-Id": "user1", "X-Is-GM": "false"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -72,8 +72,7 @@ async def test_query_flow():
 
 
 @pytest.mark.asyncio
-async def test_query_scope_filtering():
-    """Test that scope headers are correctly passed to Pinecone filter."""
+async def test_query_scope_filtering(service_headers):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Access the injected mock to check call history
@@ -85,7 +84,7 @@ async def test_query_scope_filtering():
         await client.post(
             "/query",
             json={"query": "secret info"},
-            headers={"X-User-Id": "gm1", "X-Is-GM": "true"},
+            headers=service_headers,
         )
 
         # Verify query was called with correct filter
@@ -99,13 +98,14 @@ async def test_query_scope_filtering():
 
 
 @pytest.mark.asyncio
-async def test_empty_results():
+async def test_empty_results(auth_headers):
     """Test response when no documents are found."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post(
             "/query",
             json={"query": "unknown topic"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200

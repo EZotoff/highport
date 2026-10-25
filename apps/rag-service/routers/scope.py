@@ -6,11 +6,12 @@ Handles updating access_scope metadata for document vectors in Pinecone.
 from dataclasses import dataclass
 from typing import Protocol
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from auth import require_service
 from pydantic import BaseModel
 
 
-router = APIRouter(tags=["scope"])
+router = APIRouter(tags=["scope"], dependencies=[Depends(require_service)])
 
 
 class PineconeUpdateProtocol(Protocol):

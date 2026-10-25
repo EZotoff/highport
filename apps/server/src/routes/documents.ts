@@ -42,7 +42,10 @@ export async function registerDocumentRoutes(fastify: FastifyInstance): Promise<
       try {
         await fetch(`${RAG_SERVICE_URL}/update-scope`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RAG-Service-Secret': process.env.RAG_SERVICE_SECRET ?? '',
+          },
           body: JSON.stringify({ source_id: sourceId, access_scope: accessScope }),
         });
       } catch {

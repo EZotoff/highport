@@ -1,6 +1,7 @@
 """Portrait generation router for AI-powered character visualization."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from auth import require_principal
 
 from schemas.portrait import (
     ExtractTagsRequest,
@@ -10,7 +11,7 @@ from schemas.portrait import (
 )
 from services.portrait_generator import PortraitGenerator
 
-router = APIRouter(prefix="/ai/portraits", tags=["portraits"])
+router = APIRouter(prefix="/ai/portraits", tags=["portraits"], dependencies=[Depends(require_principal)])
 
 # Dependency override for testing
 _generator_override = None
