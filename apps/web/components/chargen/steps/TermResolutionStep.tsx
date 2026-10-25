@@ -27,6 +27,7 @@ import { SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
+import { applyForcedMusterOut } from '../../../lib/chargen/muster-out';
 import {
   applySkillGain,
   getRankInfo,
@@ -529,25 +530,12 @@ export default function TermResolutionStep({
   };
 
   const handleForcedMusterOut = () => {
-    const updatedTerms = [...character.terms];
-    const termUpdate: Partial<CareerTermResult> = {};
-    if (mishap) termUpdate.mishap = mishap;
-    if (generatedMishapDesc) {
-      const isLenient = gmApprovalMode === 'lenient';
-      termUpdate.mishapDescription = {
-        value: generatedMishapDesc,
-        source: 'ai',
-        mode: effectiveVerbosity,
-        status: isLenient ? 'accepted' : 'draft',
-        derivedFrom: `mishap-${mishap?.description?.slice(0, 30) ?? 'unknown'}`,
-        generatedAt: Date.now(),
-        pendingReviewBy: isLenient ? null : 'gm',
-      };
-    }
-    updatedTerms[character.terms.length - 1] = {
-      ...updatedTerms[character.terms.length - 1],
-      ...termUpdate,
-    };
+    const updatedTerms = applyForcedMusterOut(character.terms, {
+      mishap,
+      generatedMishapDesc,
+      verbosity: effectiveVerbosity,
+      gmApprovalMode,
+    });
     finishTerm(updatedTerms, 'mustering_out');
   };
 
