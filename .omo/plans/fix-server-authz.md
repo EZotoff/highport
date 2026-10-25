@@ -121,7 +121,7 @@ Environment gate first: `docker compose up -d` (PostgreSQL 18123) — required b
 
 ## Execution Record
 
-Execution baseline: <full HEAD SHA of the execution worktree — or the repo, if no worktree>
+Execution baseline: 0fe8d9064e54e2932831d8b1e65e355915312b0b (branch agent/sisyphus/chargen-fix-c)
 
 <!-- F-box verdicts are appended here by the orchestrator during execution, e.g.:
 F#1: APPROVE — bash `pnpm --filter server test` exit 0 -->
