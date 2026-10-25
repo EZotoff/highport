@@ -57,20 +57,20 @@ export function spawnEntity(input: SpawnEntityInput): SpawnedEntityRef {
   doc.transact(() => {
     addNode(doc, node);
     addEdge(doc, edge);
-  }, 'chargen-spawn');
 
-  addEntityToPool(doc, {
-    type: input.spawn.type as 'npc' | 'location' | 'item' | 'secret',
-    createdBy: input.characterId,
-    createdFor: input.characterId,
-    createdDuring: { termNumber: input.termNumber, eventRoll: input.eventRoll },
-    ownedBy: input.characterId,
-    name: input.name,
-    description: input.description,
-    metadata: { relationship: input.spawn.relationship },
-    graphNodeId: nodeId,
-    claimedBy: [input.characterId],
-  });
+    addEntityToPool(doc, {
+      type: input.spawn.type as 'npc' | 'location' | 'item' | 'secret',
+      createdBy: input.characterId,
+      createdFor: input.characterId,
+      createdDuring: { termNumber: input.termNumber, eventRoll: input.eventRoll },
+      ownedBy: input.characterId,
+      name: input.name,
+      description: input.description,
+      metadata: { relationship: input.spawn.relationship },
+      graphNodeId: nodeId,
+      claimedBy: [input.characterId],
+    });
+  }, 'chargen-spawn');
 
   return {
     type: input.spawn.type,
