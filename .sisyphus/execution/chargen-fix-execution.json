@@ -48,7 +48,8 @@
       "reviews": ".omo/plans/fix-mgt2e-rules.reviews.md",
       "status": "in_progress",
       "rationale": "largest TermResolutionStep.tsx churn; runs last to minimize merge surface",
-      "started": "2026-10-25T04:15:00+01:00"
+      "started": "2026-10-25T04:15:00+01:00",
+      "branch": "agent/sisyphus/chargen-fix-d"
     }
   ],
   "per_plan_protocol": [

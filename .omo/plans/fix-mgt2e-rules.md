@@ -200,4 +200,4 @@ One commit per todo, Conventional Commits (`fix(mgt2e): …` / `fix(web): …`),
 
 ## Execution Record
 
-Execution baseline: <full HEAD SHA of the execution worktree — or the repo, if no worktree>
+Execution baseline: 0038414 (branch agent/sisyphus/chargen-fix-d, on top of merged Plans C, B, A)
