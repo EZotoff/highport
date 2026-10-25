@@ -35,17 +35,20 @@
       "key": "A",
       "plan": ".omo/plans/fix-crdt-crosschar.md",
       "reviews": ".omo/plans/fix-crdt-crosschar.reviews.md",
-      "status": "in_progress",
+      "status": "done",
       "rationale": "state-machine correctness foundation; rebases onto B's settled provenance semantics",
       "started": "2026-10-25T03:55:00+01:00",
-      "branch": "agent/sisyphus/chargen-fix-a"
+      "branch": "agent/sisyphus/chargen-fix-a",
+      "completed": "2026-10-25T04:15:00+01:00",
+      "evidence": "F1-F4 APPROVE (F3 after 2 repair cycles) in .omo/plans/fix-crdt-crosschar.md Execution Record; branch agent/sisyphus/chargen-fix-a (13 commits) merged no-ff to main"
     },
     {
       "key": "D",
       "plan": ".omo/plans/fix-mgt2e-rules.md",
       "reviews": ".omo/plans/fix-mgt2e-rules.reviews.md",
-      "status": "pending",
-      "rationale": "largest TermResolutionStep.tsx churn; runs last to minimize merge surface"
+      "status": "in_progress",
+      "rationale": "largest TermResolutionStep.tsx churn; runs last to minimize merge surface",
+      "started": "2026-10-25T04:15:00+01:00"
     }
   ],
   "per_plan_protocol": [
@@ -65,5 +68,5 @@
   ],
   "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
   "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
-  "updated": "2026-10-25T04:00:00+01:00"
+  "updated": "2026-10-25T04:15:00+01:00"
 }

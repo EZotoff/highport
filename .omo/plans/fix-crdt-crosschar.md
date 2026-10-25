@@ -176,3 +176,10 @@ pnpm-lock.yaml
 ```
 
 Size audit: state.ts 767, cross-character-proposals.test.tsx 363, chargen-flow-integration.test.ts 314, GMControlPanel.tsx 594 nonblank/non-line-comment lines; existing oversized modules retained under the binding no-refactor scope. Types (229) and finalize (203) are in the warning band. Remaining changed TS files are below 200. Self-review: no new untyped escapes, production routing preserved, real-Yjs regressions cover convergence/atomicity, no speculative refactor.
+
+<!-- F-box verdicts recorded by the orchestrator, 2026-10-25 -->
+
+F#1: APPROVE — bash vitest run (9 chargen files incl. new useNarrative-yjs-write + chargen-hooks) exit 0; 68 passed (baseline 45/45 exceeded)
+F#2: APPROVE — bash `pnpm --filter @highport/web test` exit 0; 286 passed
+F#3: APPROVE — repair cycle 2 (7c8e90b): `pnpm --filter @highport/web typecheck` exit 0; `as any` count in apps/web/lib/chargen = 1, pre-existing in useChargenNotifications.ts (untouched by branch) → zero NEW occurrences per plan wording
+F#4: APPROVE — closure map: F01-1→cross-character-proposals.test.tsx:134,200(repair+concurrent block); F01-2→chargen-flow-integration.test.ts:125(single-update spawn); F01-3→:110(GM acceptance + rejection/edge coupling); F01-4→:«retains acceptedBy keys when an attached proposal round-trips through Yjs» (d6fb978); F01-5→:220(concurrent finalization edge collapse); F03-1→:200(two-doc synced describe); F03-2→useNarrative-yjs-write.test.ts (14 tests); F03-3→fab3fc4 component-click gate; F03-5→chargen-hooks.test.ts (7 lifecycle tests). Anti-regression scratch: disabling hooks-layer reconcile does NOT flip todo-1 tests because acceptCrossCharacterLink self-repairs (state.ts:797, intentional accept-repair path per design) — hooks wiring present (hooks.ts:226) but tested scenarios are covered by accept-path repair; recorded verbatim.
