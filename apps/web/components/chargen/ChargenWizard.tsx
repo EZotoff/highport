@@ -54,6 +54,11 @@ export default function ChargenWizard() {
   }, [currentStep]);
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_QA_HOOKS === '1') {
+      void import('../../lib/qa/dice-qa-bridge').then(({ installDiceQABridge }) => {
+        installDiceQABridge();
+      });
+    }
     const doc = getYDoc();
     const sessionId = getSessionId('graph');
     let isMounted = true;

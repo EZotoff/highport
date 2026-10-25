@@ -41,7 +41,7 @@ If web, fastify, or hocuspocus is down, SKIP with reason `"services not running"
 
 - G1 is a game-rules charter: it fails on incorrect numerical mechanics even when the UI renders successfully.
 - The script follows the same `qa-init` / `qa-login` / `qa-finish` harness pattern as the B-series charters.
-- Determinism comes from `qa-force-roll-success`, which sets `window.__qaForceRollSuccess = true` after the wizard mounts.
+- Determinism comes from `qa-force-roll-success`, which sets `window.__qaForceRollSuccess = true` after the wizard mounts. Requires a development server with `NEXT_PUBLIC_QA_HOOKS=1`; the web bridge is unreachable in production. Unit tests instead inject deterministic RNG via `setRandomSeed(seed)` and restore it with `resetRandomSeed()`; clear explicit test interceptors after use.
 - The script reads state through `agent-browser eval`, resolving the Yjs document from `window.__yjs_doc__`, `window.getYDoc`, or Next/Webpack module exports.
 - Character state is read from the Yjs `chargen.characters` map.
 - Survival and advancement targets are resolved from the runtime `getCareer()` export and the active term's `careerId` / `assignmentId`.

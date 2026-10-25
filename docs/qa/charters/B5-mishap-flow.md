@@ -30,7 +30,7 @@ The key question: after a forced survival failure and mishap, does the character
 
 If web or fastify is down → SKIP with reason `"services not running"`.
 
-The QA dice failure hook must be available in the loaded MGT2E bundle: `qa-force-roll-failure` sets `window.__qaForceRollFailure = true`, causing targeted rolls such as survival rolls to fail.
+Use a development server with `NEXT_PUBLIC_QA_HOOKS=1`: the web-only bridge reads `window.__qaForceRollFailure` after wizard mount. `qa-force-roll-failure` then causes targeted rolls such as survival to fail. This bridge is unreachable in production. Unit tests inject the RNG with public `setRandomSeed(seed)` / `resetRandomSeed()`; explicit test interceptors must be cleared with `clearDiceOverrideInterceptor()` after use.
 
 ## Steps
 
