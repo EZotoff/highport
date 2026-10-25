@@ -33,6 +33,7 @@ import {
   applySkillGain,
   getRankInfo,
   parseCharacteristicBonus,
+  resolveSkillTableEntry,
   rollAdvancement,
   rollSurvival,
 } from '../../../lib/chargen/term-resolution';
@@ -373,8 +374,11 @@ export default function TermResolutionStep({
 
     const entry = table.find((e) => e.roll === roll.total);
     if (entry) {
-      const skillName = entry.skill;
-      const statBonus = parseCharacteristicBonus(skillName);
+      const resolved = resolveSkillTableEntry(entry);
+      const skillName = resolved.specialty
+        ? `${resolved.skill}.${resolved.specialty}`
+        : resolved.skill;
+      const statBonus = parseCharacteristicBonus(resolved.skill);
 
       const doc = getYDoc();
       if (statBonus) {
@@ -388,7 +392,7 @@ export default function TermResolutionStep({
         updateCharacterFields(doc, character.id, { characteristics: newStats });
         setSkillGained({ skill: skillName });
       } else {
-        const newSkills = applySkillGain(character.skills, skillName);
+        const newSkills = applySkillGain(character.skills, resolved.skill, resolved.specialty);
         updateCharacterFields(doc, character.id, { skills: newSkills });
         setSkillGained({ skill: skillName });
       }

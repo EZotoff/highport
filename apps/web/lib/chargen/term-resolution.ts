@@ -1,11 +1,35 @@
 import {
   getCharacteristicModifier,
+  getSkill,
+  rollDie,
   roll2d6,
   type DiceResult,
   type CareerAssignment,
   type CareerDefinition,
+  type SkillTableEntry,
 } from '@highport/mgt2e';
 import type { ChargenCharacter } from './types';
+
+export class UnknownTableSkillError extends Error {
+  constructor(readonly candidate: string) {
+    super(`Unknown skill in table entry: ${candidate}`);
+    this.name = 'UnknownTableSkillError';
+  }
+}
+
+export function resolveSkillTableEntry(entry: SkillTableEntry): {
+  readonly skill: string;
+  readonly specialty?: string;
+} {
+  if (parseCharacteristicBonus(entry.skill)) return { skill: entry.skill };
+  const alternatives = entry.skill.split('|');
+  for (const candidate of alternatives) {
+    if (!getSkill(candidate)) throw new UnknownTableSkillError(candidate);
+  }
+  const chosen =
+    alternatives.length === 1 ? alternatives[0] : alternatives[rollDie(alternatives.length) - 1];
+  return { skill: chosen, specialty: entry.specialty };
+}
 
 export function rollSurvival(
   character: ChargenCharacter,
