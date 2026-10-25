@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import * as Y from 'yjs';
 import { GMControlPanel } from '../components/chargen/GMControlPanel';
 import { useGMControls } from '../lib/chargen/useGMControls';
@@ -176,7 +176,7 @@ describe('GMControlPanel - Cross-Character Proposals', () => {
     expect(screen.getByRole('button', { name: /Reject/i })).toBeDefined();
   });
 
-  it('edits the description and creates a graph edge when the GM accepts', () => {
+  it('edits the description and creates a graph edge when the GM accepts', async () => {
     vi.mocked(useGMControls).mockReturnValue({
       isGM: true,
       session,
@@ -214,7 +214,9 @@ describe('GMControlPanel - Cross-Character Proposals', () => {
     fireEvent.change(screen.getByRole('textbox', { name: /Relationship description/i }), {
       target: { value: 'Command rivals from the academy' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /Accept/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Accept/i }));
+    });
 
     expect(getCrossCharacterLinks(doc)[0]).toMatchObject({
       status: 'accepted',
@@ -288,7 +290,7 @@ describe('GMControlPanel - AI Draft Review', () => {
     });
   });
 
-  it('renders pending AI draft and Accept clears pendingReviewBy', () => {
+  it('renders pending AI draft and Accept clears pendingReviewBy', async () => {
     vi.mocked(useGMControls).mockReturnValue({
       isGM: true,
       session,
@@ -335,7 +337,9 @@ describe('GMControlPanel - AI Draft Review', () => {
     expect(screen.getByText('"A mysterious signal from a derelict vessel"')).toBeDefined();
     expect(screen.getByText('Event')).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: /Accept/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Accept/i }));
+    });
 
     const updatedCharMap = getCharactersMap(doc).get(charId)!;
     const updatedTerms = updatedCharMap.get('terms') as CareerTermResult[];
@@ -350,7 +354,7 @@ describe('GMControlPanel - AI Draft Review', () => {
     expect(prov.reviewLog?.[0]?.by).toBe('gm');
   });
 
-  it('rejecting an AI draft sets status to rejected', () => {
+  it('rejecting an AI draft sets status to rejected', async () => {
     vi.mocked(useGMControls).mockReturnValue({
       isGM: true,
       session,
@@ -395,7 +399,9 @@ describe('GMControlPanel - AI Draft Review', () => {
     expect(screen.getByText('Rejecto')).toBeDefined();
     expect(screen.getByText('Mishap')).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: /Reject/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Reject/i }));
+    });
 
     const updatedCharMap = getCharactersMap(doc).get(charId)!;
     const updatedTerms = updatedCharMap.get('terms') as CareerTermResult[];
@@ -405,17 +411,17 @@ describe('GMControlPanel - AI Draft Review', () => {
     expect(prov.status).toBe('rejected');
   });
 
-  it('resolveAIDraft returns false for non-existent character', () => {
-    const result = resolveAIDraft(doc, 'nonexistent', 1, 'eventDescription', 'accept');
+  it('resolveAIDraft returns false for non-existent character', async () => {
+    const result = await resolveAIDraft(doc, 'nonexistent', 1, 'eventDescription', 'accept');
     expect(result).toBe(false);
   });
 
-  it('resolveAIDraft returns false when no pending draft', () => {
+  it('resolveAIDraft returns false when no pending draft', async () => {
     const charId = createCharacter(doc, 'player-clean', 'Clean');
-    const result = resolveAIDraft(doc, charId, 1, 'eventDescription', 'accept');
+    const result = await resolveAIDraft(doc, charId, 1, 'eventDescription', 'accept');
     expect(result).toBe(false);
   });
-  it('resolving a draft targets the correct term', () => {
+  it('resolving a draft targets the correct term', async () => {
     const charId = createCharacter(doc, 'player-target', 'Target');
     const charMap = getCharactersMap(doc).get(charId)!;
 
@@ -461,7 +467,7 @@ describe('GMControlPanel - AI Draft Review', () => {
       charMap.set('terms', JSON.parse(JSON.stringify(terms)));
     });
 
-    const result = resolveAIDraft(doc, charId, 2, 'mishapDescription', 'accept');
+    const result = await resolveAIDraft(doc, charId, 2, 'mishapDescription', 'accept');
     expect(result).toBe(true);
 
     const updatedTerms = getCharactersMap(doc).get(charId)!.get('terms') as CareerTermResult[];

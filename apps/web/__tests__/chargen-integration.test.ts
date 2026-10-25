@@ -48,12 +48,12 @@ describe('Chargen Integration Tests', () => {
       expect(session?.status).toBe('active');
     });
 
-    it('should sync session settings updates across docs', () => {
+    it('should sync session settings updates across docs', async () => {
       // Create session in doc1
       createSession(doc1, 'campaign-1', 'gm-user');
 
       // Update settings in doc1
-      updateSessionSettings(doc1, {
+      await updateSessionSettings(doc1, {
         allowedCareers: ['Navy', 'Marine'],
       });
 
@@ -414,16 +414,16 @@ describe('Chargen Integration Tests', () => {
       expect(entity?.claimedBy).not.toContain('char-2');
     });
 
-    it('should preserve session settings when GM updates multiple times', () => {
+    it('should preserve session settings when GM updates multiple times', async () => {
       createSession(doc, 'campaign-1', 'gm-user');
 
       // First update
-      updateSessionSettings(doc, {
+      await updateSessionSettings(doc, {
         allowedCareers: ['Navy'],
       });
 
       // Second update (partial)
-      updateSessionSettings(doc, {
+      await updateSessionSettings(doc, {
         aiVerbosity: 'full',
       });
 

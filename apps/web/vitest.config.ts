@@ -10,6 +10,8 @@ export default defineConfig({
     },
   },
   test: {
+    env: { NEXT_PUBLIC_LOCAL_MODE: 'true' },
+    setupFiles: ['./__tests__/local-session-setup.ts'],
     environment: 'jsdom',
     include: ['**/__tests__/**/*.test.{ts,tsx}'],
     globals: true,
