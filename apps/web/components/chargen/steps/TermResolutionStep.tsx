@@ -28,6 +28,7 @@ import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../../lib/chargen/hooks';
 import { updateCharacterFields } from '../../../lib/chargen/state';
 import { applyForcedMusterOut } from '../../../lib/chargen/muster-out';
+import { canConfirmEvent, resolveEventEffects } from '../../../lib/chargen/event-effects';
 import { unwrapAIField } from '../../../lib/chargen/types';
 import {
   applySkillGain,
@@ -86,7 +87,7 @@ export default function TermResolutionStep({
   const [survivalRoll, setSurvivalRoll] = useState<DiceResult | undefined>();
   const [eventRoll, setEventRoll] = useState<DiceResult | undefined>();
   const [event, setEvent] = useState<CareerEvent | undefined>();
-  const [eventAdvancementDM, setEventAdvancementDM] = useState<number>(0);
+  const [selectedEventChoice, setSelectedEventChoice] = useState<string | undefined>();
   const [mishap, setMishap] = useState<CareerMishap | undefined>();
   const [selectedTable, setSelectedTable] = useState<string | undefined>();
   const [skillGained, setSkillGained] = useState<
@@ -295,6 +296,7 @@ export default function TermResolutionStep({
     const roll = rollCareerEvent(career);
     setEventRoll(roll.roll);
     setEvent(roll.event);
+    setSelectedEventChoice(undefined);
 
     if (roll.event.spawns && roll.event.spawns.length > 0) {
       setPendingSpawns(roll.event.spawns);
@@ -314,6 +316,26 @@ export default function TermResolutionStep({
   };
 
   const confirmEvent = () => {
+    if (!event || !canConfirmEvent(event, selectedEventChoice)) return;
+    if (!currentTerm.eventEffectsApplied) {
+      const choice = event.choices?.find((entry) => entry.id === selectedEventChoice);
+      const { eventAdvancementDM, autoPassNext, ...patch } = resolveEventEffects(character, [
+        ...(event.effects ?? []),
+        ...(choice?.effects ?? []),
+      ]);
+      const terms = character.terms.map((term, index) =>
+        index === character.terms.length - 1
+          ? {
+              ...term,
+              eventChoice: choice?.id,
+              eventEffectsApplied: true,
+              eventAdvancementDM,
+              autoPassNext,
+            }
+          : term,
+      );
+      updateCharacterFields(getYDoc(), character.id, { ...patch, terms });
+    }
     setPhase('skill');
   };
 
@@ -407,6 +429,13 @@ export default function TermResolutionStep({
   };
 
   const handleSkipCommission = () => {
+    if (currentTerm.autoPassNext === 'commission') {
+      updateCharacterFields(getYDoc(), character.id, {
+        terms: character.terms.map((term, index) =>
+          index === character.terms.length - 1 ? { ...term, autoPassNext: 'advancement' } : term,
+        ),
+      });
+    }
     setCommissionSkipped(true);
     setPhase('advancement');
   };
@@ -414,7 +443,17 @@ export default function TermResolutionStep({
   const handleCommissionRoll = () => {
     if (!canAttemptCommission) return;
 
-    const roll = rollCommission(character.characteristics.SOC || 0, careerTermNumber);
+    const roll: DiceResult =
+      currentTerm.autoPassNext === 'commission'
+        ? {
+            dice: 'event automatic commission',
+            rolls: [],
+            total: 8,
+            modifier: 0,
+            target: 8,
+            success: true,
+          }
+        : rollCommission(character.characteristics.SOC || 0, careerTermNumber);
     const succeeded = roll.total >= 8;
     setCommissionRoll(roll);
     setCommissioned(succeeded);
@@ -426,6 +465,7 @@ export default function TermResolutionStep({
 
     term.commissionRoll = roll;
     term.commissioned = succeeded;
+    term.autoPassNext = undefined;
 
     if (succeeded) {
       term.currentRank = 1;
@@ -449,7 +489,17 @@ export default function TermResolutionStep({
   };
 
   const handleAdvancementRoll = () => {
-    const roll = rollAdvancement(character, assignment, eventAdvancementDM);
+    const roll: DiceResult =
+      currentTerm.autoPassNext === 'advancement'
+        ? {
+            dice: 'event automatic advancement',
+            rolls: [],
+            total: assignment.advancement.target,
+            modifier: 0,
+            target: assignment.advancement.target,
+            success: true,
+          }
+        : rollAdvancement(character, assignment, currentTerm.eventAdvancementDM ?? 0);
     setAdvancementRoll(roll);
 
     const isPromoted = roll.total >= assignment.advancement.target;
@@ -461,6 +511,8 @@ export default function TermResolutionStep({
 
     term.advancementRoll = roll;
     term.advanced = isPromoted;
+    term.autoPassNext = undefined;
+    term.eventAdvancementDM = 0;
 
     if (isPromoted) {
       const newRank = term.currentRank + 1;
@@ -505,7 +557,7 @@ export default function TermResolutionStep({
     setSurvivalRoll(undefined);
     setEventRoll(undefined);
     setEvent(undefined);
-    setEventAdvancementDM(0);
+    setSelectedEventChoice(undefined);
     setSkillGained(undefined);
     setCommissionRoll(undefined);
     setCommissioned(undefined);
@@ -1133,10 +1185,43 @@ export default function TermResolutionStep({
                 currentUserId={currentUserId}
               />
             ) : (
-              phase === 'event_choice' && (
+              phase === 'event_choice' &&
+              event && (
                 <div className="mt-4 pt-4 border-t border-zinc-800">
+                  <ul className="text-sm text-label space-y-2 mb-4" aria-label="Event effects">
+                    {[
+                      ...(event.effects ?? []),
+                      ...(event.choices?.find((choice) => choice.id === selectedEventChoice)
+                        ?.effects ?? []),
+                    ].map((effect, index) => (
+                      <li key={`${effect.type}-${effect.target}-${index}`}>
+                        {effect.target}: {effect.value}
+                      </li>
+                    ))}
+                  </ul>
+                  {event.choices?.length ? (
+                    <fieldset className="space-y-3 mb-4">
+                      <legend className="text-label mb-2">Choose an outcome</legend>
+                      {event.choices.map((choice) => (
+                        <label
+                          key={choice.id}
+                          className="flex items-center gap-3 text-sm text-heading"
+                        >
+                          <input
+                            type="radio"
+                            name="career-event-choice"
+                            value={choice.id}
+                            checked={selectedEventChoice === choice.id}
+                            onChange={() => setSelectedEventChoice(choice.id)}
+                          />
+                          {choice.description}
+                        </label>
+                      ))}
+                    </fieldset>
+                  ) : null}
                   <SciFiButton
                     onClick={confirmEvent}
+                    disabled={!canConfirmEvent(event, selectedEventChoice)}
                     theme="slate"
                     scifiVariant="ghost"
                     className="w-full"

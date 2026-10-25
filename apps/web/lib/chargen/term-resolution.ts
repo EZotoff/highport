@@ -24,11 +24,12 @@ export function resolveSkillTableEntry(entry: SkillTableEntry): {
   if (parseCharacteristicBonus(entry.skill)) return { skill: entry.skill };
   const alternatives = entry.skill.split('|');
   for (const candidate of alternatives) {
-    if (!getSkill(candidate)) throw new UnknownTableSkillError(candidate);
+    if (!getSkill(candidate.split('.')[0])) throw new UnknownTableSkillError(candidate);
   }
   const chosen =
     alternatives.length === 1 ? alternatives[0] : alternatives[rollDie(alternatives.length) - 1];
-  return { skill: chosen, specialty: entry.specialty };
+  const [skill, specialty] = chosen.split('.');
+  return { skill, specialty: entry.specialty ?? specialty };
 }
 
 export function rollSurvival(
