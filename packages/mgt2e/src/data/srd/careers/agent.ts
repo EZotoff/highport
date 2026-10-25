@@ -114,7 +114,7 @@ export const AGENT_CAREER: CareerDefinition = {
     { roll: 3, benefit: 'Ship Share' },
     { roll: 4, benefit: 'Weapon' },
     { roll: 5, benefit: 'Cybernetic Implant' },
-    { roll: 6, benefit: '+1 SOC', orHighRank: 'Cybernetic Implant' },
+    { roll: 6, benefit: 'SOC +1 or Combat Implant' },
     { roll: 7, benefit: 'TAS Membership' },
   ],
 
