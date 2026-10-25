@@ -21,6 +21,8 @@ export type BenefitAlternative = ParsedBenefit & { readonly label: string };
 export interface BenefitChoice {
   readonly alternatives: readonly BenefitAlternative[];
   readonly takeHigher: boolean;
+  /** 'and' grants apply every part; 'or' grants require a player choice. */
+  readonly mode: 'and' | 'or';
 }
 
 export function parseBenefit(benefit: string): ParsedBenefit {
@@ -56,14 +58,24 @@ export function parseBenefit(benefit: string): ParsedBenefit {
 
 export function parseBenefitChoice(benefit: string): BenefitChoice {
   const source = benefit.replace(/,\s*whichever is higher$/i, '');
+  if (!source.includes(' or ')) {
+    const parts = source.split(' and ').map((label) => ({ ...parseBenefit(label), label }));
+    if (parts.length > 1 && parts.every((part) => part.type !== 'other')) {
+      return { alternatives: parts, takeHigher: false, mode: 'and' };
+    }
+  }
   const alternatives = source.split(' or ').map((label) => ({ ...parseBenefit(label), label }));
   if (
     alternatives.length > 1 &&
     alternatives.every((alternative) => alternative.type !== 'other')
   ) {
-    return { alternatives, takeHigher: source !== benefit };
+    return { alternatives, takeHigher: source !== benefit, mode: 'or' };
   }
-  return { alternatives: [{ ...parseBenefit(benefit), label: benefit }], takeHigher: false };
+  return {
+    alternatives: [{ ...parseBenefit(benefit), label: benefit }],
+    takeHigher: false,
+    mode: 'or',
+  };
 }
 
 export function applyCharacteristicBenefit(
@@ -128,6 +140,26 @@ export function applyMusteringBenefit(
   benefit: string,
   roll?: MusteringRoll,
 ): Partial<ChargenCharacter> {
+  const choice = parseBenefitChoice(benefit);
+  if (choice.mode === 'and' && choice.alternatives.length > 1) {
+    const partLabels = new Set(choice.alternatives.map((part) => part.label));
+    const applied = choice.alternatives.reduce<ChargenCharacter>(
+      (acc, part) => ({ ...acc, ...applyMusteringBenefit(acc, part.label) }),
+      character,
+    );
+    // The full source is recorded once; drop the per-part labels the fold appended.
+    const relabel = (labels: readonly string[]) => [
+      ...labels.filter((label) => !partLabels.has(label)),
+      benefit,
+    ];
+    return {
+      ...applied,
+      benefits: relabel(applied.benefits),
+      ...(applied.mustering
+        ? { mustering: { ...applied.mustering, benefits: relabel(applied.mustering.benefits) } }
+        : {}),
+    };
+  }
   const parsed = parseBenefit(benefit);
   const current = character.mustering ?? {
     totalRolls: 0,

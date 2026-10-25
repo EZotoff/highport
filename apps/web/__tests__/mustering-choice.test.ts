@@ -151,4 +151,32 @@ describe('compound mustering benefits', () => {
       expect(applyMusteringBenefit(character, benefit).benefits).toEqual([benefit]);
     },
   );
+
+  it('raises both SOC and EDU once each when given an and-form grant', () => {
+    // Given / When
+    const updates = applyMusteringBenefit(character, '+1 SOC and +1 EDU');
+    // Then
+    expect(updates.characteristics?.SOC).toBe(8);
+    expect(updates.characteristics?.EDU).toBe(8);
+    expect(updates.benefits).toEqual(['+1 SOC and +1 EDU']);
+  });
+
+  it('raises SOC and preserves the Yacht item when given a stat-and-item grant', () => {
+    // Given
+    const source = '+1 SOC and Yacht';
+    // When
+    const updates = applyMusteringBenefit(character, source);
+    // Then
+    expect(parseBenefitChoice(source).mode).toBe('and');
+    expect(updates.characteristics?.SOC).toBe(8);
+    expect(updates.benefits).toEqual([source]);
+  });
+
+  it('still requires a player choice for the or form', () => {
+    // Given
+    const choice = parseBenefitChoice('+1 EDU or Two Ship Shares');
+    // When / Then
+    expect(choice.mode).toBe('or');
+    expect(resolveBenefitChoice(character, choice)).toBeNull();
+  });
 });
