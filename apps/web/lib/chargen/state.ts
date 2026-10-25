@@ -690,10 +690,31 @@ export async function resolveCrossCharacterLink(
   const linkMap = getCrossCharacterLinksMap(doc).get(linkId);
   if (!linkMap) return;
 
+  const status = accepted ? 'accepted' : 'rejected';
+  if (yMapToCrossCharacterLink(linkMap).status === status) return;
   doc.transact(() => {
-    linkMap.set('status', accepted ? 'accepted' : 'rejected');
-    if (accepted) createCrossCharacterLinkEdge(doc, yMapToCrossCharacterLink(linkMap));
+    linkMap.set('resolution', { status, by: 'gm' });
+    linkMap.set('status', status);
+    const link = yMapToCrossCharacterLink(linkMap);
+    if (accepted) createCrossCharacterLinkEdge(doc, link);
+    else {
+      const source = findNodeIdByChargenId(doc, link.sourceCharId);
+      const target = findNodeIdByChargenId(doc, link.targetCharId);
+      // Legacy random-id edges survive GM rejection; only managed cross-link edges are removed.
+      if (source && target)
+        getEdgesMap(doc).delete(crossLinkEdgeId(source, target, link.relationship));
+    }
   }, 'cross-character-link-resolve');
+}
+
+export function crossLinkEdgeId(source: string, target: string, relationship: string): string {
+  let hash = 0x811c9dc5;
+  for (const byte of new TextEncoder().encode(
+    JSON.stringify([...[source, target].sort(), relationship]),
+  )) {
+    hash = Math.imul(hash ^ byte, 0x01000193);
+  }
+  return `xlink-${(hash >>> 0).toString(16).padStart(8, '0')}`;
 }
 
 export function removeCrossCharacterLink(doc: Y.Doc, linkId: string): void {

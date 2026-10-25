@@ -37,14 +37,12 @@ async function applyCommand(params: Params, mutate: (doc: Y.Doc) => void): Promi
       const vector = Y.encodeStateVector(document);
       document.transact(() => mutate(document), 'server-command');
       const update = Y.encodeStateAsUpdate(document, vector);
-      pending = db
-        .insert(documentUpdates)
-        .values({
-          id: generateId('update'),
-          docId: name,
-          updateData: update,
-          createdAt: new Date(),
-        });
+      pending = db.insert(documentUpdates).values({
+        id: generateId('update'),
+        docId: name,
+        updateData: update,
+        createdAt: new Date(),
+      });
     }, 'server-command');
     await pending;
   } finally {
@@ -135,11 +133,14 @@ export async function registerChargenCommandRoutes(app: FastifyInstance): Promis
         const link = map(
           map(doc.getMap('chargen').get('crossCharacterLinks')).get(request.params.linkId),
         );
-        link.set('status', request.body.accepted ? 'accepted' : 'rejected');
+        const status = request.body.accepted ? 'accepted' : 'rejected';
+        link.set('resolution', { status, by: 'gm' });
+        link.set('status', status);
         link.set('by', request.principal.userId);
         if (request.body.description !== undefined)
           link.set('description', request.body.description);
         if (request.body.accepted) createLinkEdge(doc, request.params.linkId, link);
+        else doc.getMap('edges').delete(`chargen-link-${request.params.linkId}`);
       });
       return { success: true };
     },
