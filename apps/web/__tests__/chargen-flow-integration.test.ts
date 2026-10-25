@@ -151,6 +151,7 @@ describe('Chargen Flow Integration', () => {
       expect(result.provenance?.status).toBe('draft');
       expect(result.provenance?.pendingReviewBy).toBe('gm');
       expect(result.provenance?.generatedAt).toBe(1700000000000);
+      expect(result.provenance?.derivedFrom).toBe('npc-name');
 
       const [, nodeArg] = mocks.mockAddNode.mock.calls[0];
       expect(nodeArg.provenance).toBeDefined();

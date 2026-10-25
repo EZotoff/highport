@@ -152,6 +152,7 @@ export interface SpawnedEntityRef {
     status: 'draft' | 'accepted' | 'rejected' | 'edited';
     pendingReviewBy?: 'gm' | 'player' | null;
     generatedAt?: number;
+    derivedFrom?: string;
   };
 }
 
