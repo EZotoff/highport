@@ -37,7 +37,8 @@
       "reviews": ".omo/plans/fix-crdt-crosschar.reviews.md",
       "status": "in_progress",
       "rationale": "state-machine correctness foundation; rebases onto B's settled provenance semantics",
-      "started": "2026-10-25T03:55:00+01:00"
+      "started": "2026-10-25T03:55:00+01:00",
+      "branch": "agent/sisyphus/chargen-fix-a"
     },
     {
       "key": "D",
@@ -64,5 +65,5 @@
   ],
   "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
   "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
-  "updated": "2026-10-25T03:55:00+01:00"
+  "updated": "2026-10-25T04:00:00+01:00"
 }

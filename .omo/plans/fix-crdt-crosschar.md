@@ -146,4 +146,4 @@ Edge invariant: an `accepted` link has AT MOST ONE edge between its node pair, w
 
 ## Execution Record
 
-Execution baseline: <full HEAD SHA of the execution worktree — or the repo, if no worktree>
+Execution baseline: 5f952bf (branch agent/sisyphus/chargen-fix-a, on top of merged Plans C and B)
