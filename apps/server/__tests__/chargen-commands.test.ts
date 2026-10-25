@@ -97,6 +97,40 @@ describe('chargen command authorization', () => {
   };
   const resolveUrl = '/api/chargen/camp/session/drafts/draft/resolve';
 
+  it.each([
+    ['player-a', true, 200],
+    ['wrong-owner', true, 403],
+    ['player-a', false, 403],
+  ])(
+    'authorizes player-side accept for %s with membership %s as %s',
+    async (userId, member, status) => {
+      // Given
+      mocks.members.mockResolvedValue(member ? [{ role: 'player' }] : []);
+      const live = fixture();
+      mocks.connect.mockResolvedValue({
+        transact: async (mutate: (doc: Y.Doc) => void) => mutate(live),
+        disconnect: async () => undefined,
+      });
+      const app = Fastify();
+      await registerChargenCommandRoutes(app);
+      // When
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/chargen/camp/session/links/link/accept',
+        headers: { authorization: bearer(userId) },
+      });
+      // Then
+      expect(response.statusCode).toBe(status);
+      expect(
+        map(
+          map(map(live.getMap('chargen').get('crossCharacterLinks')).get('link')).get('acceptedBy'),
+        ).has('char-a'),
+      ).toBe(status === 200);
+      live.destroy();
+      await app.close();
+    },
+  );
+
   it('preserves GM rejection and repairs accepted edges through the authorized accept service', () => {
     // Given
     const doc = fixture();

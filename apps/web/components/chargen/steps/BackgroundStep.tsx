@@ -12,7 +12,7 @@ import {
   getSession,
 } from '../../../lib/chargen/state';
 import { useCharacter } from '../../../lib/chargen/hooks';
-import { getOrCreateUser } from '../../../lib/identity';
+import { useChargenUserId } from '../../../lib/chargen/identity';
 import { getBackgroundSkills, getCharacteristicModifier } from '@highport/mgt2e';
 import type { CharacteristicCode } from '@highport/mgt2e';
 import { GlassPanel, SciFiButton, SciFiInput, SciFiSelect } from '@/components/ui/scifi';
@@ -28,21 +28,21 @@ const STAT_ORDER: CharacteristicCode[] = ['STR', 'DEX', 'END', 'INT', 'EDU', 'SO
 
 export default function BackgroundStep({ characterId, onCharacterCreated }: BackgroundStepProps) {
   const character = useCharacter(characterId);
+  const userId = useChargenUserId();
   const [swap1, setSwap1] = useState<CharacteristicCode>('STR');
   const [swap2, setSwap2] = useState<CharacteristicCode>('DEX');
   const creatingRef = useRef(false);
 
   const handleCreate = async () => {
-    if (creatingRef.current) return;
+    if (creatingRef.current || !userId) return;
     creatingRef.current = true;
-    const user = getOrCreateUser();
     const doc = getYDoc();
 
     if (!getSession(doc)) {
-      createSession(doc, 'default-campaign', user.userId);
+      createSession(doc, 'default-campaign', userId);
     }
 
-    const newId = createCharacter(doc, user.userId);
+    const newId = createCharacter(doc, userId);
 
     localStorage.setItem(
       'highport_active_character',

@@ -120,7 +120,7 @@ describe('term narrative authoritative sync', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Event narrative description' }), {
       target: { value: 'unsaved local text' },
     });
-    const charMap = getCharactersMap(doc).get(characterId);
+    const charMap = getCharactersMap(doc)?.get(characterId);
     if (!charMap) throw new Error('Missing character fixture');
     act(() => {
       charMap.set('terms', [{ ...term, termNumber: 2 }]);
@@ -146,7 +146,7 @@ describe('term narrative authoritative sync', () => {
     (status) => {
       showEvent();
       const character = getCharacter(doc, characterId);
-      const charMap = getCharactersMap(doc).get(characterId);
+      const charMap = getCharactersMap(doc)?.get(characterId);
       if (!character || !charMap) throw new Error('Missing character fixture');
       act(() => {
         charMap.set(

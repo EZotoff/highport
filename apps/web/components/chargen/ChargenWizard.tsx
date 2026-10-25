@@ -5,7 +5,8 @@ import { GlassPanel, SciFiButton } from '@/components/ui/scifi';
 import { THEME_HEX } from '@/lib/design-system/themeUtils';
 import { useCharacter } from '../../lib/chargen/hooks';
 import { createSession, getSession, updateCharacterFields } from '../../lib/chargen/state';
-import { getActiveCharacter, getOrCreateUser } from '../../lib/identity';
+import { getActiveCharacter } from '../../lib/identity';
+import { useChargenUserId } from '../../lib/chargen/identity';
 import {
   getSessionId,
   initAndWaitForPersistence,
@@ -38,7 +39,7 @@ export default function ChargenWizard() {
   const [characterId, setCharacterId] = useState<string | null>(null);
   const [isSynced, setIsSynced] = useState(false);
   const character = useCharacter(characterId);
-  const [currentSessionUserId] = useState(() => getOrCreateUser().userId);
+  const currentSessionUserId = useChargenUserId();
   const { isGM, session, actions } = useGMControls();
 
   const statusToStep: Record<string, number> = {
@@ -59,6 +60,7 @@ export default function ChargenWizard() {
   }, [currentStep]);
 
   useEffect(() => {
+    if (!currentSessionUserId) return;
     if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_QA_HOOKS === '1') {
       void import('../../lib/qa/dice-qa-bridge').then(({ installDiceQABridge }) => {
         installDiceQABridge();
@@ -82,8 +84,7 @@ export default function ChargenWizard() {
         setTimeout(() => {
           if (!isMounted) return;
           if (!getSession(doc)) {
-            const user = getOrCreateUser();
-            createSession(doc, sessionId, user.userId);
+            createSession(doc, sessionId, currentSessionUserId);
           }
         }, 500);
       }
@@ -92,7 +93,7 @@ export default function ChargenWizard() {
       isMounted = false;
       clearTimeout(fallbackTimer);
     };
-  }, []);
+  }, [currentSessionUserId]);
 
   useEffect(() => {
     if (!isSynced || characterId) return;

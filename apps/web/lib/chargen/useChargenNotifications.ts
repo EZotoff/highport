@@ -3,6 +3,7 @@ import * as Y from 'yjs';
 import { getYDoc } from '../ydoc';
 import {
   getCharactersMap,
+  getChargenMap,
   getEntityPoolMap,
   getConnectionRequestsArray,
   yMapToCharacter,
@@ -54,11 +55,13 @@ export function useChargenNotifications() {
 
   useEffect(() => {
     const doc = getYDoc();
-    const characters = getCharactersMap(doc);
+    const chargen = getChargenMap(doc);
     const entityPool = getEntityPoolMap(doc);
     const connectionRequests = getConnectionRequestsArray(doc);
 
     const deepCharactersObserver = (events: Y.YEvent<any>[]) => {
+      const characters = getCharactersMap(doc);
+      if (!characters) return;
       events.forEach((event) => {
         if (event.transaction.local) return;
 
@@ -156,12 +159,12 @@ export function useChargenNotifications() {
       }
     };
 
-    characters.observeDeep(deepCharactersObserver);
+    chargen.observeDeep(deepCharactersObserver);
     entityPool.observe(entityPoolObserver);
     connectionRequests.observe(connectionRequestsObserver);
 
     return () => {
-      characters.unobserveDeep(deepCharactersObserver);
+      chargen.unobserveDeep(deepCharactersObserver);
       entityPool.unobserve(entityPoolObserver);
       connectionRequests.unobserve(connectionRequestsObserver);
     };
