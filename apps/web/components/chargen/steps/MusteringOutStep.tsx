@@ -17,14 +17,14 @@ import {
   rollBenefit,
   isHighRank,
   getGamblingBonus,
+  getMusteringCareer,
+  MAX_CASH_ROLLS,
 } from '../../../lib/chargen/mustering';
 import type { BenefitRollResult } from '../../../lib/chargen/mustering';
 
 interface MusteringOutStepProps {
   characterId: string | null;
 }
-
-const MAX_CASH_ROLLS = 3;
 
 export default function MusteringOutStep({ characterId }: MusteringOutStepProps) {
   const character = useCharacter(characterId);
@@ -40,7 +40,8 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
   const rollsRemaining = totalRolls - rollsUsed;
 
   const finalTerm = character.terms[character.terms.length - 1];
-  const career = getCareer(finalTerm?.careerId || '');
+  const allocation = getMusteringCareer(character);
+  const career = getCareer(allocation?.careerId ?? finalTerm?.careerId ?? '');
   const highRank = isHighRank(character);
   const gamblingBonus = getGamblingBonus(character);
 
@@ -67,7 +68,10 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
     if (rollsRemaining <= 0 || pending) return;
     if (type === 'cash' && cashRollsUsed >= MAX_CASH_ROLLS) return;
 
-    const result = rollBenefit(character, type);
+    const latest = getCharacter(getYDoc(), character.id);
+    if (!latest || (type === 'cash' && (latest.mustering?.cashRollsUsed ?? 0) >= MAX_CASH_ROLLS))
+      return;
+    const result = rollBenefit(latest, type);
 
     const currentMustering: MusteringState = character.mustering ?? {
       totalRolls: calculateTotalBenefitRolls(character),
@@ -150,7 +154,8 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
 
         {/* Career Summary */}
         <div className="text-subtle mb-6">
-          {career?.name} • {character.terms.length} Terms • Rank {finalTerm?.currentRank || 0}
+          {career?.name} • {character.terms.length} Terms • Rank{' '}
+          {allocation?.rank ?? finalTerm?.currentRank ?? 0}
           {highRank && <span className="text-amber-400 ml-2">(High Rank Bonuses)</span>}
         </div>
 
@@ -178,6 +183,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
             >
               <Coins className="w-5 h-5 text-amber-400" />
               <div className="font-bold">Roll Cash</div>
+              {highRank && <div className="text-xs opacity-75">+1 Rank DM</div>}
               {gamblingBonus > 0 && (
                 <div className="text-xs opacity-75">+{gamblingBonus} Gambler</div>
               )}
@@ -191,7 +197,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
             >
               <Gift className="w-5 h-5 text-cyan-400" />
               <div className="font-bold">Roll Benefits</div>
-              {highRank && <div className="text-xs opacity-75">High Rank Alternate</div>}
+              {highRank && <div className="text-xs opacity-75">+1 Rank DM</div>}
             </SciFiButton>
           </div>
         )}
