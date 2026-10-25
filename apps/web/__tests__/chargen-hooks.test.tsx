@@ -7,9 +7,8 @@ import {
   createCharacter,
   createSession,
   addCrossCharacterLink,
-  getCharactersMap,
+  getChargenMap,
   getCrossCharacterLinksMap,
-  getSessionMap,
   getEntityPoolMap,
   getConnectionRequestsArray,
   getLifepathProposalsMap,
@@ -34,7 +33,7 @@ describe('chargen hook observers', () => {
   it('reflects seeded characters and later writes, then unsubscribes on unmount', () => {
     // Given
     const first = createCharacter(doc, 'player-1', 'Zara');
-    const map = getCharactersMap(doc);
+    const map = getChargenMap(doc);
     const observe = vi.spyOn(map, 'observeDeep');
     const unobserve = vi.spyOn(map, 'unobserveDeep');
     const render = vi.fn();
@@ -99,8 +98,8 @@ describe('chargen hook observers', () => {
       const id = createCharacter(doc, 'player-1', 'Zara');
       createSession(doc, 'campaign', 'gm');
       const subscriptions = {
-        character: { map: getCharactersMap(doc), useHook: () => hooks.useCharacter(id) },
-        session: { map: getSessionMap(doc), useHook: hooks.useSession },
+        character: { map: getChargenMap(doc), useHook: () => hooks.useCharacter(id) },
+        session: { map: getChargenMap(doc), useHook: hooks.useSession },
         entityPool: { map: getEntityPoolMap(doc), useHook: hooks.useEntityPool },
         requests: { map: getConnectionRequestsArray(doc), useHook: hooks.useConnectionRequests },
         lifepath: { map: getLifepathProposalsMap(doc), useHook: hooks.useLifepathProposals },

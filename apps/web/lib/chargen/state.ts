@@ -96,12 +96,10 @@ export function getChargenMap(doc: Y.Doc): Y.Map<unknown> {
   return doc.getMap('chargen');
 }
 
-export function getCharactersMap(doc: Y.Doc): Y.Map<Y.Map<unknown>> {
+export function getCharactersMap(doc: Y.Doc): Y.Map<Y.Map<unknown>> | undefined {
   const chargen = getChargenMap(doc);
-  if (!chargen.has('characters')) {
-    chargen.set('characters', new Y.Map());
-  }
-  return chargen.get('characters') as Y.Map<Y.Map<unknown>>;
+  const characters = chargen.get('characters');
+  return characters instanceof Y.Map ? characters : undefined;
 }
 
 export function rollInitialCharacteristics(seed?: number): CharacteristicSet {
@@ -126,7 +124,6 @@ export function rollInitialCharacteristics(seed?: number): CharacteristicSet {
 }
 
 export function createCharacter(doc: Y.Doc, playerId: string, name?: string): string {
-  const characters = getCharactersMap(doc);
   const charId = crypto.randomUUID();
 
   const character: ChargenCharacter = {
@@ -147,6 +144,10 @@ export function createCharacter(doc: Y.Doc, playerId: string, name?: string): st
   };
 
   doc.transact(() => {
+    // Only explicit creation may attach a container; readers never compete at
+    // the whole-value 'characters' key on an unsynced joining replica.
+    const characters =
+      getCharactersMap(doc) ?? getChargenMap(doc).set('characters', new Y.Map<Y.Map<unknown>>());
     const charMap = new Y.Map();
     characters.set(charId, charMap);
     Object.entries(character).forEach(([key, value]) => {
@@ -164,7 +165,7 @@ export function createCharacter(doc: Y.Doc, playerId: string, name?: string): st
 
 export function getCharacter(doc: Y.Doc, charId: string): ChargenCharacter | null {
   const characters = getCharactersMap(doc);
-  const charMap = characters.get(charId);
+  const charMap = characters?.get(charId);
   if (!charMap) return null;
 
   return yMapToCharacter(charMap);
@@ -201,7 +202,7 @@ export function updateCharacter<K extends keyof ChargenCharacter>(
   value: ChargenCharacter[K],
 ): void {
   const characters = getCharactersMap(doc);
-  const charMap = characters.get(charId);
+  const charMap = characters?.get(charId);
   if (!charMap) return;
 
   doc.transact(() => {
@@ -220,7 +221,7 @@ export function updateCharacterFields(
   updates: Partial<ChargenCharacter>,
 ): void {
   const characters = getCharactersMap(doc);
-  const charMap = characters.get(charId);
+  const charMap = characters?.get(charId);
   if (!charMap) return;
   const updatesWithChapters = mirrorCompletedChapters(yMapToCharacter(charMap), updates);
 
@@ -297,7 +298,7 @@ export async function deleteCharacter(doc: Y.Doc, charId: string): Promise<void>
   if (await chargenCommand(doc, `characters/${encodeURIComponent(charId)}`)) return;
   const characters = getCharactersMap(doc);
   doc.transact(() => {
-    characters.delete(charId);
+    characters?.delete(charId);
   }, 'chargen-delete');
   deleteCharacterSnapshot(charId);
 }
@@ -305,7 +306,7 @@ export async function deleteCharacter(doc: Y.Doc, charId: string): Promise<void>
 export function getAllCharacters(doc: Y.Doc): ChargenCharacter[] {
   const characters = getCharactersMap(doc);
   const result: ChargenCharacter[] = [];
-  characters.forEach((charMap) => {
+  characters?.forEach((charMap) => {
     result.push(yMapToCharacter(charMap as Y.Map<unknown>));
   });
   return result;
@@ -315,19 +316,20 @@ export function getAllCharacters(doc: Y.Doc): ChargenCharacter[] {
 // Session Management Functions (Phase 4)
 // ============================================
 
-export function getSessionMap(doc: Y.Doc): Y.Map<unknown> {
+export function getSessionMap(doc: Y.Doc): Y.Map<unknown> | undefined {
   const chargen = getChargenMap(doc);
-  if (!chargen.has('session')) {
-    chargen.set('session', new Y.Map());
-  }
-  return chargen.get('session') as Y.Map<unknown>;
+  const session = chargen.get('session');
+  return session instanceof Y.Map ? session : undefined;
 }
 
 export function createSession(doc: Y.Doc, campaignId: string, gmUserId: string): string {
+  const existing = getSession(doc);
+  if (existing) return existing.id;
   const sessionId = crypto.randomUUID();
-  const sessionMap = getSessionMap(doc);
 
   doc.transact(() => {
+    const sessionMap =
+      getSessionMap(doc) ?? getChargenMap(doc).set('session', new Y.Map<unknown>());
     sessionMap.set('id', sessionId);
     sessionMap.set('campaignId', campaignId);
     sessionMap.set('createdAt', Date.now());
@@ -341,7 +343,7 @@ export function createSession(doc: Y.Doc, campaignId: string, gmUserId: string):
 
 export function getSession(doc: Y.Doc): ChargenSessionConfig | null {
   const sessionMap = getSessionMap(doc);
-  if (!sessionMap.get('id')) return null;
+  if (!sessionMap?.get('id')) return null;
 
   return {
     id: sessionMap.get('id') as string,
@@ -359,6 +361,7 @@ export async function updateSessionSettings(
 ): Promise<void> {
   if (await chargenCommand(doc, 'session/settings', updates)) return;
   const sessionMap = getSessionMap(doc);
+  if (!sessionMap) return;
   const currentSettings =
     (sessionMap.get('settings') as SessionSettings) || DEFAULT_SESSION_SETTINGS;
 
@@ -370,6 +373,7 @@ export async function updateSessionSettings(
 
 export function endSession(doc: Y.Doc): void {
   const sessionMap = getSessionMap(doc);
+  if (!sessionMap) return;
   doc.transact(() => {
     sessionMap.set('status', 'completed');
   }, 'session-end');
@@ -831,7 +835,7 @@ export async function resolveAIDraft(
   )
     return true;
   const characters = getCharactersMap(doc);
-  const charMap = characters.get(characterId);
+  const charMap = characters?.get(characterId);
   if (!charMap) return false;
 
   const terms = (charMap.get('terms') as CareerTermResult[]) || [];

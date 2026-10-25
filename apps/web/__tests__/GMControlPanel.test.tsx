@@ -300,7 +300,8 @@ describe('GMControlPanel - AI Draft Review', () => {
     });
 
     const charId = createCharacter(doc, 'player-draft', 'Drafty');
-    const charMap = getCharactersMap(doc).get(charId)!;
+    const charMap = getCharactersMap(doc)?.get(charId);
+    if (!charMap) throw new Error('Missing character');
 
     doc.transact(() => {
       const terms: CareerTermResult[] = [
@@ -341,7 +342,8 @@ describe('GMControlPanel - AI Draft Review', () => {
       fireEvent.click(screen.getByRole('button', { name: /Accept/i }));
     });
 
-    const updatedCharMap = getCharactersMap(doc).get(charId)!;
+    const updatedCharMap = getCharactersMap(doc)?.get(charId);
+    if (!updatedCharMap) throw new Error('Missing character');
     const updatedTerms = updatedCharMap.get('terms') as CareerTermResult[];
     const updatedField = updatedTerms[0]?.eventDescription;
     expect(typeof updatedField).toBe('object');
@@ -364,7 +366,8 @@ describe('GMControlPanel - AI Draft Review', () => {
     });
 
     const charId = createCharacter(doc, 'player-reject', 'Rejecto');
-    const charMap = getCharactersMap(doc).get(charId)!;
+    const charMap = getCharactersMap(doc)?.get(charId);
+    if (!charMap) throw new Error('Missing character');
 
     doc.transact(() => {
       const terms: CareerTermResult[] = [
@@ -403,7 +406,8 @@ describe('GMControlPanel - AI Draft Review', () => {
       fireEvent.click(screen.getByRole('button', { name: /Reject/i }));
     });
 
-    const updatedCharMap = getCharactersMap(doc).get(charId)!;
+    const updatedCharMap = getCharactersMap(doc)?.get(charId);
+    if (!updatedCharMap) throw new Error('Missing character');
     const updatedTerms = updatedCharMap.get('terms') as CareerTermResult[];
     const updatedField = updatedTerms[0]?.mishapDescription;
     const prov = updatedField as AIProvenance<string>;
@@ -423,7 +427,8 @@ describe('GMControlPanel - AI Draft Review', () => {
   });
   it('resolving a draft targets the correct term', async () => {
     const charId = createCharacter(doc, 'player-target', 'Target');
-    const charMap = getCharactersMap(doc).get(charId)!;
+    const charMap = getCharactersMap(doc)?.get(charId);
+    if (!charMap) throw new Error('Missing character');
 
     doc.transact(() => {
       const terms: CareerTermResult[] = [
@@ -470,7 +475,7 @@ describe('GMControlPanel - AI Draft Review', () => {
     const result = await resolveAIDraft(doc, charId, 2, 'mishapDescription', 'accept');
     expect(result).toBe(true);
 
-    const updatedTerms = getCharactersMap(doc).get(charId)!.get('terms') as CareerTermResult[];
+    const updatedTerms = getCharactersMap(doc)?.get(charId)?.get('terms') as CareerTermResult[];
     const term1 = updatedTerms.find((t) => t.termNumber === 1);
     const term2 = updatedTerms.find((t) => t.termNumber === 2);
 

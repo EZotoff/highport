@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import * as Y from 'yjs';
 import { getYDoc } from '../ydoc';
 import { useChargenUserId } from './identity';
+import { loadCharacterSnapshot } from './persistence';
 import {
   getCharactersMap,
+  getChargenMap,
   createCharacter,
   updateCharacter,
-  restoreCharacterSnapshot,
   yMapToCharacter,
   getSession,
-  getSessionMap,
   getEntityPool,
   getEntityPoolMap,
   getConnectionRequests,
@@ -39,28 +39,28 @@ export function useCharacter(charId: string | null): ChargenCharacter | null {
     }
 
     const doc = getYDoc();
-    const characters = getCharactersMap(doc);
+    const chargen = getChargenMap(doc);
 
-    const charMap = characters.get(charId);
+    const charMap = getCharactersMap(doc)?.get(charId);
     if (charMap) {
       setCharacter(yMapToCharacter(charMap as Y.Map<unknown>));
     } else {
-      setCharacter(restoreCharacterSnapshot(doc, charId));
+      setCharacter(loadCharacterSnapshot(charId));
     }
 
     const observer = () => {
-      const charMap = characters.get(charId);
+      const charMap = getCharactersMap(doc)?.get(charId);
       if (charMap) {
         setCharacter(yMapToCharacter(charMap as Y.Map<unknown>));
       } else {
-        setCharacter(restoreCharacterSnapshot(doc, charId));
+        setCharacter(loadCharacterSnapshot(charId));
       }
     };
 
-    characters.observeDeep(observer);
+    chargen.observeDeep(observer);
 
     return () => {
-      characters.unobserveDeep(observer);
+      chargen.unobserveDeep(observer);
     };
   }, [charId]);
 
@@ -72,21 +72,21 @@ export function useAllCharacters(): ChargenCharacter[] {
 
   useEffect(() => {
     const doc = getYDoc();
-    const charactersMap = getCharactersMap(doc);
+    const chargen = getChargenMap(doc);
 
     const updateCharacters = () => {
       const result: ChargenCharacter[] = [];
-      charactersMap.forEach((charMap) => {
+      getCharactersMap(doc)?.forEach((charMap) => {
         result.push(yMapToCharacter(charMap as Y.Map<unknown>));
       });
       setCharacters(result);
     };
 
     updateCharacters();
-    charactersMap.observeDeep(updateCharacters);
+    chargen.observeDeep(updateCharacters);
 
     return () => {
-      charactersMap.unobserveDeep(updateCharacters);
+      chargen.unobserveDeep(updateCharacters);
     };
   }, []);
 
@@ -128,17 +128,17 @@ export function useSession(): ChargenSessionConfig | null {
 
   useEffect(() => {
     const doc = getYDoc();
-    const sessionMap = getSessionMap(doc);
+    const chargen = getChargenMap(doc);
 
     const updateSession = () => {
       setSession(getSession(doc));
     };
 
     updateSession();
-    sessionMap.observeDeep(updateSession);
+    chargen.observeDeep(updateSession);
 
     return () => {
-      sessionMap.unobserveDeep(updateSession);
+      chargen.unobserveDeep(updateSession);
     };
   }, []);
 
