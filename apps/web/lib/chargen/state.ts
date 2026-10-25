@@ -620,12 +620,12 @@ export function yMapToCrossCharacterLink(linkMap: Y.Map<unknown>): CrossCharacte
     rawResolution.by === 'gm' &&
     'status' in rawResolution &&
     (rawResolution.status === 'accepted' || rawResolution.status === 'rejected')
-      ? { status: rawResolution.status, by: 'gm' as const }
+      ? { status: rawResolution.status as 'accepted' | 'rejected', by: 'gm' as const }
       : undefined;
-  const status =
+  const status: CrossCharacterLinkProposal['status'] =
     resolution?.status ??
-    (acceptedBy.includes(linkMap.get('sourceCharId')) &&
-    acceptedBy.includes(linkMap.get('targetCharId'))
+    (acceptedBy.includes(linkMap.get('sourceCharId') as string) &&
+    acceptedBy.includes(linkMap.get('targetCharId') as string)
       ? 'accepted'
       : 'pending');
   return {
