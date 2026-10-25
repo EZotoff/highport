@@ -76,3 +76,58 @@ it('finalizes the mechanically increased characteristic into actual node metadat
     benefits: ['+1 INT'],
   });
 });
+
+it('preserves roll order across reload when cash precedes a benefit', () => {
+  // Given
+  render(<MusteringOutStep characterId={id} />);
+  setRandomSeed(7);
+  fireEvent.click(screen.getByRole('button', { name: /Roll Cash/ }));
+  setRandomSeed(7);
+  // When
+  fireEvent.click(screen.getByRole('button', { name: /Roll Benefits/ }));
+  cleanup();
+  render(<MusteringOutStep characterId={id} />);
+  // Then
+  expect(getCharacter(doc, id)?.mustering?.rollHistory).toMatchObject([
+    { rollNumber: 1, type: 'cash', roll: 1 },
+    { rollNumber: 2, type: 'benefit', roll: 2, result: '+1 INT' },
+  ]);
+  expect(screen.getByText('#1')).toBeTruthy();
+  expect(screen.getByText('#2')).toBeTruthy();
+});
+
+it.each(['+1 EDU', 'Two Ship Shares'])(
+  'defers effects and persists only %s when a compound choice is picked',
+  (choice) => {
+    // Given: navy rank 5 adds 1 to seed 9's roll of 2.
+    const view = render(<MusteringOutStep characterId={id} />);
+    setRandomSeed(9);
+    // When: roll a compound benefit.
+    fireEvent.click(screen.getByRole('button', { name: /Roll Benefits/ }));
+    // Then: a persisted pending choice, no mechanical grant or ledger entry yet.
+    expect(screen.getByRole('group', { name: 'Choose one benefit' })).toBeTruthy();
+    expect(getCharacter(doc, id)).toMatchObject({
+      characteristics: { EDU: 7 },
+      benefits: [],
+      mustering: { shipShares: 0, rollsUsed: 1 },
+    });
+    expect(screen.getByRole('button', { name: /Roll Benefits/ })).toHaveProperty('disabled', true);
+    view.unmount();
+    render(<MusteringOutStep characterId={id} />);
+    fireEvent.click(screen.getByRole('button', { name: choice }));
+    expect(getCharacter(doc, id)).toMatchObject({
+      characteristics: { EDU: choice === '+1 EDU' ? 8 : 7 },
+      benefits: [choice],
+      mustering: {
+        rollsUsed: 1,
+        benefits: [choice],
+        shipShares: choice === 'Two Ship Shares' ? 2 : 0,
+        rollHistory: [{ rollNumber: 1, type: 'benefit', roll: 3, result: choice }],
+      },
+    });
+    expect(screen.queryByRole('group', { name: 'Choose one benefit' })).toBeNull();
+    cleanup();
+    render(<MusteringOutStep characterId={id} />);
+    expect(screen.getByText(choice)).toBeTruthy();
+  },
+);
