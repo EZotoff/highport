@@ -4,12 +4,7 @@ import { type DiceResult, roll2d6 } from './dice.js';
 export type PhysicalCharacteristicCode = 'STR' | 'DEX' | 'END';
 export type MentalCharacteristicCode = 'INT' | 'EDU' | 'SOC';
 
-export type AgingEffectTier =
-  | 'none_low'
-  | 'minor_physical'
-  | 'moderate_physical'
-  | 'physical_mental'
-  | 'none_high';
+export type AgingEffectTier = 'severe' | 'moderate' | 'minor' | 'none';
 
 export interface AgingEffect {
   tier: AgingEffectTier;
@@ -23,48 +18,39 @@ export interface AgingCheckResult extends AgingEffect {
 }
 
 export function getAgingEffect(total: number): AgingEffect {
+  // CRB aging bands per rules review: <=0 / 1-2 / 3-5 / 6+.
   if (total <= 0) {
     return {
-      tier: 'none_low',
-      physicalLosses: 0,
+      tier: 'severe',
+      physicalLosses: 3,
       mentalLosses: 0,
-      description: 'No effect.',
+      description: 'Reduce STR, DEX and END by 1 each.',
     };
   }
 
-  if (total <= 5) {
+  if (total <= 2) {
     return {
-      tier: 'minor_physical',
-      physicalLosses: 1,
-      mentalLosses: 0,
-      description: 'Reduce one physical characteristic by 1.',
-    };
-  }
-
-  if (total <= 8) {
-    return {
-      tier: 'moderate_physical',
+      tier: 'moderate',
       physicalLosses: 2,
       mentalLosses: 0,
       description: 'Reduce two physical characteristics by 1 each.',
     };
   }
 
-  if (total <= 10) {
+  if (total <= 5) {
     return {
-      tier: 'physical_mental',
+      tier: 'minor',
       physicalLosses: 1,
-      mentalLosses: 1,
-      description:
-        'Reduce one physical characteristic and one mental/social characteristic by 1 each.',
+      mentalLosses: 0,
+      description: 'Reduce one physical characteristic by 1.',
     };
   }
 
   return {
-    tier: 'none_high',
+    tier: 'none',
     physicalLosses: 0,
     mentalLosses: 0,
-    description: 'No effect due to superior physical conditioning.',
+    description: 'No effect.',
   };
 }
 
