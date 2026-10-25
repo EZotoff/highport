@@ -80,7 +80,7 @@ apps/rag-service/
 - **Dependency Injection**: Use `set_dependencies()` pattern in routers for easy mocking.
 - **Async/Await**: All I/O (DB, LLM, Network) must be async.
 - **Streaming**: Chat endpoints must return `StreamingResponse`.
-- **Headers**: Context (User ID, GM status) is passed via `X-` headers.
+- **Authentication**: Bearer API JWTs establish user identity, not campaign role. Browser retrieval is public-only. `RAG_SERVICE_SECRET` authenticates trusted server callers; ingest and scope updates require it. See `auth.py` for the trust boundary. Legacy identity/character headers grant no access.
 
 ## MOCKING PATTERN
 
@@ -102,6 +102,6 @@ def test_query():
 - **Hardcoded Secrets**: Never commit API keys. Use `.env`. Known issue: live API keys were committed historically (ROADMAP.md §Known Issues); treat any existing `.env` content as toxic.
 - **Blocking I/O**: Never use synchronous `requests` or `time.sleep`.
 - **Global State**: Avoid global state except for the dependency injection overrides (`set_dependencies()` / `clear_dependencies()`).
-- **Leaking Data**: Ignoring `filter={"access_scope": ...}` in vector DB queries. The header-trust model (`X-Is-GM`, `X-Character-Id`) is a known-issue prototype, NOT a production security boundary — do not promote it.
+- **Leaking Data**: Ignoring `filter={"access_scope": ...}` in vector DB queries. Never derive identity or access grants from `X-User-Id`, `X-Is-GM`, or character selectors.
 - **Trust `docs/rag-setup.md` as ground truth**: It contains known documentation bugs (wrong ingest example, wrong endpoint name). Verify against `apps/rag-service/routers/*.py` source.
 - **Per-character secrets**: `char:<id>` scope is a target, not a v1 promise. Do not implement client-side assuming it is enforced server-side.
