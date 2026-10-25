@@ -24,17 +24,20 @@
       "key": "B",
       "plan": ".omo/plans/fix-provenance-pipeline.md",
       "reviews": ".omo/plans/fix-provenance-pipeline.reviews.md",
-      "status": "in_progress",
+      "status": "done",
       "rationale": "surgical; settles authoritative-provenance display semantics that A and D build on",
       "started": "2026-10-25T03:35:00+01:00",
-      "branch": "agent/sisyphus/chargen-fix-b"
+      "branch": "agent/sisyphus/chargen-fix-b",
+      "completed": "2026-10-25T03:55:00+01:00",
+      "evidence": "F1-F5 APPROVE in .omo/plans/fix-provenance-pipeline.md Execution Record; branch agent/sisyphus/chargen-fix-b (9 commits incl. TDD reds) merged no-ff to main"
     },
     {
       "key": "A",
       "plan": ".omo/plans/fix-crdt-crosschar.md",
       "reviews": ".omo/plans/fix-crdt-crosschar.reviews.md",
-      "status": "pending",
-      "rationale": "state-machine correctness foundation; rebases onto B's settled provenance semantics"
+      "status": "in_progress",
+      "rationale": "state-machine correctness foundation; rebases onto B's settled provenance semantics",
+      "started": "2026-10-25T03:55:00+01:00"
     },
     {
       "key": "D",
@@ -61,5 +64,5 @@
   ],
   "suppression_marker": ".sisyphus/execution/.chargen-fix-execution-complete",
   "baseline_tests": "chargen suites 45/45 green at 3a34945; must remain green after every plan",
-  "updated": "2026-10-25T03:35:00+01:00"
+  "updated": "2026-10-25T03:55:00+01:00"
 }

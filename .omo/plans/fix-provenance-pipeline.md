@@ -200,3 +200,11 @@ One commit per todo (test-first todos get two: failing test, then fix). Conventi
 ## Execution Record
 
 Execution baseline: c20ab52e78e504d8ec6164edba8d871246c0502c (branch agent/sisyphus/chargen-fix-b, on top of merged Plan C)
+
+<!-- F-box verdicts recorded by the orchestrator, 2026-10-25 -->
+
+F#1: APPROVE — bash `pnpm --filter @highport/web test -- ydoc muster-out EntitySpawnForm term-resolution-narrative chargen-flow-integration` exit 0; 5 files / 40 tests passed
+F#2: APPROVE — bash `docker compose up -d && pnpm --filter @highport/server test -- export` exit 0; 18 passed
+F#3: APPROVE — bash `pnpm typecheck` exit 0; Turbo 6/6 tasks successful
+F#4: APPROVE — sanctioned substitute per plan: export.test.ts:151-168 exercises GET /api/export/json via fastify.inject and asserts top-level provenance + flags.highport.provenance on serialized payload + legacy-node backcompat
+F#5: APPROVE — git diff c20ab52..branch touches ONLY todo 1-5 files + tests + plan/state docs; no as any/@ts-ignore added; spawn transactions and Plan C authz untouched
