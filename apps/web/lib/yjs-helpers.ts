@@ -13,6 +13,7 @@ export function nodeToYMap(node: GraphNode): Y.Map<unknown> {
   ymap.set('hidden', node.hidden);
   ymap.set('created_at', node.created_at);
   ymap.set('created_by', node.created_by);
+  if (node.provenance !== undefined) ymap.set('provenance', { ...node.provenance });
   return ymap;
 }
 
@@ -27,6 +28,7 @@ export function yMapToNode(ymap: Y.Map<unknown>): GraphNode {
     hidden: ymap.get('hidden') as boolean,
     created_at: ymap.get('created_at') as number,
     created_by: ymap.get('created_by') as string,
+    provenance: (ymap.get('provenance') as GraphNode['provenance']) ?? undefined,
   };
 }
 
@@ -72,6 +74,7 @@ export function addNode(doc: Y.Doc, node: GraphNode): void {
     ymap.set('hidden', node.hidden);
     ymap.set('created_at', node.created_at);
     ymap.set('created_by', node.created_by);
+    if (node.provenance !== undefined) ymap.set('provenance', { ...node.provenance });
   });
 }
 
