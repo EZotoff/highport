@@ -10,6 +10,7 @@ import { campaigns, documents, documentUpdates } from '../db/schema.js';
 import { logger } from '../lib/logger.js';
 import { authorizeDocument, AuthorizationError, parseDocumentName } from '../lib/authz.js';
 import { auditUpdate, initializeAudit } from '../services/privilege-auditor.js';
+import { beforeHandleMessage } from './privilege-enforcement.js';
 
 const HOCUSPOCUS_PORT = 18121;
 const HOCUSPOCUS_JWT_PURPOSE = 'hocuspocus';
@@ -193,6 +194,7 @@ export async function fetchDocumentState(docId: string): Promise<Uint8Array | nu
 
 export const hocuspocus = new Hocuspocus({
   port: HOCUSPOCUS_PORT,
+  beforeHandleMessage,
 
   extensions: [
     new Database({

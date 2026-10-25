@@ -9,7 +9,7 @@ export function grantBasicTraining(
 ): Record<string, number> {
   const skills = { ...character.skills };
   if (!isFirstCareer) return skills;
-  // CRB per rules review: first-career service training grants level 0, never downgrades.
+  // MGT2E CRB 2e, Basic Training: first-career service skills at level 0; keep higher skills.
   for (const entry of career.skillTables.service) {
     const trainedAlternative = entry.skill.split('|').find((candidate) => candidate in skills);
     const resolved = resolveSkillTableEntry({ ...entry, skill: trainedAlternative ?? entry.skill });

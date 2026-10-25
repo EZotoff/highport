@@ -71,5 +71,4 @@ export interface SkillTableEntry {
 export interface BenefitEntry {
   roll: number;
   benefit: string;
-  orHighRank?: string; // Alternative if rank 5+
 }

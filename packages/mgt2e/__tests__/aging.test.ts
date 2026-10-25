@@ -1,22 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { getAgingEffect } from '../src/tables/aging.js';
+import { getAgingEffect, rollAgingCheck } from '../src/tables/aging.js';
 
-describe('CRB aging bands per rules review', () => {
+describe('CRB 2e Ageing Table', () => {
   it.each([
-    [-2, 'severe', 3],
-    [0, 'severe', 3],
-    [1, 'moderate', 2],
-    [2, 'moderate', 2],
-    [3, 'minor', 1],
-    [5, 'minor', 1],
-    [6, 'none', 0],
-    [12, 'none', 0],
-  ])('applies the physical-loss band when total is %s', (total, tier, losses) => {
-    // Given an aging total, when its effect is resolved, then only physical losses apply.
-    expect(getAgingEffect(Number(total))).toMatchObject({
-      tier,
-      physicalLosses: losses,
-      mentalLosses: 0,
+    [-7, [2, 2, 2], 1],
+    [-6, [2, 2, 2], 1],
+    [-5, [2, 2, 2], 0],
+    [-4, [2, 2, 1], 0],
+    [-3, [2, 1, 1], 0],
+    [-2, [1, 1, 1], 0],
+    [-1, [1, 1], 0],
+    [0, [1], 0],
+    [1, [], 0],
+    [12, [], 0],
+  ])('allocates reduction slots when total is %s', (total, physicalReductions, mentalLosses) => {
+    // Given an ageing total, when resolved, then slots preserve each CRB magnitude.
+    expect(getAgingEffect(total)).toMatchObject({
+      physicalReductions,
+      physicalLosses: physicalReductions.length,
+      mentalLosses,
     });
+  });
+
+  it('subtracts total terms without an Endurance DM when rolling ageing', () => {
+    // Given four completed terms, when rolling, then the only DM is -4.
+    expect(rollAgingCheck(4).roll.modifier).toBe(-4);
   });
 });

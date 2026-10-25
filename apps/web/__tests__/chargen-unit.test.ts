@@ -162,17 +162,17 @@ describe('Character creation unit flows', () => {
       const character = makeCharacter({
         terms: [makeTerm(1, 0), makeTerm(2, 2), makeTerm(3, 5)],
       });
-      expect(calculateTotalBenefitRolls(character)).toBe(5);
+      expect(calculateTotalBenefitRolls(character)).toBe(6);
       expect(isHighRank(character)).toBe(true);
     });
 
     it.each([
       [0, 4],
-      [1, 4],
+      [1, 5],
       [2, 5],
-      [3, 5],
+      [3, 6],
       [4, 6],
-      [5, 6],
+      [5, 7],
       [6, 7],
     ])('allocates survived terms plus rank band at rank %s', (rank, total) => {
       const terms = [1, 2, 3, 4].map((number) => makeTerm(number, rank));
@@ -208,7 +208,60 @@ describe('Character creation unit flows', () => {
       resetRandomSeed();
       expect(result.roll).toMatchObject({ total, modifier: 1 });
       const entry = career.benefitTable[total - 1];
-      expect(result.result).toBe(entry.orHighRank ?? entry.benefit);
+      expect(result.result).toBe(entry.benefit);
+    });
+
+    it('keeps the highest rank bonus when a later term has a lower rank', () => {
+      // Given a demoted veteran, when counting rolls, then highest rank still grants three.
+      expect(
+        calculateTotalBenefitRolls(makeCharacter({ terms: [makeTerm(1, 5), makeTerm(2, 0)] })),
+      ).toBe(5);
+    });
+
+    it('adds high rank DM to cash when rolling cash', () => {
+      // Given rank 5, when rolling cash, then rank DM applies to the cash table too.
+      const result = rollBenefit(makeCharacter({ terms: [makeTerm(1, 5)] }), 'cash');
+      expect(result.roll.modifier).toBe(1);
+    });
+
+    it('rejects a fourth cash roll when three were used across careers', () => {
+      // Given an exhausted lifetime cash allowance, when rolling, then no roll is allowed.
+      const character = makeCharacter({
+        mustering: {
+          totalRolls: 5,
+          rollsUsed: 3,
+          cashRollsUsed: 3,
+          benefits: [],
+          credits: 0,
+          shipShares: 0,
+        },
+      });
+      expect(() => rollBenefit(character, 'cash')).toThrow(/cash/i);
+    });
+
+    it('uses each career rank only for rolls earned in that career', () => {
+      // Given rank five Navy then rank zero Agent, when Navy rolls are spent, then Agent cash has no rank DM.
+      const character = makeCharacter({
+        terms: [makeTerm(1, 5), { ...makeTerm(2, 0), careerId: 'agent' }],
+        mustering: {
+          totalRolls: 5,
+          rollsUsed: 4,
+          cashRollsUsed: 0,
+          benefits: [],
+          credits: 0,
+          shipShares: 0,
+        },
+      });
+      expect(calculateTotalBenefitRolls(character)).toBe(5);
+      expect(rollBenefit(character, 'cash').roll.modifier).toBe(0);
+    });
+
+    it('forfeits a mishap term roll even when its survival flag is true', () => {
+      // Given a mishap during a survived term, when counting benefits, then only prior full terms earn rolls.
+      const career = getCareer('navy');
+      if (!career) throw new Error('Missing fixture');
+      const terms = [makeTerm(1, 0), { ...makeTerm(2, 0), mishap: career.mishaps[0] }];
+      expect(calculateTotalBenefitRolls(makeCharacter({ terms }))).toBe(1);
     });
   });
 

@@ -140,6 +140,10 @@ export interface CareerTermResult {
   agingEffect?: AgingEffectTier;
   agingPhysicalLosses?: PhysicalCharacteristicCode[];
   agingMentalLosses?: MentalCharacteristicCode[];
+  agingResolved?: boolean;
+  agingMusteringOut?: boolean;
+  agingCrisisCost?: number;
+  agingCrisis?: 'paid' | 'died';
 
   skillsGained: Array<{ skill: string; specialty?: string; level: number }>;
 
