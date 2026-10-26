@@ -69,29 +69,27 @@ export default function ChargenWizard() {
     const doc = getYDoc();
     const sessionId = getSessionId('graph');
     let isMounted = true;
-    const fallbackTimer = setTimeout(() => {
-      if (isMounted) {
-        setIsSynced(true);
-      }
-    }, 2000);
+    let stopWaiting: (() => void) | undefined;
     initAndWaitForPersistence(doc, `highport-graph-${sessionId}`).then(async () => {
       await provisionChargenSession(sessionId);
       if (isMounted) {
-        initProvider(doc, sessionId);
-        clearTimeout(fallbackTimer);
-        setIsSynced(true);
-
-        setTimeout(() => {
+        const provider = initProvider(doc, sessionId);
+        const onSynced = () => {
+          if (!provider.synced) return;
           if (!isMounted) return;
           if (!getSession(doc)) {
             createSession(doc, sessionId, currentSessionUserId);
           }
-        }, 500);
+          setIsSynced(true);
+        };
+        provider.on('synced', onSynced);
+        stopWaiting = () => provider.off('synced', onSynced);
+        onSynced();
       }
     });
     return () => {
       isMounted = false;
-      clearTimeout(fallbackTimer);
+      stopWaiting?.();
     };
   }, [currentSessionUserId]);
 
