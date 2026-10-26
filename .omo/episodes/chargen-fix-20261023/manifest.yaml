@@ -7,33 +7,38 @@
     {
       "id": "fu-chargen-1",
       "mandatory": true,
-      "text": "Give the RAG service the same principal-derived authorization as the game API; it still trusts caller-supplied identity headers."
+      "text": "Give the RAG service the same principal-derived authorization as the game API; it still trusts caller-supplied identity headers.",
+      "resolved": "2791a8c"
     },
     {
       "id": "fu-chargen-2",
       "mandatory": true,
-      "text": "Reconcile the CRB band values in packages/mgt2e against an authoritative rules source; they are currently marked 'per reviewer'."
+      "text": "Reconcile the CRB band values in packages/mgt2e against an authoritative rules source; they are currently marked 'per reviewer'.",
+      "resolved": "3149aca"
     },
     {
       "id": "fu-chargen-3",
       "mandatory": true,
-      "text": "Confirm the qa-traveller category binding (zai-coding-plan/glm-5.3) resolves after the next OpenCode server reload; the dead glm-5.2 id blocked that category for the whole campaign."
+      "text": "Confirm the qa-traveller category binding (zai-coding-plan/glm-5.3) resolves after the next OpenCode server reload; the dead glm-5.2 id blocked that category for the whole campaign.",
+      "resolved": "confirmed on glm-5.3 after OpenCode reload"
     },
     {
       "id": "fu-chargen-4",
       "mandatory": false,
-      "text": "Add a two-browser chargen journey to the Playwright suite so the concurrent dual-acceptance race stays covered without manual QA lanes."
+      "text": "Add a two-browser chargen journey to the Playwright suite so the concurrent dual-acceptance race stays covered without manual QA lanes.",
+      "resolved": "dc88218"
     },
     {
       "id": "fu-chargen-5",
       "mandatory": false,
-      "text": "Expose stable test hooks on the chargen action buttons, since synthetic ref-clicks do not fire their React handlers."
+      "text": "Expose stable test hooks on the chargen action buttons, since synthetic ref-clicks do not fire their React handlers.",
+      "resolved": "dc88218"
     }
   ],
   "intent": "Review the chargen functionality and its linked features from multiple LLM families, plan the fixes through a debate plus Prometheus/Momus, execute the plans with verified waves, and close the integration gap with agentic real-surface QA until every finding is fixed and independently verified.",
   "lane": "full",
   "last_verify": {
-    "ts": "2026-10-26T00:33:41Z",
+    "ts": "2026-10-26T00:36:51Z",
     "result": "pass"
   },
   "learnings": [
