@@ -194,6 +194,7 @@ export default function MusteringOutStep({ characterId }: MusteringOutStepProps)
               scifiVariant="secondary"
               theme="cyan"
               className="h-auto flex-col gap-2 p-4"
+              data-testid="roll-benefits"
             >
               <Gift className="w-5 h-5 text-cyan-400" />
               <div className="font-bold">Roll Benefits</div>

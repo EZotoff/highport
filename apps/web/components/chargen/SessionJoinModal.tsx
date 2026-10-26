@@ -297,6 +297,7 @@ export default function SessionJoinModal() {
             onClick={handleJoin}
             disabled={isJoining || !playerName.trim()}
             theme="cyan"
+            data-testid="join-session"
             glow
             className="flex items-center gap-2"
           >

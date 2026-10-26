@@ -150,6 +150,7 @@ export default function BackgroundStep({ characterId, onCharacterCreated }: Back
               theme="cyan"
               glow
               type="submit"
+              data-testid="create-character"
               onClick={(e) => {
                 e.preventDefault();
                 handleCreate();
