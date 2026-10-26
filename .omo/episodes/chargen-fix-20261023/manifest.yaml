@@ -1,338 +1,582 @@
 {
-  'closed_at': '2026-10-25T20:32:33Z',
-  'closeout_status': 'complete',
-  'current_phase': 'qa-campaign',
-  'episode': 'chargen-fix-20261023',
-  'follow_ups':
-    [
-      {
-        'id': 'fu-chargen-1',
-        'mandatory': true,
-        'text': 'Give the RAG service the same principal-derived authorization as the game API; it still trusts caller-supplied identity headers.',
-      },
-      {
-        'id': 'fu-chargen-2',
-        'mandatory': true,
-        'text': "Reconcile the CRB band values in packages/mgt2e against an authoritative rules source; they are currently marked 'per reviewer'.",
-      },
-      {
-        'id': 'fu-chargen-3',
-        'mandatory': true,
-        'text': 'Confirm the qa-traveller category binding (zai-coding-plan/glm-5.3) resolves after the next OpenCode server reload; the dead glm-5.2 id blocked that category for the whole campaign.',
-      },
-      {
-        'id': 'fu-chargen-4',
-        'mandatory': false,
-        'text': 'Add a two-browser chargen journey to the Playwright suite so the concurrent dual-acceptance race stays covered without manual QA lanes.',
-      },
-      {
-        'id': 'fu-chargen-5',
-        'mandatory': false,
-        'text': 'Expose stable test hooks on the chargen action buttons, since synthetic ref-clicks do not fire their React handlers.',
-      },
-    ],
-  'intent': 'Review the chargen functionality and its linked features from multiple LLM families, plan the fixes through a debate plus Prometheus/Momus, execute the plans with verified waves, and close the integration gap with agentic real-surface QA until every finding is fixed and independently verified.',
-  'lane': 'full',
-  'last_verify': { 'ts': '2026-10-25T20:33:03Z', 'result': 'pass' },
-  'learnings':
-    [
-      {
-        'claim': "A read accessor that creates and persists a nested Y.Map can destroy populated shared state: a later client's empty map wins the merge because a nested map is one whole-value key. Readers must never write; creation must attach first and adopt an existing value.",
-        'disposition': 'promoted: project scope (highport) — wisdom 20261025-213252-mo4h',
-        'evidence_refs':
-          ['apps/web/lib/chargen/state.ts', '.sisyphus/reviews/chargen-20261023/qa-campaign.md'],
-        'kind': 'technique',
-        'phase': 'qa-campaign',
-        'scope': 'repo:highport',
-        'seq': 1,
-      },
-      {
-        'claim': 'Mocked-database unit tests cannot see integration breaks: the authorization gate that closed a real hole also bricked the primary flow for every user, and only a real browser with a real token surfaced it.',
-        'disposition': 'promoted: system scope — wisdom 20261025-213252-9yln',
-        'evidence_refs':
-          [
-            '.sisyphus/evidence/qa-20261025/Q1/REPORT.md',
-            '.sisyphus/evidence/qa-20261025/Q2/Q2-report.md',
+  "closed_at": "2026-10-25T20:32:33Z",
+  "closeout_status": "complete",
+  "current_phase": "follow-ups",
+  "episode": "chargen-fix-20261023",
+  "follow_ups": [
+    {
+      "id": "fu-chargen-1",
+      "mandatory": true,
+      "text": "Give the RAG service the same principal-derived authorization as the game API; it still trusts caller-supplied identity headers."
+    },
+    {
+      "id": "fu-chargen-2",
+      "mandatory": true,
+      "text": "Reconcile the CRB band values in packages/mgt2e against an authoritative rules source; they are currently marked 'per reviewer'."
+    },
+    {
+      "id": "fu-chargen-3",
+      "mandatory": true,
+      "text": "Confirm the qa-traveller category binding (zai-coding-plan/glm-5.3) resolves after the next OpenCode server reload; the dead glm-5.2 id blocked that category for the whole campaign."
+    },
+    {
+      "id": "fu-chargen-4",
+      "mandatory": false,
+      "text": "Add a two-browser chargen journey to the Playwright suite so the concurrent dual-acceptance race stays covered without manual QA lanes."
+    },
+    {
+      "id": "fu-chargen-5",
+      "mandatory": false,
+      "text": "Expose stable test hooks on the chargen action buttons, since synthetic ref-clicks do not fire their React handlers."
+    }
+  ],
+  "intent": "Review the chargen functionality and its linked features from multiple LLM families, plan the fixes through a debate plus Prometheus/Momus, execute the plans with verified waves, and close the integration gap with agentic real-surface QA until every finding is fixed and independently verified.",
+  "lane": "full",
+  "last_verify": {
+    "ts": "2026-10-26T00:33:41Z",
+    "result": "pass"
+  },
+  "learnings": [
+    {
+      "claim": "A read accessor that creates and persists a nested Y.Map can destroy populated shared state: a later client's empty map wins the merge because a nested map is one whole-value key. Readers must never write; creation must attach first and adopt an existing value.",
+      "disposition": "promoted: project scope (highport) — wisdom 20261025-213252-mo4h",
+      "evidence_refs": [
+        "apps/web/lib/chargen/state.ts",
+        ".sisyphus/reviews/chargen-20261023/qa-campaign.md"
+      ],
+      "kind": "technique",
+      "phase": "qa-campaign",
+      "scope": "repo:highport",
+      "seq": 1
+    },
+    {
+      "claim": "Mocked-database unit tests cannot see integration breaks: the authorization gate that closed a real hole also bricked the primary flow for every user, and only a real browser with a real token surfaced it.",
+      "disposition": "promoted: system scope — wisdom 20261025-213252-9yln",
+      "evidence_refs": [
+        ".sisyphus/evidence/qa-20261025/Q1/REPORT.md",
+        ".sisyphus/evidence/qa-20261025/Q2/Q2-report.md"
+      ],
+      "kind": "technique",
+      "phase": "qa-campaign",
+      "scope": "repo:highport",
+      "seq": 2
+    },
+    {
+      "claim": "Never run a production build for an application whose dev server is serving it: the build overwrites the build output directory and breaks the running dev server mid-verification.",
+      "disposition": "promoted: system scope — wisdom 20261025-213253-blf8",
+      "evidence_refs": [
+        ".sisyphus/evidence/qa-20261025/Q1/REPORT.md"
+      ],
+      "kind": "technique",
+      "phase": "qa-campaign",
+      "scope": "global:agent-workflow",
+      "seq": 3
+    },
+    {
+      "claim": "Untargeted dice cannot be seeded from the page: the QA roll interceptor only fires on rolls that carry a target, so verifying an untargeted roll requires repeated real rolls or fabricated state, not a deterministic seed.",
+      "disposition": "kept repo-scoped: not promoted (Highport QA-dice specific, documented in qa-campaign.md)",
+      "evidence_refs": [
+        ".sisyphus/evidence/qa-20261025/RV3/REPORT.md"
+      ],
+      "kind": "technique",
+      "phase": "qa-campaign",
+      "scope": "repo:highport",
+      "seq": 4
+    },
+    {
+      "claim": "A relabel step that filters an entire ledger array by label erases unrelated earlier entries; slice at the pre-application lengths and replace only the tail.",
+      "disposition": "promoted: system scope — wisdom 20261025-213254-qxza",
+      "evidence_refs": [
+        "apps/web/lib/chargen/mustering-benefits.ts",
+        ".sisyphus/evidence/qa-20261025/RV4/REPORT.md"
+      ],
+      "kind": "technique",
+      "phase": "qa-campaign",
+      "scope": "global:agent-code",
+      "seq": 5
+    }
+  ],
+  "owner": "sisyphus",
+  "phases": [
+    {
+      "name": "review",
+      "receipts": [
+        {
+          "claims": [
+            "Five review lanes across distinct model families (MiMo, GPT-6.1-Sol, GLM-5.3) audited chargen and its linked features and produced 26 actionable findings (6 CRITICAL, 14 MAJOR, 6 MINOR) plus 3 informational observations, each with a file:line receipt.",
+            "The lanes fact-checked the plan premises against source and refuted two of them (spawnEntity is covered by three tests; the linksMap caller count was 8, not 9), and forced-check adjudication downgraded three hypotheses (Math.random spawn position is cosmetic, pre-attach Y.Map mutation is safe on yjs 13.6.29, the strict-mode gate path is reachable but does not leak)."
           ],
-        'kind': 'technique',
-        'phase': 'qa-campaign',
-        'scope': 'repo:highport',
-        'seq': 2,
-      },
-      {
-        'claim': 'Never run a production build for an application whose dev server is serving it: the build overwrites the build output directory and breaks the running dev server mid-verification.',
-        'disposition': 'promoted: system scope — wisdom 20261025-213253-blf8',
-        'evidence_refs': ['.sisyphus/evidence/qa-20261025/Q1/REPORT.md'],
-        'kind': 'technique',
-        'phase': 'qa-campaign',
-        'scope': 'global:agent-workflow',
-        'seq': 3,
-      },
-      {
-        'claim': 'Untargeted dice cannot be seeded from the page: the QA roll interceptor only fires on rolls that carry a target, so verifying an untargeted roll requires repeated real rolls or fabricated state, not a deterministic seed.',
-        'disposition': 'kept repo-scoped: not promoted (Highport QA-dice specific, documented in qa-campaign.md)',
-        'evidence_refs': ['.sisyphus/evidence/qa-20261025/RV3/REPORT.md'],
-        'kind': 'technique',
-        'phase': 'qa-campaign',
-        'scope': 'repo:highport',
-        'seq': 4,
-      },
-      {
-        'claim': 'A relabel step that filters an entire ledger array by label erases unrelated earlier entries; slice at the pre-application lengths and replace only the tail.',
-        'disposition': 'promoted: system scope — wisdom 20261025-213254-qxza',
-        'evidence_refs':
-          [
-            'apps/web/lib/chargen/mustering-benefits.ts',
-            '.sisyphus/evidence/qa-20261025/RV4/REPORT.md',
-          ],
-        'kind': 'technique',
-        'phase': 'qa-campaign',
-        'scope': 'global:agent-code',
-        'seq': 5,
-      },
-    ],
-  'owner': 'sisyphus',
-  'phases':
-    [
-      {
-        'name': 'review',
-        'receipts':
-          [
+          "closeout_status": null,
+          "evidence": [
             {
-              'claims':
-                [
-                  'Five review lanes across distinct model families (MiMo, GPT-6.1-Sol, GLM-5.3) audited chargen and its linked features and produced 26 actionable findings (6 CRITICAL, 14 MAJOR, 6 MINOR) plus 3 informational observations, each with a file:line receipt.',
-                  'The lanes fact-checked the plan premises against source and refuted two of them (spawnEntity is covered by three tests; the linksMap caller count was 8, not 9), and forced-check adjudication downgraded three hypotheses (Math.random spawn position is cosmetic, pre-attach Y.Map mutation is safe on yjs 13.6.29, the strict-mode gate path is reachable but does not leak).',
-                ],
-              'closeout_status': null,
-              'evidence':
-                [
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/ledger.md',
-                    'sha256': 'f08deaf6ea03b5771819a848e7e3bd4100057d1488db5956edb531ee01694d90',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/01-crdt-sync.md',
-                    'sha256': '4521fe360fa6b78278937f079c996a2c1b020e5671d113e615532e6ea467a229',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/02-provenance.md',
-                    'sha256': '248d2710aa41606081f6411ae45414c9a6527791fb39de143bc55f891c6b6d09',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/03-coverage.md',
-                    'sha256': '168cb7906f294bd04712f000b6e749321722c7f4b9fa9bb8772bdc2b357db313',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/04-adversarial.md',
-                    'sha256': 'e1bd4597a7246b9948ed248f66e20c8ef2b47577d70e1aba4f5bbd67a84af3ee',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/05-mgt2e-rules.md',
-                    'sha256': '6bd2929327b429d68548616f382e3c63ed77316b4741f09c1ab7394cc10ea98b',
-                  },
-                ],
-              'kind': 'receipt',
-              'phase': 'review',
-              'resume_pointer': null,
-              'seq': 1,
-              'session': null,
-              'ts': '2026-10-25T20:31:51Z',
-              'verified': true,
-              'verified_reason': null,
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/ledger.md",
+              "sha256": "f08deaf6ea03b5771819a848e7e3bd4100057d1488db5956edb531ee01694d90"
             },
-          ],
-        'sessions': [],
-        'status': 'done',
-      },
-      {
-        'name': 'planning',
-        'receipts':
-          [
             {
-              'claims':
-                [
-                  'A decision-review debate planned the fix campaign; its critique round fact-checked the proposal against source and forced one false claim to be retracted, and a revision added the post-merge edge-reconciliation design the executor needed.',
-                  'Four Prometheus plans were written and reviewed by Momus: three approved on round 1 (provenance, server authz, MGT2E rules) and one after three rounds (CRDT cross-character, rejected twice for real defects - an unachievable acceptance test and a recursive reconcile wiring).',
-                ],
-              'closeout_status': null,
-              'evidence':
-                [
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.md',
-                    'sha256': 'f0b58d91727963a32e0aa3546f89280b31717abab8c274b170800d997ab7e1b7',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.reviews.md',
-                    'sha256': '7627e5bd777675ba5c3566de7d7306abfdac818e6aa4610014f8b0bb15a11694',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.md',
-                    'sha256': 'e01446aaa6b01b7014c930497280b8779e8e9f18dfc223ab62fb250410e8629d',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.reviews.md',
-                    'sha256': 'f4f66eb27e68432b111d68f6b2ec57adb9ab514877b107ccc47464810fade749',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.md',
-                    'sha256': '9789c61205e90408e5fbe4154e6791d2f6eb53061cc25b4d715444f0ac252ae5',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.reviews.md',
-                    'sha256': '5a558d96ab13daece8ce3bb1d4507cccb9409a06db160c41fa12ddfe73cdb5e0',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.md',
-                    'sha256': 'a0d0deeb32f3f9429732faeb0239a9ef0ee0391ec782274b6f72bd42bcb98fce',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.reviews.md',
-                    'sha256': '081e9a1156ece81748fcdb1d218215a2eb3a23156a038e8753ceb4c19f38598f',
-                  },
-                ],
-              'kind': 'receipt',
-              'phase': 'planning',
-              'resume_pointer': null,
-              'seq': 2,
-              'session': null,
-              'ts': '2026-10-25T20:31:51Z',
-              'verified': true,
-              'verified_reason': null,
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/01-crdt-sync.md",
+              "sha256": "4521fe360fa6b78278937f079c996a2c1b020e5671d113e615532e6ea467a229"
             },
-          ],
-        'sessions': [],
-        'status': 'done',
-      },
-      {
-        'name': 'execution',
-        'receipts':
-          [
             {
-              'claims':
-                [
-                  'All four plans were executed and every Final Verification Wave recorded APPROVE verdicts in the plan documents: F1-F4 for the server authz plan, F1-F5 for the provenance plan, F1-F4 for the CRDT plan, F1-F4 for the MGT2E rules plan.',
-                  'The verification wave for the authz plan included live adversarial curls (header-only impersonation 401, non-member 403, spoofed header ignored, purpose separation 401) and live WebSocket handshakes (member authenticated, outsider rejected, unknown campaign rejected without auto-create).',
-                ],
-              'closeout_status': null,
-              'evidence':
-                [
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.md',
-                    'sha256': '9789c61205e90408e5fbe4154e6791d2f6eb53061cc25b4d715444f0ac252ae5',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.md',
-                    'sha256': 'e01446aaa6b01b7014c930497280b8779e8e9f18dfc223ab62fb250410e8629d',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.md',
-                    'sha256': 'f0b58d91727963a32e0aa3546f89280b31717abab8c274b170800d997ab7e1b7',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.md',
-                    'sha256': 'a0d0deeb32f3f9429732faeb0239a9ef0ee0391ec782274b6f72bd42bcb98fce',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/authz-curl.md',
-                    'sha256': '1e3ccc6a193ff5af8a7cee33684031992da2512f67428cde6fbe1924c97d91c7',
-                  },
-                ],
-              'kind': 'receipt',
-              'phase': 'execution',
-              'resume_pointer': null,
-              'seq': 3,
-              'session': null,
-              'ts': '2026-10-25T20:31:51Z',
-              'verified': true,
-              'verified_reason': null,
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/02-provenance.md",
+              "sha256": "248d2710aa41606081f6411ae45414c9a6527791fb39de143bc55f891c6b6d09"
             },
-          ],
-        'sessions': [],
-        'status': 'done',
-      },
-      {
-        'name': 'qa-campaign',
-        'receipts':
-          [
             {
-              'claims':
-                [
-                  'An agentic QA campaign executed 21 checks across eight lanes on the running system (browser plus live API and WebSocket); all 21 passed. Coverage included concurrent dual-acceptance producing exactly one edge, session survival across a join, GM draft reject and edit propagating to a second client, aging losses applied, rank-5 benefit roll count and non-zero DM, a choice-gated event blocking advance, no literal pipe skill keys, export carrying both provenance shapes, and cross-campaign access denied.',
-                  'The campaign found eight product defects that mocked-database unit tests could not see - an identity mismatch that hid the GM panel and 403-ed the first accept, a join that wiped the shared session, a clipped wizard button, an ignored joined session id, compound and and-form mustering benefits applying nothing, a missing and-grant ledger entry, and a relabel that erased earlier grants - all fixed, merged, and re-verified.',
-                  'The verification suite after the fixes: web 382 tests passed, server 141 passed with 37 pre-existing skips, both typechecks clean.',
-                ],
-              'closeout_status': null,
-              'evidence':
-                [
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/qa-campaign.md',
-                    'sha256': '0601dba1eeca1c01215dd8a2da75fb941fcdd3037fc5205839cef7597ca7de29',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/RV4/REPORT.md',
-                    'sha256': '318294cf23b83075faad32ed0d5dfc215d03c6348e6a2ae6d7457cad179996dc',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/Q1/REPORT.md',
-                    'sha256': 'dee680c19cc0b5913968c10750e789c77c1283cb6b4bf3992805d50545f446d1',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/Q2/Q2-report.md',
-                    'sha256': '95bd3923ab8daf547ab5305115460295e6bf71aa4f091b6d5f3715ff2d916044',
-                  },
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.sisyphus/execution/chargen-fix-execution.json',
-                    'sha256': '7b237a36c9f9127d44cca6744c8679e3111ffff97202cf9d6fe8a0bf61eb96c6',
-                  },
-                ],
-              'kind': 'receipt',
-              'phase': 'qa-campaign',
-              'resume_pointer': null,
-              'seq': 4,
-              'session': null,
-              'ts': '2026-10-25T20:31:51Z',
-              'verified': true,
-              'verified_reason': null,
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/03-coverage.md",
+              "sha256": "168cb7906f294bd04712f000b6e749321722c7f4b9fa9bb8772bdc2b357db313"
             },
-          ],
-        'sessions': [],
-        'status': 'done',
-      },
-      {
-        'name': 'closeout',
-        'receipts':
-          [
             {
-              'claims':
-                [
-                  'Episode closed: all four phases carry verified receipts; every review finding is fixed, merged, and independently re-verified on the running system (21 agentic real-surface checks, all passing).',
-                  'Terminal summary written to closeout.md and bound to this receipt by digest; verification suite after the fixes: web 382 tests passed, server 141 passed with 37 pre-existing skips, both typechecks clean.',
-                ],
-              'closeout_status': 'complete',
-              'evidence':
-                [
-                  {
-                    'path': '/home/ezotoff/AI_projects/traveller/.omo/episodes/chargen-fix-20261023/closeout.md',
-                    'sha256': '5845ca653cc5b9da253c0b6cd011988b8210f108d1d3e85ba1df19072bd20361',
-                  },
-                ],
-              'kind': 'closeout',
-              'phase': 'closeout',
-              'resume_pointer': null,
-              'seq': 5,
-              'session': null,
-              'ts': '2026-10-25T20:32:33Z',
-              'verified': true,
-              'verified_reason': null,
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/04-adversarial.md",
+              "sha256": "e1bd4597a7246b9948ed248f66e20c8ef2b47577d70e1aba4f5bbd67a84af3ee"
             },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/05-mgt2e-rules.md",
+              "sha256": "6bd2929327b429d68548616f382e3c63ed77316b4741f09c1ab7394cc10ea98b"
+            }
           ],
-        'sessions': [],
-        'status': 'done',
-      },
-    ],
-  'project': '/home/ezotoff/AI_projects/traveller',
-  'schema': '0.2',
-  'started': '2026-10-23T22:53:19+02:00',
-  'status': 'closed',
+          "kind": "receipt",
+          "phase": "review",
+          "resume_pointer": null,
+          "seq": 1,
+          "session": null,
+          "ts": "2026-10-25T20:31:51Z",
+          "verified": true,
+          "verified_reason": null
+        }
+      ],
+      "sessions": [],
+      "status": "done"
+    },
+    {
+      "name": "planning",
+      "receipts": [
+        {
+          "claims": [
+            "A decision-review debate planned the fix campaign; its critique round fact-checked the proposal against source and forced one false claim to be retracted, and a revision added the post-merge edge-reconciliation design the executor needed.",
+            "Four Prometheus plans were written and reviewed by Momus: three approved on round 1 (provenance, server authz, MGT2E rules) and one after three rounds (CRDT cross-character, rejected twice for real defects - an unachievable acceptance test and a recursive reconcile wiring)."
+          ],
+          "closeout_status": null,
+          "evidence": [
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.md",
+              "sha256": "f0b58d91727963a32e0aa3546f89280b31717abab8c274b170800d997ab7e1b7"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.reviews.md",
+              "sha256": "7627e5bd777675ba5c3566de7d7306abfdac818e6aa4610014f8b0bb15a11694"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.md",
+              "sha256": "e01446aaa6b01b7014c930497280b8779e8e9f18dfc223ab62fb250410e8629d"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.reviews.md",
+              "sha256": "f4f66eb27e68432b111d68f6b2ec57adb9ab514877b107ccc47464810fade749"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.md",
+              "sha256": "9789c61205e90408e5fbe4154e6791d2f6eb53061cc25b4d715444f0ac252ae5"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.reviews.md",
+              "sha256": "5a558d96ab13daece8ce3bb1d4507cccb9409a06db160c41fa12ddfe73cdb5e0"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.md",
+              "sha256": "a0d0deeb32f3f9429732faeb0239a9ef0ee0391ec782274b6f72bd42bcb98fce"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.reviews.md",
+              "sha256": "081e9a1156ece81748fcdb1d218215a2eb3a23156a038e8753ceb4c19f38598f"
+            }
+          ],
+          "kind": "receipt",
+          "phase": "planning",
+          "resume_pointer": null,
+          "seq": 2,
+          "session": null,
+          "ts": "2026-10-25T20:31:51Z",
+          "verified": true,
+          "verified_reason": null
+        }
+      ],
+      "sessions": [],
+      "status": "done"
+    },
+    {
+      "name": "execution",
+      "receipts": [
+        {
+          "claims": [
+            "All four plans were executed and every Final Verification Wave recorded APPROVE verdicts in the plan documents: F1-F4 for the server authz plan, F1-F5 for the provenance plan, F1-F4 for the CRDT plan, F1-F4 for the MGT2E rules plan.",
+            "The verification wave for the authz plan included live adversarial curls (header-only impersonation 401, non-member 403, spoofed header ignored, purpose separation 401) and live WebSocket handshakes (member authenticated, outsider rejected, unknown campaign rejected without auto-create)."
+          ],
+          "closeout_status": null,
+          "evidence": [
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.md",
+              "sha256": "9789c61205e90408e5fbe4154e6791d2f6eb53061cc25b4d715444f0ac252ae5"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.md",
+              "sha256": "e01446aaa6b01b7014c930497280b8779e8e9f18dfc223ab62fb250410e8629d"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.md",
+              "sha256": "f0b58d91727963a32e0aa3546f89280b31717abab8c274b170800d997ab7e1b7"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.md",
+              "sha256": "a0d0deeb32f3f9429732faeb0239a9ef0ee0391ec782274b6f72bd42bcb98fce"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/authz-curl.md",
+              "sha256": "1e3ccc6a193ff5af8a7cee33684031992da2512f67428cde6fbe1924c97d91c7"
+            }
+          ],
+          "kind": "receipt",
+          "phase": "execution",
+          "resume_pointer": null,
+          "seq": 3,
+          "session": null,
+          "ts": "2026-10-25T20:31:51Z",
+          "verified": true,
+          "verified_reason": null
+        }
+      ],
+      "sessions": [],
+      "status": "done"
+    },
+    {
+      "name": "qa-campaign",
+      "receipts": [
+        {
+          "claims": [
+            "An agentic QA campaign executed 21 checks across eight lanes on the running system (browser plus live API and WebSocket); all 21 passed. Coverage included concurrent dual-acceptance producing exactly one edge, session survival across a join, GM draft reject and edit propagating to a second client, aging losses applied, rank-5 benefit roll count and non-zero DM, a choice-gated event blocking advance, no literal pipe skill keys, export carrying both provenance shapes, and cross-campaign access denied.",
+            "The campaign found eight product defects that mocked-database unit tests could not see - an identity mismatch that hid the GM panel and 403-ed the first accept, a join that wiped the shared session, a clipped wizard button, an ignored joined session id, compound and and-form mustering benefits applying nothing, a missing and-grant ledger entry, and a relabel that erased earlier grants - all fixed, merged, and re-verified.",
+            "The verification suite after the fixes: web 382 tests passed, server 141 passed with 37 pre-existing skips, both typechecks clean."
+          ],
+          "closeout_status": null,
+          "evidence": [
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/qa-campaign.md",
+              "sha256": "0601dba1eeca1c01215dd8a2da75fb941fcdd3037fc5205839cef7597ca7de29"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/RV4/REPORT.md",
+              "sha256": "318294cf23b83075faad32ed0d5dfc215d03c6348e6a2ae6d7457cad179996dc"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/Q1/REPORT.md",
+              "sha256": "dee680c19cc0b5913968c10750e789c77c1283cb6b4bf3992805d50545f446d1"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/Q2/Q2-report.md",
+              "sha256": "95bd3923ab8daf547ab5305115460295e6bf71aa4f091b6d5f3715ff2d916044"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/execution/chargen-fix-execution.json",
+              "sha256": "7b237a36c9f9127d44cca6744c8679e3111ffff97202cf9d6fe8a0bf61eb96c6"
+            }
+          ],
+          "kind": "receipt",
+          "phase": "qa-campaign",
+          "resume_pointer": null,
+          "seq": 4,
+          "session": null,
+          "ts": "2026-10-25T20:31:51Z",
+          "verified": true,
+          "verified_reason": null
+        }
+      ],
+      "sessions": [],
+      "status": "done"
+    },
+    {
+      "name": "closeout",
+      "receipts": [
+        {
+          "claims": [
+            "Episode closed: all four phases carry verified receipts; every review finding is fixed, merged, and independently re-verified on the running system (21 agentic real-surface checks, all passing).",
+            "Terminal summary written to closeout.md and bound to this receipt by digest; verification suite after the fixes: web 382 tests passed, server 141 passed with 37 pre-existing skips, both typechecks clean."
+          ],
+          "closeout_status": "complete",
+          "evidence": [
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/episodes/chargen-fix-20261023/closeout.md",
+              "sha256": "5845ca653cc5b9da253c0b6cd011988b8210f108d1d3e85ba1df19072bd20361"
+            }
+          ],
+          "kind": "closeout",
+          "phase": "closeout",
+          "resume_pointer": null,
+          "seq": 5,
+          "session": null,
+          "ts": "2026-10-25T20:32:33Z",
+          "verified": true,
+          "verified_reason": null
+        }
+      ],
+      "sessions": [],
+      "status": "done"
+    },
+    {
+      "name": "follow-ups",
+      "receipts": [
+        {
+          "claims": [
+            "All five manifest follow-ups and the F04-2 enforcement gap were resolved: fu-1 RAG principal authz (2791a8c), fu-2 CRB band reconciliation sourced from the rulebook (3149aca), fu-3 qa-traveller category confirmed on glm-5.3 after the OpenCode reload, fu-4 two-browser dual-acceptance e2e and fu-5 test hooks (dc88218), plus the F04-2 pre-merge WebSocket enforcement via beforeHandleMessage (3149aca).",
+            "The follow-up work also surfaced and fixed a real product race: the chargen wizard exposed write controls before the initial Yjs sync, so the session creator first writes failed dependency checks and left no joinable session (43b4a14).",
+            "Final gates: mgt2e 27 passed, web 401 passed, server 171 passed with 37 pre-existing skips, pytest 194 passed, all typechecks clean; the two-browser e2e passes repeatedly including the exactly-one-edge assertion."
+          ],
+          "closeout_status": null,
+          "evidence": [
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/execution/followups-20261025.json",
+              "sha256": "2e130e0eff31176f3c873e4495ff85a8b2aa0d955476c038dda56776adec39d8"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/qa-campaign.md",
+              "sha256": "0601dba1eeca1c01215dd8a2da75fb941fcdd3037fc5205839cef7597ca7de29"
+            },
+            {
+              "path": "/home/ezotoff/AI_projects/traveller/.omo/episodes/chargen-fix-20261023/closeout.md",
+              "sha256": "5845ca653cc5b9da253c0b6cd011988b8210f108d1d3e85ba1df19072bd20361"
+            }
+          ],
+          "kind": "receipt",
+          "phase": "follow-ups",
+          "resume_pointer": null,
+          "seq": 6,
+          "session": null,
+          "ts": "2026-10-26T00:31:28Z",
+          "verified": true,
+          "verified_reason": null
+        }
+      ],
+      "sessions": [],
+      "status": "done"
+    }
+  ],
+  "project": "/home/ezotoff/AI_projects/traveller",
+  "receipts": [
+    {
+      "claims": [
+        "Five review lanes across distinct model families (MiMo, GPT-6.1-Sol, GLM-5.3) audited chargen and its linked features and produced 26 actionable findings (6 CRITICAL, 14 MAJOR, 6 MINOR) plus 3 informational observations, each with a file:line receipt.",
+        "The lanes fact-checked the plan premises against source and refuted two of them (spawnEntity is covered by three tests; the linksMap caller count was 8, not 9), and forced-check adjudication downgraded three hypotheses (Math.random spawn position is cosmetic, pre-attach Y.Map mutation is safe on yjs 13.6.29, the strict-mode gate path is reachable but does not leak)."
+      ],
+      "closeout_status": null,
+      "evidence": [
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/ledger.md",
+          "sha256": "f08deaf6ea03b5771819a848e7e3bd4100057d1488db5956edb531ee01694d90"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/01-crdt-sync.md",
+          "sha256": "4521fe360fa6b78278937f079c996a2c1b020e5671d113e615532e6ea467a229"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/02-provenance.md",
+          "sha256": "248d2710aa41606081f6411ae45414c9a6527791fb39de143bc55f891c6b6d09"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/03-coverage.md",
+          "sha256": "168cb7906f294bd04712f000b6e749321722c7f4b9fa9bb8772bdc2b357db313"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/04-adversarial.md",
+          "sha256": "e1bd4597a7246b9948ed248f66e20c8ef2b47577d70e1aba4f5bbd67a84af3ee"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/05-mgt2e-rules.md",
+          "sha256": "6bd2929327b429d68548616f382e3c63ed77316b4741f09c1ab7394cc10ea98b"
+        }
+      ],
+      "kind": "receipt",
+      "phase": "review",
+      "resume_pointer": null,
+      "seq": 1,
+      "session": null,
+      "ts": "2026-10-25T20:31:51Z",
+      "verified": true,
+      "verified_reason": null
+    },
+    {
+      "claims": [
+        "A decision-review debate planned the fix campaign; its critique round fact-checked the proposal against source and forced one false claim to be retracted, and a revision added the post-merge edge-reconciliation design the executor needed.",
+        "Four Prometheus plans were written and reviewed by Momus: three approved on round 1 (provenance, server authz, MGT2E rules) and one after three rounds (CRDT cross-character, rejected twice for real defects - an unachievable acceptance test and a recursive reconcile wiring)."
+      ],
+      "closeout_status": null,
+      "evidence": [
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.md",
+          "sha256": "f0b58d91727963a32e0aa3546f89280b31717abab8c274b170800d997ab7e1b7"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.reviews.md",
+          "sha256": "7627e5bd777675ba5c3566de7d7306abfdac818e6aa4610014f8b0bb15a11694"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.md",
+          "sha256": "e01446aaa6b01b7014c930497280b8779e8e9f18dfc223ab62fb250410e8629d"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.reviews.md",
+          "sha256": "f4f66eb27e68432b111d68f6b2ec57adb9ab514877b107ccc47464810fade749"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.md",
+          "sha256": "9789c61205e90408e5fbe4154e6791d2f6eb53061cc25b4d715444f0ac252ae5"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.reviews.md",
+          "sha256": "5a558d96ab13daece8ce3bb1d4507cccb9409a06db160c41fa12ddfe73cdb5e0"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.md",
+          "sha256": "a0d0deeb32f3f9429732faeb0239a9ef0ee0391ec782274b6f72bd42bcb98fce"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.reviews.md",
+          "sha256": "081e9a1156ece81748fcdb1d218215a2eb3a23156a038e8753ceb4c19f38598f"
+        }
+      ],
+      "kind": "receipt",
+      "phase": "planning",
+      "resume_pointer": null,
+      "seq": 2,
+      "session": null,
+      "ts": "2026-10-25T20:31:51Z",
+      "verified": true,
+      "verified_reason": null
+    },
+    {
+      "claims": [
+        "All four plans were executed and every Final Verification Wave recorded APPROVE verdicts in the plan documents: F1-F4 for the server authz plan, F1-F5 for the provenance plan, F1-F4 for the CRDT plan, F1-F4 for the MGT2E rules plan.",
+        "The verification wave for the authz plan included live adversarial curls (header-only impersonation 401, non-member 403, spoofed header ignored, purpose separation 401) and live WebSocket handshakes (member authenticated, outsider rejected, unknown campaign rejected without auto-create)."
+      ],
+      "closeout_status": null,
+      "evidence": [
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-server-authz.md",
+          "sha256": "9789c61205e90408e5fbe4154e6791d2f6eb53061cc25b4d715444f0ac252ae5"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-provenance-pipeline.md",
+          "sha256": "e01446aaa6b01b7014c930497280b8779e8e9f18dfc223ab62fb250410e8629d"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-crdt-crosschar.md",
+          "sha256": "f0b58d91727963a32e0aa3546f89280b31717abab8c274b170800d997ab7e1b7"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/plans/fix-mgt2e-rules.md",
+          "sha256": "a0d0deeb32f3f9429732faeb0239a9ef0ee0391ec782274b6f72bd42bcb98fce"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/authz-curl.md",
+          "sha256": "1e3ccc6a193ff5af8a7cee33684031992da2512f67428cde6fbe1924c97d91c7"
+        }
+      ],
+      "kind": "receipt",
+      "phase": "execution",
+      "resume_pointer": null,
+      "seq": 3,
+      "session": null,
+      "ts": "2026-10-25T20:31:51Z",
+      "verified": true,
+      "verified_reason": null
+    },
+    {
+      "claims": [
+        "An agentic QA campaign executed 21 checks across eight lanes on the running system (browser plus live API and WebSocket); all 21 passed. Coverage included concurrent dual-acceptance producing exactly one edge, session survival across a join, GM draft reject and edit propagating to a second client, aging losses applied, rank-5 benefit roll count and non-zero DM, a choice-gated event blocking advance, no literal pipe skill keys, export carrying both provenance shapes, and cross-campaign access denied.",
+        "The campaign found eight product defects that mocked-database unit tests could not see - an identity mismatch that hid the GM panel and 403-ed the first accept, a join that wiped the shared session, a clipped wizard button, an ignored joined session id, compound and and-form mustering benefits applying nothing, a missing and-grant ledger entry, and a relabel that erased earlier grants - all fixed, merged, and re-verified.",
+        "The verification suite after the fixes: web 382 tests passed, server 141 passed with 37 pre-existing skips, both typechecks clean."
+      ],
+      "closeout_status": null,
+      "evidence": [
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/qa-campaign.md",
+          "sha256": "0601dba1eeca1c01215dd8a2da75fb941fcdd3037fc5205839cef7597ca7de29"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/RV4/REPORT.md",
+          "sha256": "318294cf23b83075faad32ed0d5dfc215d03c6348e6a2ae6d7457cad179996dc"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/Q1/REPORT.md",
+          "sha256": "dee680c19cc0b5913968c10750e789c77c1283cb6b4bf3992805d50545f446d1"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/evidence/qa-20261025/Q2/Q2-report.md",
+          "sha256": "95bd3923ab8daf547ab5305115460295e6bf71aa4f091b6d5f3715ff2d916044"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/execution/chargen-fix-execution.json",
+          "sha256": "7b237a36c9f9127d44cca6744c8679e3111ffff97202cf9d6fe8a0bf61eb96c6"
+        }
+      ],
+      "kind": "receipt",
+      "phase": "qa-campaign",
+      "resume_pointer": null,
+      "seq": 4,
+      "session": null,
+      "ts": "2026-10-25T20:31:51Z",
+      "verified": true,
+      "verified_reason": null
+    },
+    {
+      "claims": [
+        "Episode closed: all four phases carry verified receipts; every review finding is fixed, merged, and independently re-verified on the running system (21 agentic real-surface checks, all passing).",
+        "Terminal summary written to closeout.md and bound to this receipt by digest; verification suite after the fixes: web 382 tests passed, server 141 passed with 37 pre-existing skips, both typechecks clean."
+      ],
+      "closeout_status": "complete",
+      "evidence": [
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/episodes/chargen-fix-20261023/closeout.md",
+          "sha256": "5845ca653cc5b9da253c0b6cd011988b8210f108d1d3e85ba1df19072bd20361"
+        }
+      ],
+      "kind": "closeout",
+      "phase": "closeout",
+      "resume_pointer": null,
+      "seq": 5,
+      "session": null,
+      "ts": "2026-10-25T20:32:33Z",
+      "verified": true,
+      "verified_reason": null
+    },
+    {
+      "claims": [
+        "All five manifest follow-ups and the F04-2 enforcement gap were resolved: fu-1 RAG principal authz (2791a8c), fu-2 CRB band reconciliation sourced from the rulebook (3149aca), fu-3 qa-traveller category confirmed on glm-5.3 after the OpenCode reload, fu-4 two-browser dual-acceptance e2e and fu-5 test hooks (dc88218), plus the F04-2 pre-merge WebSocket enforcement via beforeHandleMessage (3149aca).",
+        "The follow-up work also surfaced and fixed a real product race: the chargen wizard exposed write controls before the initial Yjs sync, so the session creator first writes failed dependency checks and left no joinable session (43b4a14).",
+        "Final gates: mgt2e 27 passed, web 401 passed, server 171 passed with 37 pre-existing skips, pytest 194 passed, all typechecks clean; the two-browser e2e passes repeatedly including the exactly-one-edge assertion."
+      ],
+      "closeout_status": null,
+      "evidence": [
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/execution/followups-20261025.json",
+          "sha256": "2e130e0eff31176f3c873e4495ff85a8b2aa0d955476c038dda56776adec39d8"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.sisyphus/reviews/chargen-20261023/qa-campaign.md",
+          "sha256": "0601dba1eeca1c01215dd8a2da75fb941fcdd3037fc5205839cef7597ca7de29"
+        },
+        {
+          "path": "/home/ezotoff/AI_projects/traveller/.omo/episodes/chargen-fix-20261023/closeout.md",
+          "sha256": "5845ca653cc5b9da253c0b6cd011988b8210f108d1d3e85ba1df19072bd20361"
+        }
+      ],
+      "kind": "receipt",
+      "phase": "follow-ups",
+      "resume_pointer": null,
+      "seq": 6,
+      "session": null,
+      "ts": "2026-10-26T00:31:28Z",
+      "verified": null,
+      "verified_reason": null
+    }
+  ],
+  "schema": "0.2",
+  "started": "2026-10-23T22:53:19+02:00",
+  "status": "closed"
 }

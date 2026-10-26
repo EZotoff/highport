@@ -1,0 +1,23 @@
+{
+  "mission": "Resolve all chargen follow-ups (fu-1..fu-5 + F04-2) and close out.",
+  "status": "all code follow-ups merged to main (dc88218, pushed); ONLY fu-3 remains",
+  "done": {
+    "fu-1 RAG principal authz": "merged 2791a8c (pytest 194, JWT identity, RAG_SERVICE_SECRET for privileged ops)",
+    "fu-2 CRB reconciliation": "merged 3149aca (aging bands -6..1+, crisis, rank bands 1-2/3-4/5-6, DM to cash, cash cap 3, orHighRank removed)",
+    "F04-2 WS enforcement": "merged 3149aca (beforeHandleMessage pre-merge rejection; 17+11 tests)",
+    "fu-4 two-browser e2e": "merged dc88218 (chargen-dual-accept.spec.ts, 2/2+1/1 passes incl. exactly-one-edge)",
+    "fu-5 test hooks": "merged dc88218 (data-testid on 8 chargen components)",
+    "bonus product fix": "ChargenWizard sync-gate race (43b4a14): wizard exposed write controls before initial Yjs sync — GM writes failed update.dependencies, leaving no joinable session"
+  },
+  "remaining_after_restart": [
+    "1. Probe the qa-traveller category with a tiny background task (e.g. 'Reply with the single word OK and nothing else.' — category=qa-traveller). It must NOT error with 'Model not found: zai-coding-plan/glm-5.2'. If it errors, the reload did not pick up .opencode/oh-my-openagent.json — investigate before proceeding.",
+    "2. Append follow-up receipts to the episode .omo/episodes/chargen-fix-20261023/manifest.yaml (phases: reuse 'qa-campaign' or add a 'follow-ups' phase with receipts referencing these merges), mark fu-1..fu-5 resolved in follow_ups (jq: set .resolved=true + .resolved_by=<sha>), append a closeout addendum receipt with --closeout? NO — episode is already closed; instead append a normal receipt documenting the follow-up campaign and update the follow_ups entries.",
+    "3. Final report to the operator: all six follow-ups closed, evidence pointers."
+  ],
+  "restart": {
+    "unit": "opencode-interactive.service (:3030)",
+    "method": "restart-with-continuation.sh --restart via detached systemd-run (per global AGENTS.md)",
+    "reason": "fu-3: the OMO plugin reads project config at server load; the qa-traveller binding fix (glm-5.2 → glm-5.3) needs a reload to take effect"
+  },
+  "updated": "2026-10-26T00:05:00+02:00"
+}
