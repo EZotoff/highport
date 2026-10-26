@@ -13,7 +13,6 @@ independently verified on the running system.
 ## Work recap per phase
 
 ### review
-
 Five review lanes across distinct model families (MiMo, GPT-6.1-Sol, GLM-5.3) audited chargen and its
 linked features and produced **26 actionable findings** (6 CRITICAL, 14 MAJOR, 6 MINOR) plus 3
 informational observations, each with a file:line receipt. The lanes fact-checked the plan premises
@@ -23,7 +22,6 @@ position is cosmetic, pre-attach Y.Map mutation is safe on yjs 13.6.29, and the 
 is reachable but does not leak).
 
 ### planning
-
 A decision-review debate planned the campaign; its critique round fact-checked the proposal against
 source and forced one false claim to be retracted, and a revision added the post-merge
 edge-reconciliation design the executor needed. Four Prometheus plans were written and reviewed by
@@ -32,7 +30,6 @@ Momus: three approved on round 1 (provenance, server authz, MGT2E rules) and one
 recursive reconcile wiring).
 
 ### execution
-
 All four plans were executed and every Final Verification Wave recorded **APPROVE** verdicts in the
 plan documents: F1–F4 for the server authz plan, F1–F5 for the provenance plan, F1–F4 for the CRDT
 plan, F1–F4 for the MGT2E rules plan. The authz wave included live adversarial curls (header-only
@@ -40,7 +37,6 @@ impersonation 401, non-member 403, spoofed header ignored, purpose separation 40
 handshakes (member authenticated, outsider rejected, unknown campaign rejected without auto-create).
 
 ### qa-campaign
-
 An agentic QA campaign executed **21 checks across eight lanes on the running system** (browser plus
 live API and WebSocket); all 21 passed. Coverage included concurrent dual-acceptance producing exactly
 one edge, session survival across a join, GM draft reject and edit propagating to a second client,
@@ -75,14 +71,12 @@ this repository only.
 ## Next steps
 
 ### Potential (optional follow-on work)
-
 - Add a two-browser chargen journey to the Playwright suite so the concurrent dual-acceptance race stays
   covered without manual QA lanes.
 - Expose stable test hooks on the chargen action buttons, since synthetic ref-clicks do not fire their
   React handlers.
 
 ### Mandatory (material gaps carried forward)
-
 - `fu-chargen-1` — Give the RAG service the same principal-derived authorization as the game API; it
   still trusts caller-supplied identity headers.
 - `fu-chargen-2` — Reconcile the CRB band values in `packages/mgt2e` against an authoritative rules
@@ -92,7 +86,6 @@ this repository only.
   campaign.
 
 ### Residual risks recorded during the episode
-
 - The privileged raw-WebSocket write path is detected by an auditor but not blocked; non-members are
   refused at the membership gate, so it is not reachable by an outsider today.
 - The `default` local-play campaign auto-join gives any authenticated user membership in the seeded
