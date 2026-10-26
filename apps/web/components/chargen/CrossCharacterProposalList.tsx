@@ -59,6 +59,7 @@ export default function CrossCharacterProposalList({
               <button
                 type="button"
                 onClick={() => handleAccept(proposal.id)}
+                data-testid="cross-character-accept"
                 className="text-xs px-3 py-1 rounded bg-sci-fi-accent/20 text-sci-fi-accent hover:bg-sci-fi-accent/30 transition-colors"
               >
                 Accept
@@ -66,6 +67,7 @@ export default function CrossCharacterProposalList({
               <button
                 type="button"
                 onClick={() => handleDismiss(proposal.id)}
+                data-testid="cross-character-dismiss"
                 className="text-xs px-3 py-1 rounded bg-sci-fi-muted/20 text-subtle hover:bg-sci-fi-muted/30 transition-colors"
               >
                 Dismiss

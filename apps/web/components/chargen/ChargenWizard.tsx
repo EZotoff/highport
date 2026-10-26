@@ -243,6 +243,7 @@ export default function ChargenWizard() {
               disabled={currentStep === 0}
               scifiVariant="ghost"
               theme="slate"
+              data-testid="wizard-back"
             >
               ← Back
             </SciFiButton>
@@ -252,6 +253,7 @@ export default function ChargenWizard() {
               disabled={currentStep === STEPS.length - 1 || !isStepValid()}
               theme="cyan"
               glow
+              data-testid="wizard-continue"
             >
               Continue →
             </SciFiButton>

@@ -846,7 +846,7 @@ function LoadedTermResolution({
                 Conscription survival DM +{conscriptionSurvivalDM}
               </p>
             )}
-            <SciFiButton theme="cyan" glow onClick={handleSurvivalRoll}>
+            <SciFiButton theme="cyan" glow onClick={handleSurvivalRoll} data-testid="roll-survival">
               Roll Survival
             </SciFiButton>
           </div>
@@ -962,7 +962,7 @@ function LoadedTermResolution({
 
         {!eventRoll ? (
           <div className="text-center">
-            <SciFiButton theme="cyan" glow onClick={handleEventRoll}>
+            <SciFiButton theme="cyan" glow onClick={handleEventRoll} data-testid="roll-event">
               Roll Event
             </SciFiButton>
           </div>
@@ -1199,6 +1199,7 @@ function LoadedTermResolution({
                             value={choice.id}
                             checked={selectedEventChoice === choice.id}
                             onChange={() => setSelectedEventChoice(choice.id)}
+                            data-testid={`event-choice-${choice.id}`}
                           />
                           {choice.description}
                         </label>
@@ -1211,6 +1212,7 @@ function LoadedTermResolution({
                     theme="slate"
                     scifiVariant="ghost"
                     className="w-full"
+                    data-testid="event-confirm"
                   >
                     Continue
                   </SciFiButton>

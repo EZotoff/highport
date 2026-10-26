@@ -58,6 +58,7 @@ export function MusteringBenefitChoice({
             theme="cyan"
             scifiVariant="secondary"
             onClick={() => onChoose(alternative.label)}
+            data-testid="benefit-choice"
           >
             {alternative.label}
           </SciFiButton>

@@ -205,6 +205,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? 'Collapse GM controls' : 'Expand GM controls'}
+        data-testid="gm-panel-toggle"
         className="flex items-center justify-between w-full px-4 py-3 min-h-[44px] bg-zinc-900 border-b border-zinc-800 hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus-visible:ring-2"
       >
         <div className="flex items-center gap-2 text-white font-bold">
@@ -374,6 +375,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                         scifiVariant="secondary"
                         size="sm"
                         onClick={() => actions.approveRequest(req.id)}
+                        data-testid="gm-request-approve"
                         className="flex-1"
                       >
                         <Check className="w-3 h-3" /> Approve
@@ -382,6 +384,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                         scifiVariant="destructive"
                         size="sm"
                         onClick={() => actions.rejectRequest(req.id)}
+                        data-testid="gm-request-reject"
                         className="flex-1"
                       >
                         <X className="w-3 h-3" /> Reject
@@ -404,6 +407,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                     scifiVariant="ghost"
                     size="sm"
                     onClick={refreshProposals}
+                    data-testid="gm-proposal-refresh"
                     disabled={isLoadingProposals}
                     className="h-7 px-2"
                   >
@@ -470,6 +474,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                           scifiVariant="ghost"
                           size="sm"
                           onClick={() => handleEditProposal(proposal)}
+                          data-testid="gm-proposal-edit"
                           className="flex-1"
                         >
                           <Pencil className="w-3 h-3" /> Edit
@@ -479,6 +484,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                           scifiVariant="secondary"
                           size="sm"
                           onClick={() => handleAcceptProposal(proposal)}
+                          data-testid="gm-proposal-accept"
                           className="flex-1"
                         >
                           <Check className="w-3 h-3" /> Accept
@@ -487,6 +493,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                           scifiVariant="destructive"
                           size="sm"
                           onClick={() => handleRejectProposal(proposal)}
+                          data-testid="gm-proposal-reject"
                           className="flex-1"
                         >
                           <X className="w-3 h-3" /> Reject
@@ -551,6 +558,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                               scifiVariant="secondary"
                               size="sm"
                               onClick={() => handleAcceptAIDraft(draft)}
+                              data-testid="gm-draft-save"
                               className="flex-1"
                             >
                               <Check className="w-3 h-3" /> Save Edit
@@ -560,6 +568,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                               scifiVariant="ghost"
                               size="sm"
                               onClick={handleCancelEditDraft}
+                              data-testid="gm-draft-cancel"
                               className="flex-1"
                             >
                               <X className="w-3 h-3" /> Cancel
@@ -572,6 +581,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                               scifiVariant="ghost"
                               size="sm"
                               onClick={() => handleEditAIDraft(draft)}
+                              data-testid="gm-draft-edit"
                               className="flex-1"
                             >
                               <Pencil className="w-3 h-3" /> Edit
@@ -581,6 +591,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                               scifiVariant="secondary"
                               size="sm"
                               onClick={() => handleAcceptAIDraft(draft)}
+                              data-testid="gm-draft-accept"
                               className="flex-1"
                             >
                               <Check className="w-3 h-3" /> Accept
@@ -589,6 +600,7 @@ export function GMControlPanel({ currentUserId }: GMControlPanelProps) {
                               scifiVariant="destructive"
                               size="sm"
                               onClick={() => handleRejectAIDraft(draft)}
+                              data-testid="gm-draft-reject"
                               className="flex-1"
                             >
                               <X className="w-3 h-3" /> Reject
